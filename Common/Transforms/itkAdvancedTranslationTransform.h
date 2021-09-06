@@ -35,6 +35,7 @@
 #define itkAdvancedTranslationTransform_h
 
 #include <iostream>
+#include <itkTranslationTransform.h>
 #include "itkAdvancedTransform.h"
 #include "itkMacro.h"
 #include "itkMatrix.h"
@@ -70,6 +71,8 @@ public:
   /** Dimension of the domain space. */
   itkStaticConstMacro(SpaceDimension, unsigned int, NDimensions);
   itkStaticConstMacro(ParametersDimension, unsigned int, NDimensions);
+
+  using ItkTransformType = TranslationTransform<TScalarType, NDimensions>;
 
   /** Standard scalar type for this class. */
   typedef typename Superclass::ScalarType ScalarType;
@@ -113,7 +116,7 @@ public:
   const OutputVectorType &
   GetOffset(void) const
   {
-    return m_Offset;
+    return m_ItkTransform->ItkTransformType::GetOffset();
   }
 
   /** This method sets the parameters for the transform
@@ -131,20 +134,8 @@ public:
   void
   SetOffset(const OutputVectorType & offset)
   {
-    m_Offset = offset;
-    return;
+    m_ItkTransform->ItkTransformType::SetOffset(offset);
   }
-
-  /** Compose with another AdvancedTranslationTransform. */
-  void
-  Compose(const Self * other, bool pre = false);
-
-  /** Compose affine transformation with a translation.
-   * This method modifies self to include a translation of the
-   * origin.  The translation is precomposed with self if pre is
-   * true, and postcomposed otherwise. */
-  void
-  Translate(const OutputVectorType & offset, bool pre = false);
 
   /** Transform by an affine transformation.
    * This method applies the affine transform given by self to a
@@ -161,28 +152,6 @@ public:
 
   OutputCovariantVectorType
   TransformCovariantVector(const InputCovariantVectorType & vector) const override;
-
-  /** This method finds the point or vector that maps to a given
-   * point or vector under the affine transformation defined by
-   * self.  If no such point exists, an exception is thrown. */
-  inline InputPointType
-  BackTransform(const OutputPointType & point) const;
-
-  inline InputVectorType
-  BackTransform(const OutputVectorType & vector) const;
-
-  inline InputVnlVectorType
-  BackTransform(const OutputVnlVectorType & vector) const;
-
-  inline InputCovariantVectorType
-  BackTransform(const OutputCovariantVectorType & vector) const;
-
-  /** Find inverse of an affine transformation.
-   * This method creates and returns a new AdvancedTranslationTransform object
-   * which is the inverse of self.  If self is not invertible,
-   * false is returned.  */
-  bool
-  GetInverse(Self * inverse) const;
 
   /** Compute the Jacobian of the transformation. */
   void
@@ -232,7 +201,7 @@ public:
   NumberOfParametersType
   GetNumberOfParameters(void) const override
   {
-    return NDimensions;
+    return m_ItkTransform->ItkTransformType::GetNumberOfParameters();
   }
 
   /** Indicates that this transform is linear. That is, given two
@@ -243,7 +212,7 @@ public:
   bool
   IsLinear() const override
   {
-    return true;
+    return m_ItkTransform->ItkTransformType::IsLinear();
   }
 
   /** Indicates the category transform.
@@ -252,7 +221,7 @@ public:
   TransformCategoryEnum
   GetTransformCategory() const override
   {
-    return TransformCategoryEnum::Linear;
+    return m_ItkTransform->ItkTransformType::GetTransformCategory();
   }
 
 
@@ -260,8 +229,9 @@ public:
    * The Translation Transform does not require fixed parameters,
    * therefore the implementation of this method is a null operation. */
   void
-  SetFixedParameters(const FixedParametersType &) override
-  { /* purposely blank */
+  SetFixedParameters(const FixedParametersType & fixedParameters) override
+  {
+    m_ItkTransform->ItkTransformType::SetFixedParameters(fixedParameters);
   }
 
   /** Get the Fixed Parameters. The AdvancedTranslationTransform does not
@@ -270,8 +240,7 @@ public:
   const FixedParametersType &
   GetFixedParameters(void) const override
   {
-    this->m_FixedParameters.SetSize(0);
-    return this->m_FixedParameters;
+    return m_ItkTransform->ItkTransformType::GetFixedParameters();
   }
 
 
@@ -287,52 +256,17 @@ private:
   void
   operator=(const Self &) = delete;
 
-  OutputVectorType m_Offset; // Offset of the transformation
-
   JacobianType                  m_LocalJacobian;
   SpatialJacobianType           m_SpatialJacobian;
   SpatialHessianType            m_SpatialHessian;
   NonZeroJacobianIndicesType    m_NonZeroJacobianIndices;
   JacobianOfSpatialJacobianType m_JacobianOfSpatialJacobian;
   JacobianOfSpatialHessianType  m_JacobianOfSpatialHessian;
+
+  const itk::SmartPointer<ItkTransformType> m_ItkTransform{ ItkTransformType::New() };
 };
 
 // class AdvancedTranslationTransform
-
-// Back transform a point
-template <class TScalarType, unsigned int NDimensions>
-inline typename AdvancedTranslationTransform<TScalarType, NDimensions>::InputPointType
-AdvancedTranslationTransform<TScalarType, NDimensions>::BackTransform(const OutputPointType & point) const
-{
-  return point - m_Offset;
-}
-
-
-// Back transform a vector
-template <class TScalarType, unsigned int NDimensions>
-inline typename AdvancedTranslationTransform<TScalarType, NDimensions>::InputVectorType
-AdvancedTranslationTransform<TScalarType, NDimensions>::BackTransform(const OutputVectorType & vect) const
-{
-  return vect;
-}
-
-
-// Back transform a vnl_vector
-template <class TScalarType, unsigned int NDimensions>
-inline typename AdvancedTranslationTransform<TScalarType, NDimensions>::InputVnlVectorType
-AdvancedTranslationTransform<TScalarType, NDimensions>::BackTransform(const OutputVnlVectorType & vect) const
-{
-  return vect;
-}
-
-
-// Back Transform a CovariantVector
-template <class TScalarType, unsigned int NDimensions>
-inline typename AdvancedTranslationTransform<TScalarType, NDimensions>::InputCovariantVectorType
-AdvancedTranslationTransform<TScalarType, NDimensions>::BackTransform(const OutputCovariantVectorType & vect) const
-{
-  return vect;
-}
 
 
 } // namespace itk

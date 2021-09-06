@@ -44,8 +44,6 @@ template <class TScalarType, unsigned int NDimensions>
 AdvancedTranslationTransform<TScalarType, NDimensions>::AdvancedTranslationTransform()
   : Superclass(ParametersDimension)
 {
-  m_Offset.Fill(0);
-
   // The Jacobian of this transform is constant.
   // Therefore the m_Jacobian variable can be
   // initialized here and be shared among all the threads.
@@ -90,32 +88,16 @@ template <class TScalarType, unsigned int NDimensions>
 void
 AdvancedTranslationTransform<TScalarType, NDimensions>::SetParameters(const ParametersType & parameters)
 {
-  bool modified = false;
-  for (unsigned int i = 0; i < SpaceDimension; ++i)
-  {
-    if (m_Offset[i] != parameters[i])
-    {
-      m_Offset[i] = parameters[i];
-      modified = true;
-    }
-  }
-  if (modified)
-  {
-    this->Modified();
-  }
+  m_ItkTransform->ItkTransformType::SetParameters(parameters);
+  this->Modified();
 }
-
 
 // Get the parameters
 template <class TScalarType, unsigned int NDimensions>
 const typename AdvancedTranslationTransform<TScalarType, NDimensions>::ParametersType &
 AdvancedTranslationTransform<TScalarType, NDimensions>::GetParameters(void) const
 {
-  for (unsigned int i = 0; i < SpaceDimension; ++i)
-  {
-    this->m_Parameters[i] = this->m_Offset[i];
-  }
-  return this->m_Parameters;
+  return m_ItkTransform->ItkTransformType::GetParameters();
 }
 
 // Print self
@@ -125,32 +107,7 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::PrintSelf(std::ostream &
 {
   Superclass::PrintSelf(os, indent);
 
-  os << indent << "Offset: " << m_Offset << std::endl;
-}
-
-
-// Compose with another affine transformation
-template <class TScalarType, unsigned int NDimensions>
-void
-AdvancedTranslationTransform<TScalarType, NDimensions>::Compose(const Self * other, bool)
-{
-  this->Translate(other->m_Offset);
-  return;
-}
-
-
-// Compose with a translation
-template <class TScalarType, unsigned int NDimensions>
-void
-AdvancedTranslationTransform<TScalarType, NDimensions>::Translate(const OutputVectorType & offset, bool)
-{
-  ParametersType newOffset(SpaceDimension);
-  for (unsigned int i = 0; i < SpaceDimension; ++i)
-  {
-    newOffset[i] = m_Offset[i] + offset[i];
-  }
-  this->SetParameters(newOffset);
-  return;
+  os << indent << "ITK Transform: " << m_ItkTransform << std::endl;
 }
 
 
@@ -159,7 +116,7 @@ template <class TScalarType, unsigned int NDimensions>
 typename AdvancedTranslationTransform<TScalarType, NDimensions>::OutputPointType
 AdvancedTranslationTransform<TScalarType, NDimensions>::TransformPoint(const InputPointType & point) const
 {
-  return point + m_Offset;
+  return m_ItkTransform->ItkTransformType::TransformPoint(point);
 }
 
 
@@ -188,21 +145,6 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::TransformCovariantVector
   const InputCovariantVectorType & vect) const
 {
   return vect;
-}
-
-
-// return an inverse transformation
-template <class TScalarType, unsigned int NDimensions>
-bool
-AdvancedTranslationTransform<TScalarType, NDimensions>::GetInverse(Self * inverse) const
-{
-  if (!inverse)
-  {
-    return false;
-  }
-
-  inverse->m_Offset = -m_Offset;
-  return true;
 }
 
 
@@ -326,7 +268,7 @@ template <class TScalarType, unsigned int NDimensions>
 void
 AdvancedTranslationTransform<TScalarType, NDimensions>::SetIdentity(void)
 {
-  m_Offset.Fill(0.0);
+  m_ItkTransform->ItkTransformType::SetIdentity();
 }
 
 
