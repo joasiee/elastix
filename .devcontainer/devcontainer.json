@@ -8,6 +8,8 @@
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},
 
+	"mounts": ["source=${localEnv:HOME}/.ssh,target=${containerEnv:HOME}/.ssh,type=bind,readonly"],
+
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"ms-vscode.cpptools",
