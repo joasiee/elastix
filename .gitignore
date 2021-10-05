@@ -38,3 +38,4 @@ CMakeFiles/
 CTestTestfile.cmake
 .idea/
 .githooks/clangFormatMac
+build/

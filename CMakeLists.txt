@@ -5,6 +5,8 @@ cmake_minimum_required( VERSION 3.10.2 )
 project( elastix )
 set(CMAKE_CXX_STANDARD 14)
 
+list(APPEND CMAKE_PREFIX_PATH "/bin/ITK")
+
 if( BUILD_SHARED_LIBS )
   message(FATAL_ERROR "Elastix does not support BUILD_SHARED_LIBS")
 endif()
