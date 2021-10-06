@@ -8,4 +8,4 @@ WORKDIR /home/root
 
 RUN wget https://github.com/InsightSoftwareConsortium/ITK/archive/refs/tags/v5.2.0.tar.gz
 RUN tar -xf v5.2.0.tar.gz
-RUN mkdir -p /bin/ITK && cd /bin/ITK && cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF /home/root/ITK-5.2.0 && make
+RUN mkdir -p /bin/ITK && cd /bin/ITK && cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF -DITK_USE_64BITS_IDS=ON -DITK_LEGACY_REMOVE=ON /home/root/ITK-5.2.0 && make
