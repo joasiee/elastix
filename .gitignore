@@ -39,3 +39,6 @@ CTestTestfile.cmake
 .idea/
 .githooks/clangFormatMac
 build/
+
+# VSCode
+.vscode/
