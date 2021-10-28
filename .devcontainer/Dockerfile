@@ -4,8 +4,14 @@
 ARG VARIANT="buster"
 FROM mcr.microsoft.com/vscode/devcontainers/cpp:0-${VARIANT}
 
+RUN apt update && apt -y install ninja-build
+
 WORKDIR /home/root
 
 RUN wget https://github.com/InsightSoftwareConsortium/ITK/archive/refs/tags/v5.2.0.tar.gz
 RUN tar -xf v5.2.0.tar.gz
-RUN mkdir ITK-5.2.0/build && cd ITK-5.2.0/build && cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF -DITK_USE_64BITS_IDS=ON -DITK_LEGACY_REMOVE=ON ../ && cmake --build . -j 4 && sudo cmake --install .
+RUN mkdir ITK-5.2.0/build
+WORKDIR ITK-5.2.0/build
+RUN cmake -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF -DITK_USE_64BITS_IDS=ON -DITK_LEGACY_REMOVE=ON ../ 
+RUN make -j 6
+RUN make -j 6 install
