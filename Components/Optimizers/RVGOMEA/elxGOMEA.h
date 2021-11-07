@@ -66,10 +66,6 @@ protected:
   GOMEA() = default;
   ~GOMEA() override = default;
 
-  /** Call the superclass' implementation and print the value of some variables */
-  void
-  InitializeProgressVariables(void) override;
-
 private:
   elxOverrideGetSelfMacro;
 

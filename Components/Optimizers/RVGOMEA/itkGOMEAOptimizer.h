@@ -26,14 +26,14 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
-#include "itkSingleValuedNonLinearOptimizer.h"
+#include "itkScaledSingleValuedNonLinearOptimizer.h"
 #include "util/Tools.h"
 #include "util/FOS.h"
 
 namespace itk
 {
 
-class ITKOptimizers_EXPORT GOMEAOptimizer : public SingleValuedNonLinearOptimizer
+class ITKOptimizers_EXPORT GOMEAOptimizer : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
   using Self = GOMEAOptimizer;
