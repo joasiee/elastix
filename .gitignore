@@ -42,3 +42,4 @@ build/
 
 # VSCode
 .vscode/
+.devcontainer/devcontainer.json
