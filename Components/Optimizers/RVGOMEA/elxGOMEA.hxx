@@ -8,28 +8,6 @@ namespace elastix
 
 template <class TElastix>
 void
-GOMEA<TElastix>::StartOptimization(void)
-{
-  /** Check if the entered scales are correct and != [ 1 1 1 ...] */
-  this->SetUseScales(false);
-  const ScalesType & scales = this->GetScales();
-  if (scales.GetSize() == this->GetInitialPosition().GetSize())
-  {
-    ScalesType unit_scales(scales.GetSize());
-    unit_scales.Fill(1.0);
-    if (scales != unit_scales)
-    {
-      /** only then: */
-      this->SetUseScales(true);
-    }
-  }
-
-  /** Call the superclass */
-  this->Superclass1::StartOptimization();
-}
-
-template <class TElastix>
-void
 GOMEA<TElastix>::BeforeRegistration(void)
 {
   /** Add target cells to xout[IterationInfo.*/
@@ -67,11 +45,17 @@ GOMEA<TElastix>::BeforeEachResolution(void)
     maximumNumberOfIterations, "MaximumNumberOfIterations", this->GetComponentLabel(), level, 0);
   this->SetMaximumNumberOfIterations(maximumNumberOfIterations);
 
-  /** Set MaximumNumberOfIterations.*/
-  int maximumNumberOfEvaluations = 1000000;
+  /** Set MaxNumberOfEvaluations.*/
+  int maxNumberOfEvaluations = 1000000;
   this->m_Configuration->ReadParameter(
-    maximumNumberOfEvaluations, "MaximumNumberOfIterations", this->GetComponentLabel(), level, 0);
-  this->SetMaximumNumberOfIterations(maximumNumberOfEvaluations);
+    maxNumberOfEvaluations, "MaxNumberOfEvaluations", this->GetComponentLabel(), level, 0);
+  this->SetMaxNumberOfEvaluations(maxNumberOfEvaluations);
+
+  /** Set FosElementSize.*/
+  int fosElementSize = -1;
+  this->m_Configuration->ReadParameter(
+    fosElementSize, "FosElementSize", this->GetComponentLabel(), level, 0);
+  this->SetFosElementSize(fosElementSize);
 
   /** Set MaxImprovementNoStretch.*/
   int maxNoImprovementNoStretch = 0;
@@ -88,29 +72,29 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   int maxNumberOfPopulations = 1;
   this->m_Configuration->ReadParameter(
     maxNumberOfPopulations, "MaxNumberOfPopulations", this->GetComponentLabel(), level, 0);
-  this->SetBasePopulationSize(maxNumberOfPopulations);
+  this->SetMaxNumberOfPopulations(maxNumberOfPopulations);
 
   /** Set Tau*/
   double tau = 0.35;
   this->m_Configuration->ReadParameter(tau, "Tau", this->GetComponentLabel(), level, 0);
-  this->SetBasePopulationSize(tau);
+  this->SetTau(tau);
 
   /** Set DistributionMultiplierDecrease*/
   double distributionMultiplierDecrease = 0.9;
   this->m_Configuration->ReadParameter(
     distributionMultiplierDecrease, "DistributionMultiplierDecrease", this->GetComponentLabel(), level, 0);
-  this->SetBasePopulationSize(distributionMultiplierDecrease);
+  this->SetDistributionMultiplierDecrease(distributionMultiplierDecrease);
 
   /** Set StDevThreshold*/
   double stDevThreshold = 1.0;
   this->m_Configuration->ReadParameter(stDevThreshold, "StDevThreshold", this->GetComponentLabel(), level, 0);
-  this->SetBasePopulationSize(stDevThreshold);
+  this->SetStDevThreshold(stDevThreshold);
 
   /** Set FitnessVarianceTolerance*/
-  double fitnessVarianceTolerance = 0.35;
+  double fitnessVarianceTolerance = 0.0;
   this->m_Configuration->ReadParameter(
     fitnessVarianceTolerance, "FitnessVarianceTolerance", this->GetComponentLabel(), level, 0);
-  this->SetBasePopulationSize(fitnessVarianceTolerance);
+  this->SetFitnessVarianceTolerance(fitnessVarianceTolerance);
 }
 
 template <class TElastix>

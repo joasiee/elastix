@@ -40,11 +40,6 @@ public:
   using typename Superclass2::RegistrationPointer;
   typedef typename Superclass2::ITKBaseType ITKBaseType;
 
-  /** Check if any scales are set, and set the UseScales flag on or off;
-   * after that call the superclass' implementation */
-  void
-  StartOptimization(void) override;
-
   /** Methods to set parameters and print output at different stages
    * in the registration process.*/
   void

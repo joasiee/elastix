@@ -26,14 +26,14 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
-#include "itkScaledSingleValuedNonLinearOptimizer.h"
+#include "itkSingleValuedNonLinearOptimizer.h"
 #include "util/Tools.h"
 #include "util/FOS.h"
 
 namespace itk
 {
 
-class ITKOptimizers_EXPORT GOMEAOptimizer : public ScaledSingleValuedNonLinearOptimizer
+class ITKOptimizers_EXPORT GOMEAOptimizer : public SingleValuedNonLinearOptimizer
 {
 public:
   using Self = GOMEAOptimizer;
@@ -74,11 +74,6 @@ public:
   itkGetConstMacro(MaximumNumberOfIterations, int);
   itkSetClampMacro(MaximumNumberOfIterations, int, 1, NumericTraits<int>::max());
 
-  itkGetConstMacro(LowerUserRange, double);
-  itkGetConstMacro(UpperUserRange, double);
-  itkSetMacro(LowerUserRange, double);
-  itkSetMacro(UpperUserRange, double);
-
   itkGetConstMacro(DistributionMultiplierDecrease, double);
   itkSetMacro(DistributionMultiplierDecrease, double);
 
@@ -116,16 +111,20 @@ public:
   PrintSettings(std::ostream & os, Indent indent) const;
 
   void
-  PrintProgress(std::ostream & os, Indent indent, bool concise=false) const;
+  PrintProgress(std::ostream & os, Indent indent, bool concise = false) const;
 
 protected:
   GOMEAOptimizer();
   ~GOMEAOptimizer() override = default;
 
+  void
+  ezilaitini(void);
+
   int               m_NumberOfEvaluations{ 0 };
   int               m_CurrentIteration{ 0 };
   StopConditionType m_StopCondition{ Unknown };
   MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
+  unsigned int      m_NrOfParameters;
 
 private:
   void
@@ -140,8 +139,6 @@ private:
   checkOptions(void);
   void
   initialize(void);
-  void
-  initializeParameterRangeBounds(void);
   void
   initializeMemory(void);
   void
@@ -237,8 +234,6 @@ private:
   double
   getStDevRatioForFOSElement(int population_index, double * parameters, int FOS_index);
   void
-  ezilaitini(void);
-  void
   ezilaitiniMemory(void);
   void
   ezilaitiniDistributionMultipliers(int population_index);
@@ -264,8 +259,6 @@ private:
   template <typename T>
   using Vector2D = std::vector<std::vector<T>>;
 
-  ParametersType           lower_init_ranges;
-  ParametersType           upper_init_ranges;
   Vector1D<ParametersType> mean_vectors;
   Vector1D<ParametersType> mean_shift_vector;
   Vector2D<MeasureType>    objective_values;
@@ -277,8 +270,6 @@ private:
   double m_DistributionMultiplierDecrease{ 0.9 };
   double m_StDevThreshold{ 1.0 };
   double m_FitnessVarianceTolerance{ 0.0 };
-  double m_LowerUserRange{ -1 };
-  double m_UpperUserRange{ 1 };
   double distribution_multiplier_increase;
   double eta_ams{ 1.0 };
   double eta_cov{ 1.0 };
