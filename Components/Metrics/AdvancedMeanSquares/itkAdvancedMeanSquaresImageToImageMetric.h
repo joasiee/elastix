@@ -132,6 +132,9 @@ public:
   MeasureType
   GetValue(const TransformParametersType & parameters) const override;
 
+  MeasureType
+  GetValue(const TransformParametersType & parameters, int index) const override;
+
   /** Get the derivatives of the match measure. */
   void
   GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const override;

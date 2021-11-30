@@ -20,6 +20,7 @@
 
 #include "itkAdvancedTransform.h"
 #include "itkImage.h"
+#include "itkFixedArray.h"
 #include "itkImageRegion.h"
 
 namespace itk
@@ -80,6 +81,11 @@ public:
   using typename Superclass::InternalMatrixType;
   using typename Superclass::MovingImageGradientType;
   using typename Superclass::MovingImageGradientValueType;
+
+  using typename Superclass::Superclass::ImageRegionFOS;
+
+  void
+  GetRegionsForFOS(const int * indices, const int length, std::vector<ImageRegionFOS>& regions) const override;
 
   /** This method sets the parameters of the transform.
    * For a B-spline deformation transform, the parameters are the BSpline
@@ -161,6 +167,7 @@ public:
   /** Parameters as SpaceDimension number of images. */
   typedef typename ParametersType::ValueType     PixelType;
   typedef Image<PixelType, Self::SpaceDimension> ImageType;
+  typedef typename ImageType::IndexType          ImageIndexType;
   typedef typename ImageType::Pointer            ImagePointer;
 
   /** Get the array of coefficient images. */
@@ -375,6 +382,7 @@ protected:
 
   void
   UpdateGridOffsetTable(void);
+
 
 private:
   AdvancedBSplineDeformableTransformBase(const Self &) = delete;

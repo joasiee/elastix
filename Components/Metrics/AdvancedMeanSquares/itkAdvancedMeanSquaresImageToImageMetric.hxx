@@ -308,6 +308,21 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
 
 /**
+ * Partial evaluation version of GetValue, specific for b-spline transforms for now.
+ */
+template <class TFixedImage, class TMovingImage>
+typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
+                                                                           int                             index) const
+{
+  this->m_NumberOfPixelsCounted = 0;
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
+  this->BeforeThreadedGetValueAndDerivative(parameters);
+  return NumericTraits<MeasureType>::Zero;
+}
+
+
+/**
  * ******************* ThreadedGetValue *******************
  */
 
@@ -1042,8 +1057,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateSelfHess
 
       /** Go to next element */
       for (; (rowIt != rowVector.end()) && ((*rowIt).first < col); ++rowIt)
-      {
-      }
+      {}
 
       if ((rowIt == rowVector.end()) || ((*rowIt).first != col))
       {

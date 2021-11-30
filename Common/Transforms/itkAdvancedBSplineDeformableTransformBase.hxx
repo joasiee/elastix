@@ -583,6 +583,32 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::TransformPoint
   }
 }
 
+template <class TScalarType, unsigned int NDimensions>
+void
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForFOS(
+  const int *                   indices,
+  const int                     length,
+  std::vector<ImageRegionFOS> & regions) const
+{
+  std::vector<ImageIndexType> controlPoints;
+  ImagePointer coefficientImage = this->m_CoefficientImages[0];
+  auto regionSize = coefficientImage->GetLargestPossibleRegion().GetSize();
+  const int                    num_points = this->GetNumberOfParameters() / SpaceDimension;
+  std::vector<bool> pointAdded(num_points, false);
+
+  for (unsigned int i = 0; i < length; ++i)
+  {
+    int            cpoint = (indices[i] % num_points);
+    ImageIndexType p = coefficientImage->ComputeIndex(cpoint);
+    if (!pointAdded[cpoint])
+    {
+      pointAdded[cpoint] = true;
+      controlPoints.push_back(p);
+    }
+  }
+  int x = 7;
+}
+
 
 } // namespace itk
 
