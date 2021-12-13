@@ -95,12 +95,6 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(
     fitnessVarianceTolerance, "FitnessVarianceTolerance", this->GetComponentLabel(), level, 0);
   this->SetFitnessVarianceTolerance(fitnessVarianceTolerance);
-
-  /** Set PartialEvaluations*/
-  bool partialEvaluations = false;
-  this->m_Configuration->ReadParameter(
-    partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
-  this->SetPartialEvaluations(partialEvaluations);
 }
 
 template <class TElastix>

@@ -15,8 +15,8 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#ifndef itkAdvancedMeanSquaresImageToImageMetric_h
-#define itkAdvancedMeanSquaresImageToImageMetric_h
+#ifndef itkAdvancedMeanSquaresPartialImageToImageMetric_h
+#define itkAdvancedMeanSquaresPartialImageToImageMetric_h
 
 #include "itkAdvancedImageToImageMetric.h"
 
@@ -27,7 +27,7 @@
 namespace itk
 {
 
-/** \class AdvancedMeanSquaresImageToImageMetric
+/** \class AdvancedMeanSquaresPartialImageToImageMetric
  * \brief Compute Mean square difference between two images, based on AdvancedImageToImageMetric...
  *
  * This Class is templated over the type of the fixed and moving
@@ -53,12 +53,12 @@ namespace itk
  */
 
 template <class TFixedImage, class TMovingImage>
-class ITK_TEMPLATE_EXPORT AdvancedMeanSquaresImageToImageMetric
+class ITK_TEMPLATE_EXPORT AdvancedMeanSquaresPartialImageToImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedMeanSquaresImageToImageMetric                 Self;
+  typedef AdvancedMeanSquaresPartialImageToImageMetric                 Self;
   typedef AdvancedImageToImageMetric<TFixedImage, TMovingImage> Superclass;
   typedef SmartPointer<Self>                                    Pointer;
   typedef SmartPointer<const Self>                              ConstPointer;
@@ -67,7 +67,7 @@ public:
   itkNewMacro(Self);
 
   /** Run-time type information (and related methods). */
-  itkTypeMacro(AdvancedMeanSquaresImageToImageMetric, AdvancedImageToImageMetric);
+  itkTypeMacro(AdvancedMeanSquaresPartialImageToImageMetric, AdvancedImageToImageMetric);
 
   /** Typedefs from the superclass. */
   using typename Superclass::CoordinateRepresentationType;
@@ -188,8 +188,8 @@ public:
   itkSetMacro(UseOpenMP, bool);
 
 protected:
-  AdvancedMeanSquaresImageToImageMetric();
-  ~AdvancedMeanSquaresImageToImageMetric() override = default;
+  AdvancedMeanSquaresPartialImageToImageMetric();
+  ~AdvancedMeanSquaresPartialImageToImageMetric() override = default;
 
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
@@ -251,7 +251,7 @@ protected:
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
 
 private:
-  AdvancedMeanSquaresImageToImageMetric(const Self &) = delete;
+  AdvancedMeanSquaresPartialImageToImageMetric(const Self &) = delete;
   void
   operator=(const Self &) = delete;
 
@@ -264,7 +264,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#  include "itkAdvancedMeanSquaresImageToImageMetric.hxx"
+#  include "itkAdvancedMeanSquaresPartialImageToImageMetric.hxx"
 #endif
 
-#endif // end #ifndef itkAdvancedMeanSquaresImageToImageMetric_h
+#endif // end #ifndef itkAdvancedMeanSquaresPartialImageToImageMetric_h

@@ -101,9 +101,6 @@ public:
   itkGetConstMacro(FosElementSize, int);
   itkSetMacro(FosElementSize, int);
 
-  itkGetConstMacro(PartialEvaluations, bool);
-  itkSetMacro(PartialEvaluations, bool);
-
   const std::string
   GetStopConditionDescription() const override;
 
@@ -211,7 +208,7 @@ private:
   void
   evaluateCompletePopulation(int population_index);
   void
-  costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val, int index=0);
+  costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val);
   void
   applyDistributionMultipliersToAllPopulations(void);
   void
@@ -292,8 +289,6 @@ private:
   int m_MovingImageBufferMisses{ 0 };
   int number_of_subgenerations_per_population_factor{ 8 };
   int number_of_populations{ 0 };
-
-  bool m_PartialEvaluations {false};
 
   short * populations_terminated;
   int *   selection_sizes;

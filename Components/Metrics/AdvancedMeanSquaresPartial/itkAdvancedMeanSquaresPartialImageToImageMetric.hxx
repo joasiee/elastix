@@ -15,10 +15,10 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#ifndef _itkAdvancedMeanSquaresImageToImageMetric_hxx
-#define _itkAdvancedMeanSquaresImageToImageMetric_hxx
+#ifndef _itkAdvancedMeanSquaresPartialImageToImageMetric_hxx
+#define _itkAdvancedMeanSquaresPartialImageToImageMetric_hxx
 
-#include "itkAdvancedMeanSquaresImageToImageMetric.h"
+#include "itkAdvancedMeanSquaresPartialImageToImageMetric.h"
 #include "vnl/algo/vnl_matrix_update.h"
 #include "itkMersenneTwisterRandomVariateGenerator.h"
 #include "itkComputeImageExtremaFilter.h"
@@ -35,7 +35,7 @@ namespace itk
  */
 
 template <class TFixedImage, class TMovingImage>
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSquaresImageToImageMetric()
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSquaresPartialImageToImageMetric()
 {
   this->SetUseImageSampler(true);
   this->SetUseFixedImageLimiter(false);
@@ -60,7 +60,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSq
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
 {
   /** Initialize transform, interpolator, etc. */
   Superclass::Initialize();
@@ -162,7 +162,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize(voi
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::PrintSelf(std::ostream & os, Indent indent) const
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::PrintSelf(std::ostream & os, Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
 
@@ -178,8 +178,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::PrintSelf(std:
  */
 
 template <class TFixedImage, class TMovingImage>
-typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueSingleThreaded(
+typename AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::GetValueSingleThreaded(
   const TransformParametersType & parameters) const
 {
   /** Initialize some variables. */
@@ -271,8 +271,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueSingle
  */
 
 template <class TFixedImage, class TMovingImage>
-typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
+typename AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const TransformParametersType & parameters) const
 {
   /** Option for now to still use the single threaded code. */
@@ -313,7 +313,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValue(ThreadIdType threadId)
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValue(ThreadIdType threadId)
 {
   /** Get a handle to the sample container. */
   ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
@@ -393,7 +393,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedGetValue(MeasureType & value) const
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedGetValue(MeasureType & value) const
 {
   const ThreadIdType numberOfThreads = Self::GetNumberOfWorkUnits();
 
@@ -435,7 +435,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetDerivative(
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::GetDerivative(
   const TransformParametersType & parameters,
   DerivativeType &                derivative) const
 {
@@ -456,7 +456,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetDerivative(
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(
   const TransformParametersType & parameters,
   MeasureType &                   value,
   DerivativeType &                derivative) const
@@ -574,7 +574,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDer
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(
   const TransformParametersType & parameters,
   MeasureType &                   value,
   DerivativeType &                derivative) const
@@ -615,7 +615,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDer
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValueAndDerivative(ThreadIdType threadId)
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValueAndDerivative(ThreadIdType threadId)
 {
   /** Initialize array that stores dM(x)/dmu, and the sparse Jacobian + indices. */
   const NumberOfParametersType nnzji = this->m_AdvancedTransform->GetNumberOfNonZeroJacobianIndices();
@@ -720,7 +720,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedGetValueAndDerivative(
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedGetValueAndDerivative(
   MeasureType &    value,
   DerivativeType & derivative) const
 {
@@ -803,7 +803,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateValueAndDerivativeTerms(
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::UpdateValueAndDerivativeTerms(
   const RealType                     fixedImageValue,
   const RealType                     movingImageValue,
   const DerivativeType &             imageJacobian,
@@ -848,7 +848,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateValueAnd
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian(
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian(
   const TransformParametersType & parameters,
   HessianType &                   H) const
 {
@@ -997,7 +997,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateSelfHessianTerms(
+AdvancedMeanSquaresPartialImageToImageMetric<TFixedImage, TMovingImage>::UpdateSelfHessianTerms(
   const DerivativeType &             imageJacobian,
   const NonZeroJacobianIndicesType & nzji,
   HessianType &                      H) const
@@ -1065,4 +1065,4 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateSelfHess
 
 } // end namespace itk
 
-#endif // end #ifndef _itkAdvancedMeanSquaresImageToImageMetric_hxx
+#endif // end #ifndef _itkAdvancedMeanSquaresPartialImageToImageMetric_hxx

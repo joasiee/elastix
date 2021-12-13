@@ -55,8 +55,7 @@ GOMEAOptimizer::PrintProgress(std::ostream & os, Indent indent, bool concise) co
   os << indent1 << "NumberOfEvaluations: " << m_NumberOfEvaluations << std::endl;
   os << indent1 << "MovingImageBufferMisses: " << m_MovingImageBufferMisses << std::endl;
   os << indent1 << "Value: " << m_CurrentValue << std::endl;
-  if (!concise)
-  {
+  if (!concise) {
     os << indent1 << "Parameters: " << this->GetCurrentPosition() << std::endl;
     os << indent1 << "StopCondition: " << this->GetStopConditionDescription() << std::endl;
   }
@@ -70,12 +69,12 @@ GOMEAOptimizer::StartOptimization()
   this->m_NrOfParameters = this->GetCostFunction()->GetNumberOfParameters();
   this->SetCurrentPosition(this->GetInitialPosition());
   this->m_CurrentIteration = 0;
-  this->m_CurrentValue = NumericTraits<MeasureType>::max();
+  this->m_CurrentValue = NumericTraits<MeasureType>::Zero;
   this->m_NumberOfEvaluations = 0;
   this->m_StopCondition = Unknown;
   this->number_of_populations = 0;
   this->initialize();
-
+  
   this->ResumeOptimization();
 }
 
@@ -239,7 +238,8 @@ GOMEAOptimizer::checkOptions(void)
   if (m_NrOfParameters < 1)
   {
     printf("\n");
-    printf("Error: number of parameters < 1 (read: %d). Require number of parameters >= 1.", m_NrOfParameters);
+    printf("Error: number of parameters < 1 (read: %d). Require number of parameters >= 1.",
+           m_NrOfParameters);
     printf("\n\n");
 
     exit(0);
@@ -275,10 +275,12 @@ GOMEAOptimizer::checkOptions(void)
     exit(0);
   }
 
-  if (FOS_element_size > 1 && (unsigned)FOS_element_size > m_NrOfParameters)
+  if (FOS_element_size > 1 && (unsigned) FOS_element_size > m_NrOfParameters)
   {
     printf("\n");
-    printf("Error: invalid FOS element size (read %d). Must be <= %d.", FOS_element_size, m_NrOfParameters);
+    printf("Error: invalid FOS element size (read %d). Must be <= %d.",
+           FOS_element_size,
+           m_NrOfParameters);
     printf("\n\n");
 
     exit(0);
@@ -369,13 +371,6 @@ void
 GOMEAOptimizer::initializeNewPopulation()
 {
   this->initializeNewPopulationMemory(number_of_populations);
-
-  if (this->m_PartialEvaluations)
-  {
-    this->m_CostFunction->InitPartialEvaluations(linkage_model[number_of_populations]->sets,
-                                                 linkage_model[number_of_populations]->set_length,
-                                                 linkage_model[number_of_populations]->length);
-  }
 
   this->initializePopulationAndFitnessValues(number_of_populations);
 
@@ -1002,7 +997,7 @@ GOMEAOptimizer::estimateMeanVectorML(int population_index)
 {
   int    i, j;
   double new_mean;
-  int    n = m_NrOfParameters;
+  int n = m_NrOfParameters;
 
   for (i = 0; (unsigned)i < n; i++)
   {
@@ -1031,9 +1026,11 @@ GOMEAOptimizer::estimateFullCovarianceMatrixML(int population_index)
   int    i, j, m;
   double cov;
 
-  full_covariance_matrix[population_index] = (double **)Malloc(m_NrOfParameters * sizeof(double *));
+  full_covariance_matrix[population_index] =
+    (double **)Malloc(m_NrOfParameters * sizeof(double *));
   for (j = 0; (unsigned)j < m_NrOfParameters; j++)
-    full_covariance_matrix[population_index][j] = (double *)Malloc(m_NrOfParameters * sizeof(double));
+    full_covariance_matrix[population_index][j] =
+      (double *)Malloc(m_NrOfParameters * sizeof(double));
   /* First do the maximum-likelihood estimate from data */
   for (i = 0; (unsigned)i < m_NrOfParameters; i++)
   {
@@ -1179,22 +1176,17 @@ GOMEAOptimizer::evaluateCompletePopulation(int population_index)
 }
 
 void
-GOMEAOptimizer::costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val, int index)
+GOMEAOptimizer::costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val)
 {
-  try
-  {
-    *obj_val = m_PartialEvaluations ? this->GetValue(*parameters, index) : this->GetValue(*parameters);
-  }
-  catch (MissingPartialEvaluationsImplementation & err)
-  {
-    throw err;
+  try {
+    *obj_val = this->GetValue(*parameters);
   }
   catch (ExceptionObject & err)
   {
     ++m_MovingImageBufferMisses;
     *obj_val = std::numeric_limits<MeasureType>::max();
   }
-
+  
   if (*obj_val < m_CurrentValue)
   {
     m_CurrentValue = *obj_val;
@@ -1463,7 +1455,7 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
     }
   }
 
-  this->costFunctionEvaluation(&populations[population_index][individual_index], &obj_val, FOS_index);
+  this->costFunctionEvaluation(&populations[population_index][individual_index], &obj_val);
   improvement = obj_val < objective_values[population_index][individual_index];
   if (improvement)
   {
@@ -1554,7 +1546,7 @@ GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_ind
           alpha * populations[population_index][individual_index][touched_indices[j]] +
           (1 - alpha) * populations[population_index][donor_index][touched_indices[j]];
       }
-      this->costFunctionEvaluation(&populations[population_index][individual_index], &obj_val, i);
+      this->costFunctionEvaluation(&populations[population_index][individual_index], &obj_val);
       improvement = obj_val < objective_values[population_index][individual_index];
       // printf("alpha=%.1e\tf=%.30e\n",alpha,obj_val);
 
@@ -1927,7 +1919,7 @@ GOMEAOptimizer::runAllPopulations()
 
     this->generationalStepAllPopulations();
     this->InvokeEvent(IterationEvent());
-    m_CurrentIteration++;
+    m_CurrentIteration++; 
   }
 }
 
