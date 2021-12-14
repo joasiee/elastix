@@ -43,3 +43,9 @@ build/
 # VSCode
 .vscode/
 .devcontainer/devcontainer.json
+
+# debug run output
+run/dir
+
+# gomea random seed
+random_seed.dat

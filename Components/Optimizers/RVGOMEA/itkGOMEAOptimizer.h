@@ -22,13 +22,15 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <iostream>
+#include <fstream>
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
 #include "itkSingleValuedNonLinearOptimizer.h"
-#include "util/Tools.h"
-#include "util/FOS.h"
+#include "gomea/Tools.h"
+#include "gomea/FOS.h"
 
 namespace itk
 {
@@ -68,7 +70,6 @@ public:
   itkGetConstMacro(CurrentIteration, int);
   itkGetConstMacro(NumberOfEvaluations, int);
   itkGetConstMacro(CurrentValue, MeasureType);
-  itkGetConstReferenceMacro(CurrentPosition, ParametersType);
   itkGetConstReferenceMacro(StopCondition, StopConditionType);
 
   itkGetConstMacro(MaximumNumberOfIterations, int);
@@ -86,6 +87,9 @@ public:
   itkGetConstMacro(FitnessVarianceTolerance, double);
   itkSetMacro(FitnessVarianceTolerance, double);
 
+  itkGetConstMacro(ImageDimension, int);
+  itkSetMacro(ImageDimension, int);
+
   itkGetConstMacro(BasePopulationSize, int);
   itkSetMacro(BasePopulationSize, int);
 
@@ -101,6 +105,12 @@ public:
   itkGetConstMacro(FosElementSize, int);
   itkSetMacro(FosElementSize, int);
 
+  itkGetConstMacro(PartialEvaluations, bool);
+  itkSetMacro(PartialEvaluations, bool);
+
+  itkGetConstMacro(WriteOutput, bool);
+  itkSetMacro(WriteOutput, bool);
+
   const std::string
   GetStopConditionDescription() const override;
 
@@ -111,7 +121,7 @@ public:
   PrintSettings(std::ostream & os, Indent indent) const;
 
   void
-  PrintProgress(std::ostream & os, Indent indent, bool concise = false) const;
+  PrintProgress(std::ostream & os, Indent indent, bool concise = true) const;
 
 protected:
   GOMEAOptimizer();
@@ -121,10 +131,12 @@ protected:
   ezilaitini(void);
 
   int               m_NumberOfEvaluations{ 0 };
+  unsigned long     m_NumberOfSubfunctionEvaluations{ 0L };
   int               m_CurrentIteration{ 0 };
   StopConditionType m_StopCondition{ Unknown };
   MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
   unsigned int      m_NrOfParameters;
+  int               m_ImageDimension;
 
 private:
   void
@@ -208,7 +220,13 @@ private:
   void
   evaluateCompletePopulation(int population_index);
   void
-  costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val);
+  costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val, bool full = false);
+  void
+  costFunctionEvaluation(ParametersType * parameters,
+                         MeasureType *    obj_val,
+                         MeasureType      obj_val_previous,
+                         MeasureType      obj_val_previous_partial,
+                         int              setIndex);
   void
   applyDistributionMultipliersToAllPopulations(void);
   void
@@ -251,6 +269,8 @@ private:
   generationalStepAllPopulations();
   void
   runAllPopulations();
+  void
+  IterationWriteOutput();
 
   mutable std::ostringstream m_StopConditionDescription;
 
@@ -290,6 +310,9 @@ private:
   int number_of_subgenerations_per_population_factor{ 8 };
   int number_of_populations{ 0 };
 
+  bool m_PartialEvaluations{ false };
+  bool m_WriteOutput{ false };
+
   short * populations_terminated;
   int *   selection_sizes;
   int *   no_improvement_stretch;
@@ -298,6 +321,8 @@ private:
   int **  samples_drawn_from_normal;
   int **  out_of_bounds_draws;
   int **  individual_NIS;
+
+  std::ofstream outFile;
 
   GOMEA::FOS ** linkage_model;
 };

@@ -1,0 +1,14 @@
+HeaderSize = -1
+ObjectType = Image
+NDims = 3
+BinaryData = True
+BinaryDataByteOrderMSB = False
+CompressedData = False
+TransformMatrix = 0.999664949 0.006999519 0.02491981 -0.006722796 0.999915002 -0.011171052 -0.024995884 0.010999778 0.999627036
+Offset = -74.65147293 -54.21900592 -148.2942986
+CenterOfRotation = 0 0 0
+AnatomicalOrientation = RAI
+ElementSpacing = 2 2 3
+DimSize = 88 106 75
+ElementType = MET_SHORT
+ElementDataFile = ct.mha
