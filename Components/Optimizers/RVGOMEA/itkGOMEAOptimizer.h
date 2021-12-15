@@ -220,7 +220,7 @@ private:
   void
   evaluateCompletePopulation(int population_index);
   void
-  costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val, bool full = false);
+  costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val);
   void
   costFunctionEvaluation(ParametersType * parameters,
                          MeasureType *    obj_val,

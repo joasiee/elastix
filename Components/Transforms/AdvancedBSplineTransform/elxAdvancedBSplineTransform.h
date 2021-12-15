@@ -19,6 +19,7 @@
 #define elxAdvancedBSplineTransform_h
 
 #include "elxIncludes.h" // include first to avoid MSVS warning
+#include "itkImageRegion.h"
 #include "itkAdvancedCombinationTransform.h"
 #include "itkAdvancedBSplineDeformableTransform.h"
 
@@ -214,6 +215,10 @@ public:
 
   /** Typedef that is used in the elastix dll version. */
   using typename Superclass2::ParameterMapType;
+
+  typedef typename itk::ImageRegion<SpaceDimension> ImageRegionFOS;
+  void
+  GetRegionsForFOS(const int * indices, const int length, std::vector<ImageRegionFOS> & regions) const override;
 
   /** Execute stuff before anything else is done:
    * \li Initialize the right BSplineTransform.

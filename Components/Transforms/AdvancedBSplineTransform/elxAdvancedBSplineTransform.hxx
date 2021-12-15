@@ -378,6 +378,7 @@ AdvancedBSplineTransform<TElastix>::InitializeTransform(void)
   this->m_BSplineTransform->SetGridSpacing(gridSpacing);
   this->m_BSplineTransform->SetGridOrigin(gridOrigin);
   this->m_BSplineTransform->SetGridDirection(gridDirection);
+  this->m_BSplineTransform->WrapAsImages();
 
   /** Set initial parameters for the first resolution to 0.0. */
   ParametersType initialParameters(this->GetNumberOfParameters());
@@ -612,6 +613,17 @@ AdvancedBSplineTransform<TElastix>::SetOptimizerScales(const unsigned int edgeWi
   this->m_Registration->GetAsITKBaseType()->GetModifiableOptimizer()->SetScales(newScales);
 
 } // end SetOptimizerScales()
+
+template <class TElastix>
+void
+AdvancedBSplineTransform<TElastix>::GetRegionsForFOS(const int *                   indices,
+                                                     const int                     length,
+                                                     std::vector<ImageRegionFOS> & regions) const
+{
+  FixedImageType * fixedImage = this->GetElastix()->GetFixedImage();
+  this->m_BSplineTransform->GetRegionsForFOS(
+    indices, length, regions, fixedImage->GetLargestPossibleRegion(), fixedImage->GetSpacing());
+}
 
 
 } // end namespace elastix

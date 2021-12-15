@@ -18,6 +18,8 @@
 #ifndef itkAdvancedBSplineDeformableTransformBase_h
 #define itkAdvancedBSplineDeformableTransformBase_h
 
+#include <algorithm>
+
 #include "itkAdvancedTransform.h"
 #include "itkImage.h"
 #include "itkImageRegion.h"
@@ -161,6 +163,7 @@ public:
   /** Parameters as SpaceDimension number of images. */
   typedef typename ParametersType::ValueType     PixelType;
   typedef Image<PixelType, Self::SpaceDimension> ImageType;
+  typedef typename ImageType::IndexType          ImageIndexType;
   typedef typename ImageType::Pointer            ImagePointer;
 
   /** Get the array of coefficient images. */
@@ -294,6 +297,17 @@ public:
    */
   typedef ContinuousIndex<ScalarType, SpaceDimension> ContinuousIndexType;
 
+  void
+  GetRegionsForFOS(const int *               indices,
+                   const int                 length,
+                   std::vector<RegionType> & regions,
+                   RegionType                fixedImageRegion,
+                   SpacingType               fixedImageSpacing) const;
+
+  /** Wrap flat array into images of coefficients. */
+  void
+  WrapAsImages(void);
+
 protected:
   /** Print contents of an AdvancedBSplineDeformableTransformBase. */
   void
@@ -301,10 +315,6 @@ protected:
 
   AdvancedBSplineDeformableTransformBase();
   ~AdvancedBSplineDeformableTransformBase() override;
-
-  /** Wrap flat array into images of coefficients. */
-  void
-  WrapAsImages(void);
 
   /** Convert an input point to a continuous index inside the B-spline grid. */
   void

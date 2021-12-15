@@ -13,7 +13,7 @@
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 (Interpolator "BSplineInterpolator")
 (Metric "AdvancedMeanSquares")
-(Optimizer "AdaptiveStochasticGradientDescent")
+(Optimizer "GOMEA")
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
 (Transform "BSplineTransform")
@@ -28,7 +28,7 @@
 
 // ********** Transform
 
-(FinalGridSpacingInPhysicalUnits 20.0 20.0 20.0)
+(FinalGridSpacingInPhysicalUnits 20.0)
 (GridSpacingSchedule 4.0 2.0 1.0)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
@@ -37,7 +37,9 @@
 // ********** Optimizer
 
 (MaximumNumberOfIterations 10)
+(PartialEvaluations "false")
 (BasePopulationSize 40)
+
 (AutomaticParameterEstimation "true")
 (UseAdaptiveStepSizes "true")
 (ASGDParameterEstimationMethod "Original")

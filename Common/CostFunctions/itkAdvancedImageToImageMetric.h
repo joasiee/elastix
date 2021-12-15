@@ -138,6 +138,7 @@ public:
   /** Typedefs for the ImageSampler. */
   typedef ImageSamplerBase<FixedImageType>                        ImageSamplerType;
   typedef typename ImageSamplerType::Pointer                      ImageSamplerPointer;
+  typedef typename ImageSamplerType::InputImageRegionType         ImageSamplerInputImageRegionType;
   typedef typename ImageSamplerType::OutputVectorContainerType    ImageSampleContainerType;
   typedef typename ImageSamplerType::OutputVectorContainerPointer ImageSampleContainerPointer;
 
@@ -292,6 +293,9 @@ public:
   virtual void
   BeforeThreadedGetValueAndDerivative(const TransformParametersType & parameters) const;
 
+  void
+  InitPartialEvaluations(int ** sets, int * set_length, int length) override;
+
 protected:
   /** Constructor. */
   AdvancedImageToImageMetric();
@@ -338,6 +342,8 @@ protected:
    * because it is changed in the GetValue(), etc, which are const functions.
    */
   mutable ImageSamplerPointer m_ImageSampler;
+  mutable std::vector<std::vector<ImageSamplerPointer>> m_SubfunctionImageSamplers;
+  double m_SamplingPercentage {0.3};
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear;

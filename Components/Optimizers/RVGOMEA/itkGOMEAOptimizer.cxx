@@ -508,7 +508,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
       populations[population_index][j][k] = m_CurrentPosition[k] + (k > 0) * random1DNormalUnit();
     }
 
-    this->costFunctionEvaluation(&populations[population_index][j], &objective_values[population_index][j], true);
+    this->costFunctionEvaluation(&populations[population_index][j], &objective_values[population_index][j]);
   }
 }
 
@@ -1209,17 +1209,9 @@ GOMEAOptimizer::evaluateCompletePopulation(int population_index)
 }
 
 void
-GOMEAOptimizer::costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val, bool full)
+GOMEAOptimizer::costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val)
 {
-  try
-  {
-    *obj_val = full ? this->GetValueFull(*parameters) : this->GetValue(*parameters);
-  }
-  catch (ExceptionObject & err)
-  {
-    ++m_MovingImageBufferMisses;
-    *obj_val = std::numeric_limits<MeasureType>::max();
-  }
+  *obj_val = m_PartialEvaluations ? this->GetValueFull(*parameters) : this->GetValue(*parameters);
 
   if (*obj_val < m_CurrentValue)
   {
@@ -1242,20 +1234,7 @@ GOMEAOptimizer::costFunctionEvaluation(ParametersType * parameters,
     this->costFunctionEvaluation(parameters, obj_val);
     return;
   }
-
-  try
-  {
-    *obj_val = obj_val_previous - obj_val_previous_partial + this->GetValue(*parameters, setIndex);
-  }
-  catch (MissingPartialEvaluationsImplementation & err)
-  {
-    throw err;
-  }
-  catch (ExceptionObject & err)
-  {
-    ++m_MovingImageBufferMisses;
-    *obj_val = std::numeric_limits<MeasureType>::max();
-  }
+  *obj_val = obj_val_previous - obj_val_previous_partial + this->GetValue(*parameters, setIndex);
 
   if (*obj_val < m_CurrentValue)
   {

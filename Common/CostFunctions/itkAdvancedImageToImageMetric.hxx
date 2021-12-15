@@ -971,6 +971,31 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsi
 
 } // end CheckNumberOfSamples()
 
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets, int * set_length, int length)
+{
+  Superclass::InitPartialEvaluations(sets, set_length, length);
+  ImageSamplerPointer base = this->GetImageSampler();
+  int n_cpoints = this->m_BSplineFOSRegions.size();
+  this->m_SubfunctionImageSamplers.resize(n_cpoints);
+  for (int i = 0; i < n_cpoints; ++i)
+  {
+    int n_regions = this->m_BSplineFOSRegions[i].size();
+    this->m_SubfunctionImageSamplers.reserve(n_regions);
+    for (int j = 0; j < n_regions; ++j)
+    {
+      ImageSamplerPointer              subfunctionSampler = base->Clone();
+      ImageSamplerInputImageRegionType region = this->m_BSplineFOSRegions[i][j];
+      subfunctionSampler->SetInput(base->GetInput());
+      subfunctionSampler->SetInputImageRegion(region);
+      subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
+      subfunctionSampler->Update();
+      this->m_SubfunctionImageSamplers[i].push_back(subfunctionSampler);
+    }
+  }
+}
+
 
 /**
  * ********************* PrintSelf ****************************
