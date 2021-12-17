@@ -132,8 +132,11 @@ public:
   MeasureType
   GetValue(const TransformParametersType & parameters) const override;
 
-  // MeasureType
-  // GetValueFull(const TransformParametersType & parameters) const override;
+  MeasureType
+  GetValueFull(const TransformParametersType & parameters) const override;
+
+  MeasureType
+  GetValue(const TransformParametersType & parameters, const int fosIndex) const override;
 
   /** Get the derivatives of the match measure. */
   void

@@ -306,45 +306,60 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
 } // end GetValue()
 
-// /**
-//  * ******************* GetValueFull *******************
-//  */
+/**
+ * ******************* GetValueFull *******************
+ */
 
-// template <class TFixedImage, class TMovingImage>
-// typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-// AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
-//   const TransformParametersType & parameters) const
-// {
-//   /** Option for now to still use the single threaded code. */
-//   if (!this->m_UseMultiThread)
-//   {
-//     return this->GetValueSingleThreaded(parameters);
-//   }
+template <class TFixedImage, class TMovingImage>
+typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
+  const TransformParametersType & parameters) const
+{
+  /** Option for now to still use the single threaded code. */
+  if (!this->m_UseMultiThread)
+  {
+    itkWarningMacro(<< Self::GetNameOfClass() << ": Missing single thread partial evaluations implementation.");
+    return this->GetValueSingleThreaded(parameters);
+  }
 
-//   /** Call non-thread-safe stuff, such as:
-//    *   this->SetTransformParameters( parameters );
-//    *   this->GetImageSampler()->Update();
-//    * Because of these calls GetValue itself is not thread-safe,
-//    * so cannot be called multiple times simultaneously.
-//    * This is however needed in the CombinationImageToImageMetric.
-//    * In that case, you need to:
-//    * - switch the use of this function to on, using m_UseMetricSingleThreaded = true
-//    * - call BeforeThreadedGetValueAndDerivative once (single-threaded) before calling GetValue
-//    * - switch the use of this function to off, using m_UseMetricSingleThreaded = false
-//    * - Now you can call GetValue multi-threaded.
-//    */
-//   this->BeforeThreadedGetValueAndDerivative(parameters);
+  this->BeforeThreadedGetValueAndDerivative(parameters);
 
-//   /** Launch multi-threading metric */
-//   this->LaunchGetValueThreaderCallback();
+  for (ImageSamplerPointer sampler : this->m_SubfunctionImageSamplers)
+  {
+    this->m_CurrentSubSampler = sampler.GetPointer();
+    this->LaunchGetValueThreaderCallback();
+  }
 
-//   /** Gather the metric values from all threads. */
-//   MeasureType value = NumericTraits<MeasureType>::Zero;
-//   this->AfterThreadedGetValue(value);
+  MeasureType value = NumericTraits<MeasureType>::Zero;
+  this->AfterThreadedGetValue(value);
 
-//   return value;
+  return value;
+} // end GetValueFull()
 
-// } // end GetValueFull()
+/**
+ * ******************* GetValuePartial *******************
+ */
+
+template <class TFixedImage, class TMovingImage>
+typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
+                                                                           const int fosIndex) const
+{
+  /** Option for now to still use the single threaded code. */
+  if (!this->m_UseMultiThread)
+  {
+    return this->GetValueSingleThreaded(parameters);
+  }
+  this->BeforeThreadedGetValueAndDerivative(parameters);
+
+  this->m_CurrentSubSampler = this->m_SubfunctionImageSamplers[fosIndex].GetPointer();
+  this->LaunchGetValueThreaderCallback();
+
+  MeasureType value = NumericTraits<MeasureType>::Zero;
+  this->AfterThreadedGetValue(value);
+
+  return value;
+} // end GetValuePartial()
 
 
 /**
@@ -356,7 +371,7 @@ void
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValue(ThreadIdType threadId)
 {
   /** Get a handle to the sample container. */
-  ImageSampleContainerPointer sampleContainer = this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Sampler;
+  ImageSampleContainerPointer sampleContainer = this->m_CurrentSubSampler->GetOutput();
   const unsigned long         sampleContainerSize = sampleContainer->Size();
 
   /** Get the samples for this thread. */
@@ -421,8 +436,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
   } // end for loop over the image sample container
 
   /** Only update these variables at the end to prevent unnecessary "false sharing". */
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value = measure;
+  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted += numberOfPixelsCounted;
+  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value += measure;
 
 } // end ThreadedGetValue()
 
@@ -445,7 +460,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
 
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted = 0;
-    this->m_GetValueAndDerivativePerThreadVariables[i].st_Sampler = this->GetImageSampler()->GetOutput();
   }
 
   /** Check if enough samples were valid. */
@@ -1083,8 +1097,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateSelfHess
 
       /** Go to next element */
       for (; (rowIt != rowVector.end()) && ((*rowIt).first < col); ++rowIt)
-      {
-      }
+      {}
 
       if ((rowIt == rowVector.end()) || ((*rowIt).first != col))
       {

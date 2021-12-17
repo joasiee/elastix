@@ -222,8 +222,9 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParame
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Derivative.SetSize(this->GetNumberOfParameters());
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Derivative.Fill(
       NumericTraits<DerivativeValueType>::ZeroValue());
-    this->m_GetValueAndDerivativePerThreadVariables[i].st_Sampler = this->GetImageSampler()->GetOutput();
   }
+
+  this->m_CurrentSubSampler = this->GetImageSampler();
 
 } // end InitializeThreadingParameters()
 
@@ -847,8 +848,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValueThreaderCallback(
   ThreadIdType     threadID = infoStruct->WorkUnitID;
 
   MultiThreaderParameterType * temp = static_cast<MultiThreaderParameterType *>(infoStruct->UserData);
-  AdvancedImageToImageMetric * metric = temp->st_Metric;
-  ((*metric).*((*metric).m_ThreadedGetValueFunc))(threadID);
+  temp->st_Metric->ThreadedGetValue(threadID);
 
   return itk::ITK_THREAD_RETURN_DEFAULT_VALUE;
 
@@ -977,7 +977,6 @@ void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets, int * set_length, int length)
 {
   Superclass::InitPartialEvaluations(sets, set_length, length);
-  this->m_ThreadedGetValueFunc = &Self::ThreadedGetValueFull;
 
   ImageSamplerPointer base = this->GetImageSampler();
   this->SetUseImageSampler(false);

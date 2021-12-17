@@ -381,11 +381,6 @@ protected:
   ThreadedGetValue(ThreadIdType threadID)
   {}
 
-  /** Multi-threaded version of GetValueFull(). */
-  virtual inline void
-  ThreadedGetValueFull(ThreadIdType threadID)
-  {}
-
   /** Finalize multi-threaded metric computation. */
   virtual inline void
   AfterThreadedGetValue(MeasureType & value) const
@@ -425,7 +420,7 @@ protected:
   bool m_UseMetricSingleThreaded;
   bool m_UseMultiThread;
   bool m_UseOpenMP;
-  void (Self::*m_ThreadedGetValueFunc)(ThreadIdType) = &Self::ThreadedGetValue;
+  mutable ImageSamplerType * m_CurrentSubSampler;
 
   /** Helper structs that multi-threads the computation of
    * the metric derivative using ITK threads.
@@ -466,7 +461,6 @@ protected:
     SizeValueType               st_NumberOfPixelsCounted;
     MeasureType                 st_Value;
     DerivativeType              st_Derivative;
-    ImageSampleContainerPointer st_Sampler;
   };
   itkPadStruct(ITK_CACHE_LINE_ALIGNMENT,
                GetValueAndDerivativePerThreadStruct,
