@@ -222,6 +222,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParame
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Derivative.SetSize(this->GetNumberOfParameters());
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Derivative.Fill(
       NumericTraits<DerivativeValueType>::ZeroValue());
+    this->m_GetValueAndDerivativePerThreadVariables[i].st_Sampler = this->GetImageSampler()->GetOutput();
   }
 
 } // end InitializeThreadingParameters()
@@ -846,8 +847,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValueThreaderCallback(
   ThreadIdType     threadID = infoStruct->WorkUnitID;
 
   MultiThreaderParameterType * temp = static_cast<MultiThreaderParameterType *>(infoStruct->UserData);
-
-  temp->st_Metric->ThreadedGetValue(threadID);
+  AdvancedImageToImageMetric * metric = temp->st_Metric;
+  ((*metric).*((*metric).m_ThreadedGetValueFunc))(threadID);
 
   return itk::ITK_THREAD_RETURN_DEFAULT_VALUE;
 
@@ -976,23 +977,21 @@ void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets, int * set_length, int length)
 {
   Superclass::InitPartialEvaluations(sets, set_length, length);
+  this->m_ThreadedGetValueFunc = &Self::ThreadedGetValueFull;
+
   ImageSamplerPointer base = this->GetImageSampler();
+  this->SetUseImageSampler(false);
   int n_cpoints = this->m_BSplineFOSRegions.size();
   this->m_SubfunctionImageSamplers.resize(n_cpoints);
   for (int i = 0; i < n_cpoints; ++i)
   {
-    int n_regions = this->m_BSplineFOSRegions[i].size();
-    this->m_SubfunctionImageSamplers.reserve(n_regions);
-    for (int j = 0; j < n_regions; ++j)
-    {
-      ImageSamplerPointer              subfunctionSampler = base->Clone();
-      ImageSamplerInputImageRegionType region = this->m_BSplineFOSRegions[i][j];
-      subfunctionSampler->SetInput(base->GetInput());
-      subfunctionSampler->SetInputImageRegion(region);
-      subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
-      subfunctionSampler->Update();
-      this->m_SubfunctionImageSamplers[i].push_back(subfunctionSampler);
-    }
+    ImageSamplerPointer              subfunctionSampler = base->Clone();
+    ImageSamplerInputImageRegionType region = this->m_BSplineFOSRegions[i];
+    subfunctionSampler->SetInput(base->GetInput());
+    subfunctionSampler->SetInputImageRegion(region);
+    subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
+    subfunctionSampler->Update();
+    this->m_SubfunctionImageSamplers.push_back(subfunctionSampler);
   }
 }
 

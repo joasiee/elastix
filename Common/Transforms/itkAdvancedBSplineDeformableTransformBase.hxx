@@ -561,7 +561,6 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::InsideValidReg
   return inside;
 }
 
-
 template <class TScalarType, unsigned int NDimensions>
 void
 AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::TransformPointToContinuousGridIndex(
@@ -583,60 +582,98 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::TransformPoint
   }
 }
 
+
+/**
+ *  Initializes m_BsplineFOSRegions and m_BSplinePointsRegions of the ImageToImageMetric class.
+ *  These are used when partial evaluations are enabled.
+ **/
 template <class TScalarType, unsigned int NDimensions>
 void
-AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForFOS(const int *               indices,
-                                                                                   const int                 length,
-                                                                                   std::vector<RegionType> & regions,
-                                                                                   RegionType  fixedImageRegion,
-                                                                                   SpacingType fixedImageSpacing) const
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForFOS(
+  int **                          sets,
+  int *                           set_length,
+  int                             length,
+  std::vector<RegionType> &       regions,
+  std::vector<std::vector<int>> & points,
+  RegionType                      fixedImageRegion,
+  SpacingType                     fixedImageSpacing) const
 {
-  ImagePointer      coefficientImage = this->m_CoefficientImages[0];
-  auto              regionSize = coefficientImage->GetLargestPossibleRegion().GetSize();
-  const int         num_points = this->GetNumberOfParameters() / SpaceDimension;
-  std::vector<bool> pointAdded(num_points, false);
+  unsigned int i, j, d;
+  ImagePointer coefficientImage = this->m_CoefficientImages[0];
+  const int    num_points = this->GetNumberOfParameters() / SpaceDimension;
+  RegionType   coeffRegion = coefficientImage->GetLargestPossibleRegion();
+  RegionType   coeffRegionCropped = coeffRegion;
 
-  for (int i = 0; i < length; ++i)
+  // crop control points grid to only contain those at lower left corners of fixed image pixel areas.
+  for (d = 0; d < SpaceDimension; ++d)
   {
-    int            cpoint = (indices[i] % num_points);
-    ImageIndexType p = coefficientImage->ComputeIndex(cpoint);
+    coeffRegionCropped.SetSize(d, coeffRegion.GetSize(d) - 3);
+  }
+  regions.clear();
+  points.clear();
+  regions.resize(coeffRegionCropped.GetNumberOfPixels());
+  points.resize(num_points);
 
-    ImageIndexType lower, upper;
-    RegionType     hypercube;
-    for (unsigned int d = 0; d < SpaceDimension; ++d)
+  // iterate over these control points and calculate fixed image pixel region
+  ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(coefficientImage, coeffRegionCropped);
+  i = 0;
+  while (!coeffImageIterator.IsAtEnd())
+  {
+    IndexType imageIndex;
+    for (d = 0; d < SpaceDimension; ++d)
     {
-      lower[d] = std::max(static_cast<int>(p[d] - 3), 0);
-      upper[d] = std::min(static_cast<int>(p[d] + 1), static_cast<int>(regionSize[d] - 3));
-      hypercube.SetSize(d, upper[d] - lower[d]);
+      double spacing = coefficientImage->GetSpacing()[d] / fixedImageSpacing[d];
+      imageIndex[d] = ceil(coeffImageIterator.GetIndex()[d] * spacing);
+      int sizing = ceil((coeffImageIterator.GetIndex()[d] + 1) * spacing);
+
+      // edge case when outer control points are reached, no longer have to exclude pixels of next region.
+      if (coeffImageIterator.GetIndex()[d] == static_cast<int>(coeffRegion.GetSize(d) - 4))
+        sizing += 1;
+
+      sizing = std::min(sizing, static_cast<int>(fixedImageRegion.GetSize()[d]));
+      regions[i].SetSize(d, sizing - imageIndex[d]);
     }
-    hypercube.SetIndex(lower);
-    ImageRegionConstIteratorWithIndex<ImageType> imageIterator(coefficientImage, hypercube);
+    regions[i].SetIndex(imageIndex);
+    ++coeffImageIterator;
+    ++i;
+  }
 
-    while (!imageIterator.IsAtEnd())
+  // assign fixed image regions to control points which affect them.
+  std::vector<bool> pointAdded(num_points, false);
+  for (j = 0; j < (unsigned)length; ++j)
+  {
+    for (i = 0; i < (unsigned)set_length[j]; ++i)
     {
-      const int offset = coefficientImage->ComputeOffset(imageIterator.GetIndex());
-      if (!pointAdded[offset])
-      {
-        pointAdded[offset] = true;
-        IndexType      imageIndex;
-        RegionType fosRegion;
-        for (unsigned int d = 0; d < SpaceDimension; ++d)
-        {
-          double spacing = coefficientImage->GetSpacing()[d] / fixedImageSpacing[d];
-          imageIndex[d] = ceil(imageIterator.GetIndex()[d] * spacing);
-          int sizing = ceil((imageIterator.GetIndex()[d] + 1) * spacing);
+      int cpoint = (sets[j][i] % num_points);
+      if (pointAdded[cpoint])
+        continue;
+      pointAdded[cpoint] = true;
 
-          // edge case when outer control points are reached, no longer have to exclude pixels of next region.
-          if (imageIterator.GetIndex()[d] == static_cast<int>(regionSize[d] - 4))
-            sizing += 1;
-          
-          sizing = std::min(sizing, static_cast<int>(fixedImageRegion.GetSize()[d]));
-          fosRegion.SetSize(d, sizing - imageIndex[d]);
-        }
-        fosRegion.SetIndex(imageIndex);
-        regions.push_back(fosRegion);
+      ImageIndexType p = coefficientImage->ComputeIndex(cpoint);
+
+      ImageIndexType lower, upper;
+      RegionType     hypercube;
+      for (d = 0; d < SpaceDimension; ++d)
+      {
+        lower[d] = std::max(static_cast<int>(p[d] - 3), 0);
+        upper[d] = std::min(static_cast<int>(p[d] + 1), static_cast<int>(coeffRegion.GetSize(d) - 3));
+        hypercube.SetSize(d, upper[d] - lower[d]);
       }
-      ++imageIterator;
+      hypercube.SetIndex(lower);
+      ImageRegionConstIteratorWithIndex<ImageType> imageIterator(coefficientImage, hypercube);
+
+      while (!imageIterator.IsAtEnd())
+      {
+        // offset needs to be adjusted to cropped coefficient grid.
+        unsigned int offset = coefficientImage->ComputeOffset(imageIterator.GetIndex());
+        int          delta = imageIterator.GetIndex()[1] * 3;
+        delta += SpaceDimension == 3
+                   ? imageIterator.GetIndex()[2] * (coeffRegion.GetSize(0) * 3 + coeffRegion.GetSize(1) * 3 - 9)
+                   : 0; // only if grid is 3D.
+        offset -= delta;
+        points[cpoint].push_back(offset);
+        ++imageIterator;
+      }
     }
   }
 }

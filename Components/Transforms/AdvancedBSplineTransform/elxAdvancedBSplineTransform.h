@@ -216,9 +216,12 @@ public:
   /** Typedef that is used in the elastix dll version. */
   using typename Superclass2::ParameterMapType;
 
-  typedef typename itk::ImageRegion<SpaceDimension> ImageRegionFOS;
   void
-  GetRegionsForFOS(const int * indices, const int length, std::vector<ImageRegionFOS> & regions) const override;
+  GetRegionsForFOS(int **                          sets,
+                   int *                           set_length,
+                   int                             length,
+                   std::vector<RegionType> &   regions,
+                   std::vector<std::vector<int>> & points) const override;
 
   /** Execute stuff before anything else is done:
    * \li Initialize the right BSplineTransform.

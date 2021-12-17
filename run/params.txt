@@ -13,7 +13,7 @@
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 (Interpolator "BSplineInterpolator")
 (Metric "AdvancedMeanSquares")
-(Optimizer "GOMEA")
+(Optimizer "AdaptiveStochasticGradientDescent") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
 (Transform "BSplineTransform")
@@ -37,7 +37,7 @@
 // ********** Optimizer
 
 (MaximumNumberOfIterations 10)
-(PartialEvaluations "false")
+(PartialEvaluations "true")
 (BasePopulationSize 40)
 
 (AutomaticParameterEstimation "true")

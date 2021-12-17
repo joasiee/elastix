@@ -616,13 +616,15 @@ AdvancedBSplineTransform<TElastix>::SetOptimizerScales(const unsigned int edgeWi
 
 template <class TElastix>
 void
-AdvancedBSplineTransform<TElastix>::GetRegionsForFOS(const int *                   indices,
-                                                     const int                     length,
-                                                     std::vector<ImageRegionFOS> & regions) const
+AdvancedBSplineTransform<TElastix>::GetRegionsForFOS(int **                          sets,
+                                                     int *                           set_length,
+                                                     int                             length,
+                                                     std::vector<RegionType> &       regions,
+                                                     std::vector<std::vector<int>> & points) const
 {
   FixedImageType * fixedImage = this->GetElastix()->GetFixedImage();
   this->m_BSplineTransform->GetRegionsForFOS(
-    indices, length, regions, fixedImage->GetLargestPossibleRegion(), fixedImage->GetSpacing());
+    sets, set_length, length, regions, points, fixedImage->GetLargestPossibleRegion(), fixedImage->GetSpacing());
 }
 
 

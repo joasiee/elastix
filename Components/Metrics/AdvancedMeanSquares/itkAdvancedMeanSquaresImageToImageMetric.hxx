@@ -306,6 +306,46 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
 } // end GetValue()
 
+// /**
+//  * ******************* GetValueFull *******************
+//  */
+
+// template <class TFixedImage, class TMovingImage>
+// typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+// AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
+//   const TransformParametersType & parameters) const
+// {
+//   /** Option for now to still use the single threaded code. */
+//   if (!this->m_UseMultiThread)
+//   {
+//     return this->GetValueSingleThreaded(parameters);
+//   }
+
+//   /** Call non-thread-safe stuff, such as:
+//    *   this->SetTransformParameters( parameters );
+//    *   this->GetImageSampler()->Update();
+//    * Because of these calls GetValue itself is not thread-safe,
+//    * so cannot be called multiple times simultaneously.
+//    * This is however needed in the CombinationImageToImageMetric.
+//    * In that case, you need to:
+//    * - switch the use of this function to on, using m_UseMetricSingleThreaded = true
+//    * - call BeforeThreadedGetValueAndDerivative once (single-threaded) before calling GetValue
+//    * - switch the use of this function to off, using m_UseMetricSingleThreaded = false
+//    * - Now you can call GetValue multi-threaded.
+//    */
+//   this->BeforeThreadedGetValueAndDerivative(parameters);
+
+//   /** Launch multi-threading metric */
+//   this->LaunchGetValueThreaderCallback();
+
+//   /** Gather the metric values from all threads. */
+//   MeasureType value = NumericTraits<MeasureType>::Zero;
+//   this->AfterThreadedGetValue(value);
+
+//   return value;
+
+// } // end GetValueFull()
+
 
 /**
  * ******************* ThreadedGetValue *******************
@@ -316,7 +356,7 @@ void
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValue(ThreadIdType threadId)
 {
   /** Get a handle to the sample container. */
-  ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
+  ImageSampleContainerPointer sampleContainer = this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Sampler;
   const unsigned long         sampleContainerSize = sampleContainer->Size();
 
   /** Get the samples for this thread. */
@@ -405,6 +445,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
 
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted = 0;
+    this->m_GetValueAndDerivativePerThreadVariables[i].st_Sampler = this->GetImageSampler()->GetOutput();
   }
 
   /** Check if enough samples were valid. */
