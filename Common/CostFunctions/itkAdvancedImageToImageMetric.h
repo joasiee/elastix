@@ -343,7 +343,7 @@ protected:
    */
   mutable ImageSamplerPointer              m_ImageSampler;
   mutable std::vector<ImageSamplerPointer> m_SubfunctionImageSamplers;
-  double                                   m_SamplingPercentage{ 0.3 };
+  double                                   m_SamplingPercentage{ 0.01 };
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear;

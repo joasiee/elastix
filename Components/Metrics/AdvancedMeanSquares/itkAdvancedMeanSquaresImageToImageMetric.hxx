@@ -352,8 +352,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   }
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
-  this->m_CurrentSubSampler = this->m_SubfunctionImageSamplers[fosIndex].GetPointer();
-  this->LaunchGetValueThreaderCallback();
+  for (int samplerIndex : this->m_BSplinePointsRegions[fosIndex])
+  {
+    this->m_CurrentSubSampler = this->m_SubfunctionImageSamplers[samplerIndex].GetPointer();
+    this->LaunchGetValueThreaderCallback();
+  }
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
@@ -453,8 +456,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
   const ThreadIdType numberOfThreads = Self::GetNumberOfWorkUnits();
 
   /** Accumulate the number of pixels. */
-  this->m_NumberOfPixelsCounted = this->m_GetValueAndDerivativePerThreadVariables[0].st_NumberOfPixelsCounted;
-  for (ThreadIdType i = 1; i < numberOfThreads; ++i)
+  this->m_NumberOfPixelsCounted = 0;
+  for (ThreadIdType i = 0; i < numberOfThreads; ++i)
   {
     this->m_NumberOfPixelsCounted += this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted;
 

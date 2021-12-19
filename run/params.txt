@@ -13,7 +13,7 @@
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 (Interpolator "BSplineInterpolator")
 (Metric "AdvancedMeanSquares")
-(Optimizer "AdaptiveStochasticGradientDescent") // AdaptiveStochasticGradientDescent
+(Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
 (Transform "BSplineTransform")
@@ -62,7 +62,7 @@
 
 //Number of spatial samples used to compute the mutual information in each resolution level:
 (ImageSampler "RandomCoordinate")
-(NumberOfSpatialSamples 5000)
+(NumberOfSpatialSamples 8000)
 (NewSamplesEveryIteration "true")
 (UseRandomSampleRegion "false")
 

@@ -981,7 +981,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   ImageSamplerPointer base = this->GetImageSampler();
   this->SetUseImageSampler(false);
   int n_cpoints = this->m_BSplineFOSRegions.size();
-  this->m_SubfunctionImageSamplers.resize(n_cpoints);
+  this->m_SubfunctionImageSamplers.reserve(n_cpoints);
   for (int i = 0; i < n_cpoints; ++i)
   {
     ImageSamplerPointer              subfunctionSampler = base->Clone();

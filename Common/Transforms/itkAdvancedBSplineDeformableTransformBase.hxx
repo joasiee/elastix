@@ -612,7 +612,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
   regions.clear();
   points.clear();
   regions.resize(coeffRegionCropped.GetNumberOfPixels());
-  points.resize(num_points);
+  points.resize(length);
 
   // iterate over these control points and calculate fixed image pixel region
   ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(coefficientImage, coeffRegionCropped);
@@ -639,16 +639,13 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
   }
 
   // assign fixed image regions to control points which affect them.
-  std::vector<bool> pointAdded(num_points, false);
+  std::vector<bool> pointAdded(regions.size(), false);
   for (j = 0; j < (unsigned)length; ++j)
   {
+    std::fill(pointAdded.begin(), pointAdded.end(), false);
     for (i = 0; i < (unsigned)set_length[j]; ++i)
     {
       int cpoint = (sets[j][i] % num_points);
-      if (pointAdded[cpoint])
-        continue;
-      pointAdded[cpoint] = true;
-
       ImageIndexType p = coefficientImage->ComputeIndex(cpoint);
 
       ImageIndexType lower, upper;
@@ -671,7 +668,12 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
                    ? imageIterator.GetIndex()[2] * (coeffRegion.GetSize(0) * 3 + coeffRegion.GetSize(1) * 3 - 9)
                    : 0; // only if grid is 3D.
         offset -= delta;
-        points[cpoint].push_back(offset);
+        if (!pointAdded[offset])
+        {
+          points[j].push_back(offset);
+          pointAdded[offset] = true;
+        }
+
         ++imageIterator;
       }
     }
