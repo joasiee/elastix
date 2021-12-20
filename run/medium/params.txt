@@ -1,0 +1,76 @@
+// ********** Image Types
+
+(FixedInternalImagePixelType "float")
+(MovingInternalImagePixelType "float")
+
+
+// ********** Components
+
+(Registration "MultiResolutionRegistration")
+(FixedImagePyramid "FixedSmoothingImagePyramid")
+(MovingImagePyramid "MovingSmoothingImagePyramid")
+(Interpolator "BSplineInterpolator")
+(Metric "AdvancedMeanSquares")
+(Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
+(ResampleInterpolator "FinalBSplineInterpolator")
+(Resampler "DefaultResampler")
+(Transform "BSplineTransform")
+
+
+// ********** Pyramid
+
+// Total number of resolutions
+(NumberOfResolutions 2)
+(ImagePyramidSchedule 4 1)
+
+
+// ********** Transform
+
+(FinalGridSpacingInPhysicalUnits 20.0)
+(GridSpacingSchedule 4.0 1.0)
+(HowToCombineTransforms "Compose")
+(UseDirectionCosines "true")
+
+
+// ********** Optimizer
+
+(MaximumNumberOfIterations 10)
+(PartialEvaluations "true")
+(BasePopulationSize 40)
+
+(AutomaticParameterEstimation "true")
+(UseAdaptiveStepSizes "true")
+(ASGDParameterEstimationMethod "Original")
+
+
+// ********** Metric
+
+
+// ********** Several
+
+(WriteTransformParametersEachIteration "false")
+(WriteTransformParametersEachResolution "false")
+(WriteResultImageAfterEachResolution "false")
+(WriteResultImage "false")
+(ShowExactMetricValue "false")
+(ErodeMask "true")
+
+
+// ********** ImageSampler
+
+//Number of spatial samples used to compute the mutual information in each resolution level:
+(ImageSampler "Random")
+(NumberOfSpatialSamples 8000)
+(NewSamplesEveryIteration "true")
+
+
+// ********** Interpolator and Resampler
+
+//Order of B-Spline interpolation used in each resolution level:
+(BSplineInterpolationOrder 1)
+
+//Order of B-Spline interpolation used for applying the final deformation:
+(FinalBSplineInterpolationOrder 3)
+
+//Default pixel value for pixels that come from outside the picture:
+(DefaultPixelValue 0)

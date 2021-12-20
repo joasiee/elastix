@@ -1,9 +1,7 @@
 // ********** Image Types
 
 (FixedInternalImagePixelType "float")
-(FixedImageDimension 3)
 (MovingInternalImagePixelType "float")
-(MovingImageDimension 3)
 
 
 // ********** Components
@@ -22,22 +20,22 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 3)
-(ImagePyramidSchedule 8 8 4 4 4 2 2 2 1)
+(NumberOfResolutions 2)
+(ImagePyramidSchedule 8 4)
 
 
 // ********** Transform
 
-(FinalGridSpacingInPhysicalUnits 20.0)
-(GridSpacingSchedule 4.0 2.0 1.0)
+(FinalGridSpacingInPhysicalUnits 50.0)
+(GridSpacingSchedule 2.0 1.0)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 10)
-(PartialEvaluations "false")
+(MaximumNumberOfIterations 2)
+(PartialEvaluations "true")
 (BasePopulationSize 40)
 
 (AutomaticParameterEstimation "true")
@@ -61,10 +59,9 @@
 // ********** ImageSampler
 
 //Number of spatial samples used to compute the mutual information in each resolution level:
-(ImageSampler "RandomCoordinate")
+(ImageSampler "Random")
 (NumberOfSpatialSamples 8000)
 (NewSamplesEveryIteration "true")
-(UseRandomSampleRegion "false")
 
 
 // ********** Interpolator and Resampler

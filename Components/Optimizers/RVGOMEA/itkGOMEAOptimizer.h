@@ -131,7 +131,6 @@ protected:
   ezilaitini(void);
 
   int               m_NumberOfEvaluations{ 0 };
-  unsigned long     m_NumberOfSubfunctionEvaluations{ 0L };
   int               m_CurrentIteration{ 0 };
   StopConditionType m_StopCondition{ Unknown };
   MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
@@ -222,11 +221,7 @@ private:
   void
   costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val);
   void
-  costFunctionEvaluation(ParametersType * parameters,
-                         MeasureType *    obj_val,
-                         MeasureType      obj_val_previous,
-                         MeasureType      obj_val_previous_partial,
-                         int              setIndex);
+  costFunctionEvaluation(int population_index, int individual_index, int fos_index, MeasureType * obj_val, MeasureType * obj_val_partial);
   void
   applyDistributionMultipliersToAllPopulations(void);
   void
@@ -279,12 +274,13 @@ private:
   template <typename T>
   using Vector2D = std::vector<std::vector<T>>;
 
-  Vector1D<ParametersType> mean_vectors;
-  Vector1D<ParametersType> mean_shift_vector;
-  Vector2D<MeasureType>    objective_values;
-  Vector2D<MeasureType>    objective_values_selections;
-  Vector2D<ParametersType> populations;
-  Vector2D<ParametersType> selections;
+  Vector1D<ParametersType>        mean_vectors;
+  Vector1D<ParametersType>        mean_shift_vector;
+  Vector2D<MeasureType>           objective_values;
+  Vector1D<Vector2D<MeasureType>> objective_values_partial;
+  Vector2D<MeasureType>           objective_values_selections;
+  Vector2D<ParametersType>        populations;
+  Vector2D<ParametersType>        selections;
 
   double m_Tau{ 0.35 };
   double m_DistributionMultiplierDecrease{ 0.9 };
