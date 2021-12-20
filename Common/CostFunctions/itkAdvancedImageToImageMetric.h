@@ -341,9 +341,11 @@ protected:
   /** Variables for ImageSampler support. m_ImageSampler is mutable,
    * because it is changed in the GetValue(), etc, which are const functions.
    */
-  mutable ImageSamplerPointer              m_ImageSampler;
-  mutable std::vector<ImageSamplerPointer> m_SubfunctionImageSamplers;
-  double                                   m_SamplingPercentage{ 0.01 };
+  typedef typename ImageSampleContainerType::Element ImageSampleType;
+  mutable ImageSamplerPointer                        m_ImageSampler;
+  mutable ImageSampleContainerPointer                m_CurrentSampleContainer;
+  std::vector<ImageSampleContainerPointer>           m_FOSImageSamples;
+  double                                             m_SamplingPercentage{ 0.01 };
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear;
@@ -420,7 +422,6 @@ protected:
   bool m_UseMetricSingleThreaded;
   bool m_UseMultiThread;
   bool m_UseOpenMP;
-  mutable ImageSamplerType * m_CurrentSubSampler;
 
   /** Helper structs that multi-threads the computation of
    * the metric derivative using ITK threads.
@@ -458,9 +459,9 @@ protected:
   // test per thread struct with padding and alignment
   struct GetValueAndDerivativePerThreadStruct
   {
-    SizeValueType               st_NumberOfPixelsCounted;
-    MeasureType                 st_Value;
-    DerivativeType              st_Derivative;
+    SizeValueType  st_NumberOfPixelsCounted;
+    MeasureType    st_Value;
+    DerivativeType st_Derivative;
   };
   itkPadStruct(ITK_CACHE_LINE_ALIGNMENT,
                GetValueAndDerivativePerThreadStruct,

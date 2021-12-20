@@ -224,8 +224,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParame
       NumericTraits<DerivativeValueType>::ZeroValue());
   }
 
-  this->m_CurrentSubSampler = this->GetImageSampler();
-
 } // end InitializeThreadingParameters()
 
 
@@ -977,12 +975,18 @@ void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets, int * set_length, int length)
 {
   Superclass::InitPartialEvaluations(sets, set_length, length);
+  int i;
+  this->m_FOSImageSamples.reserve(length + 1);
+  this->m_FOSImageSamples.push_back(ImageSampleContainerType::New());
+  ImageSampleContainerType & a = *(this->m_FOSImageSamples[0]);
 
+  // init fos region samplers
   ImageSamplerPointer base = this->GetImageSampler();
   this->SetUseImageSampler(false);
-  int n_cpoints = this->m_BSplineFOSRegions.size();
-  this->m_SubfunctionImageSamplers.reserve(n_cpoints);
-  for (int i = 0; i < n_cpoints; ++i)
+  std::vector<ImageSamplerPointer> samplers;
+  int                              n_cpoints = this->m_BSplineFOSRegions.size();
+  samplers.reserve(n_cpoints);
+  for (i = 0; i < n_cpoints; ++i)
   {
     ImageSamplerPointer              subfunctionSampler = base->Clone();
     ImageSamplerInputImageRegionType region = this->m_BSplineFOSRegions[i];
@@ -990,7 +994,22 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     subfunctionSampler->SetInputImageRegion(region);
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
     subfunctionSampler->Update();
-    this->m_SubfunctionImageSamplers.push_back(subfunctionSampler);
+    samplers.push_back(subfunctionSampler);
+
+    ImageSampleContainerType & b = *(subfunctionSampler->GetOutput());
+    a.insert(a.end(), b.begin(), b.end());
+  }
+
+  // init per fos set container of samples
+  for (i = 0; i < length; ++i)
+  {
+    this->m_FOSImageSamples.push_back(ImageSampleContainerType::New());
+    ImageSampleContainerType & a = *(this->m_FOSImageSamples[i + 1]);
+    for (const int & cpoint : this->m_BSplinePointsRegions[i])
+    {
+      ImageSampleContainerType & b = *(samplers[cpoint]->GetOutput());
+      a.insert(a.end(), b.begin(), b.end());
+    }
   }
 }
 

@@ -295,6 +295,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
    */
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
+  this->m_CurrentSampleContainer = this->GetImageSampler()->GetOutput();
+
   /** Launch multi-threading metric */
   this->LaunchGetValueThreaderCallback();
 
@@ -324,11 +326,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
-  for (ImageSamplerPointer sampler : this->m_SubfunctionImageSamplers)
-  {
-    this->m_CurrentSubSampler = sampler.GetPointer();
-    this->LaunchGetValueThreaderCallback();
-  }
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
+
+  this->LaunchGetValueThreaderCallback();
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
@@ -352,11 +352,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   }
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
-  for (int samplerIndex : this->m_BSplinePointsRegions[fosIndex])
-  {
-    this->m_CurrentSubSampler = this->m_SubfunctionImageSamplers[samplerIndex].GetPointer();
-    this->LaunchGetValueThreaderCallback();
-  }
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex + 1];
+
+  this->LaunchGetValueThreaderCallback();
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
@@ -374,7 +372,7 @@ void
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValue(ThreadIdType threadId)
 {
   /** Get a handle to the sample container. */
-  ImageSampleContainerPointer sampleContainer = this->m_CurrentSubSampler->GetOutput();
+  ImageSampleContainerPointer & sampleContainer = this->m_CurrentSampleContainer;
   const unsigned long         sampleContainerSize = sampleContainer->Size();
 
   /** Get the samples for this thread. */

@@ -37,7 +37,7 @@
 // ********** Optimizer
 
 (MaximumNumberOfIterations 10)
-(PartialEvaluations "true")
+(PartialEvaluations "false")
 (BasePopulationSize 40)
 
 (AutomaticParameterEstimation "true")
