@@ -600,6 +600,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
 {
   unsigned int i, j, d;
   ImagePointer coefficientImage = this->m_CoefficientImages[0];
+  SpacingType  coeffOffset;
   const int    num_points = this->GetNumberOfParameters() / SpaceDimension;
   RegionType   coeffRegion = coefficientImage->GetLargestPossibleRegion();
   RegionType   coeffRegionCropped = coeffRegion;
@@ -608,6 +609,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
   for (d = 0; d < SpaceDimension; ++d)
   {
     coeffRegionCropped.SetSize(d, coeffRegion.GetSize(d) - 3);
+    coeffOffset[d] = coefficientImage->GetOrigin()[d] + coefficientImage->GetSpacing()[d];
   }
   regions.clear();
   points.clear();
@@ -623,8 +625,8 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
     for (d = 0; d < SpaceDimension; ++d)
     {
       double spacing = coefficientImage->GetSpacing()[d] / fixedImageSpacing[d];
-      imageIndex[d] = ceil(coeffImageIterator.GetIndex()[d] * spacing);
-      int sizing = ceil((coeffImageIterator.GetIndex()[d] + 1) * spacing);
+      imageIndex[d] = std::max(ceil(coeffImageIterator.GetIndex()[d] * spacing + coeffOffset[d]), 0.0);
+      int sizing = ceil((coeffImageIterator.GetIndex()[d] + 1) * spacing + coeffOffset[d]);
 
       // edge case when outer control points are reached, no longer have to exclude pixels of next region.
       if (coeffImageIterator.GetIndex()[d] == static_cast<int>(coeffRegion.GetSize(d) - 4))
@@ -645,7 +647,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
     std::fill(pointAdded.begin(), pointAdded.end(), false);
     for (i = 0; i < (unsigned)set_length[j]; ++i)
     {
-      int cpoint = (sets[j][i] % num_points);
+      int            cpoint = (sets[j][i] % num_points);
       ImageIndexType p = coefficientImage->ComputeIndex(cpoint);
 
       ImageIndexType lower, upper;

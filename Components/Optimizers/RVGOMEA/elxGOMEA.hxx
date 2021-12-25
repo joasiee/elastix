@@ -10,11 +10,11 @@ template <class TElastix>
 void
 GOMEA<TElastix>::BeforeRegistration(void)
 {
-  /** Add target cells to xout[IterationInfo.*/
   this->AddTargetCellToIterationInfo("2:Metric");
-
-  /** Format the metric and stepsize as floats */
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
+  
+  this->AddTargetCellToIterationInfo("3:BufferExceptions");
+  this->GetIterationInfoAt("3:BufferExceptions") << std::showpoint << std::fixed;
 }
 
 template <class TElastix>
@@ -22,7 +22,8 @@ void
 GOMEA<TElastix>::AfterEachIteration(void)
 {
   /** Print some information. */
-  this->GetIterationInfoAt("2:Metric") << this->GetCurrentValue();
+  this->GetIterationInfoAt("2:Metric") << this->m_CurrentValue;
+  this->GetIterationInfoAt("3:BufferExceptions") << this->m_MovingImageBufferMisses;
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
@@ -67,6 +68,11 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   int basePopulationSize = 0;
   this->m_Configuration->ReadParameter(basePopulationSize, "BasePopulationSize", this->GetComponentLabel(), level, 0);
   this->SetBasePopulationSize(basePopulationSize);
+
+  /** Set ImageDimension */
+  int imageDimension = 0;
+  this->m_Configuration->ReadParameter(imageDimension, "ImageDimension", this->GetComponentLabel(), level, 0);
+  this->SetImageDimension(imageDimension);
 
   /** Set MaxNumberOfPopulations */
   int maxNumberOfPopulations = 1;

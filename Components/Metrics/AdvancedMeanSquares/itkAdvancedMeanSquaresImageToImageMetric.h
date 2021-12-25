@@ -193,6 +193,9 @@ public:
    */
   itkSetMacro(UseOpenMP, bool);
 
+  itkGetConstReferenceMacro(MovingImageBufferMisses, unsigned long);
+
+
 protected:
   AdvancedMeanSquaresImageToImageMetric();
   ~AdvancedMeanSquaresImageToImageMetric() override = default;
@@ -261,10 +264,11 @@ private:
   void
   operator=(const Self &) = delete;
 
-  bool         m_UseNormalization;
-  double       m_SelfHessianSmoothingSigma;
-  double       m_SelfHessianNoiseRange;
-  unsigned int m_NumberOfSamplesForSelfHessian;
+  bool          m_UseNormalization;
+  double        m_SelfHessianSmoothingSigma;
+  double        m_SelfHessianNoiseRange;
+  unsigned int  m_NumberOfSamplesForSelfHessian;
+  mutable unsigned long m_MovingImageBufferMisses{ 0L };
 };
 
 } // end namespace itk

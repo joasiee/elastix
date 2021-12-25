@@ -45,7 +45,7 @@ build/
 .devcontainer/devcontainer.json
 
 # debug run output
-run/dir
+run/**/dir
 
 # gomea random seed
 random_seed.dat

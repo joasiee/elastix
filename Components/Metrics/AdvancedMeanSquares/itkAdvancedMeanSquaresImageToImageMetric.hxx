@@ -202,7 +202,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueSingle
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
   /** Get a handle to the sample container. */
-  ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
+  ImageSampleContainerPointer & sampleContainer = this->m_CurrentSampleContainer;
 
   /** Create iterator over the sample container. */
   typename ImageSampleContainerType::ConstIterator fiter;
@@ -332,6 +332,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
+  // std::cout << "Missing pixels: " << this->m_CurrentSampleContainer->Size() - this->m_NumberOfPixelsCounted << std::endl;
 
   return value;
 } // end GetValueFull()
@@ -373,7 +374,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
 {
   /** Get a handle to the sample container. */
   ImageSampleContainerPointer & sampleContainer = this->m_CurrentSampleContainer;
-  const unsigned long         sampleContainerSize = sampleContainer->Size();
+  const unsigned long           sampleContainerSize = sampleContainer->Size();
 
   /** Get the samples for this thread. */
   const unsigned long nrOfSamplesPerThreads = static_cast<unsigned long>(
@@ -396,51 +397,25 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
   unsigned long numberOfPixelsCounted = 0;
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
-  /** Loop over the fixed image to calculate the mean squares. */
+  /** Loop over the fixed image samples to calculate the mean squares. */
   for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
-    RealType                    movingImageValue;
+    RealType                    movingImageValue = NumericTraits<RealType>::Zero;
     MovingImagePointType        mappedPoint;
-
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
-
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint); // thread-safe?
-    }
-
-    /** Compute the moving image value M(T(x)) and check if
-     * the point is inside the moving image buffer.
-     */
-    if (sampleOk)
-    {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
-    }
-
-    if (sampleOk)
-    {
-      numberOfPixelsCounted++;
-
-      /** Get the fixed image value. */
-      const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
-
-      /** The difference squared. */
-      const RealType diff = movingImageValue - fixedImageValue;
-      measure += diff * diff;
-
-    } // end if sampleOk
-
-  } // end for loop over the image sample container
+    this->TransformPoint(fixedPoint, mappedPoint);
+    const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
+    this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+    const RealType diff = movingImageValue - fixedImageValue;
+    measure += diff * diff;
+    numberOfPixelsCounted++;
+  }
 
   /** Only update these variables at the end to prevent unnecessary "false sharing". */
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted += numberOfPixelsCounted;
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value += measure;
-
-} // end ThreadedGetValue()
+  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
+  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value = measure;
+}
 
 
 /**
@@ -464,12 +439,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
   }
 
   /** Check if enough samples were valid. */
-  ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
-
-  /** The normalization factor. */
-  DerivativeValueType normal_sum =
-    this->m_NormalizationFactor / static_cast<DerivativeValueType>(this->m_NumberOfPixelsCounted);
+  this->CheckNumberOfSamples(this->m_CurrentSampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** Accumulate values. */
   value = NumericTraits<MeasureType>::Zero;
@@ -480,7 +450,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Value = NumericTraits<MeasureType>::Zero;
   }
-  value *= normal_sum;
 
 } // end AfterThreadedGetValue()
 
