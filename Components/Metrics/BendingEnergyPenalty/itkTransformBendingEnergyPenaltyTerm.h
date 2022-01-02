@@ -127,6 +127,9 @@ public:
   MeasureType
   GetValue(const ParametersType & parameters) const override;
 
+  virtual MeasureType
+  GetValueSingleThreaded(const ParametersType & parameters) const;
+
   /** Get the penalty term derivative. */
   void
   GetDerivative(const ParametersType & parameters, DerivativeType & derivative) const override;

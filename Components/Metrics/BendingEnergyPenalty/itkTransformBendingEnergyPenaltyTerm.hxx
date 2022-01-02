@@ -43,14 +43,33 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::TransformBendingEne
 
 } // end Constructor
 
+template <class TFixedImage, class TScalarType>
+typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
+TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const
+{
+  if (!this->m_UseMultiThread)
+  {
+    return this->GetValueSingleThreaded(parameters);
+  }
+
+  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
+  {
+    return static_cast<MeasureType>(measure);
+  }
+
+  this->BeforeThreadedGetValueAndDerivative(parameters);
+  this->m_CurrentSampleContainer = this->GetImageSampler()->GetOutput();
+}
+
 
 /**
- * ****************** GetValue *******************************
+ * ****************** GetValueSingleThreaded *******************************
  */
 
 template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const
+TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValueSingleThreaded(
+  const ParametersType & parameters) const
 {
   /** Initialize some variables. */
   this->m_NumberOfPixelsCounted = 0;
@@ -772,8 +791,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
 
             /** Go to next element */
             for (; (rowIt != rowVector.end()) && ((*rowIt).first < nmB); ++rowIt)
-            {
-            }
+            {}
 
             if ((rowIt == rowVector.end()) || ((*rowIt).first != nmB))
             {
