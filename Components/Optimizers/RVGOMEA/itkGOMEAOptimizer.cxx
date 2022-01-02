@@ -1246,8 +1246,8 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
     MeasureType obj_val_new = this->GetValue(populations[population_index][individual_index], fos_index);
     *obj_val = objective_values[population_index][individual_index] - (*obj_val_partial) + obj_val_new;
     MeasureType obj_val_full = this->GetValueFull(populations[population_index][individual_index]);
-    if (abs(obj_val_full - *obj_val) > 1e-5)
-      std::cout << "WTF" << std::endl;
+    // if (abs(obj_val_full - *obj_val) > 1e-5)
+    //   std::cout << "WTF" << std::endl;
   }
   catch (ExceptionObject & err)
   {
@@ -1477,7 +1477,7 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
                                                   short apply_AMS)
 {
   int     j, m, im, *indices, num_indices, *touched_indices, num_touched_indices;
-  double *result, *individual_backup, obj_val, obj_val_partial, obj_val_old, delta_AMS, shrink_factor;
+  double *result, *individual_backup, obj_val, obj_val_partial, delta_AMS, shrink_factor;
   short   improvement, any_improvement, out_of_range;
 
   delta_AMS = 2.0;
@@ -1489,7 +1489,6 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
   touched_indices = indices;
   individual_backup = (double *)Malloc(num_touched_indices * sizeof(double));
 
-  obj_val_old = this->GetValueFull(populations[population_index][individual_index]);
   try
   {
     obj_val_partial =

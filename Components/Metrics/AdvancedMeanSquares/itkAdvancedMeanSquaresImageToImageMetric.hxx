@@ -332,7 +332,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
-  // std::cout << "Missing pixels: " << this->m_CurrentSampleContainer->Size() - this->m_NumberOfPixelsCounted << std::endl;
+  // std::cout << "Missing pixels: " << this->m_CurrentSampleContainer->Size() - this->m_NumberOfPixelsCounted <<
+  // std::endl;
 
   return value;
 } // end GetValueFull()
@@ -359,6 +360,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
+  // value /= this->m_FOSImageSamples[0]->Size() / this->m_CurrentSampleContainer->Size();
 
   return value;
 } // end GetValuePartial()
@@ -450,7 +452,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Value = NumericTraits<MeasureType>::Zero;
   }
-
+  value /= this->m_FOSImageSamples[0]->Size();
 } // end AfterThreadedGetValue()
 
 

@@ -26,7 +26,7 @@
 
 // ********** Transform
 
-(FinalGridSpacingInPhysicalUnits 25.0)
+(FinalGridSpacingInPhysicalUnits 10.0)
 (GridSpacingSchedule 1.0)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
@@ -34,7 +34,7 @@
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 15)
+(MaximumNumberOfIterations 10)
 (PartialEvaluations "true")
 (BasePopulationSize 30)
 (FosElementSize -6)
