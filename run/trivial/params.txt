@@ -10,7 +10,7 @@
 (FixedImagePyramid "FixedSmoothingImagePyramid")
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 (Interpolator "LinearInterpolator")
-(Metric "AdvancedMeanSquares")
+(Metric "TransformBendingEnergyPenalty")
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
@@ -26,7 +26,7 @@
 
 // ********** Transform
 
-(FinalGridSpacingInPhysicalUnits 25.0)
+(FinalGridSpacingInPhysicalUnits 20.0)
 (GridSpacingSchedule 1.0)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
@@ -34,12 +34,13 @@
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 15)
+(MaximumNumberOfIterations 8)
 (PartialEvaluations "true")
-(BasePopulationSize 20)
-(Tau 0.35)
 (FosElementSize -6)
-(ImageDimension 2)
+(BasePopulationSize 5)
+(Tau 0.5)
+
+
 
 (AutomaticParameterEstimation "true")
 (UseAdaptiveStepSizes "true")

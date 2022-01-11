@@ -317,6 +317,8 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
   const TransformParametersType & parameters) const
 {
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
+
   /** Option for now to still use the single threaded code. */
   if (!this->m_UseMultiThread)
   {
@@ -325,15 +327,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
   }
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
-
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
-
   this->LaunchGetValueThreaderCallback();
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
-  // std::cout << "Missing pixels: " << this->m_CurrentSampleContainer->Size() - this->m_NumberOfPixelsCounted <<
-  // std::endl;
 
   return value;
 } // end GetValueFull()
@@ -347,20 +344,19 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
                                                                            const int fosIndex) const
 {
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex + 1];
+  
   /** Option for now to still use the single threaded code. */
   if (!this->m_UseMultiThread)
   {
     return this->GetValueSingleThreaded(parameters);
   }
   this->BeforeThreadedGetValueAndDerivative(parameters);
-
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex + 1];
-
   this->LaunchGetValueThreaderCallback();
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
-  // value /= this->m_FOSImageSamples[0]->Size() / this->m_CurrentSampleContainer->Size();
+  value /= static_cast<RealType>(this->m_FOSImageSamples[0]->Size()) / static_cast<RealType>(this->m_CurrentSampleContainer->Size());
 
   return value;
 } // end GetValuePartial()
@@ -452,7 +448,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Value = NumericTraits<MeasureType>::Zero;
   }
-  value /= this->m_FOSImageSamples[0]->Size();
+  value /= static_cast<RealType>(this->m_NumberOfPixelsCounted);
 } // end AfterThreadedGetValue()
 
 

@@ -10,6 +10,8 @@ template <class TElastix>
 void
 GOMEA<TElastix>::BeforeRegistration(void)
 {
+  this->SetImageDimension(this->GetElastix()->GetFixedImage()->GetImageDimension());
+
   this->AddTargetCellToIterationInfo("2:Metric");
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
   
@@ -68,11 +70,6 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   int basePopulationSize = 0;
   this->m_Configuration->ReadParameter(basePopulationSize, "BasePopulationSize", this->GetComponentLabel(), level, 0);
   this->SetBasePopulationSize(basePopulationSize);
-
-  /** Set ImageDimension */
-  int imageDimension = 0;
-  this->m_Configuration->ReadParameter(imageDimension, "ImageDimension", this->GetComponentLabel(), level, 0);
-  this->SetImageDimension(imageDimension);
 
   /** Set MaxNumberOfPopulations */
   int maxNumberOfPopulations = 1;
