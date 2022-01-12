@@ -984,6 +984,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   // init fos region samplers
   ImageSamplerPointer base = this->GetImageSampler();
   this->SetUseImageSampler(false);
+  ImageSampleContainerType & a2 = *(base->GetOutput());
   std::vector<ImageSamplerPointer> samplers;
   int                              n_cpoints = this->m_BSplineFOSRegions.size();
   samplers.reserve(n_cpoints);
@@ -1001,6 +1002,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
 
     ImageSampleContainerType & b = *(subfunctionSampler->GetOutput());
     a.insert(a.end(), b.begin(), b.end());
+    a2.insert(a2.end(), b.begin(), b.end());
   }
   this->SetNumberOfFixedImageSamples(total_samples);
 

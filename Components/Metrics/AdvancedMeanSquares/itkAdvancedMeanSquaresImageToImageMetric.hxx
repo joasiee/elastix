@@ -275,6 +275,8 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const TransformParametersType & parameters) const
 {
+  this->m_CurrentSampleContainer = this->GetImageSampler()->GetOutput();
+
   /** Option for now to still use the single threaded code. */
   if (!this->m_UseMultiThread)
   {
@@ -294,8 +296,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
    * - Now you can call GetValue multi-threaded.
    */
   this->BeforeThreadedGetValueAndDerivative(parameters);
-
-  this->m_CurrentSampleContainer = this->GetImageSampler()->GetOutput();
 
   /** Launch multi-threading metric */
   this->LaunchGetValueThreaderCallback();
