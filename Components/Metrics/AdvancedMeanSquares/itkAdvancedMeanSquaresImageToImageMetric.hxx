@@ -308,32 +308,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
 } // end GetValue()
 
-/**
- * ******************* GetValueFull *******************
- */
-
-template <class TFixedImage, class TMovingImage>
-typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueFull(
-  const TransformParametersType & parameters) const
-{
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
-
-  /** Option for now to still use the single threaded code. */
-  if (!this->m_UseMultiThread)
-  {
-    itkWarningMacro(<< Self::GetNameOfClass() << ": Missing single thread partial evaluations implementation.");
-    return this->GetValueSingleThreaded(parameters);
-  }
-
-  this->BeforeThreadedGetValueAndDerivative(parameters);
-  this->LaunchGetValueThreaderCallback();
-
-  MeasureType value = NumericTraits<MeasureType>::Zero;
-  this->AfterThreadedGetValue(value);
-
-  return value;
-} // end GetValueFull()
 
 /**
  * ******************* GetValuePartial *******************
@@ -344,8 +318,8 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
                                                                            const int fosIndex) const
 {
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex + 1];
-  
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex];
+
   /** Option for now to still use the single threaded code. */
   if (!this->m_UseMultiThread)
   {
@@ -356,7 +330,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
-  value /= static_cast<RealType>(this->m_FOSImageSamples[0]->Size()) / static_cast<RealType>(this->m_CurrentSampleContainer->Size());
+  value /= static_cast<RealType>(this->GetNumberOfFixedImageSamples()) /
+           static_cast<RealType>(this->m_CurrentSampleContainer->Size());
 
   return value;
 } // end GetValuePartial()
@@ -437,7 +412,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
   }
 
   /** Check if enough samples were valid. */
-  this->CheckNumberOfSamples(this->m_CurrentSampleContainer->Size(), this->m_NumberOfPixelsCounted);
+  // this->CheckNumberOfSamples(this->m_CurrentSampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** Accumulate values. */
   value = NumericTraits<MeasureType>::Zero;
@@ -448,6 +423,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Value = NumericTraits<MeasureType>::Zero;
   }
+
   value /= static_cast<RealType>(this->m_NumberOfPixelsCounted);
 } // end AfterThreadedGetValue()
 

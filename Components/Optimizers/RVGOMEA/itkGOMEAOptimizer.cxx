@@ -1252,7 +1252,6 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
   catch (ExceptionObject & err)
   {
     ++m_MovingImageBufferMisses;
-    *obj_val = NumericTraits<MeasureType>::max();
   }
 
   if (*obj_val < m_CurrentValue)

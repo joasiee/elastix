@@ -977,18 +977,15 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   Superclass::InitPartialEvaluations(sets, set_length, length);
   int i;
   this->m_FOSImageSamples.clear();
-  this->m_FOSImageSamples.reserve(length + 1);
-  this->m_FOSImageSamples.push_back(ImageSampleContainerType::New());
-  ImageSampleContainerType & a = *(this->m_FOSImageSamples[0]);
+  this->m_FOSImageSamples.reserve(length);
 
   // init fos region samplers
   ImageSamplerPointer base = this->GetImageSampler();
   this->SetUseImageSampler(false);
-  ImageSampleContainerType & a2 = *(base->GetOutput());
+  ImageSampleContainerType & a = *(base->GetOutput());
   std::vector<ImageSamplerPointer> samplers;
   int                              n_cpoints = this->m_BSplineFOSRegions.size();
   samplers.reserve(n_cpoints);
-  unsigned long total_samples{0L};
   for (i = 0; i < n_cpoints; ++i)
   {
     ImageSamplerPointer              subfunctionSampler = base->Clone();
@@ -998,19 +995,17 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
     subfunctionSampler->Update();
     samplers.push_back(subfunctionSampler);
-    total_samples += subfunctionSampler->GetNumberOfSamples();
 
     ImageSampleContainerType & b = *(subfunctionSampler->GetOutput());
     a.insert(a.end(), b.begin(), b.end());
-    a2.insert(a2.end(), b.begin(), b.end());
   }
-  this->SetNumberOfFixedImageSamples(total_samples);
+  this->SetNumberOfFixedImageSamples(a.Size());
 
   // init per fos set container of samples
   for (i = 0; i < length; ++i)
   {
     this->m_FOSImageSamples.push_back(ImageSampleContainerType::New());
-    ImageSampleContainerType & a = *(this->m_FOSImageSamples[i + 1]);
+    ImageSampleContainerType & a = *(this->m_FOSImageSamples[i]);
     for (const int & cpoint : this->m_BSplinePointsRegions[i])
     {
       ImageSampleContainerType & b = *(samplers[cpoint]->GetOutput());
