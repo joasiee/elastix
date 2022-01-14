@@ -1210,15 +1210,7 @@ GOMEAOptimizer::evaluateCompletePopulation(int population_index)
 void
 GOMEAOptimizer::costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val)
 {
-  try
-  {
-    *obj_val = this->GetValue(*parameters);
-  }
-  catch (ExceptionObject & err)
-  {
-    ++m_MovingImageBufferMisses;
-    *obj_val = NumericTraits<MeasureType>::max();
-  }
+  *obj_val = this->GetValue(*parameters);
 
   if (*obj_val < m_CurrentValue)
   {
@@ -1241,18 +1233,12 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
     this->costFunctionEvaluation(&populations[population_index][individual_index], obj_val);
     return;
   }
-  try
-  {
-    MeasureType obj_val_new = this->GetValue(populations[population_index][individual_index], fos_index);
-    *obj_val = objective_values[population_index][individual_index] - (*obj_val_partial) + obj_val_new;
-    MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index]);
-    if (abs(obj_val_full - *obj_val) > 1e-5)
-      std::cout << "WTF" << std::endl;
-  }
-  catch (ExceptionObject & err)
-  {
-    ++m_MovingImageBufferMisses;
-  }
+
+  MeasureType obj_val_new = this->GetValue(populations[population_index][individual_index], fos_index);
+  *obj_val = objective_values[population_index][individual_index] - *obj_val_partial + obj_val_new;
+  MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index]);
+  if (abs(obj_val_full - *obj_val) > 1e-3)
+    std::cout << "WTF" << std::endl;
 
   if (*obj_val < m_CurrentValue)
   {
@@ -1488,16 +1474,8 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
   touched_indices = indices;
   individual_backup = (double *)Malloc(num_touched_indices * sizeof(double));
 
-  try
-  {
-    obj_val_partial =
-      m_PartialEvaluations ? this->GetValue(populations[population_index][individual_index], FOS_index) : 0.0;
-  }
-  catch (ExceptionObject & err)
-  {
-    ++m_MovingImageBufferMisses;
-    obj_val_partial = 0.0;
-  }
+  obj_val_partial =
+    m_PartialEvaluations ? this->GetValue(populations[population_index][individual_index], FOS_index) : 0.0;
 
   for (j = 0; j < num_touched_indices; j++)
     individual_backup[j] = populations[population_index][individual_index][touched_indices[j]];
@@ -1611,16 +1589,7 @@ GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_ind
     for (io = 0; io < linkage_model[population_index]->length; io++)
     {
       i = order[io];
-      try
-      {
-        obj_val_partial =
-          m_PartialEvaluations ? this->GetValue(populations[population_index][individual_index], i) : 0.0;
-      }
-      catch (ExceptionObject & err)
-      {
-        ++m_MovingImageBufferMisses;
-        obj_val_partial = 0.0;
-      }
+      obj_val_partial = m_PartialEvaluations ? this->GetValue(populations[population_index][individual_index], i) : 0.0;
       touched_indices = linkage_model[population_index]->sets[i];
       num_touched_indices = linkage_model[population_index]->set_length[i];
       FI_backup = (double *)Malloc(num_touched_indices * sizeof(double));
@@ -2005,6 +1974,7 @@ GOMEAOptimizer::runAllPopulations()
     }
 
     this->generationalStepAllPopulations();
+    this->GetValue(this->GetCurrentPosition()); // needed for correct multi metric iteration output
     m_CurrentIteration++;
     this->IterationWriteOutput();
     this->InvokeEvent(IterationEvent());

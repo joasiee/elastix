@@ -136,7 +136,6 @@ protected:
   MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
   unsigned int      m_NrOfParameters;
   int               m_ImageDimension;
-  unsigned long     m_MovingImageBufferMisses{ 0L };
 
 private:
   void

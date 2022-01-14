@@ -130,9 +130,6 @@ public:
   MeasureType
   GetValue(const ParametersType & parameters, const int fosIndex) const override;
 
-  MeasureType
-  GetValueFull(const ParametersType & parameters) const override;
-
   /** Get value for each thread. */
   inline void
   ThreadedGetValue(ThreadIdType threadID) override;

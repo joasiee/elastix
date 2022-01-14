@@ -411,6 +411,9 @@ public:
   void
   Initialize(void) override;
 
+  void
+  InitPartialEvaluations(int ** sets, int * set_length, int length) override;
+
   /**
    * Combine all sub metrics by adding them.
    */
@@ -418,6 +421,9 @@ public:
   /** The GetValue()-method. */
   MeasureType
   GetValue(const ParametersType & parameters) const override;
+
+  MeasureType
+  GetValue(const ParametersType & parameters, const int fosIndex) const override;
 
   /** The GetDerivative()-method. */
   void

@@ -18,6 +18,8 @@
 #ifndef itkAdvancedMeanSquaresImageToImageMetric_h
 #define itkAdvancedMeanSquaresImageToImageMetric_h
 
+#include "algorithm"
+
 #include "itkAdvancedImageToImageMetric.h"
 
 #include "itkSmoothingRecursiveGaussianImageFilter.h"   // needed for SelfHessian

@@ -253,6 +253,9 @@ public:
   itkSetMacro(MovingImageDerivativeScales, MovingImageDerivativeScalesType);
   itkGetConstReferenceMacro(MovingImageDerivativeScales, MovingImageDerivativeScalesType);
 
+  itkSetMacro(SamplingPercentage, double);
+  itkGetConstReferenceMacro(SamplingPercentage, double);
+
   /** Initialize the Metric by making sure that all the components
    *  are present and plugged together correctly.
    * \li Call the superclass' implementation

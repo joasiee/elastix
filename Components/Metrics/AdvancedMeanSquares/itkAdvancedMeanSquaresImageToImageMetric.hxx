@@ -379,7 +379,21 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
     MovingImagePointType        mappedPoint;
     this->TransformPoint(fixedPoint, mappedPoint);
     const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
-    this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+    
+    if (!(this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr)))
+    {
+      const typename MovingImageType::Superclass &   imageBase = *(this->GetMovingImage());
+      MovingImageIndexType                           index = imageBase.TransformPhysicalPointToIndex(mappedPoint);
+      const typename MovingImageRegionType::SizeType regionSize = imageBase.GetLargestPossibleRegion().GetSize();
+      for (int d = 0; d < MovingImageDimension; ++d)
+      {
+        const long lo = 0L;
+        const long hi = static_cast<long>(regionSize[d] - 1);
+        index[d] = std::clamp(static_cast<long>(index[d]), lo, hi);
+      }
+      movingImageValue = this->GetMovingImage()->GetPixel(index);
+    }
+
     const RealType diff = movingImageValue - fixedImageValue;
     measure += diff * diff;
     numberOfPixelsCounted++;

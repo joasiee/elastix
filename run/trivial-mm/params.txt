@@ -6,11 +6,14 @@
 
 // ********** Components
 
-(Registration "MultiResolutionRegistration")
-(FixedImagePyramid "FixedSmoothingImagePyramid")
-(MovingImagePyramid "MovingSmoothingImagePyramid")
-(Interpolator "LinearInterpolator")
-(Metric "TransformBendingEnergyPenalty")
+(Registration "MultiMetricMultiResolutionRegistration")
+(FixedImagePyramid "FixedSmoothingImagePyramid" "FixedSmoothingImagePyramid")
+(MovingImagePyramid "MovingSmoothingImagePyramid" "MovingSmoothingImagePyramid")
+(Interpolator "LinearInterpolator" "LinearInterpolator")
+(Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
+(Metric0Weight 0.0001)
+(Metric1Weight 0.9999)
+//(UseRelativeWeights "true")
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
@@ -62,7 +65,8 @@
 // ********** ImageSampler
 
 //Number of spatial samples used to compute the mutual information in each resolution level:
-(ImageSampler "Full")
+(ImageSampler "Full" "Full")
+(SamplingPercentage 0.02)
 
 
 // ********** Interpolator and Resampler

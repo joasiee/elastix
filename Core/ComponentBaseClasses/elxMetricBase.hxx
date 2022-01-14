@@ -168,6 +168,11 @@ MetricBase<TElastix>::BeforeEachResolutionBase(void)
       }
     }
 
+    /** Set SamplingPercentage*/
+    double samplingPercentage = 0.02;
+    this->m_Configuration->ReadParameter(samplingPercentage, "SamplingPercentage", this->GetComponentLabel(), level, 0);
+    thisAsAdvanced->SetSamplingPercentage(samplingPercentage);
+
   } // end advanced metric
 
 } // end BeforeEachResolutionBase()

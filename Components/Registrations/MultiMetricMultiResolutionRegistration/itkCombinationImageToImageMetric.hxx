@@ -581,6 +581,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
   /** Call Initialize for all metrics. */
   for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
   {
+    this->m_MetricValues[i] = NumericTraits<MeasureType>::max();
     SingleValuedCostFunctionType * costfunc = this->GetMetric(i);
     if (!costfunc)
     {
@@ -603,6 +604,30 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
   }
 
 } // end Initialize()
+
+/**
+ * ********************* InitPartialEvaluations ****************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets,
+                                                                                 int *  set_length,
+                                                                                 int    length)
+{
+  /** Check if at least one (image)metric is provided */
+  if (this->GetNumberOfMetrics() == 0)
+  {
+    itkExceptionMacro(<< "At least one metric should be set!");
+  }
+
+  /** Call Initialize for all metrics. */
+  for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
+  {
+    SingleValuedCostFunctionType * costfunc = this->GetMetric(i);
+    costfunc->InitPartialEvaluations(sets, set_length, length);
+  }
+} // end InitPartialEvaluations()
 
 
 /**
@@ -662,7 +687,8 @@ typename CombinationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const ParametersType & parameters) const
 {
   /** Initialise. */
-  MeasureType measure = NumericTraits<MeasureType>::Zero;
+  MeasureType              measure = NumericTraits<MeasureType>::Zero;
+  std::vector<MeasureType> tmpValues(this->m_NumberOfMetrics);
 
   /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
@@ -672,19 +698,22 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
     timer.Start();
 
     /** Compute ... */
-    MeasureType tmpValue = this->m_Metrics[i]->GetValue(parameters);
+    tmpValues[i] = this->m_Metrics[i]->GetValue(parameters);
     timer.Stop();
 
     /** store ... */
-    this->m_MetricValues[i] = tmpValue;
-    this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
+    if (tmpValues[i] < this->m_MetricValues[i])
+    {
+      this->m_MetricValues[i] = tmpValues[i];
+      this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
+    }
 
     /** and combine. */
     if (this->m_UseMetric[i])
     {
       if (!this->m_UseRelativeWeights)
       {
-        measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
+        measure += this->m_MetricWeights[i] * tmpValues[i];
       }
       else
       {
@@ -695,10 +724,10 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
          * Note that this weight is different in each iteration.
          */
         double weight = 1.0;
-        if (this->m_MetricValues[i] > 1e-10)
+        if (tmpValues[i] > 1e-10)
         {
-          weight = this->m_MetricRelativeWeights[i] * this->m_MetricValues[0] / this->m_MetricValues[i];
-          measure += weight * this->m_MetricValues[i];
+          weight = this->m_MetricRelativeWeights[i] * tmpValues[0] / tmpValues[i];
+          measure += weight * tmpValues[i];
         }
       }
     }
@@ -708,6 +737,55 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   return measure;
 
 } // end GetValue()
+
+/**
+ * ********************* GetValuePartial ****************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+typename CombinationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const ParametersType & parameters,
+                                                                   const int              fosIndex) const
+{
+  /** Initialise. */
+  MeasureType              measure = NumericTraits<MeasureType>::Zero;
+  std::vector<MeasureType> tmpValues(this->m_NumberOfMetrics);
+
+  /** Compute, store and combine all metric values. */
+  for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
+  {
+    /** Compute ... */
+    tmpValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex);
+
+    /** and combine. */
+    if (this->m_UseMetric[i])
+    {
+      if (!this->m_UseRelativeWeights)
+      {
+        measure += this->m_MetricWeights[i] * tmpValues[i];
+      }
+      else
+      {
+        /** The relative weight of metric i is such that the
+         * value of metric i is rescaled
+         * to be a fraction of that of metric 0; the fraction is
+         * defined by the fraction of the two relative weights.
+         * Note that this weight is different in each iteration.
+         */
+        double weight = 1.0;
+        if (tmpValues[i] > 1e-10)
+        {
+          weight = this->m_MetricRelativeWeights[i] * tmpValues[0] / tmpValues[i];
+          measure += weight * tmpValues[i];
+        }
+      }
+    }
+  }
+
+  /** Return a value. */
+  return measure;
+
+} // end GetValuePartial()
 
 
 /**

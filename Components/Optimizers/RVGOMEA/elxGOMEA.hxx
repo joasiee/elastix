@@ -14,9 +14,6 @@ GOMEA<TElastix>::BeforeRegistration(void)
 
   this->AddTargetCellToIterationInfo("2:Metric");
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
-  
-  this->AddTargetCellToIterationInfo("3:BufferExceptions");
-  this->GetIterationInfoAt("3:BufferExceptions") << std::showpoint << std::fixed;
 }
 
 template <class TElastix>
@@ -25,7 +22,6 @@ GOMEA<TElastix>::AfterEachIteration(void)
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->m_CurrentValue;
-  this->GetIterationInfoAt("3:BufferExceptions") << this->m_MovingImageBufferMisses;
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
