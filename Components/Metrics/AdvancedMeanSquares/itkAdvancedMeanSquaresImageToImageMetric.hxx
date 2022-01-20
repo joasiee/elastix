@@ -303,6 +303,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   /** Gather the metric values from all threads. */
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
+  value += static_cast<RealType>(this->m_NumberOfPixelsCounted);
 
   return value;
 
@@ -332,6 +333,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   this->AfterThreadedGetValue(value);
   value /= static_cast<RealType>(this->GetNumberOfFixedImageSamples()) /
            static_cast<RealType>(this->m_CurrentSampleContainer->Size());
+  value += static_cast<RealType>(this->m_NumberOfPixelsCounted);
 
   return value;
 } // end GetValuePartial()
@@ -379,7 +381,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
     MovingImagePointType        mappedPoint;
     this->TransformPoint(fixedPoint, mappedPoint);
     const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
-    
+
     if (!(this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr)))
     {
       const typename MovingImageType::Superclass &   imageBase = *(this->GetMovingImage());
@@ -392,11 +394,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
         index[d] = std::clamp(static_cast<long>(index[d]), lo, hi);
       }
       movingImageValue = this->GetMovingImage()->GetPixel(index);
+      ++numberOfPixelsCounted;
     }
 
     const RealType diff = movingImageValue - fixedImageValue;
     measure += diff * diff;
-    numberOfPixelsCounted++;
   }
 
   /** Only update these variables at the end to prevent unnecessary "false sharing". */
@@ -438,7 +440,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Value = NumericTraits<MeasureType>::Zero;
   }
 
-  value /= static_cast<RealType>(this->m_NumberOfPixelsCounted);
+  value /= static_cast<RealType>(this->m_CurrentSampleContainer->Size());
 } // end AfterThreadedGetValue()
 
 

@@ -10,8 +10,8 @@
 (FixedImagePyramid "FixedSmoothingImagePyramid")
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 (Interpolator "LinearInterpolator")
-(Metric "TransformBendingEnergyPenalty")
-(Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
+(Metric "AdvancedMeanSquares")
+(Optimizer "GOMEA")
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
 (Transform "BSplineTransform")
@@ -20,58 +20,35 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 1)
-(ImagePyramidSchedule 1)
-
-
-// ********** Transform
-
-(FinalGridSpacingInPhysicalUnits 10.0)
-(GridSpacingSchedule 1.0)
-(HowToCombineTransforms "Compose")
-(UseDirectionCosines "true")
-
+(NumberOfResolutions 2)
+(ImagePyramidSchedule 1 1 1 1)
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 5)
+(MaximumNumberOfIterations 15)
 (PartialEvaluations "true")
 (FosElementSize -6)
-(BasePopulationSize 12)
+(BasePopulationSize 15)
 
+// ********** Transform
 
-
-(AutomaticParameterEstimation "true")
-(UseAdaptiveStepSizes "true")
-(ASGDParameterEstimationMethod "Original")
-
-
-// ********** Metric
-
+(FinalGridSpacingInPhysicalUnits 5.0)
+(GridSpacingSchedule 2.0 1.0)
+(HowToCombineTransforms "Compose")
 
 // ********** Several
 
-(WriteTransformParametersEachIteration "false")
-(WriteTransformParametersEachResolution "false")
-(WriteResultImageAfterEachResolution "false")
 (WriteResultImage "true")
-(ShowExactMetricValue "false")
-(ErodeMask "true")
 
 
 // ********** ImageSampler
 
-//Number of spatial samples used to compute the mutual information in each resolution level:
 (ImageSampler "Full")
+(SamplingPercentage 0.01)
 
 
 // ********** Interpolator and Resampler
 
-//Order of B-Spline interpolation used in each resolution level:
 (BSplineInterpolationOrder 1)
-
-//Order of B-Spline interpolation used for applying the final deformation:
 (FinalBSplineInterpolationOrder 3)
-
-//Default pixel value for pixels that come from outside the picture:
 (DefaultPixelValue 0)
