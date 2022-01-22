@@ -14,6 +14,9 @@ GOMEA<TElastix>::BeforeRegistration(void)
 
   this->AddTargetCellToIterationInfo("2:Metric");
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
+
+  this->AddTargetCellToIterationInfo("3:Evaluations");
+  this->GetIterationInfoAt("3:Evaluations") << std::showpoint << std::fixed;
 }
 
 template <class TElastix>
@@ -22,6 +25,7 @@ GOMEA<TElastix>::AfterEachIteration(void)
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->m_CurrentValue;
+  this->GetIterationInfoAt("3:Evaluations") << this->m_NumberOfEvaluations;
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
@@ -90,7 +94,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetStDevThreshold(stDevThreshold);
 
   /** Set FitnessVarianceTolerance*/
-  double fitnessVarianceTolerance = 0.0;
+  double fitnessVarianceTolerance = 1e-6;
   this->m_Configuration->ReadParameter(
     fitnessVarianceTolerance, "FitnessVarianceTolerance", this->GetComponentLabel(), level, 0);
   this->SetFitnessVarianceTolerance(fitnessVarianceTolerance);

@@ -302,7 +302,7 @@ private:
   int m_MaxNumberOfPopulations{ 1 };
   int m_BasePopulationSize{ 0 };
   int m_MaximumNumberOfIterations{ 100 };
-  int m_MaxNumberOfEvaluations{ 1000000 };
+  int m_MaxNumberOfEvaluations{ 0 };
   int m_MaxNoImprovementStretch{ 0 };
   int m_FosElementSize{ -1 };
   int number_of_subgenerations_per_population_factor{ 8 };

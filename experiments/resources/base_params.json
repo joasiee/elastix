@@ -1,0 +1,16 @@
+{
+    "FixedInternalImagePixelType": "float",
+    "MovingInternalImagePixelType": "float",
+    "Registration": "MultiResolutionRegistration",
+    "FixedImagePyramid": "FixedSmoothingImagePyramid",
+    "MovingImagePyramid": "MovingSmoothingImagePyramid",
+    "Interpolator": "LinearInterpolator",
+    "ResampleInterpolator": "FinalBSplineInterpolator",
+    "Resampler": "DefaultResampler",
+    "Transform": "BSplineTransform",
+    "NumberOfResolutions": 1,
+    "HowToCombineTransforms": "Compose",
+    "BSplineInterpolationOrder": 1,
+    "FinalBSplineInterpolationOrder": 3,
+    "DefaultPixelValue": 0
+}

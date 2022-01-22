@@ -21,11 +21,11 @@
 
 // Total number of resolutions
 (NumberOfResolutions 2)
-(ImagePyramidSchedule 1 1 1 1)
+//(ImagePyramidSchedule 1 1)
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 15)
+(MaximumNumberOfIterations 4)
 (PartialEvaluations "true")
 (FosElementSize -6)
 (BasePopulationSize 15)
@@ -33,7 +33,7 @@
 // ********** Transform
 
 (FinalGridSpacingInPhysicalUnits 5.0)
-(GridSpacingSchedule 2.0 1.0)
+//(GridSpacingSchedule 2.0 1.0)
 (HowToCombineTransforms "Compose")
 
 // ********** Several
