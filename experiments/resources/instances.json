@@ -1,0 +1,10 @@
+{
+    "EMPIRE": {
+        "folder": "empire",
+        "extension": "mhd"
+    },
+    "EXAMPLES": {
+        "folder": "examples",
+        "extension": "png"
+    }
+}
