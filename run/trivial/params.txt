@@ -20,19 +20,19 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 2)
+(NumberOfResolutions 1)
 //(ImagePyramidSchedule 1 1)
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 4)
+(MaximumNumberOfIterations 10)
 (PartialEvaluations "true")
 (FosElementSize -6)
-(BasePopulationSize 15)
+(BasePopulationSize 30)
 
 // ********** Transform
 
-(FinalGridSpacingInPhysicalUnits 5.0)
+(FinalGridSpacingInVoxels 3)
 //(GridSpacingSchedule 2.0 1.0)
 (HowToCombineTransforms "Compose")
 

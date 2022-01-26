@@ -595,22 +595,25 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
   int                             length,
   std::vector<RegionType> &       regions,
   std::vector<std::vector<int>> & points,
-  RegionType                      fixedImageRegion,
-  SpacingType                     fixedImageSpacing) const
+  const RegionType &              fixedImageRegion,
+  const SpacingType &             fixedImageSpacing,
+  const OriginType &              fixedImageOrigin) const
 {
-  unsigned int i, j, d;
-  ImagePointer coefficientImage = this->m_CoefficientImages[0];
-  SpacingType  coeffOffset;
-  const int    num_points = this->GetNumberOfParameters() / SpaceDimension;
-  RegionType   coeffRegion = coefficientImage->GetLargestPossibleRegion();
-  RegionType   coeffRegionCropped = coeffRegion;
+  unsigned int     i, j, d;
+  ImagePointer     coefficientImage = this->m_CoefficientImages[0];
+  const int        num_points = this->GetNumberOfParameters() / SpaceDimension;
+  RegionType       coeffRegionCropped = coefficientImage->GetLargestPossibleRegion();
+  IndexType        coeffRegionCroppedIndex;
+  std::vector<int> cpointOffsetMap(coeffRegionCropped.GetNumberOfPixels());
 
   // crop control points grid to only contain those at lower left corners of fixed image pixel areas.
   for (d = 0; d < SpaceDimension; ++d)
   {
-    coeffRegionCropped.SetSize(d, coeffRegion.GetSize(d) - 3);
-    coeffOffset[d] = coefficientImage->GetOrigin()[d] + coefficientImage->GetSpacing()[d];
+    coeffRegionCropped.SetSize(d, coeffRegionCropped.GetSize(d) - 3);
+    coeffRegionCroppedIndex[d] = coeffRegionCropped.GetIndex()[d] + 1;
   }
+  coeffRegionCropped.SetIndex(coeffRegionCroppedIndex);
+
   regions.clear();
   points.clear();
   regions.resize(coeffRegionCropped.GetNumberOfPixels());
@@ -621,21 +624,20 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
   i = 0;
   while (!coeffImageIterator.IsAtEnd())
   {
-    IndexType imageIndex;
+    IndexType  imageIndex;
+    OriginType physicalIndex =
+      coefficientImage->template TransformIndexToPhysicalPoint<PixelType>(coeffImageIterator.GetIndex()) -
+      fixedImageOrigin;
+    unsigned int offset = coefficientImage->ComputeOffset(coeffImageIterator.GetIndex());
     for (d = 0; d < SpaceDimension; ++d)
     {
-      double spacing = coefficientImage->GetSpacing()[d] / fixedImageSpacing[d];
-      imageIndex[d] = std::max(ceil(coeffImageIterator.GetIndex()[d] * spacing + coeffOffset[d]), 0.0);
-      int sizing = ceil((coeffImageIterator.GetIndex()[d] + 1) * spacing + coeffOffset[d]);
-
-      // edge case when outer control points are reached, no longer have to exclude pixels of next region.
-      if (coeffImageIterator.GetIndex()[d] == static_cast<int>(coeffRegion.GetSize(d) - 4))
-        sizing += 1;
-
-      sizing = std::min(sizing, static_cast<int>(fixedImageRegion.GetSize()[d]));
-      regions[i].SetSize(d, sizing - imageIndex[d]);
+      imageIndex[d] = std::max(static_cast<int>(ceil(physicalIndex[d] / fixedImageSpacing[d])), 0);
+      int sizingIndex = ceil((physicalIndex[d] + coefficientImage->GetSpacing()[d]) / fixedImageSpacing[d]);
+      sizingIndex = std::min(sizingIndex, static_cast<int>(fixedImageRegion.GetSize()[d]));
+      regions[i].SetSize(d, sizingIndex - imageIndex[d]);
     }
     regions[i].SetIndex(imageIndex);
+    cpointOffsetMap[offset] = i;
     ++coeffImageIterator;
     ++i;
   }
@@ -654,8 +656,9 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
       RegionType     hypercube;
       for (d = 0; d < SpaceDimension; ++d)
       {
-        lower[d] = std::max(static_cast<int>(p[d] - 3), 0);
-        upper[d] = std::min(static_cast<int>(p[d] + 1), static_cast<int>(coeffRegion.GetSize(d) - 3));
+        lower[d] = std::max(static_cast<int>(p[d] - 2), 1);
+        upper[d] = std::min(static_cast<int>(p[d] + 2),
+                            static_cast<int>(coefficientImage->GetLargestPossibleRegion().GetSize(d) - 2));
         hypercube.SetSize(d, upper[d] - lower[d]);
       }
       hypercube.SetIndex(lower);
@@ -665,17 +668,12 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionsForF
       {
         // offset needs to be adjusted to cropped coefficient grid.
         unsigned int offset = coefficientImage->ComputeOffset(imageIterator.GetIndex());
-        int          delta = imageIterator.GetIndex()[1] * 3;
-        delta += SpaceDimension == 3
-                   ? imageIterator.GetIndex()[2] * (coeffRegion.GetSize(0) * 3 + coeffRegion.GetSize(1) * 3 - 9)
-                   : 0; // only if grid is 3D.
-        offset -= delta;
+        offset = cpointOffsetMap[offset];
         if (!pointAdded[offset])
         {
           points[j].push_back(offset);
           pointAdded[offset] = true;
         }
-
         ++imageIterator;
       }
     }

@@ -624,8 +624,15 @@ AdvancedBSplineTransform<TElastix>::GetRegionsForFOS(int **                     
                                                      std::vector<std::vector<int>> & points) const
 {
   FixedImageType * fixedImage = this->GetElastix()->GetFixedImage();
-  this->m_BSplineTransform->GetRegionsForFOS(
-    sets, set_length, length, regions, points, fixedImage->GetLargestPossibleRegion(), fixedImage->GetSpacing());
+  // Separate fixedimage parameters, passing fixed image pointer not possible due to weird template typing error. TODO
+  this->m_BSplineTransform->GetRegionsForFOS(sets,
+                                             set_length,
+                                             length,
+                                             regions,
+                                             points,
+                                             fixedImage->GetLargestPossibleRegion(),
+                                             fixedImage->GetSpacing(),
+                                             fixedImage->GetOrigin());
 }
 
 

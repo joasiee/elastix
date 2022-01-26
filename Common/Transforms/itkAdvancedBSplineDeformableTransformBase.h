@@ -166,6 +166,11 @@ public:
   typedef typename ImageType::IndexType          ImageIndexType;
   typedef typename ImageType::Pointer            ImagePointer;
 
+  typedef TScalarType                                 FixedPixelType;
+  typedef Image<FixedPixelType, Self::SpaceDimension> FixedImageType;
+  typedef typename FixedImageType::IndexType          FixedImageIndexType;
+  typedef typename FixedImageType::Pointer            FixedImagePointer;
+
   /** Get the array of coefficient images. */
   virtual const ImagePointer *
   GetCoefficientImages(void) const
@@ -303,8 +308,9 @@ public:
                    int                             length,
                    std::vector<RegionType> &       regions,
                    std::vector<std::vector<int>> & points,
-                   RegionType                      fixedImageRegion,
-                   SpacingType                     fixedImageSpacing) const;
+                   const RegionType &                    fixedImageRegion,
+                   const SpacingType &                   fixedImageSpacing,
+                   const OriginType &                    fixedImageOrigin) const;
 
   /** Wrap flat array into images of coefficients. */
   void

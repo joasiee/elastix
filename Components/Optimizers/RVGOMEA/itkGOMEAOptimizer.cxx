@@ -40,7 +40,8 @@ GOMEAOptimizer::PrintSettings(std::ostream & os, Indent indent) const
 {
   Indent indent1 = indent.GetNextIndent();
   os << indent << "Settings: " << std::endl;
-  os << indent1 << "FOS set size: " << m_FosElementSize << std::endl;
+  os << indent1 << "FOS setting: " << m_FosElementSize << std::endl;
+  os << indent1 << "Nr. of parameters: " << m_NrOfParameters << std::endl;
   os << indent1 << "Tau: " << m_Tau << std::endl;
   os << indent1 << "Number of populations: " << m_MaxNumberOfPopulations << std::endl;
   os << indent1 << "Population size: " << m_BasePopulationSize << std::endl;
@@ -1245,6 +1246,7 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
     m_CurrentValue = *obj_val;
     this->SetCurrentPosition(populations[population_index][individual_index]);
   }
+  ++m_NumberOfEvaluations;
   this->Modified();
 }
 

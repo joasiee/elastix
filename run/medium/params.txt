@@ -20,36 +20,28 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 2)
-(ImagePyramidSchedule 4 1)
-
+(NumberOfResolutions 1)
 
 // ********** Transform
 
-(FinalGridSpacingInPhysicalUnits 20.0)
-(GridSpacingSchedule 4.0 1.0)
+(FinalGridSpacingInVoxels 20)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 10)
-(PartialEvaluations "true")
+(MaximumNumberOfIterations 20)
 (BasePopulationSize 40)
-(FosElementSize -6)
-(ImageDimension 3)
-
-(AutomaticParameterEstimation "true")
-(UseAdaptiveStepSizes "true")
-(ASGDParameterEstimationMethod "Original")
+//(PartialEvaluations "true")
+//(FosElementSize -6)
 
 // ********** Several
 
 (WriteTransformParametersEachIteration "false")
 (WriteTransformParametersEachResolution "false")
 (WriteResultImageAfterEachResolution "false")
-(WriteResultImage "false")
+(WriteResultImage "true")
 (ShowExactMetricValue "false")
 (ErodeMask "true")
 
@@ -57,9 +49,8 @@
 // ********** ImageSampler
 
 //Number of spatial samples used to compute the mutual information in each resolution level:
-(ImageSampler "Random")
-(NumberOfSpatialSamples 8000)
-(NewSamplesEveryIteration "true")
+(ImageSampler "Full")
+(SamplingPercentage 0.02)
 
 
 // ********** Interpolator and Resampler
