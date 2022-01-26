@@ -31,7 +31,7 @@
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 20)
+(MaximumNumberOfIterations 10000)
 (BasePopulationSize 40)
 //(PartialEvaluations "true")
 //(FosElementSize -6)
@@ -49,7 +49,7 @@
 // ********** ImageSampler
 
 //Number of spatial samples used to compute the mutual information in each resolution level:
-(ImageSampler "Full")
+(ImageSampler "Random")
 (SamplingPercentage 0.02)
 
 

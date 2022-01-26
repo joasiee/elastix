@@ -25,25 +25,26 @@
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 10)
-(PartialEvaluations "true")
-(FosElementSize -6)
-(BasePopulationSize 30)
+(MaximumNumberOfIterations 20)
+//(PartialEvaluations "true")
+//(FosElementSize -6)
+(BasePopulationSize 10)
 
 // ********** Transform
 
-(FinalGridSpacingInVoxels 3)
+(FinalGridSpacingInVoxels 1)
 //(GridSpacingSchedule 2.0 1.0)
 (HowToCombineTransforms "Compose")
 
 // ********** Several
 
-(WriteResultImage "true")
+(WriteResultImage "false")
 
 
 // ********** ImageSampler
 
-(ImageSampler "Full")
+(ImageSampler "Random")
+(NumberOfSpatialSamples 100)
 (SamplingPercentage 0.01)
 
 

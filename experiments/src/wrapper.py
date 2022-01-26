@@ -45,7 +45,7 @@ class Wrapper:
 
 if __name__ == "__main__":
     params = (
-        Parameters(sampler="Random")
+        Parameters(sampler="Full")
         .gomea(iterations=20, pop_size=40)
         .instance(Collection.EMPIRE, 1)
     )
