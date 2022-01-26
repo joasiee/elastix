@@ -39,7 +39,10 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-= Section Includes -=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 #include "Tools.h"
+#include <eigen3/Eigen/Dense>
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+
+using Eigen::MatrixXd;
 
 namespace GOMEA
 {
@@ -58,13 +61,13 @@ readFOSFromFile(FILE * file);
 FOS *
 copyFOS(FOS * f);
 FOS *
-learnLinkageTree(double ** covariance_matrix);
+learnLinkageTree(MatrixXd & covariance_matrix);
 int
 determineNearestNeighbour(int index, int mpm_length);
 double
 getSimilarity(int a, int b);
 double **
-computeMIMatrix(double ** covariance_matrix, int n);
+computeMIMatrix(MatrixXd & covariance_matrix, int n);
 int *
 matchFOSElements(FOS * new_FOS, FOS * prev_FOS);
 int *

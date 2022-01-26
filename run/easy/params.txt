@@ -20,23 +20,23 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 1)
-(ImagePyramidSchedule 1)
+(NumberOfResolutions 2)
+//(ImagePyramidSchedule 1)
 
 
 // ********** Transform
 
-(FinalGridSpacingInPhysicalUnits 20.0)
-(GridSpacingSchedule 1.0)
+(FinalGridSpacingInPhysicalUnits 10.0)
+//(GridSpacingSchedule 1.0)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 10)
+(MaximumNumberOfIterations 10 5)
 (PartialEvaluations "true")
-(BasePopulationSize 20)
+(BasePopulationSize 30)
 (FosElementSize -6)
 
 (AutomaticParameterEstimation "true")

@@ -28,9 +28,18 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Cholesky>
 #include "itkSingleValuedNonLinearOptimizer.h"
-#include "gomea/Tools.h"
-#include "gomea/FOS.h"
+#include "./util/Tools.h"
+#include "./util/FOS.h"
+#include "itkArray.h"
+#include "itkArray2D.h"
+#include "itkMatrix.h"
+
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
+using Eigen::LLT;
 
 namespace itk
 {
@@ -243,7 +252,7 @@ private:
   void
   applyForcedImprovements(int population_index, int individual_index, int donor_index);
   double *
-  generateNewPartialSolutionFromFOSElement(int population_index, int FOS_index);
+  generateNewPartialSolutionFromFOSElement(int population_index, int FOS_index, VectorXd & result);
   short
   adaptDistributionMultipliers(int population_index, int FOS_index);
   short
@@ -252,14 +261,6 @@ private:
   getStDevRatioForFOSElement(int population_index, double * parameters, int FOS_index);
   void
   ezilaitiniMemory(void);
-  void
-  ezilaitiniDistributionMultipliers(int population_index);
-  void
-  ezilaitiniParametersForSampling(int population_index);
-  void
-  ezilaitiniParametersAllPopulations(void);
-  void
-  ezilaitiniCovarianceMatrices(int population_index);
   void
   generationalStepAllPopulationsRecursiveFold(int population_index_smallest, int population_index_biggest);
   void
@@ -273,18 +274,6 @@ private:
 
   mutable std::ostringstream m_StopConditionDescription;
 
-  template <typename T>
-  using Vector1D = std::vector<T>;
-  template <typename T>
-  using Vector2D = std::vector<std::vector<T>>;
-
-  Vector1D<ParametersType> mean_vectors;
-  Vector1D<ParametersType> mean_shift_vector;
-  Vector2D<MeasureType>    objective_values;
-  Vector2D<MeasureType>    objective_values_selections;
-  Vector2D<ParametersType> populations;
-  Vector2D<ParametersType> selections;
-
   double m_Tau{ 0.35 };
   double m_DistributionMultiplierDecrease{ 0.9 };
   double m_StDevThreshold{ 1.0 };
@@ -292,12 +281,6 @@ private:
   double distribution_multiplier_increase;
   double eta_ams{ 1.0 };
   double eta_cov{ 1.0 };
-
-  double **   ranks;
-  double **   distribution_multipliers;
-  double ***  full_covariance_matrix;
-  double **** decomposed_covariance_matrices;
-  double **** decomposed_cholesky_factors_lower_triangle;
 
   int m_MaxNumberOfPopulations{ 1 };
   int m_BasePopulationSize{ 0 };
@@ -311,14 +294,32 @@ private:
   bool m_PartialEvaluations{ false };
   bool m_WriteOutput{ false };
 
-  short * populations_terminated;
-  int *   selection_sizes;
-  int *   no_improvement_stretch;
-  int *   number_of_generations;
-  int *   population_sizes;
-  int **  samples_drawn_from_normal;
-  int **  out_of_bounds_draws;
-  int **  individual_NIS;
+  template <typename T>
+  using Vector1D = std::vector<T>;
+  template <typename T>
+  using Vector2D = std::vector<std::vector<T>>;
+
+  Vector1D<ParametersType> mean_vectors;
+  Vector1D<ParametersType> mean_shift_vector;
+  Vector2D<ParametersType> populations;
+  Vector2D<ParametersType> selections;
+
+  Array<short>         populations_terminated;
+  Array<int>           selection_sizes;
+  Array<int>           no_improvement_stretch;
+  Array<int>           number_of_generations;
+  Array<int>           population_sizes;
+  Vector1D<Array<int>> samples_drawn_from_normal;
+  Vector1D<Array<int>> out_of_bounds_draws;
+  Vector1D<Array<int>> individual_NIS;
+
+  Vector1D<Array<MeasureType>> objective_values;
+  Vector1D<Array<MeasureType>> objective_values_selections;
+  Vector1D<Array<double>>      ranks;
+  Vector1D<Array<double>>      distribution_multipliers;
+  Vector1D<MatrixXd>           full_covariance_matrix;
+  Vector2D<MatrixXd>           decomposed_covariance_matrices;
+  Vector2D<MatrixXd>           decomposed_cholesky_factors_lower_triangle;
 
   std::ofstream outFile;
 

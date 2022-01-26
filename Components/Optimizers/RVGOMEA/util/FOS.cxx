@@ -36,8 +36,9 @@
  */
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-= Section Includes -=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
-#include "../include/gomea/FOS.h"
+#include "./FOS.h"
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+
 
 namespace GOMEA
 {
@@ -156,7 +157,7 @@ copyFOS(FOS * f)
 }
 
 FOS *
-learnLinkageTree(double ** covariance_matrix)
+learnLinkageTree(MatrixXd & covariance_matrix)
 {
   char done;
   int  i, j, r0, r1, rswap, *indices, *order, *sorted, FOS_index, **mpm, mpm_length, **mpm_new,
@@ -439,7 +440,7 @@ determineNearestNeighbour(int index, int mpm_length)
 }
 
 double **
-computeMIMatrix(double ** covariance_matrix, int n)
+computeMIMatrix(MatrixXd & covariance_matrix, int n)
 {
   int    i, j;
   double si, sj, r, **MI_matrix;
@@ -452,9 +453,9 @@ computeMIMatrix(double ** covariance_matrix, int n)
     MI_matrix[i][i] = 1e20;
     for (j = 0; j < i; j++)
     {
-      si = sqrt(covariance_matrix[i][i]);
-      sj = sqrt(covariance_matrix[j][j]);
-      r = covariance_matrix[i][j] / (si * sj);
+      si = sqrt(covariance_matrix(i, i));
+      sj = sqrt(covariance_matrix(j, j));
+      r = covariance_matrix(i, j) / (si * sj);
       MI_matrix[i][j] = log(sqrt(1 / (1 - r * r)));
       MI_matrix[j][i] = MI_matrix[i][j];
     }

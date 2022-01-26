@@ -20,21 +20,21 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 1)
+(NumberOfResolutions 3)
 
 // ********** Transform
 
-(FinalGridSpacingInVoxels 20)
+(FinalGridSpacingInVoxels 10)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 10000)
-(BasePopulationSize 40)
-//(PartialEvaluations "true")
-//(FosElementSize -6)
+(MaximumNumberOfIterations 20 10 8)
+(BasePopulationSize 30)
+(PartialEvaluations "true")
+(FosElementSize -6)
 
 // ********** Several
 

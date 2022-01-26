@@ -37,10 +37,15 @@
 #pragma once
 
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
+#include <eigen3/Eigen/Dense>
+#include <cblas.h>
+
+using Eigen::MatrixXd;
 
 #define PI 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798
 #define FALSE 0
@@ -52,39 +57,14 @@ void *
 Malloc(long size);
 double **
 matrixNew(int n, int m);
-double
-vectorDotProduct(double * vector0, double * vector1, int n0);
-double
-vectorNorm(double * vector0, int n0);
-double *
-matrixVectorMultiplication(double ** matrix, double * vector, int n0, int n1);
-double **
-matrixMatrixMultiplication(double ** matrix0, double ** matrix1, int n0, int n1, int n2);
-int
-blasDSWAP(int n, double * dx, int incx, double * dy, int incy);
-int
-blasDAXPY(int n, double da, double * dx, int incx, double * dy, int incy);
-void
-blasDSCAL(int n, double sa, double x[], int incx);
 int
 linpackDCHDC(double a[], int lda, int p, double work[], int ipvt[]);
-double **
-choleskyDecomposition(double ** matrix, int n);
+void
+choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n);
 int
 linpackDTRDI(double t[], int ldt, int n);
 double **
-matrixLowerTriangularInverse(double ** matrix, int n);
-void
-eigenDecomposition(double ** matrix, int n, double ** D, double ** Q);
-void
-eigenDecompositionQLalgo2(int n, double ** V, double * d, double * e);
-double
-myhypot(double a, double b);
-void
-eigenDecompositionHouseholder2(int n, double ** V, double * d, double * e);
-void
-matrixWriteToFile(FILE * file, double ** matrix, int n0, int n1);
-
+matrixLowerTriangularInverse(MatrixXd & matrix, int n);
 int *
 mergeSort(double * array, int array_size);
 void

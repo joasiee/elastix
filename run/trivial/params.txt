@@ -28,24 +28,23 @@
 (MaximumNumberOfIterations 20)
 //(PartialEvaluations "true")
 //(FosElementSize -6)
-(BasePopulationSize 10)
+(BasePopulationSize 30)
 
 // ********** Transform
 
-(FinalGridSpacingInVoxels 1)
+(FinalGridSpacingInVoxels 5)
 //(GridSpacingSchedule 2.0 1.0)
 (HowToCombineTransforms "Compose")
 
 // ********** Several
 
-(WriteResultImage "false")
+(WriteResultImage "true")
 
 
 // ********** ImageSampler
 
-(ImageSampler "Random")
+(ImageSampler "Full")
 (NumberOfSpatialSamples 100)
-(SamplingPercentage 0.01)
 
 
 // ********** Interpolator and Resampler
