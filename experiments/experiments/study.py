@@ -11,8 +11,8 @@ STUDY_DB = f"sqlite:///{STUDY_NAME}.db"
 
 
 def get_params(trial):
-    w0 = trial.suggest_float("Weight0", 0.0, 1.0)
-    w1 = trial.suggest_float("Weight1", 0.0, 1000.0)
+    w0 = trial.suggest_float("Weight0", 0.01, 1.0)
+    w1 = trial.suggest_float("Weight1", 0.01, 1000.0)
     params = (
         Parameters(mesh_size=8)
         .gomea(pop_size=80)
