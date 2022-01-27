@@ -8,7 +8,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List
 from datetime import datetime
-from cmath import inf
 
 BASE_PARAMS_PATH = Path("resources", "base_params.json")
 INSTANCE_CONFIG_PATH = Path("resources", "instances.json")
@@ -29,7 +28,7 @@ class Parameters:
         self,
         metric: str = "AdvancedMeanSquares",
         sampler: str = "Random",
-        sampling_p: float = 0.01,
+        sampling_p: float = 0.05,
         mesh_size: List[int] | int = 20,
     ) -> None:
         with BASE_PARAMS_PATH.open() as f:
@@ -91,7 +90,7 @@ class Parameters:
             self,
             iterations: List[int] | int = None,
             evals: List[int] | int = None,
-            max_time_s: int = inf):
+            max_time_s: int = 0):
         self["MaximumNumberOfIterations"] = iterations
         self["MaxNumberOfEvaluations"] = evals
         self["MaxTimeSeconds"] = max_time_s

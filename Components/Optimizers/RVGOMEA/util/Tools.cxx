@@ -160,6 +160,7 @@ linpackDCHDC(double a[], int lda, int p, double work[], int ipvt[])
   return (info);
 }
 
+
 /**
  * Computes the lower-triangle Cholesky Decomposition
  * of a square, symmetric and positive-definite matrix.
@@ -169,37 +170,22 @@ void
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 {
   int     i, j, k, info, *ipvt;
-  double *a, *work;
+  double *work;
 
-  a = (double *)Malloc((n * n) * sizeof(double));
   work = (double *)Malloc(n * sizeof(double));
   ipvt = (int *)Malloc(n * sizeof(int));
+  result.triangularView<Eigen::Upper>() = matrix.triangularView<Eigen::Upper>();
 
-  k = 0;
-  for (i = 0; i < n; i++)
-  {
-    for (j = 0; j < n; j++)
-    {
-      a[k] = matrix(i, j);
-      k++;
-    }
-    ipvt[i] = 0;
-  }
+  info = linpackDCHDC(result.data(), n, n, work, ipvt);
 
-  info = linpackDCHDC(a, n, n, work, ipvt);
-
-  result.fill(0.0);
   if (info != n) /* Matrix is not positive definite */
   {
     result.diagonal() = matrix.diagonal().array().sqrt();
   }
-  else
-  {
-    result.triangularView<Eigen::Lower>() = matrix.triangularView<Eigen::Lower>();
-  }
 
   free(ipvt);
   free(work);
+
 }
 
 /**
@@ -244,18 +230,19 @@ linpackDTRDI(double t[], int ldt, int n)
  * lower triangular form.
  */
 double **
-matrixLowerTriangularInverse(MatrixXd & matrix, int n)
+matrixLowerTriangularInverse(double ** matrix, int n)
 {
   int     i, j, k;
   double *t, **result;
-  t = (double *)Malloc((n * n) * sizeof(double));
+
+  t = (double *)Malloc(n * n * sizeof(double));
 
   k = 0;
   for (i = 0; i < n; i++)
   {
     for (j = 0; j < n; j++)
     {
-      t[k] = matrix(j, i);
+      t[k] = matrix[j][i];
       k++;
     }
   }
@@ -270,6 +257,8 @@ matrixLowerTriangularInverse(MatrixXd & matrix, int n)
       k++;
     }
   }
+
+  free(t);
 
   return (result);
 }

@@ -6,6 +6,7 @@ import logging
 from timeit import default_timer as timer
 import pandas as pd
 from experiments import TimeoutException, time_limit
+from bson.binary import Binary
 
 from experiments.parameters import Collection, Parameters
 from experiments.db import DBClient
@@ -27,24 +28,29 @@ class Wrapper:
 
             logger.info(f"Starting elastix for: {str(params)}.")
             start = timer()
+            app_log = None
             try:
-                Wrapper.execute_elastix(params_file, out_dir, params)
+                app_log = Wrapper.execute_elastix(params_file, out_dir, params)
             except subprocess.CalledProcessError as err:
                 logger.error(
                     f"Something went wrong while running elastix with params: {str(params)}: {err.stderr}")
             except TimeoutException:
-                logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
+                logger.info(
+                    f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
                 pass
 
             logger.info("Run finished successfully.")
-            self.save_output(out_dir, params, timer() - start)
+            self.save_output(out_dir, params, timer() - start, app_log)
 
-    def save_output(self, out_dir: Path, params: Parameters, duration: float):
+    def save_output(self, out_dir: Path, params: Parameters, duration: float, app_log: Binary):
         results = {
             "id": str(params),
+            "collection": params["Collection"],
+            "instance": params["Instance"],
             "params": params.params,
             "resolutions": [],
-            "duration": duration
+            "duration": duration,
+            "log": app_log
         }
         for r in range(params["NumberOfResolutions"]):
             resolution_results = pd.read_csv(
@@ -57,8 +63,8 @@ class Wrapper:
         self.db.save_results(results)
 
     @staticmethod
-    def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
-        with open("app.log", "wb") as out, time_limit(params["MaxTimeSeconds"]):
+    def execute_elastix(params_file: Path, out_dir: Path, params: Parameters) -> str:
+        with open("app.log", "w+") as out, time_limit(params["MaxTimeSeconds"]):
             subprocess.run(
                 [
                     ELASTIX,
@@ -75,14 +81,16 @@ class Wrapper:
                 stdout=out,
                 stderr=out
             )
+            out.seek(0)
+            return out.read()
 
 
 if __name__ == "__main__":
     params = (
-        Parameters(sampler="Full", mesh_size=10)
+        Parameters(sampler="Random", mesh_size=8)
         .gomea()
-        .instance(Collection.EXAMPLES, 1)
-        .stopping_criteria(iterations=200, max_time_s=10)
+        .instance(Collection.EMPIRE, 1)
+        .stopping_criteria(iterations=10)
     )
     wrap = Wrapper()
     wrap.run(params)

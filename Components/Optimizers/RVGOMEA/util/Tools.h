@@ -64,7 +64,7 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n);
 int
 linpackDTRDI(double t[], int ldt, int n);
 double **
-matrixLowerTriangularInverse(MatrixXd & matrix, int n);
+matrixLowerTriangularInverse(double ** matrix, int n);
 int *
 mergeSort(double * array, int array_size);
 void

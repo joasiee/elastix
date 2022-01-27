@@ -1,0 +1,1624 @@
+desc: (none)
+cmd: ../../build/Debug/bin/elastix -f ct.mhd -m cbct.mha -p params.txt -out dir
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=30348307228
+mem_heap_B=29689140
+mem_heap_extra_B=960756
+mem_stacks_B=0
+heap_tree=detailed
+n8: 29689140 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 12116544 0x90628B: itk::ImportImageContainer<unsigned long, float>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 12116544 0x8FB9BE: itk::ImportImageContainer<unsigned long, float>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n2: 12116544 0x8F0DC3: itk::Image<float, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n2: 6058272 0x994288: itk::ImageSource<itk::Image<float, 3u> >::AllocateOutputs() (itkImageSource.hxx:185)
+     n1: 6058272 0x99F8D6: itk::ImageFileReader<itk::Image<float, 3u>, itk::DefaultConvertPixelTraits<float> >::GenerateData() (itkImageFileReader.hxx:364)
+      n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+       n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+        n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+         n1: 6058272 0x1CC56A1: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1669)
+          n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+           n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+            n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+             n1: 6058272 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+              n2: 6058272 0x8677ED: elastix::ElastixBase::MultipleImageLoader<itk::Image<float, 3u> >::GenerateImageContainer(itk::VectorContainer<unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, itk::Matrix<double, 3u, 3u>*) (elxElastixBase.h:473)
+               n1: 3259872 0x8474A0: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:179)
+                n1: 3259872 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                 n1: 3259872 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                  n0: 3259872 0x7F38BC: main (elastix.cxx:280)
+               n1: 2798400 0x847316: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:160)
+                n1: 2798400 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                 n1: 2798400 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                  n0: 2798400 0x7F38BC: main (elastix.cxx:280)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n1: 6058272 0xD2B747: itk::MultiResolutionGaussianSmoothingPyramidImageFilter<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionGaussianSmoothingPyramidImageFilter.hxx:147)
+     n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n2: 6058272 0x1CC5E28: itk::ProcessObject::UpdateLargestPossibleRegion() (itkProcessObject.cxx:1833)
+          n1: 3259872 0x173EBC8: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::PreparePyramids() (itkMultiResolutionImageRegistrationMethod2.hxx:202)
+           n1: 3259872 0x173C324: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:295)
+            n1: 3259872 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+             n1: 3259872 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+              n1: 3259872 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+               n1: 3259872 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                n1: 3259872 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                 n1: 3259872 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                  n1: 3259872 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                   n1: 3259872 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                    n1: 3259872 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                     n0: 3259872 0x7F38BC: main (elastix.cxx:280)
+          n1: 2798400 0x173EB28: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::PreparePyramids() (itkMultiResolutionImageRegistrationMethod2.hxx:197)
+           n1: 2798400 0x173C324: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:295)
+            n1: 2798400 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+             n1: 2798400 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+              n1: 2798400 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+               n1: 2798400 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                n1: 2798400 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                 n1: 2798400 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                  n1: 2798400 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                   n1: 2798400 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                    n1: 2798400 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                     n0: 2798400 0x7F38BC: main (elastix.cxx:280)
+ n1: 6519744 0xCABA25: itk::ImportImageContainer<unsigned long, double>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 6519744 0xCBCA7E: itk::ImportImageContainer<unsigned long, double>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n1: 6519744 0xCAA8FD: itk::Image<double, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n1: 6519744 0xD8F5D3: itk::BSplineDecompositionImageFilter<itk::Image<float, 3u>, itk::Image<double, 3u> >::GenerateData() (itkBSplineDecompositionImageFilter.hxx:363)
+     n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6519744 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+          n1: 6519744 0xD8DEEA: itk::BSplineInterpolateImageFunction<itk::Image<float, 3u>, double, double>::SetInputImage(itk::Image<float, 3u> const*) (itkBSplineInterpolateImageFunction.hxx:97)
+           n1: 6519744 0xEB0CE3: itk::ImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkImageToImageMetric.hxx:315)
+            n1: 6519744 0xEAE22D: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:152)
+             n1: 6519744 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+              n1: 6519744 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+               n1: 6519744 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+                n1: 6519744 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+                 n1: 6519744 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                  n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                   n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                    n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                     n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                      n1: 6519744 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                       n1: 6519744 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                        n1: 6519744 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                         n1: 6519744 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                          n0: 6519744 0x7F38BC: main (elastix.cxx:280)
+ n1: 5980462 0x1D6542F: vnl_sse_alloc(unsigned long, unsigned int) (vnl_sse.h:106)
+  n2: 5980462 0x1D6547A: vnl_c_vector_alloc(unsigned long, unsigned int) (vnl_c_vector.hxx:350)
+   n3: 5952984 0x1D66940: vnl_c_vector<double>::allocate_T(unsigned long) (vnl_c_vector.hxx:404)
+    n1: 4637952 0x1E37488: vnl_vector<double>::vnl_vector(vnl_vector<double> const&) (vnl_vector.hxx:119)
+     n1: 4637952 0xE660D6: itk::Array<double>::Array(itk::Array<double> const&) (itkArray.hxx:41)
+      n2: 4637952 0x10387B9: itk::OptimizerParameters<double>::OptimizerParameters(itk::OptimizerParameters<double> const&) (itkOptimizerParameters.h:61)
+       n1: 4637952 0x159B2AD: void std::_Construct<itk::OptimizerParameters<double>, itk::OptimizerParameters<double> const&>(itk::OptimizerParameters<double>*, itk::OptimizerParameters<double> const&) (stl_construct.h:109)
+        n1: 4637952 0x1599F7B: itk::OptimizerParameters<double>* std::__uninitialized_fill_n<false>::__uninit_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:237)
+         n1: 4637952 0x1598BE9: itk::OptimizerParameters<double>* std::uninitialized_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:297)
+          n1: 4637952 0x15962B7: itk::OptimizerParameters<double>* std::__uninitialized_fill_n_a<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double>, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&, std::allocator<itk::OptimizerParameters<double> >&) (stl_uninitialized.h:410)
+           n1: 4637952 0x1595227: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::_M_fill_insert(__gnu_cxx::__normal_iterator<itk::OptimizerParameters<double>*, std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > > >, unsigned long, itk::OptimizerParameters<double> const&) (vector.tcc:566)
+            n3: 4637952 0x1594267: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::resize(unsigned long, itk::OptimizerParameters<double> const&) (stl_vector.h:960)
+             n1: 2299968 0x16D1A56: itk::GOMEAOptimizer::initializeNewPopulationMemory(int) (itkGOMEAOptimizer.cxx:348)
+              n1: 2299968 0x16D1E91: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:376)
+               n1: 2299968 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+                n1: 2299968 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+                 n1: 2299968 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+                  n1: 2299968 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+                   n1: 2299968 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+                    n1: 2299968 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                     n1: 2299968 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                      n1: 2299968 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                       n1: 2299968 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                        n1: 2299968 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                         n1: 2299968 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                          n1: 2299968 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                           n1: 2299968 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                            n1: 2299968 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                             n0: 2299968 0x7F38BC: main (elastix.cxx:280)
+             n1: 2299968 0x16D1AA2: itk::GOMEAOptimizer::initializeNewPopulationMemory(int) (itkGOMEAOptimizer.cxx:349)
+              n1: 2299968 0x16D1E91: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:376)
+               n1: 2299968 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+                n1: 2299968 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+                 n1: 2299968 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+                  n1: 2299968 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+                   n1: 2299968 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+                    n1: 2299968 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                     n1: 2299968 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                      n1: 2299968 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                       n1: 2299968 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                        n1: 2299968 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                         n1: 2299968 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                          n1: 2299968 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                           n1: 2299968 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                            n1: 2299968 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                             n0: 2299968 0x7F38BC: main (elastix.cxx:280)
+             n0: 38016 in 2 places, all below massif's threshold (1.00%)
+       n0: 0 in 2 places, all below massif's threshold (1.00%)
+    n2: 1295688 0x1E38CFF: vnl_vector<double>::set_size(unsigned long) (vnl_vector.hxx:226)
+     n2: 1295688 0xE357F0: itk::Array<double>::SetSize(unsigned long) (itkArray.hxx:155)
+      n1: 1216512 0xEAF355: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::InitializeThreadingParameters() const (itkAdvancedImageToImageMetric.hxx:222)
+       n1: 1216512 0xEAE2D2: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:172)
+        n1: 1216512 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+         n1: 1216512 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+          n1: 1216512 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+           n1: 1216512 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+            n1: 1216512 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+             n1: 1216512 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+              n1: 1216512 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+               n1: 1216512 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                n1: 1216512 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                 n1: 1216512 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                  n1: 1216512 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                   n1: 1216512 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                    n1: 1216512 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                     n0: 1216512 0x7F38BC: main (elastix.cxx:280)
+      n0: 79176 in 4 places, all below massif's threshold (1.00%)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n0: 19344 in 7 places, all below massif's threshold (1.00%)
+   n0: 27478 in 9 places, all below massif's threshold (1.00%)
+ n1: 1650720 0x24BD059: __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::allocate(unsigned long, void const*) (new_allocator.h:121)
+  n1: 1650720 0x24BCFB5: std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> > >&, unsigned long) (alloc_traits.h:460)
+   n1: 1650720 0x24BCEEC: std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_M_get_node() (stl_tree.h:561)
+    n1: 1650720 0x24BCE9B: std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> >* std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_M_create_node<std::pair<gdcm::Tag const, gdcm::DictEntry> >(std::pair<gdcm::Tag const, gdcm::DictEntry>&&) (stl_tree.h:611)
+     n1: 1650720 0x24BCE5C: std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> >* std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_Alloc_node::operator()<std::pair<gdcm::Tag const, gdcm::DictEntry> >(std::pair<gdcm::Tag const, gdcm::DictEntry>&&) const (stl_tree.h:529)
+      n1: 1650720 0x24BCC7B: std::_Rb_tree_iterator<std::pair<gdcm::Tag const, gdcm::DictEntry> > std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_M_insert_<std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_Alloc_node>(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::pair<gdcm::Tag const, gdcm::DictEntry>&&, std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_Alloc_node&) (stl_tree.h:1782)
+       n1: 1650720 0x24BC98B: std::pair<std::_Rb_tree_iterator<std::pair<gdcm::Tag const, gdcm::DictEntry> >, bool> std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_M_insert_unique<std::pair<gdcm::Tag const, gdcm::DictEntry> >(std::pair<gdcm::Tag const, gdcm::DictEntry>&&) (stl_tree.h:2127)
+        n1: 1650720 0x24BC8CF: std::map<gdcm::Tag, gdcm::DictEntry, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::insert(std::pair<gdcm::Tag const, gdcm::DictEntry>&&) (stl_map.h:811)
+         n1: 1650720 0x24BC6DD: gdcm::Dict::AddDictEntry(gdcm::Tag const&, gdcm::DictEntry const&) (gdcmDict.h:70)
+          n1: 1650720 0x24BC541: gdcm::Dict::LoadDefault() (gdcmDefaultDicts.cxx:13886)
+           n1: 1650720 0x24BAD6B: gdcm::Dicts::LoadDefaults() (gdcmDicts.cxx:166)
+            n1: 1650720 0x24BE06E: gdcm::Global::Global() (gdcmGlobal.cxx:85)
+             n1: 1650720 0x2285AAB: __static_initialization_and_destruction_0(int, int) (gdcmGlobal.h:103)
+              n1: 1650720 0x2285AE4: _GLOBAL__sub_I_itkGDCMImageIO.cxx (itkGDCMImageIO.cxx:1653)
+               n1: 1650720 0x2E0546C: __libc_csu_init (in /home/joasiee/Documents/projects/elastix/build/Debug/bin/elastix)
+                n0: 1650720 0x646AAB0: (below main) (in /usr/lib/libc-2.33.so)
+ n1: 1553440 0x24BDEC7: __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::allocate(unsigned long, void const*) (new_allocator.h:121)
+  n1: 1553440 0x24BDE1D: std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >&, unsigned long) (alloc_traits.h:460)
+   n1: 1553440 0x24BDD54: std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_M_get_node() (stl_tree.h:561)
+    n1: 1553440 0x24BDD03: std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >* std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_M_create_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >(std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&) (stl_tree.h:611)
+     n1: 1553440 0x24BDCC4: std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >* std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_Alloc_node::operator()<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >(std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&) const (stl_tree.h:529)
+      n1: 1553440 0x24BDAE3: std::_Rb_tree_iterator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_M_insert_<std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_Alloc_node>(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&, std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_Alloc_node&) (stl_tree.h:1782)
+       n1: 1553440 0x24BD7F3: std::pair<std::_Rb_tree_iterator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, bool> std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_M_insert_unique<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >(std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&) (stl_tree.h:2127)
+        n1: 1553440 0x24BD737: std::map<gdcm::PrivateTag, gdcm::DictEntry, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::insert(std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&) (stl_map.h:811)
+         n1: 1553440 0x24BD5C6: gdcm::PrivateDict::AddDictEntry(gdcm::PrivateTag const&, gdcm::DictEntry const&) (gdcmDict.h:228)
+          n1: 1553440 0x24BD3FE: gdcm::PrivateDict::LoadDefault() (gdcmPrivateDefaultDicts.cxx:10460)
+           n1: 1553440 0x24BAD7B: gdcm::Dicts::LoadDefaults() (gdcmDicts.cxx:167)
+            n1: 1553440 0x24BE06E: gdcm::Global::Global() (gdcmGlobal.cxx:85)
+             n1: 1553440 0x2285AAB: __static_initialization_and_destruction_0(int, int) (gdcmGlobal.h:103)
+              n1: 1553440 0x2285AE4: _GLOBAL__sub_I_itkGDCMImageIO.cxx (itkGDCMImageIO.cxx:1653)
+               n1: 1553440 0x2E0546C: __libc_csu_init (in /home/joasiee/Documents/projects/elastix/build/Debug/bin/elastix)
+                n0: 1553440 0x646AAB0: (below main) (in /usr/lib/libc-2.33.so)
+ n2: 778465 0xB02559: void std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_construct<char*>(char*, char*, std::forward_iterator_tag) (basic_string.tcc:219)
+  n0: 415529 in 34 places, all below massif's threshold (1.00%)
+  n1: 362936 0x24BC799: gdcm::DictEntry::DictEntry(gdcm::DictEntry const&) (gdcmDictEntry.h:36)
+   n0: 362936 in 2 places, all below massif's threshold (1.00%)
+ n0: 769765 in 449 places, all below massif's threshold (1.00%)
+ n1: 320000 0xD6CE93: __gnu_cxx::new_allocator<itk::ImageSample<itk::Image<float, 3u> > >::allocate(unsigned long, void const*) (new_allocator.h:121)
+  n1: 320000 0xD6983F: std::allocator_traits<std::allocator<itk::ImageSample<itk::Image<float, 3u> > > >::allocate(std::allocator<itk::ImageSample<itk::Image<float, 3u> > >&, unsigned long) (alloc_traits.h:460)
+   n1: 320000 0xD63F69: std::_Vector_base<itk::ImageSample<itk::Image<float, 3u> >, std::allocator<itk::ImageSample<itk::Image<float, 3u> > > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 320000 0xD6CBF5: std::vector<itk::ImageSample<itk::Image<float, 3u> >, std::allocator<itk::ImageSample<itk::Image<float, 3u> > > >::_M_default_append(unsigned long) (vector.tcc:635)
+     n1: 320000 0xD69434: std::vector<itk::ImageSample<itk::Image<float, 3u> >, std::allocator<itk::ImageSample<itk::Image<float, 3u> > > >::resize(unsigned long) (stl_vector.h:940)
+      n1: 320000 0xD6395B: itk::VectorDataContainer<unsigned long, itk::ImageSample<itk::Image<float, 3u> > >::CreateIndex(unsigned long) (itkVectorDataContainer.hxx:190)
+       n1: 320000 0xD5C9E2: itk::VectorDataContainer<unsigned long, itk::ImageSample<itk::Image<float, 3u> > >::Reserve(unsigned long) (itkVectorDataContainer.hxx:292)
+        n1: 320000 0xDBEB7B: itk::ImageRandomSampler<itk::Image<float, 3u> >::GenerateData() (itkImageRandomSampler.hxx:50)
+         n1: 320000 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+          n1: 320000 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+           n1: 320000 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+            n1: 320000 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+             n1: 320000 0xEA6513: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::BeforeThreadedGetValueAndDerivative(itk::OptimizerParameters<double> const&) const (itkAdvancedImageToImageMetric.hxx:830)
+              n1: 320000 0xFCF355: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::GetValue(itk::OptimizerParameters<double> const&) const (itkAdvancedMeanSquaresImageToImageMetric.hxx:298)
+               n1: 320000 0x224B309: itk::SingleValuedNonLinearOptimizer::GetValue(itk::OptimizerParameters<double> const&) const (itkSingleValuedNonLinearOptimizer.cxx:72)
+                n1: 320000 0x16D5412: itk::GOMEAOptimizer::costFunctionEvaluation(itk::OptimizerParameters<double>*, double*) (itkGOMEAOptimizer.cxx:1195)
+                 n1: 320000 0x16D272B: itk::GOMEAOptimizer::initializePopulationAndFitnessValues(int) (itkGOMEAOptimizer.cxx:497)
+                  n1: 320000 0x16D1F51: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:385)
+                   n1: 320000 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+                    n1: 320000 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+                     n1: 320000 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+                      n1: 320000 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+                       n1: 320000 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+                        n1: 320000 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                         n1: 320000 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                          n1: 320000 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                           n1: 320000 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                            n1: 320000 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                             n1: 320000 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                              n0: 320000 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+#-----------
+snapshot=2
+#-----------
+time=55666378005
+mem_heap_B=29685284
+mem_heap_extra_B=959820
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=92581025467
+mem_heap_B=29686644
+mem_heap_extra_B=960148
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=4
+#-----------
+time=125413571167
+mem_heap_B=120009804
+mem_heap_extra_B=966548
+mem_stacks_B=0
+heap_tree=detailed
+n7: 120009804 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 90326016 0x83B0F4: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:159)
+  n1: 90326016 0xAC7B43: void* Eigen::internal::conditional_aligned_malloc<true>(unsigned long) (Memory.h:214)
+   n1: 90326016 0x159DC9D: double* Eigen::internal::conditional_aligned_new_auto<double, true>(unsigned long) (Memory.h:404)
+    n1: 90326016 0x159E3C9: Eigen::DenseStorage<double, -1, -1, -1, 0>::resize(long, long, long) (DenseStorage.h:486)
+     n1: 90326016 0x159D220: Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::resize(long, long) (PlainObjectBase.h:285)
+      n1: 90326016 0x16DA710: void Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::_init2<int, int>(long, long, Eigen::internal::enable_if<true, int>::type*) (PlainObjectBase.h:810)
+       n2: 90326016 0x16D94A6: Eigen::Matrix<double, -1, -1, 0, -1, -1>::Matrix<int, int>(int const&, int const&) (Matrix.h:340)
+        n1: 45163008 0x16D4E0C: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1118)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+        n1: 45163008 0x16D4F08: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1122)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+ n1: 12116544 0x90628B: itk::ImportImageContainer<unsigned long, float>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 12116544 0x8FB9BE: itk::ImportImageContainer<unsigned long, float>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n2: 12116544 0x8F0DC3: itk::Image<float, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n2: 6058272 0x994288: itk::ImageSource<itk::Image<float, 3u> >::AllocateOutputs() (itkImageSource.hxx:185)
+     n1: 6058272 0x99F8D6: itk::ImageFileReader<itk::Image<float, 3u>, itk::DefaultConvertPixelTraits<float> >::GenerateData() (itkImageFileReader.hxx:364)
+      n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+       n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+        n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+         n1: 6058272 0x1CC56A1: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1669)
+          n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+           n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+            n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+             n1: 6058272 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+              n2: 6058272 0x8677ED: elastix::ElastixBase::MultipleImageLoader<itk::Image<float, 3u> >::GenerateImageContainer(itk::VectorContainer<unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, itk::Matrix<double, 3u, 3u>*) (elxElastixBase.h:473)
+               n1: 3259872 0x8474A0: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:179)
+                n1: 3259872 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                 n1: 3259872 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                  n0: 3259872 0x7F38BC: main (elastix.cxx:280)
+               n1: 2798400 0x847316: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:160)
+                n1: 2798400 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                 n1: 2798400 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                  n0: 2798400 0x7F38BC: main (elastix.cxx:280)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n1: 6058272 0xD2B747: itk::MultiResolutionGaussianSmoothingPyramidImageFilter<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionGaussianSmoothingPyramidImageFilter.hxx:147)
+     n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n2: 6058272 0x1CC5E28: itk::ProcessObject::UpdateLargestPossibleRegion() (itkProcessObject.cxx:1833)
+          n1: 3259872 0x173EBC8: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::PreparePyramids() (itkMultiResolutionImageRegistrationMethod2.hxx:202)
+           n1: 3259872 0x173C324: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:295)
+            n1: 3259872 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+             n1: 3259872 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+              n1: 3259872 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+               n1: 3259872 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                n1: 3259872 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                 n1: 3259872 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                  n1: 3259872 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                   n1: 3259872 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                    n1: 3259872 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                     n0: 3259872 0x7F38BC: main (elastix.cxx:280)
+          n1: 2798400 0x173EB28: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::PreparePyramids() (itkMultiResolutionImageRegistrationMethod2.hxx:197)
+           n1: 2798400 0x173C324: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:295)
+            n1: 2798400 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+             n1: 2798400 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+              n1: 2798400 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+               n1: 2798400 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                n1: 2798400 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                 n1: 2798400 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                  n1: 2798400 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                   n1: 2798400 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                    n1: 2798400 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                     n0: 2798400 0x7F38BC: main (elastix.cxx:280)
+ n1: 6519744 0xCABA25: itk::ImportImageContainer<unsigned long, double>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 6519744 0xCBCA7E: itk::ImportImageContainer<unsigned long, double>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n1: 6519744 0xCAA8FD: itk::Image<double, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n1: 6519744 0xD8F5D3: itk::BSplineDecompositionImageFilter<itk::Image<float, 3u>, itk::Image<double, 3u> >::GenerateData() (itkBSplineDecompositionImageFilter.hxx:363)
+     n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6519744 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+          n1: 6519744 0xD8DEEA: itk::BSplineInterpolateImageFunction<itk::Image<float, 3u>, double, double>::SetInputImage(itk::Image<float, 3u> const*) (itkBSplineInterpolateImageFunction.hxx:97)
+           n1: 6519744 0xEB0CE3: itk::ImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkImageToImageMetric.hxx:315)
+            n1: 6519744 0xEAE22D: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:152)
+             n1: 6519744 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+              n1: 6519744 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+               n1: 6519744 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+                n1: 6519744 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+                 n1: 6519744 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                  n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                   n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                    n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                     n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                      n1: 6519744 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                       n1: 6519744 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                        n1: 6519744 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                         n1: 6519744 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                          n0: 6519744 0x7F38BC: main (elastix.cxx:280)
+ n1: 5980454 0x1D6542F: vnl_sse_alloc(unsigned long, unsigned int) (vnl_sse.h:106)
+  n2: 5980454 0x1D6547A: vnl_c_vector_alloc(unsigned long, unsigned int) (vnl_c_vector.hxx:350)
+   n3: 5953000 0x1D66940: vnl_c_vector<double>::allocate_T(unsigned long) (vnl_c_vector.hxx:404)
+    n1: 4637952 0x1E37488: vnl_vector<double>::vnl_vector(vnl_vector<double> const&) (vnl_vector.hxx:119)
+     n1: 4637952 0xE660D6: itk::Array<double>::Array(itk::Array<double> const&) (itkArray.hxx:41)
+      n2: 4637952 0x10387B9: itk::OptimizerParameters<double>::OptimizerParameters(itk::OptimizerParameters<double> const&) (itkOptimizerParameters.h:61)
+       n1: 4637952 0x159B2AD: void std::_Construct<itk::OptimizerParameters<double>, itk::OptimizerParameters<double> const&>(itk::OptimizerParameters<double>*, itk::OptimizerParameters<double> const&) (stl_construct.h:109)
+        n1: 4637952 0x1599F7B: itk::OptimizerParameters<double>* std::__uninitialized_fill_n<false>::__uninit_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:237)
+         n1: 4637952 0x1598BE9: itk::OptimizerParameters<double>* std::uninitialized_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:297)
+          n1: 4637952 0x15962B7: itk::OptimizerParameters<double>* std::__uninitialized_fill_n_a<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double>, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&, std::allocator<itk::OptimizerParameters<double> >&) (stl_uninitialized.h:410)
+           n1: 4637952 0x1595227: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::_M_fill_insert(__gnu_cxx::__normal_iterator<itk::OptimizerParameters<double>*, std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > > >, unsigned long, itk::OptimizerParameters<double> const&) (vector.tcc:566)
+            n3: 4637952 0x1594267: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::resize(unsigned long, itk::OptimizerParameters<double> const&) (stl_vector.h:960)
+             n1: 2299968 0x16D1A56: itk::GOMEAOptimizer::initializeNewPopulationMemory(int) (itkGOMEAOptimizer.cxx:348)
+              n1: 2299968 0x16D1E91: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:376)
+               n1: 2299968 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+                n1: 2299968 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+                 n1: 2299968 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+                  n1: 2299968 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+                   n1: 2299968 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+                    n1: 2299968 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                     n1: 2299968 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                      n1: 2299968 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                       n1: 2299968 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                        n1: 2299968 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                         n1: 2299968 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                          n1: 2299968 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                           n1: 2299968 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                            n1: 2299968 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                             n0: 2299968 0x7F38BC: main (elastix.cxx:280)
+             n1: 2299968 0x16D1AA2: itk::GOMEAOptimizer::initializeNewPopulationMemory(int) (itkGOMEAOptimizer.cxx:349)
+              n1: 2299968 0x16D1E91: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:376)
+               n1: 2299968 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+                n1: 2299968 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+                 n1: 2299968 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+                  n1: 2299968 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+                   n1: 2299968 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+                    n1: 2299968 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                     n1: 2299968 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                      n1: 2299968 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                       n1: 2299968 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                        n1: 2299968 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                         n1: 2299968 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                          n1: 2299968 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                           n1: 2299968 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                            n1: 2299968 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                             n0: 2299968 0x7F38BC: main (elastix.cxx:280)
+             n0: 38016 in 2 places, all below massif's threshold (1.00%)
+       n0: 0 in 2 places, all below massif's threshold (1.00%)
+    n2: 1295696 0x1E38CFF: vnl_vector<double>::set_size(unsigned long) (vnl_vector.hxx:226)
+     n2: 1295696 0xE357F0: itk::Array<double>::SetSize(unsigned long) (itkArray.hxx:155)
+      n1: 1216512 0xEAF355: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::InitializeThreadingParameters() const (itkAdvancedImageToImageMetric.hxx:222)
+       n1: 1216512 0xEAE2D2: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:172)
+        n1: 1216512 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+         n1: 1216512 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+          n1: 1216512 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+           n1: 1216512 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+            n1: 1216512 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+             n1: 1216512 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+              n1: 1216512 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+               n1: 1216512 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                n1: 1216512 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                 n1: 1216512 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                  n1: 1216512 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                   n1: 1216512 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                    n1: 1216512 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                     n0: 1216512 0x7F38BC: main (elastix.cxx:280)
+      n0: 79184 in 4 places, all below massif's threshold (1.00%)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n0: 19352 in 7 places, all below massif's threshold (1.00%)
+   n0: 27454 in 9 places, all below massif's threshold (1.00%)
+ n0: 1862886 in 451 places, all below massif's threshold (1.00%)
+ n1: 1650720 0x24BD059: __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::allocate(unsigned long, void const*) (new_allocator.h:121)
+  n1: 1650720 0x24BCFB5: std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> > >&, unsigned long) (alloc_traits.h:460)
+   n1: 1650720 0x24BCEEC: std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_M_get_node() (stl_tree.h:561)
+    n1: 1650720 0x24BCE9B: std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> >* std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_M_create_node<std::pair<gdcm::Tag const, gdcm::DictEntry> >(std::pair<gdcm::Tag const, gdcm::DictEntry>&&) (stl_tree.h:611)
+     n1: 1650720 0x24BCE5C: std::_Rb_tree_node<std::pair<gdcm::Tag const, gdcm::DictEntry> >* std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_Alloc_node::operator()<std::pair<gdcm::Tag const, gdcm::DictEntry> >(std::pair<gdcm::Tag const, gdcm::DictEntry>&&) const (stl_tree.h:529)
+      n1: 1650720 0x24BCC7B: std::_Rb_tree_iterator<std::pair<gdcm::Tag const, gdcm::DictEntry> > std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_M_insert_<std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_Alloc_node>(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::pair<gdcm::Tag const, gdcm::DictEntry>&&, std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_Alloc_node&) (stl_tree.h:1782)
+       n1: 1650720 0x24BC98B: std::pair<std::_Rb_tree_iterator<std::pair<gdcm::Tag const, gdcm::DictEntry> >, bool> std::_Rb_tree<gdcm::Tag, std::pair<gdcm::Tag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::Tag const, gdcm::DictEntry> >, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::_M_insert_unique<std::pair<gdcm::Tag const, gdcm::DictEntry> >(std::pair<gdcm::Tag const, gdcm::DictEntry>&&) (stl_tree.h:2127)
+        n1: 1650720 0x24BC8CF: std::map<gdcm::Tag, gdcm::DictEntry, std::less<gdcm::Tag>, std::allocator<std::pair<gdcm::Tag const, gdcm::DictEntry> > >::insert(std::pair<gdcm::Tag const, gdcm::DictEntry>&&) (stl_map.h:811)
+         n1: 1650720 0x24BC6DD: gdcm::Dict::AddDictEntry(gdcm::Tag const&, gdcm::DictEntry const&) (gdcmDict.h:70)
+          n1: 1650720 0x24BC541: gdcm::Dict::LoadDefault() (gdcmDefaultDicts.cxx:13886)
+           n1: 1650720 0x24BAD6B: gdcm::Dicts::LoadDefaults() (gdcmDicts.cxx:166)
+            n1: 1650720 0x24BE06E: gdcm::Global::Global() (gdcmGlobal.cxx:85)
+             n1: 1650720 0x2285AAB: __static_initialization_and_destruction_0(int, int) (gdcmGlobal.h:103)
+              n1: 1650720 0x2285AE4: _GLOBAL__sub_I_itkGDCMImageIO.cxx (itkGDCMImageIO.cxx:1653)
+               n1: 1650720 0x2E0546C: __libc_csu_init (in /home/joasiee/Documents/projects/elastix/build/Debug/bin/elastix)
+                n0: 1650720 0x646AAB0: (below main) (in /usr/lib/libc-2.33.so)
+ n1: 1553440 0x24BDEC7: __gnu_cxx::new_allocator<std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::allocate(unsigned long, void const*) (new_allocator.h:121)
+  n1: 1553440 0x24BDE1D: std::allocator_traits<std::allocator<std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > > >::allocate(std::allocator<std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >&, unsigned long) (alloc_traits.h:460)
+   n1: 1553440 0x24BDD54: std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_M_get_node() (stl_tree.h:561)
+    n1: 1553440 0x24BDD03: std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >* std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_M_create_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >(std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&) (stl_tree.h:611)
+     n1: 1553440 0x24BDCC4: std::_Rb_tree_node<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >* std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_Alloc_node::operator()<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >(std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&) const (stl_tree.h:529)
+      n1: 1553440 0x24BDAE3: std::_Rb_tree_iterator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_M_insert_<std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_Alloc_node>(std::_Rb_tree_node_base*, std::_Rb_tree_node_base*, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&, std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_Alloc_node&) (stl_tree.h:1782)
+       n1: 1553440 0x24BD7F3: std::pair<std::_Rb_tree_iterator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, bool> std::_Rb_tree<gdcm::PrivateTag, std::pair<gdcm::PrivateTag const, gdcm::DictEntry>, std::_Select1st<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::_M_insert_unique<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> >(std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&) (stl_tree.h:2127)
+        n1: 1553440 0x24BD737: std::map<gdcm::PrivateTag, gdcm::DictEntry, std::less<gdcm::PrivateTag>, std::allocator<std::pair<gdcm::PrivateTag const, gdcm::DictEntry> > >::insert(std::pair<gdcm::PrivateTag const, gdcm::DictEntry>&&) (stl_map.h:811)
+         n1: 1553440 0x24BD5C6: gdcm::PrivateDict::AddDictEntry(gdcm::PrivateTag const&, gdcm::DictEntry const&) (gdcmDict.h:228)
+          n1: 1553440 0x24BD3FE: gdcm::PrivateDict::LoadDefault() (gdcmPrivateDefaultDicts.cxx:10460)
+           n1: 1553440 0x24BAD7B: gdcm::Dicts::LoadDefaults() (gdcmDicts.cxx:167)
+            n1: 1553440 0x24BE06E: gdcm::Global::Global() (gdcmGlobal.cxx:85)
+             n1: 1553440 0x2285AAB: __static_initialization_and_destruction_0(int, int) (gdcmGlobal.h:103)
+              n1: 1553440 0x2285AE4: _GLOBAL__sub_I_itkGDCMImageIO.cxx (itkGDCMImageIO.cxx:1653)
+               n1: 1553440 0x2E0546C: __libc_csu_init (in /home/joasiee/Documents/projects/elastix/build/Debug/bin/elastix)
+                n0: 1553440 0x646AAB0: (below main) (in /usr/lib/libc-2.33.so)
+#-----------
+snapshot=5
+#-----------
+time=160213932379
+mem_heap_B=165172812
+mem_heap_extra_B=970100
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=6
+#-----------
+time=199513316709
+mem_heap_B=165214740
+mem_heap_extra_B=971084
+mem_stacks_B=0
+heap_tree=detailed
+n6: 165214740 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 90345024 0x83B0F4: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:159)
+  n1: 90345024 0xAC7B43: void* Eigen::internal::conditional_aligned_malloc<true>(unsigned long) (Memory.h:214)
+   n2: 90345024 0x159DC9D: double* Eigen::internal::conditional_aligned_new_auto<double, true>(unsigned long) (Memory.h:404)
+    n1: 90326016 0x159E3C9: Eigen::DenseStorage<double, -1, -1, -1, 0>::resize(long, long, long) (DenseStorage.h:486)
+     n1: 90326016 0x159D220: Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::resize(long, long) (PlainObjectBase.h:285)
+      n1: 90326016 0x16DA710: void Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::_init2<int, int>(long, long, Eigen::internal::enable_if<true, int>::type*) (PlainObjectBase.h:810)
+       n2: 90326016 0x16D94A6: Eigen::Matrix<double, -1, -1, 0, -1, -1>::Matrix<int, int>(int const&, int const&) (Matrix.h:340)
+        n1: 45163008 0x16D4E0C: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1118)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+        n1: 45163008 0x16D4F08: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1122)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+    n0: 19008 in 1 place, below massif's threshold (1.00%)
+ n2: 45191812 0x16E95C0: GOMEA::Malloc(long) (Tools.cxx:56)
+  n1: 45163008 0x16E9C7A: GOMEA::choleskyDecomposition(Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, int) (Tools.cxx:174)
+   n1: 45163008 0x16D5FCF: itk::GOMEAOptimizer::computeParametersForSampling(int) (itkGOMEAOptimizer.cxx:1370)
+    n1: 45163008 0x16D5899: itk::GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulation(int) (itkGOMEAOptimizer.cxx:1281)
+     n1: 45163008 0x16D4080: itk::GOMEAOptimizer::makePopulation(int) (itkGOMEAOptimizer.cxx:965)
+      n1: 45163008 0x16D8528: itk::GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int, int) (itkGOMEAOptimizer.cxx:1838)
+       n1: 45163008 0x16D84AD: itk::GOMEAOptimizer::generationalStepAllPopulations() (itkGOMEAOptimizer.cxx:1822)
+        n1: 45163008 0x16D8644: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1866)
+         n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+          n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+           n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+            n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+             n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+              n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+               n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                 n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                  n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                   n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                    n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                     n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                      n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+  n0: 28804 in 15 places, all below massif's threshold (1.00%)
+ n1: 12116544 0x90628B: itk::ImportImageContainer<unsigned long, float>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 12116544 0x8FB9BE: itk::ImportImageContainer<unsigned long, float>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n2: 12116544 0x8F0DC3: itk::Image<float, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n2: 6058272 0x994288: itk::ImageSource<itk::Image<float, 3u> >::AllocateOutputs() (itkImageSource.hxx:185)
+     n1: 6058272 0x99F8D6: itk::ImageFileReader<itk::Image<float, 3u>, itk::DefaultConvertPixelTraits<float> >::GenerateData() (itkImageFileReader.hxx:364)
+      n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+       n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+        n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+         n1: 6058272 0x1CC56A1: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1669)
+          n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+           n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+            n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+             n1: 6058272 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+              n2: 6058272 0x8677ED: elastix::ElastixBase::MultipleImageLoader<itk::Image<float, 3u> >::GenerateImageContainer(itk::VectorContainer<unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, itk::Matrix<double, 3u, 3u>*) (elxElastixBase.h:473)
+               n1: 3259872 0x8474A0: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:179)
+                n1: 3259872 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                 n1: 3259872 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                  n0: 3259872 0x7F38BC: main (elastix.cxx:280)
+               n1: 2798400 0x847316: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:160)
+                n1: 2798400 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                 n1: 2798400 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                  n0: 2798400 0x7F38BC: main (elastix.cxx:280)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n1: 6058272 0xD2B747: itk::MultiResolutionGaussianSmoothingPyramidImageFilter<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionGaussianSmoothingPyramidImageFilter.hxx:147)
+     n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n2: 6058272 0x1CC5E28: itk::ProcessObject::UpdateLargestPossibleRegion() (itkProcessObject.cxx:1833)
+          n1: 3259872 0x173EBC8: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::PreparePyramids() (itkMultiResolutionImageRegistrationMethod2.hxx:202)
+           n1: 3259872 0x173C324: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:295)
+            n1: 3259872 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+             n1: 3259872 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+              n1: 3259872 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+               n1: 3259872 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                n1: 3259872 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                 n1: 3259872 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                  n1: 3259872 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                   n1: 3259872 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                    n1: 3259872 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                     n0: 3259872 0x7F38BC: main (elastix.cxx:280)
+          n1: 2798400 0x173EB28: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::PreparePyramids() (itkMultiResolutionImageRegistrationMethod2.hxx:197)
+           n1: 2798400 0x173C324: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:295)
+            n1: 2798400 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+             n1: 2798400 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+              n1: 2798400 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+               n1: 2798400 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                n1: 2798400 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                 n1: 2798400 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                  n1: 2798400 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                   n1: 2798400 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                    n1: 2798400 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                     n0: 2798400 0x7F38BC: main (elastix.cxx:280)
+ n1: 6519744 0xCABA25: itk::ImportImageContainer<unsigned long, double>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 6519744 0xCBCA7E: itk::ImportImageContainer<unsigned long, double>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n1: 6519744 0xCAA8FD: itk::Image<double, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n1: 6519744 0xD8F5D3: itk::BSplineDecompositionImageFilter<itk::Image<float, 3u>, itk::Image<double, 3u> >::GenerateData() (itkBSplineDecompositionImageFilter.hxx:363)
+     n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6519744 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+          n1: 6519744 0xD8DEEA: itk::BSplineInterpolateImageFunction<itk::Image<float, 3u>, double, double>::SetInputImage(itk::Image<float, 3u> const*) (itkBSplineInterpolateImageFunction.hxx:97)
+           n1: 6519744 0xEB0CE3: itk::ImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkImageToImageMetric.hxx:315)
+            n1: 6519744 0xEAE22D: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:152)
+             n1: 6519744 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+              n1: 6519744 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+               n1: 6519744 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+                n1: 6519744 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+                 n1: 6519744 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                  n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                   n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                    n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                     n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                      n1: 6519744 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                       n1: 6519744 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                        n1: 6519744 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                         n1: 6519744 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                          n0: 6519744 0x7F38BC: main (elastix.cxx:280)
+ n1: 5980550 0x1D6542F: vnl_sse_alloc(unsigned long, unsigned int) (vnl_sse.h:106)
+  n2: 5980550 0x1D6547A: vnl_c_vector_alloc(unsigned long, unsigned int) (vnl_c_vector.hxx:350)
+   n2: 5952992 0x1D66940: vnl_c_vector<double>::allocate_T(unsigned long) (vnl_c_vector.hxx:404)
+    n1: 4637952 0x1E37488: vnl_vector<double>::vnl_vector(vnl_vector<double> const&) (vnl_vector.hxx:119)
+     n1: 4637952 0xE660D6: itk::Array<double>::Array(itk::Array<double> const&) (itkArray.hxx:41)
+      n2: 4637952 0x10387B9: itk::OptimizerParameters<double>::OptimizerParameters(itk::OptimizerParameters<double> const&) (itkOptimizerParameters.h:61)
+       n1: 4637952 0x159B2AD: void std::_Construct<itk::OptimizerParameters<double>, itk::OptimizerParameters<double> const&>(itk::OptimizerParameters<double>*, itk::OptimizerParameters<double> const&) (stl_construct.h:109)
+        n1: 4637952 0x1599F7B: itk::OptimizerParameters<double>* std::__uninitialized_fill_n<false>::__uninit_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:237)
+         n1: 4637952 0x1598BE9: itk::OptimizerParameters<double>* std::uninitialized_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:297)
+          n1: 4637952 0x15962B7: itk::OptimizerParameters<double>* std::__uninitialized_fill_n_a<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double>, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&, std::allocator<itk::OptimizerParameters<double> >&) (stl_uninitialized.h:410)
+           n1: 4637952 0x1595227: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::_M_fill_insert(__gnu_cxx::__normal_iterator<itk::OptimizerParameters<double>*, std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > > >, unsigned long, itk::OptimizerParameters<double> const&) (vector.tcc:566)
+            n3: 4637952 0x1594267: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::resize(unsigned long, itk::OptimizerParameters<double> const&) (stl_vector.h:960)
+             n1: 2299968 0x16D1A56: itk::GOMEAOptimizer::initializeNewPopulationMemory(int) (itkGOMEAOptimizer.cxx:348)
+              n1: 2299968 0x16D1E91: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:376)
+               n1: 2299968 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+                n1: 2299968 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+                 n1: 2299968 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+                  n1: 2299968 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+                   n1: 2299968 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+                    n1: 2299968 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                     n1: 2299968 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                      n1: 2299968 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                       n1: 2299968 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                        n1: 2299968 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                         n1: 2299968 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                          n1: 2299968 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                           n1: 2299968 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                            n1: 2299968 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                             n0: 2299968 0x7F38BC: main (elastix.cxx:280)
+             n1: 2299968 0x16D1AA2: itk::GOMEAOptimizer::initializeNewPopulationMemory(int) (itkGOMEAOptimizer.cxx:349)
+              n1: 2299968 0x16D1E91: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:376)
+               n1: 2299968 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+                n1: 2299968 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+                 n1: 2299968 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+                  n1: 2299968 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+                   n1: 2299968 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+                    n1: 2299968 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                     n1: 2299968 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                      n1: 2299968 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                       n1: 2299968 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                        n1: 2299968 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                         n1: 2299968 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                          n1: 2299968 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                           n1: 2299968 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                            n1: 2299968 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                             n0: 2299968 0x7F38BC: main (elastix.cxx:280)
+             n0: 38016 in 2 places, all below massif's threshold (1.00%)
+       n0: 0 in 2 places, all below massif's threshold (1.00%)
+    n0: 1315040 in 8 places, all below massif's threshold (1.00%)
+   n0: 27558 in 9 places, all below massif's threshold (1.00%)
+ n0: 5061066 in 452 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=7
+#-----------
+time=225184011342
+mem_heap_B=165212852
+mem_heap_extra_B=970548
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=8
+#-----------
+time=259925989030
+mem_heap_B=165249172
+mem_heap_extra_B=970196
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=9
+#-----------
+time=279792703018
+mem_heap_B=165249172
+mem_heap_extra_B=970196
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=10
+#-----------
+time=309596015463
+mem_heap_B=165249172
+mem_heap_extra_B=970196
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=346633620253
+mem_heap_B=210335900
+mem_heap_extra_B=973628
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=12
+#-----------
+time=368770952669
+mem_heap_B=210378852
+mem_heap_extra_B=974884
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=13
+#-----------
+time=385984888209
+mem_heap_B=210377852
+mem_heap_extra_B=974636
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=408342456166
+mem_heap_B=210377812
+mem_heap_extra_B=974612
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=15
+#-----------
+time=425732015008
+mem_heap_B=210377356
+mem_heap_extra_B=974508
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=16
+#-----------
+time=455541363465
+mem_heap_B=210379492
+mem_heap_extra_B=974908
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=492803461315
+mem_heap_B=210378676
+mem_heap_extra_B=974820
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=18
+#-----------
+time=518426791065
+mem_heap_B=210357200
+mem_heap_extra_B=974136
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=554136572386
+mem_heap_B=255498908
+mem_heap_extra_B=977156
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=20
+#-----------
+time=577782436901
+mem_heap_B=255543276
+mem_heap_extra_B=978708
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=21
+#-----------
+time=593686279430
+mem_heap_B=255541764
+mem_heap_extra_B=978332
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=22
+#-----------
+time=620023152421
+mem_heap_B=255544196
+mem_heap_extra_B=978820
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=657006402051
+mem_heap_B=255541916
+mem_heap_extra_B=978388
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=24
+#-----------
+time=680710731061
+mem_heap_B=255542476
+mem_heap_extra_B=978492
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=25
+#-----------
+time=699202518609
+mem_heap_B=255541764
+mem_heap_extra_B=978332
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=26
+#-----------
+time=725316218474
+mem_heap_B=255521872
+mem_heap_extra_B=978136
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=27
+#-----------
+time=761610539436
+mem_heap_B=300661916
+mem_heap_extra_B=980684
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=788084786641
+mem_heap_B=300738196
+mem_heap_extra_B=980780
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=809193180467
+mem_heap_B=300738196
+mem_heap_extra_B=980780
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=832910333634
+mem_heap_B=300701492
+mem_heap_extra_B=981108
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=31
+#-----------
+time=851403647085
+mem_heap_B=300738196
+mem_heap_extra_B=980780
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=877732159695
+mem_heap_B=300702684
+mem_heap_extra_B=981268
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=33
+#-----------
+time=911893267333
+mem_heap_B=300707556
+mem_heap_extra_B=982476
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=932784045817
+mem_heap_B=300685392
+mem_heap_extra_B=981672
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=35
+#-----------
+time=969079794643
+mem_heap_B=345824924
+mem_heap_extra_B=984212
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=998154095867
+mem_heap_B=345864348
+mem_heap_extra_B=984596
+mem_stacks_B=0
+heap_tree=detailed
+n6: 345864348 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 225843844 0x16E95C0: GOMEA::Malloc(long) (Tools.cxx:56)
+  n1: 225815040 0x16E9C7A: GOMEA::choleskyDecomposition(Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, int) (Tools.cxx:174)
+   n1: 225815040 0x16D5FCF: itk::GOMEAOptimizer::computeParametersForSampling(int) (itkGOMEAOptimizer.cxx:1370)
+    n1: 225815040 0x16D5899: itk::GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulation(int) (itkGOMEAOptimizer.cxx:1281)
+     n1: 225815040 0x16D4080: itk::GOMEAOptimizer::makePopulation(int) (itkGOMEAOptimizer.cxx:965)
+      n1: 225815040 0x16D8528: itk::GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int, int) (itkGOMEAOptimizer.cxx:1838)
+       n1: 225815040 0x16D84AD: itk::GOMEAOptimizer::generationalStepAllPopulations() (itkGOMEAOptimizer.cxx:1822)
+        n1: 225815040 0x16D8644: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1866)
+         n1: 225815040 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+          n1: 225815040 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+           n1: 225815040 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+            n1: 225815040 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+             n1: 225815040 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+              n1: 225815040 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+               n1: 225815040 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                n1: 225815040 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                 n1: 225815040 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                  n1: 225815040 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                   n1: 225815040 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                    n1: 225815040 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                     n1: 225815040 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                      n0: 225815040 0x7F38BC: main (elastix.cxx:280)
+  n0: 28804 in 16 places, all below massif's threshold (1.00%)
+ n1: 90345024 0x83B0F4: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:159)
+  n1: 90345024 0xAC7B43: void* Eigen::internal::conditional_aligned_malloc<true>(unsigned long) (Memory.h:214)
+   n2: 90345024 0x159DC9D: double* Eigen::internal::conditional_aligned_new_auto<double, true>(unsigned long) (Memory.h:404)
+    n1: 90326016 0x159E3C9: Eigen::DenseStorage<double, -1, -1, -1, 0>::resize(long, long, long) (DenseStorage.h:486)
+     n1: 90326016 0x159D220: Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::resize(long, long) (PlainObjectBase.h:285)
+      n1: 90326016 0x16DA710: void Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::_init2<int, int>(long, long, Eigen::internal::enable_if<true, int>::type*) (PlainObjectBase.h:810)
+       n2: 90326016 0x16D94A6: Eigen::Matrix<double, -1, -1, 0, -1, -1>::Matrix<int, int>(int const&, int const&) (Matrix.h:340)
+        n1: 45163008 0x16D4E0C: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1118)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+        n1: 45163008 0x16D4F08: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1122)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+    n0: 19008 in 1 place, below massif's threshold (1.00%)
+ n1: 12116544 0x90628B: itk::ImportImageContainer<unsigned long, float>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 12116544 0x8FB9BE: itk::ImportImageContainer<unsigned long, float>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n2: 12116544 0x8F0DC3: itk::Image<float, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n2: 6058272 0x994288: itk::ImageSource<itk::Image<float, 3u> >::AllocateOutputs() (itkImageSource.hxx:185)
+     n1: 6058272 0x99F8D6: itk::ImageFileReader<itk::Image<float, 3u>, itk::DefaultConvertPixelTraits<float> >::GenerateData() (itkImageFileReader.hxx:364)
+      n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+       n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+        n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+         n1: 6058272 0x1CC56A1: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1669)
+          n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+           n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+            n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+             n1: 6058272 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+              n1: 6058272 0x8677ED: elastix::ElastixBase::MultipleImageLoader<itk::Image<float, 3u> >::GenerateImageContainer(itk::VectorContainer<unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, itk::Matrix<double, 3u, 3u>*) (elxElastixBase.h:473)
+               n0: 6058272 in 2 places, all below massif's threshold (1.00%)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n1: 6058272 0xD2B747: itk::MultiResolutionGaussianSmoothingPyramidImageFilter<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionGaussianSmoothingPyramidImageFilter.hxx:147)
+     n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6058272 0x1CC5E28: itk::ProcessObject::UpdateLargestPossibleRegion() (itkProcessObject.cxx:1833)
+          n0: 6058272 in 2 places, all below massif's threshold (1.00%)
+ n1: 6519744 0xCABA25: itk::ImportImageContainer<unsigned long, double>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 6519744 0xCBCA7E: itk::ImportImageContainer<unsigned long, double>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n1: 6519744 0xCAA8FD: itk::Image<double, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n1: 6519744 0xD8F5D3: itk::BSplineDecompositionImageFilter<itk::Image<float, 3u>, itk::Image<double, 3u> >::GenerateData() (itkBSplineDecompositionImageFilter.hxx:363)
+     n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6519744 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+          n1: 6519744 0xD8DEEA: itk::BSplineInterpolateImageFunction<itk::Image<float, 3u>, double, double>::SetInputImage(itk::Image<float, 3u> const*) (itkBSplineInterpolateImageFunction.hxx:97)
+           n1: 6519744 0xEB0CE3: itk::ImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkImageToImageMetric.hxx:315)
+            n1: 6519744 0xEAE22D: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:152)
+             n1: 6519744 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+              n1: 6519744 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+               n1: 6519744 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+                n1: 6519744 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+                 n1: 6519744 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                  n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                   n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                    n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                     n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                      n1: 6519744 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                       n1: 6519744 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                        n1: 6519744 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                         n1: 6519744 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                          n0: 6519744 0x7F38BC: main (elastix.cxx:280)
+ n1: 5980478 0x1D6542F: vnl_sse_alloc(unsigned long, unsigned int) (vnl_sse.h:106)
+  n2: 5980478 0x1D6547A: vnl_c_vector_alloc(unsigned long, unsigned int) (vnl_c_vector.hxx:350)
+   n2: 5952992 0x1D66940: vnl_c_vector<double>::allocate_T(unsigned long) (vnl_c_vector.hxx:404)
+    n1: 4637952 0x1E37488: vnl_vector<double>::vnl_vector(vnl_vector<double> const&) (vnl_vector.hxx:119)
+     n1: 4637952 0xE660D6: itk::Array<double>::Array(itk::Array<double> const&) (itkArray.hxx:41)
+      n2: 4637952 0x10387B9: itk::OptimizerParameters<double>::OptimizerParameters(itk::OptimizerParameters<double> const&) (itkOptimizerParameters.h:61)
+       n1: 4637952 0x159B2AD: void std::_Construct<itk::OptimizerParameters<double>, itk::OptimizerParameters<double> const&>(itk::OptimizerParameters<double>*, itk::OptimizerParameters<double> const&) (stl_construct.h:109)
+        n1: 4637952 0x1599F7B: itk::OptimizerParameters<double>* std::__uninitialized_fill_n<false>::__uninit_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:237)
+         n1: 4637952 0x1598BE9: itk::OptimizerParameters<double>* std::uninitialized_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:297)
+          n1: 4637952 0x15962B7: itk::OptimizerParameters<double>* std::__uninitialized_fill_n_a<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double>, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&, std::allocator<itk::OptimizerParameters<double> >&) (stl_uninitialized.h:410)
+           n1: 4637952 0x1595227: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::_M_fill_insert(__gnu_cxx::__normal_iterator<itk::OptimizerParameters<double>*, std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > > >, unsigned long, itk::OptimizerParameters<double> const&) (vector.tcc:566)
+            n1: 4637952 0x1594267: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::resize(unsigned long, itk::OptimizerParameters<double> const&) (stl_vector.h:960)
+             n0: 4637952 in 4 places, all below massif's threshold (1.00%)
+       n0: 0 in 2 places, all below massif's threshold (1.00%)
+    n0: 1315040 in 8 places, all below massif's threshold (1.00%)
+   n0: 27486 in 9 places, all below massif's threshold (1.00%)
+ n0: 5058714 in 452 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=37
+#-----------
+time=1021862258309
+mem_heap_B=345865028
+mem_heap_extra_B=984748
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=38
+#-----------
+time=1037747195690
+mem_heap_B=345901204
+mem_heap_extra_B=984308
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=39
+#-----------
+time=1066673018414
+mem_heap_B=345866164
+mem_heap_extra_B=985036
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=40
+#-----------
+time=1082557848273
+mem_heap_B=345864092
+mem_heap_extra_B=984532
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=1106265718300
+mem_heap_B=345865020
+mem_heap_extra_B=984740
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=1140171511912
+mem_heap_B=345848912
+mem_heap_extra_B=985424
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=43
+#-----------
+time=1178909156971
+mem_heap_B=391016444
+mem_heap_extra_B=987756
+mem_stacks_B=0
+heap_tree=detailed
+n6: 391016444 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 271016108 0x16E95C0: GOMEA::Malloc(long) (Tools.cxx:56)
+  n1: 270978048 0x16E9C7A: GOMEA::choleskyDecomposition(Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, int) (Tools.cxx:174)
+   n1: 270978048 0x16D5FCF: itk::GOMEAOptimizer::computeParametersForSampling(int) (itkGOMEAOptimizer.cxx:1370)
+    n1: 270978048 0x16D5899: itk::GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulation(int) (itkGOMEAOptimizer.cxx:1281)
+     n1: 270978048 0x16D4080: itk::GOMEAOptimizer::makePopulation(int) (itkGOMEAOptimizer.cxx:965)
+      n1: 270978048 0x16D8528: itk::GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int, int) (itkGOMEAOptimizer.cxx:1838)
+       n1: 270978048 0x16D84AD: itk::GOMEAOptimizer::generationalStepAllPopulations() (itkGOMEAOptimizer.cxx:1822)
+        n1: 270978048 0x16D8644: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1866)
+         n1: 270978048 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+          n1: 270978048 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+           n1: 270978048 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+            n1: 270978048 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+             n1: 270978048 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+              n1: 270978048 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+               n1: 270978048 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                n1: 270978048 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                 n1: 270978048 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                  n1: 270978048 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                   n1: 270978048 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                    n1: 270978048 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                     n1: 270978048 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                      n0: 270978048 0x7F38BC: main (elastix.cxx:280)
+  n0: 38060 in 16 places, all below massif's threshold (1.00%)
+ n1: 90326016 0x83B0F4: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:159)
+  n1: 90326016 0xAC7B43: void* Eigen::internal::conditional_aligned_malloc<true>(unsigned long) (Memory.h:214)
+   n2: 90326016 0x159DC9D: double* Eigen::internal::conditional_aligned_new_auto<double, true>(unsigned long) (Memory.h:404)
+    n1: 90326016 0x159E3C9: Eigen::DenseStorage<double, -1, -1, -1, 0>::resize(long, long, long) (DenseStorage.h:486)
+     n1: 90326016 0x159D220: Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::resize(long, long) (PlainObjectBase.h:285)
+      n1: 90326016 0x16DA710: void Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::_init2<int, int>(long, long, Eigen::internal::enable_if<true, int>::type*) (PlainObjectBase.h:810)
+       n2: 90326016 0x16D94A6: Eigen::Matrix<double, -1, -1, 0, -1, -1>::Matrix<int, int>(int const&, int const&) (Matrix.h:340)
+        n1: 45163008 0x16D4E0C: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1118)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+        n1: 45163008 0x16D4F08: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1122)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+    n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 12116544 0x90628B: itk::ImportImageContainer<unsigned long, float>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 12116544 0x8FB9BE: itk::ImportImageContainer<unsigned long, float>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n2: 12116544 0x8F0DC3: itk::Image<float, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n2: 6058272 0x994288: itk::ImageSource<itk::Image<float, 3u> >::AllocateOutputs() (itkImageSource.hxx:185)
+     n1: 6058272 0x99F8D6: itk::ImageFileReader<itk::Image<float, 3u>, itk::DefaultConvertPixelTraits<float> >::GenerateData() (itkImageFileReader.hxx:364)
+      n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+       n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+        n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+         n1: 6058272 0x1CC56A1: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1669)
+          n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+           n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+            n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+             n1: 6058272 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+              n1: 6058272 0x8677ED: elastix::ElastixBase::MultipleImageLoader<itk::Image<float, 3u> >::GenerateImageContainer(itk::VectorContainer<unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, itk::Matrix<double, 3u, 3u>*) (elxElastixBase.h:473)
+               n0: 6058272 in 2 places, all below massif's threshold (1.00%)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n1: 6058272 0xD2B747: itk::MultiResolutionGaussianSmoothingPyramidImageFilter<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionGaussianSmoothingPyramidImageFilter.hxx:147)
+     n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6058272 0x1CC5E28: itk::ProcessObject::UpdateLargestPossibleRegion() (itkProcessObject.cxx:1833)
+          n0: 6058272 in 2 places, all below massif's threshold (1.00%)
+ n1: 6519744 0xCABA25: itk::ImportImageContainer<unsigned long, double>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 6519744 0xCBCA7E: itk::ImportImageContainer<unsigned long, double>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n1: 6519744 0xCAA8FD: itk::Image<double, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n1: 6519744 0xD8F5D3: itk::BSplineDecompositionImageFilter<itk::Image<float, 3u>, itk::Image<double, 3u> >::GenerateData() (itkBSplineDecompositionImageFilter.hxx:363)
+     n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6519744 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+          n1: 6519744 0xD8DEEA: itk::BSplineInterpolateImageFunction<itk::Image<float, 3u>, double, double>::SetInputImage(itk::Image<float, 3u> const*) (itkBSplineInterpolateImageFunction.hxx:97)
+           n1: 6519744 0xEB0CE3: itk::ImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkImageToImageMetric.hxx:315)
+            n1: 6519744 0xEAE22D: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:152)
+             n1: 6519744 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+              n1: 6519744 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+               n1: 6519744 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+                n1: 6519744 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+                 n1: 6519744 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                  n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                   n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                    n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                     n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                      n1: 6519744 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                       n1: 6519744 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                        n1: 6519744 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                         n1: 6519744 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                          n0: 6519744 0x7F38BC: main (elastix.cxx:280)
+ n1: 5980454 0x1D6542F: vnl_sse_alloc(unsigned long, unsigned int) (vnl_sse.h:106)
+  n2: 5980454 0x1D6547A: vnl_c_vector_alloc(unsigned long, unsigned int) (vnl_c_vector.hxx:350)
+   n2: 5952992 0x1D66940: vnl_c_vector<double>::allocate_T(unsigned long) (vnl_c_vector.hxx:404)
+    n1: 4637952 0x1E37488: vnl_vector<double>::vnl_vector(vnl_vector<double> const&) (vnl_vector.hxx:119)
+     n1: 4637952 0xE660D6: itk::Array<double>::Array(itk::Array<double> const&) (itkArray.hxx:41)
+      n2: 4637952 0x10387B9: itk::OptimizerParameters<double>::OptimizerParameters(itk::OptimizerParameters<double> const&) (itkOptimizerParameters.h:61)
+       n1: 4637952 0x159B2AD: void std::_Construct<itk::OptimizerParameters<double>, itk::OptimizerParameters<double> const&>(itk::OptimizerParameters<double>*, itk::OptimizerParameters<double> const&) (stl_construct.h:109)
+        n1: 4637952 0x1599F7B: itk::OptimizerParameters<double>* std::__uninitialized_fill_n<false>::__uninit_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:237)
+         n1: 4637952 0x1598BE9: itk::OptimizerParameters<double>* std::uninitialized_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:297)
+          n1: 4637952 0x15962B7: itk::OptimizerParameters<double>* std::__uninitialized_fill_n_a<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double>, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&, std::allocator<itk::OptimizerParameters<double> >&) (stl_uninitialized.h:410)
+           n1: 4637952 0x1595227: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::_M_fill_insert(__gnu_cxx::__normal_iterator<itk::OptimizerParameters<double>*, std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > > >, unsigned long, itk::OptimizerParameters<double> const&) (vector.tcc:566)
+            n1: 4637952 0x1594267: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::resize(unsigned long, itk::OptimizerParameters<double> const&) (stl_vector.h:960)
+             n0: 4637952 in 4 places, all below massif's threshold (1.00%)
+       n0: 0 in 2 places, all below massif's threshold (1.00%)
+    n0: 1315040 in 8 places, all below massif's threshold (1.00%)
+   n0: 27462 in 9 places, all below massif's threshold (1.00%)
+ n0: 5057578 in 452 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=44
+#-----------
+time=1197289580745
+mem_heap_B=391031868
+mem_heap_extra_B=989196
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=45
+#-----------
+time=1218283793916
+mem_heap_B=391031140
+mem_heap_extra_B=989044
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=46
+#-----------
+time=1252655887814
+mem_heap_B=391028644
+mem_heap_extra_B=988436
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=1278970176865
+mem_heap_B=391029732
+mem_heap_extra_B=988684
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=1294849624765
+mem_heap_B=391028036
+mem_heap_extra_B=988276
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=49
+#-----------
+time=1331995662955
+mem_heap_B=391013816
+mem_heap_extra_B=989384
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=1334990209435
+mem_heap_B=391008304
+mem_heap_extra_B=988080
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=51
+#-----------
+time=1337985000649
+mem_heap_B=391007520
+mem_heap_extra_B=987920
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=1340979724828
+mem_heap_B=391008744
+mem_heap_extra_B=988112
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=1343974325924
+mem_heap_B=391007832
+mem_heap_extra_B=987992
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=54
+#-----------
+time=1346968887853
+mem_heap_B=391007816
+mem_heap_extra_B=987984
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=55
+#-----------
+time=1383684770988
+mem_heap_B=436150940
+mem_heap_extra_B=991268
+mem_stacks_B=0
+heap_tree=detailed
+n6: 436150940 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 316150604 0x16E95C0: GOMEA::Malloc(long) (Tools.cxx:56)
+  n1: 316141056 0x16E9C7A: GOMEA::choleskyDecomposition(Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, int) (Tools.cxx:174)
+   n1: 316141056 0x16D5FCF: itk::GOMEAOptimizer::computeParametersForSampling(int) (itkGOMEAOptimizer.cxx:1370)
+    n1: 316141056 0x16D5899: itk::GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulation(int) (itkGOMEAOptimizer.cxx:1281)
+     n1: 316141056 0x16D4080: itk::GOMEAOptimizer::makePopulation(int) (itkGOMEAOptimizer.cxx:965)
+      n1: 316141056 0x16D8528: itk::GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int, int) (itkGOMEAOptimizer.cxx:1838)
+       n1: 316141056 0x16D84AD: itk::GOMEAOptimizer::generationalStepAllPopulations() (itkGOMEAOptimizer.cxx:1822)
+        n1: 316141056 0x16D8644: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1866)
+         n1: 316141056 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+          n1: 316141056 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+           n1: 316141056 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+            n1: 316141056 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+             n1: 316141056 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+              n1: 316141056 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+               n1: 316141056 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                n1: 316141056 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                 n1: 316141056 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                  n1: 316141056 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                   n1: 316141056 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                    n1: 316141056 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                     n1: 316141056 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                      n0: 316141056 0x7F38BC: main (elastix.cxx:280)
+  n0: 9548 in 16 places, all below massif's threshold (1.00%)
+ n1: 90326016 0x83B0F4: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:159)
+  n1: 90326016 0xAC7B43: void* Eigen::internal::conditional_aligned_malloc<true>(unsigned long) (Memory.h:214)
+   n2: 90326016 0x159DC9D: double* Eigen::internal::conditional_aligned_new_auto<double, true>(unsigned long) (Memory.h:404)
+    n1: 90326016 0x159E3C9: Eigen::DenseStorage<double, -1, -1, -1, 0>::resize(long, long, long) (DenseStorage.h:486)
+     n1: 90326016 0x159D220: Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::resize(long, long) (PlainObjectBase.h:285)
+      n1: 90326016 0x16DA710: void Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::_init2<int, int>(long, long, Eigen::internal::enable_if<true, int>::type*) (PlainObjectBase.h:810)
+       n2: 90326016 0x16D94A6: Eigen::Matrix<double, -1, -1, 0, -1, -1>::Matrix<int, int>(int const&, int const&) (Matrix.h:340)
+        n1: 45163008 0x16D4E0C: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1118)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+        n1: 45163008 0x16D4F08: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1122)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+    n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 12116544 0x90628B: itk::ImportImageContainer<unsigned long, float>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 12116544 0x8FB9BE: itk::ImportImageContainer<unsigned long, float>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n2: 12116544 0x8F0DC3: itk::Image<float, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n2: 6058272 0x994288: itk::ImageSource<itk::Image<float, 3u> >::AllocateOutputs() (itkImageSource.hxx:185)
+     n1: 6058272 0x99F8D6: itk::ImageFileReader<itk::Image<float, 3u>, itk::DefaultConvertPixelTraits<float> >::GenerateData() (itkImageFileReader.hxx:364)
+      n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+       n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+        n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+         n1: 6058272 0x1CC56A1: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1669)
+          n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+           n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+            n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+             n1: 6058272 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+              n1: 6058272 0x8677ED: elastix::ElastixBase::MultipleImageLoader<itk::Image<float, 3u> >::GenerateImageContainer(itk::VectorContainer<unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, itk::Matrix<double, 3u, 3u>*) (elxElastixBase.h:473)
+               n0: 6058272 in 2 places, all below massif's threshold (1.00%)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n1: 6058272 0xD2B747: itk::MultiResolutionGaussianSmoothingPyramidImageFilter<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionGaussianSmoothingPyramidImageFilter.hxx:147)
+     n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6058272 0x1CC5E28: itk::ProcessObject::UpdateLargestPossibleRegion() (itkProcessObject.cxx:1833)
+          n0: 6058272 in 2 places, all below massif's threshold (1.00%)
+ n1: 6519744 0xCABA25: itk::ImportImageContainer<unsigned long, double>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 6519744 0xCBCA7E: itk::ImportImageContainer<unsigned long, double>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n1: 6519744 0xCAA8FD: itk::Image<double, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n1: 6519744 0xD8F5D3: itk::BSplineDecompositionImageFilter<itk::Image<float, 3u>, itk::Image<double, 3u> >::GenerateData() (itkBSplineDecompositionImageFilter.hxx:363)
+     n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6519744 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+          n1: 6519744 0xD8DEEA: itk::BSplineInterpolateImageFunction<itk::Image<float, 3u>, double, double>::SetInputImage(itk::Image<float, 3u> const*) (itkBSplineInterpolateImageFunction.hxx:97)
+           n1: 6519744 0xEB0CE3: itk::ImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkImageToImageMetric.hxx:315)
+            n1: 6519744 0xEAE22D: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:152)
+             n1: 6519744 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+              n1: 6519744 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+               n1: 6519744 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+                n1: 6519744 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+                 n1: 6519744 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                  n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                   n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                    n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                     n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                      n1: 6519744 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                       n1: 6519744 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                        n1: 6519744 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                         n1: 6519744 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                          n0: 6519744 0x7F38BC: main (elastix.cxx:280)
+ n1: 5980454 0x1D6542F: vnl_sse_alloc(unsigned long, unsigned int) (vnl_sse.h:106)
+  n2: 5980454 0x1D6547A: vnl_c_vector_alloc(unsigned long, unsigned int) (vnl_c_vector.hxx:350)
+   n2: 5952992 0x1D66940: vnl_c_vector<double>::allocate_T(unsigned long) (vnl_c_vector.hxx:404)
+    n1: 4637952 0x1E37488: vnl_vector<double>::vnl_vector(vnl_vector<double> const&) (vnl_vector.hxx:119)
+     n1: 4637952 0xE660D6: itk::Array<double>::Array(itk::Array<double> const&) (itkArray.hxx:41)
+      n2: 4637952 0x10387B9: itk::OptimizerParameters<double>::OptimizerParameters(itk::OptimizerParameters<double> const&) (itkOptimizerParameters.h:61)
+       n1: 4637952 0x159B2AD: void std::_Construct<itk::OptimizerParameters<double>, itk::OptimizerParameters<double> const&>(itk::OptimizerParameters<double>*, itk::OptimizerParameters<double> const&) (stl_construct.h:109)
+        n1: 4637952 0x1599F7B: itk::OptimizerParameters<double>* std::__uninitialized_fill_n<false>::__uninit_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:237)
+         n1: 4637952 0x1598BE9: itk::OptimizerParameters<double>* std::uninitialized_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:297)
+          n1: 4637952 0x15962B7: itk::OptimizerParameters<double>* std::__uninitialized_fill_n_a<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double>, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&, std::allocator<itk::OptimizerParameters<double> >&) (stl_uninitialized.h:410)
+           n1: 4637952 0x1595227: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::_M_fill_insert(__gnu_cxx::__normal_iterator<itk::OptimizerParameters<double>*, std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > > >, unsigned long, itk::OptimizerParameters<double> const&) (vector.tcc:566)
+            n1: 4637952 0x1594267: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::resize(unsigned long, itk::OptimizerParameters<double> const&) (stl_vector.h:960)
+             n0: 4637952 in 4 places, all below massif's threshold (1.00%)
+       n0: 0 in 2 places, all below massif's threshold (1.00%)
+    n0: 1315040 in 8 places, all below massif's threshold (1.00%)
+   n0: 27462 in 9 places, all below massif's threshold (1.00%)
+ n0: 5057578 in 452 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=56
+#-----------
+time=1386292848512
+mem_heap_B=436179452
+mem_heap_extra_B=991284
+mem_stacks_B=0
+heap_tree=peak
+n6: 436179452 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n2: 316179116 0x16E95C0: GOMEA::Malloc(long) (Tools.cxx:56)
+  n1: 316141056 0x16E9C7A: GOMEA::choleskyDecomposition(Eigen::Matrix<double, -1, -1, 0, -1, -1>&, Eigen::Matrix<double, -1, -1, 0, -1, -1>&, int) (Tools.cxx:174)
+   n1: 316141056 0x16D5FCF: itk::GOMEAOptimizer::computeParametersForSampling(int) (itkGOMEAOptimizer.cxx:1370)
+    n1: 316141056 0x16D5899: itk::GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulation(int) (itkGOMEAOptimizer.cxx:1281)
+     n1: 316141056 0x16D4080: itk::GOMEAOptimizer::makePopulation(int) (itkGOMEAOptimizer.cxx:965)
+      n1: 316141056 0x16D8528: itk::GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int, int) (itkGOMEAOptimizer.cxx:1838)
+       n1: 316141056 0x16D84AD: itk::GOMEAOptimizer::generationalStepAllPopulations() (itkGOMEAOptimizer.cxx:1822)
+        n1: 316141056 0x16D8644: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1866)
+         n1: 316141056 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+          n1: 316141056 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+           n1: 316141056 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+            n1: 316141056 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+             n1: 316141056 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+              n1: 316141056 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+               n1: 316141056 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                n1: 316141056 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                 n1: 316141056 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                  n1: 316141056 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                   n1: 316141056 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                    n1: 316141056 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                     n1: 316141056 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                      n0: 316141056 0x7F38BC: main (elastix.cxx:280)
+  n0: 38060 in 16 places, all below massif's threshold (1.00%)
+ n1: 90326016 0x83B0F4: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:159)
+  n1: 90326016 0xAC7B43: void* Eigen::internal::conditional_aligned_malloc<true>(unsigned long) (Memory.h:214)
+   n2: 90326016 0x159DC9D: double* Eigen::internal::conditional_aligned_new_auto<double, true>(unsigned long) (Memory.h:404)
+    n1: 90326016 0x159E3C9: Eigen::DenseStorage<double, -1, -1, -1, 0>::resize(long, long, long) (DenseStorage.h:486)
+     n1: 90326016 0x159D220: Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::resize(long, long) (PlainObjectBase.h:285)
+      n1: 90326016 0x16DA710: void Eigen::PlainObjectBase<Eigen::Matrix<double, -1, -1, 0, -1, -1> >::_init2<int, int>(long, long, Eigen::internal::enable_if<true, int>::type*) (PlainObjectBase.h:810)
+       n2: 90326016 0x16D94A6: Eigen::Matrix<double, -1, -1, 0, -1, -1>::Matrix<int, int>(int const&, int const&) (Matrix.h:340)
+        n1: 45163008 0x16D4E0C: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1118)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+        n1: 45163008 0x16D4F08: itk::GOMEAOptimizer::initializeCovarianceMatrices(int) (itkGOMEAOptimizer.cxx:1122)
+         n1: 45163008 0x16D1F73: itk::GOMEAOptimizer::initializeNewPopulation() (itkGOMEAOptimizer.cxx:389)
+          n1: 45163008 0x16D8638: itk::GOMEAOptimizer::runAllPopulations() (itkGOMEAOptimizer.cxx:1863)
+           n1: 45163008 0x16D8913: itk::GOMEAOptimizer::run() (itkGOMEAOptimizer.cxx:1910)
+            n1: 45163008 0x16D08F6: itk::GOMEAOptimizer::ResumeOptimization() (itkGOMEAOptimizer.cxx:94)
+             n1: 45163008 0x16D06D6: itk::GOMEAOptimizer::StartOptimization() (itkGOMEAOptimizer.cxx:85)
+              n1: 45163008 0x173C3BB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:328)
+               n1: 45163008 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                n1: 45163008 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                 n1: 45163008 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                  n1: 45163008 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                   n1: 45163008 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                    n1: 45163008 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                     n1: 45163008 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                      n1: 45163008 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                       n1: 45163008 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                        n0: 45163008 0x7F38BC: main (elastix.cxx:280)
+    n0: 0 in 1 place, below massif's threshold (1.00%)
+ n1: 12116544 0x90628B: itk::ImportImageContainer<unsigned long, float>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 12116544 0x8FB9BE: itk::ImportImageContainer<unsigned long, float>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n2: 12116544 0x8F0DC3: itk::Image<float, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n2: 6058272 0x994288: itk::ImageSource<itk::Image<float, 3u> >::AllocateOutputs() (itkImageSource.hxx:185)
+     n1: 6058272 0x99F8D6: itk::ImageFileReader<itk::Image<float, 3u>, itk::DefaultConvertPixelTraits<float> >::GenerateData() (itkImageFileReader.hxx:364)
+      n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+       n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+        n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+         n1: 6058272 0x1CC56A1: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1669)
+          n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+           n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+            n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+             n1: 6058272 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+              n1: 6058272 0x8677ED: elastix::ElastixBase::MultipleImageLoader<itk::Image<float, 3u> >::GenerateImageContainer(itk::VectorContainer<unsigned int, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > const*, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, itk::Matrix<double, 3u, 3u>*) (elxElastixBase.h:473)
+               n0: 6058272 in 2 places, all below massif's threshold (1.00%)
+     n0: 0 in 1 place, below massif's threshold (1.00%)
+    n1: 6058272 0xD2B747: itk::MultiResolutionGaussianSmoothingPyramidImageFilter<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionGaussianSmoothingPyramidImageFilter.hxx:147)
+     n1: 6058272 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6058272 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6058272 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6058272 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6058272 0x1CC5E28: itk::ProcessObject::UpdateLargestPossibleRegion() (itkProcessObject.cxx:1833)
+          n0: 6058272 in 2 places, all below massif's threshold (1.00%)
+ n1: 6519744 0xCABA25: itk::ImportImageContainer<unsigned long, double>::AllocateElements(unsigned long, bool) const (itkImportImageContainer.hxx:181)
+  n1: 6519744 0xCBCA7E: itk::ImportImageContainer<unsigned long, double>::Reserve(unsigned long, bool) (itkImportImageContainer.hxx:86)
+   n1: 6519744 0xCAA8FD: itk::Image<double, 3u>::Allocate(bool) (itkImage.hxx:54)
+    n1: 6519744 0xD8F5D3: itk::BSplineDecompositionImageFilter<itk::Image<float, 3u>, itk::Image<double, 3u> >::GenerateData() (itkBSplineDecompositionImageFilter.hxx:363)
+     n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+      n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+       n1: 6519744 0x818A1F: itk::ImageBase<3u>::UpdateOutputData() (itkImageBase.hxx:258)
+        n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+         n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+          n1: 6519744 0xD8DEEA: itk::BSplineInterpolateImageFunction<itk::Image<float, 3u>, double, double>::SetInputImage(itk::Image<float, 3u> const*) (itkBSplineInterpolateImageFunction.hxx:97)
+           n1: 6519744 0xEB0CE3: itk::ImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkImageToImageMetric.hxx:315)
+            n1: 6519744 0xEAE22D: itk::AdvancedImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedImageToImageMetric.hxx:152)
+             n1: 6519744 0xFD2B1E: itk::AdvancedMeanSquaresImageToImageMetric<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkAdvancedMeanSquaresImageToImageMetric.hxx:66)
+              n1: 6519744 0xFCF74C: elastix::AdvancedMeanSquaresMetric<elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> > >::Initialize() (elxAdvancedMeanSquaresMetric.hxx:37)
+               n1: 6519744 0x174C7DF: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::Initialize() (itkMultiResolutionImageRegistrationMethod2.hxx:125)
+                n1: 6519744 0x173C397: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:314)
+                 n1: 6519744 0x174AF14: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::GenerateData() (itkMultiResolutionImageRegistrationMethod2.hxx:397)
+                  n1: 6519744 0x1CC57EA: itk::ProcessObject::UpdateOutputData(itk::DataObject*) (itkProcessObject.cxx:1708)
+                   n1: 6519744 0x1CE23A2: itk::DataObject::UpdateOutputData() (itkDataObject.cxx:376)
+                    n1: 6519744 0x1CE2018: itk::DataObject::Update() (itkDataObject.cxx:308)
+                     n1: 6519744 0x1CC41A3: itk::ProcessObject::Update() (itkProcessObject.cxx:1286)
+                      n1: 6519744 0x173C2FB: itk::MultiResolutionImageRegistrationMethod2<itk::Image<float, 3u>, itk::Image<float, 3u> >::StartRegistration() (itkMultiResolutionImageRegistrationMethod2.hxx:289)
+                       n1: 6519744 0x8477AB: elastix::ElastixTemplate<itk::Image<float, 3u>, itk::Image<float, 3u> >::Run() (elxElastixTemplate.hxx:204)
+                        n1: 6519744 0x7FE8B6: elastix::ElastixMain::Run() (elxElastixMain.cxx:412)
+                         n1: 6519744 0x7FF154: elastix::ElastixMain::Run(std::map<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > const&) (elxElastixMain.cxx:465)
+                          n0: 6519744 0x7F38BC: main (elastix.cxx:280)
+ n1: 5980454 0x1D6542F: vnl_sse_alloc(unsigned long, unsigned int) (vnl_sse.h:106)
+  n2: 5980454 0x1D6547A: vnl_c_vector_alloc(unsigned long, unsigned int) (vnl_c_vector.hxx:350)
+   n2: 5952992 0x1D66940: vnl_c_vector<double>::allocate_T(unsigned long) (vnl_c_vector.hxx:404)
+    n1: 4637952 0x1E37488: vnl_vector<double>::vnl_vector(vnl_vector<double> const&) (vnl_vector.hxx:119)
+     n1: 4637952 0xE660D6: itk::Array<double>::Array(itk::Array<double> const&) (itkArray.hxx:41)
+      n2: 4637952 0x10387B9: itk::OptimizerParameters<double>::OptimizerParameters(itk::OptimizerParameters<double> const&) (itkOptimizerParameters.h:61)
+       n1: 4637952 0x159B2AD: void std::_Construct<itk::OptimizerParameters<double>, itk::OptimizerParameters<double> const&>(itk::OptimizerParameters<double>*, itk::OptimizerParameters<double> const&) (stl_construct.h:109)
+        n1: 4637952 0x1599F7B: itk::OptimizerParameters<double>* std::__uninitialized_fill_n<false>::__uninit_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:237)
+         n1: 4637952 0x1598BE9: itk::OptimizerParameters<double>* std::uninitialized_fill_n<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&) (stl_uninitialized.h:297)
+          n1: 4637952 0x15962B7: itk::OptimizerParameters<double>* std::__uninitialized_fill_n_a<itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double>, itk::OptimizerParameters<double> >(itk::OptimizerParameters<double>*, unsigned long, itk::OptimizerParameters<double> const&, std::allocator<itk::OptimizerParameters<double> >&) (stl_uninitialized.h:410)
+           n1: 4637952 0x1595227: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::_M_fill_insert(__gnu_cxx::__normal_iterator<itk::OptimizerParameters<double>*, std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > > >, unsigned long, itk::OptimizerParameters<double> const&) (vector.tcc:566)
+            n1: 4637952 0x1594267: std::vector<itk::OptimizerParameters<double>, std::allocator<itk::OptimizerParameters<double> > >::resize(unsigned long, itk::OptimizerParameters<double> const&) (stl_vector.h:960)
+             n0: 4637952 in 4 places, all below massif's threshold (1.00%)
+       n0: 0 in 2 places, all below massif's threshold (1.00%)
+    n0: 1315040 in 8 places, all below massif's threshold (1.00%)
+   n0: 27462 in 9 places, all below massif's threshold (1.00%)
+ n0: 5057578 in 452 places, all below massif's threshold (1.00%)

@@ -20,21 +20,21 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 3)
+(NumberOfResolutions 1)
 
 // ********** Transform
 
-(FinalGridSpacingInVoxels 10)
+(FinalGridSpacingInVoxels 15)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 20 10 8)
-(BasePopulationSize 30)
-(PartialEvaluations "true")
-(FosElementSize -6)
+(MaximumNumberOfIterations 30)
+//(BasePopulationSize 30)
+//(PartialEvaluations "true")
+//(FosElementSize -6)
 
 // ********** Several
 
@@ -50,7 +50,8 @@
 
 //Number of spatial samples used to compute the mutual information in each resolution level:
 (ImageSampler "Random")
-(SamplingPercentage 0.02)
+(NumberOfSpatialSamples 10000)
+(SamplingPercentage 0.05)
 
 
 // ********** Interpolator and Resampler
