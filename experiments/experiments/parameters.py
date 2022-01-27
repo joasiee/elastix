@@ -37,6 +37,7 @@ class Parameters:
         self["ImageSampler"] = sampler
         self["SamplingPercentage"] = sampling_p
         self["MeshSize"] = mesh_size
+        self["WriteResultImage"] = False
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
         folder = INSTANCES_CONFIG[collection.value]["folder"]
