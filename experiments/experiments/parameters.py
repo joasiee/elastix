@@ -51,24 +51,19 @@ class Parameters:
 
     def multi_metric(
         self,
-        metric1: str = "AdvancedMeanSquares",
-        metric2: str = "TransformBendingEnergyPenalty",
-        weight1: float = 0.8,
-        weight2: float = 0.2,
+        metric0: str = "AdvancedMeanSquares",
+        metric1: str = "TransformBendingEnergyPenalty",
+        weight0: float = 1.0,
+        weight1: float = 1.0,
     ) -> Parameters:
         self["Registration"] = "MultiMetricMultiResolutionRegistration"
-        self["FixedImagePyramid"] = [
-            "FixedSmoothingImagePyramid",
-            "FixedSmoothingImagePyramid",
-        ]
-        self["MovingImagePyramid"] = [
-            "MovingSmoothingImagePyramid",
-            "MovingSmoothingImagePyramid",
-        ]
-        self["Interpolator"] = ["LinearInterpolator", "LinearInterpolator"]
-        self["Metric"] = [metric1, metric2]
-        self["Metric0Weight"] = weight1
-        self["Metric1Weight"] = weight2
+        self.n_param("FixedImagePyramid", 2)
+        self.n_param("MovingImagePyramid", 2)
+        self.n_param("Interpolator", 2)
+        self.n_param("ImageSampler", 2)
+        self["Metric"] = [metric0, metric1]
+        self["Metric0Weight"] = weight0
+        self["Metric1Weight"] = weight1
         return self
 
     def multi_resolution(
@@ -140,15 +135,15 @@ class Parameters:
         return self
 
     def get_voxel_dimensions(self) -> List[int]:
-        match INSTANCES_CONFIG[self["Collection"].value]["extension"]:
-            case 'mhd':
-                return Parameters.read_mhd(self.fixed_path)["DimSize"]
-            case 'png':
-                image = Image.open(str(self.fixed_path))
-                return list(image.size)
-            case _:
-                raise Exception(
-                    "Unknown how to extract dimensions from filetype.")
+        extension = INSTANCES_CONFIG[self["Collection"].value]["extension"]
+        if extension == 'mhd':
+            return Parameters.read_mhd(self.fixed_path)["DimSize"]
+        elif extension == 'png':
+            image = Image.open(str(self.fixed_path))
+            return list(image.size)
+        else:
+            raise Exception(
+                "Unknown how to extract dimensions from filetype.")
 
     def __getitem__(self, key) -> Any:
         return self.params[key]
@@ -158,6 +153,9 @@ class Parameters:
 
     def __str__(self) -> str:
         return f"{datetime.now()} - {self['Collection']}: {self['Instance']} - {self['Optimizer']}"
+
+    def n_param(self, param: str, n: int = 2) -> List[str]:
+        self[param] = [self[param] for i in range(n)]
 
     @staticmethod
     def parse_param(key, value):

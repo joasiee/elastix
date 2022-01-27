@@ -5,13 +5,14 @@ description = ""
 authors = ["Joas Mulder <joasmulder@hotmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 pandas = "^1.4.0"
 ipykernel = "^6.7.0"
 pymongo = "^4.0.1"
 python-dotenv = "^0.19.2"
 Pillow = "^9.0.0"
 numpy = "^1.22.1"
+optuna = "^2.10.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

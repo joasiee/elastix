@@ -34,13 +34,14 @@ class Wrapper:
             except subprocess.CalledProcessError as err:
                 logger.error(
                     f"Something went wrong while running elastix with params: {str(params)}: {err.stderr}")
+                return
             except TimeoutException:
                 logger.info(
                     f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
                 pass
 
             logger.info("Run finished successfully.")
-            self.save_output(out_dir, params, timer() - start, app_log)
+            return self.save_output(out_dir, params, timer() - start, app_log)
 
     def save_output(self, out_dir: Path, params: Parameters, duration: float, app_log: Binary):
         results = {
@@ -59,8 +60,13 @@ class Wrapper:
                 {k: list(v.values()) for k, v in resolution_results.items()})
 
         results["final_metric"] = results["resolutions"][-1]["2:Metric"][-1]
+        i = 0
+        while f"Metric{i}Weight" in params.params:
+            results[f"final_metric_{i}"] = results["resolutions"][-1][f"2:Metric{i}"][-1]
+            i += 1
 
         self.db.save_results(results)
+        return results
 
     @staticmethod
     def execute_elastix(params_file: Path, out_dir: Path, params: Parameters) -> str:
@@ -90,7 +96,8 @@ if __name__ == "__main__":
         Parameters(sampler="Random", mesh_size=8)
         .gomea()
         .instance(Collection.EMPIRE, 1)
-        .stopping_criteria(iterations=10)
+        .stopping_criteria(iterations=1)
+        .multi_metric()
     )
     wrap = Wrapper()
     wrap.run(params)
