@@ -93,11 +93,10 @@ class Wrapper:
 
 if __name__ == "__main__":
     params = (
-        Parameters(sampler="Random", mesh_size=8)
+        Parameters(sampler="Random", mesh_size=8, metric="TransformBendingEnergyPenalty")
         .gomea()
         .instance(Collection.EMPIRE, 1)
-        .stopping_criteria(iterations=1)
-        .multi_metric()
+        .stopping_criteria(iterations=100)
     )
     wrap = Wrapper()
     wrap.run(params)

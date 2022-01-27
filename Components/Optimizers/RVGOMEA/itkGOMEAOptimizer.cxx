@@ -491,7 +491,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     individual_NIS[population_index][j] = 0;
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
-      populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * random1DNormalUnit();
+      populations[population_index][j][k] = m_CurrentPosition[k] + (j >= 0) * 20 * random1DNormalUnit();
     }
 
     this->costFunctionEvaluation(&populations[population_index][j], &objective_values[population_index][j]);
