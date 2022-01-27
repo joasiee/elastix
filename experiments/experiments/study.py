@@ -9,6 +9,7 @@ MAX_TIME_S = 60 * 8
 STUDY_NAME = "pirpinia_gomea"
 STUDY_DB = f"sqlite:///{STUDY_NAME}.db"
 
+
 def get_params(trial):
     w0 = trial.suggest_float("Weight0", 0.0, 1.0)
     w1 = trial.suggest_float("Weight1", 0.0, 1000.0)
@@ -29,5 +30,6 @@ def objective(trial):
 
 
 if __name__ == "__main__":
-    study = optuna.create_study(study_name=STUDY_NAME, storage=STUDY_DB, sampler=NSGAIISampler(), load_if_exists=True)
+    study = optuna.create_study(study_name=STUDY_NAME, storage=STUDY_DB, sampler=NSGAIISampler(
+    ), load_if_exists=True, directions=["minimize", "minimize"])
     study.optimize(objective, n_trials=None)
