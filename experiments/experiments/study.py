@@ -13,7 +13,7 @@ def get_params(trial):
     w0 = trial.suggest_float("Weight0", 0.0, 1.0)
     w1 = trial.suggest_float("Weight1", 0.0, 1000.0)
     params = (
-        Parameters()
+        Parameters(mesh_size=8)
         .gomea(pop_size=50)
         .multi_metric(weight0=w0, weight1=w1)
         .instance(Collection.EMPIRE, 1)
