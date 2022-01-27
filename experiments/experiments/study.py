@@ -5,7 +5,7 @@ from optuna.samplers import NSGAIISampler
 from experiments.wrapper import Wrapper
 from experiments.parameters import Parameters, Collection
 
-MAX_TIME_S = 60 * 7
+MAX_TIME_S = 60 * 8
 STUDY_NAME = "pirpinia_gomea"
 STUDY_DB = f"sqlite:///{STUDY_NAME}.db"
 
@@ -14,7 +14,7 @@ def get_params(trial):
     w1 = trial.suggest_float("Weight1", 0.0, 1000.0)
     params = (
         Parameters(mesh_size=8)
-        .gomea(pop_size=50)
+        .gomea(pop_size=80)
         .multi_metric(weight0=w0, weight1=w1)
         .instance(Collection.EMPIRE, 1)
         .stopping_criteria(max_time_s=MAX_TIME_S)
@@ -25,7 +25,7 @@ def get_params(trial):
 def objective(trial):
     wrap = Wrapper()
     results = wrap.run(get_params(trial))
-    return results["2:Metric0"], results["2:Metric1"]
+    return results["final_metric_0"], results["final_metric_1"]
 
 
 if __name__ == "__main__":
