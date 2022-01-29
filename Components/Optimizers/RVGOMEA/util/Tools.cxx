@@ -180,6 +180,7 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 
   if (info != n) /* Matrix is not positive definite */
   {
+    result.fill(0.0);
     result.diagonal() = matrix.diagonal().array().sqrt();
   }
 
