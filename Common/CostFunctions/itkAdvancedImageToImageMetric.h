@@ -356,6 +356,8 @@ protected:
   mutable ImageSampleContainerReferencePointer       m_CurrentSampleContainer;
   std::vector<ImageSampleContainerReferencePointer>  m_FOSImageSamples;
   double                                             m_SamplingPercentage{ 0.05 };
+  typedef void (AdvancedImageToImageMetric::*ThreadedFn)(ThreadIdType threadId);
+  ThreadedFn m_ThreadedGetValueFn = &AdvancedImageToImageMetric::ThreadedGetValue;
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear;
@@ -407,17 +409,9 @@ protected:
   static ITK_THREAD_RETURN_FUNCTION_CALL_CONVENTION
   GetValueThreaderCallback(void * arg);
 
-  /** GetValue threader callback function. */
-  static ITK_THREAD_RETURN_FUNCTION_CALL_CONVENTION
-  GetValueThreaderCallbackPartial(void * arg);
-
   /** Launch MultiThread GetValue. */
   void
   LaunchGetValueThreaderCallback(void) const;
-
-  /** Launch MultiThread GetValue. */
-  void
-  LaunchGetValueThreaderCallbackPartial(void) const;
 
   /** Multi-threaded version of GetValueAndDerivative(). */
   virtual inline void

@@ -10,7 +10,7 @@
 (FixedImagePyramid "FixedSmoothingImagePyramid")
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 (Interpolator "LinearInterpolator")
-(Metric "AdvancedMeanSquares")
+(Metric "TransformBendingEnergyPenalty")
 (Optimizer "GOMEA")
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")

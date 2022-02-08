@@ -98,6 +98,8 @@ public:
   using typename Superclass::FixedImagePixelType;
   using typename Superclass::ImageSampleContainerType;
   using typename Superclass::ImageSampleContainerPointer;
+  using typename Superclass::ImageSampleContainerReferencePointer;
+  using typename Superclass::ImageSampleContainerReferenceType;
   using typename Superclass::ScalarType;
   using typename Superclass::ThreaderType;
   using typename Superclass::ThreadInfoType;
@@ -133,6 +135,10 @@ public:
   /** Get value for each thread. */
   inline void
   ThreadedGetValue(ThreadIdType threadID) override;
+
+  /** Get value for each thread. */
+  inline void
+  ThreadedGetValuePartial(ThreadIdType threadID) override;
 
   /** Gather the values from all threads */
   inline void

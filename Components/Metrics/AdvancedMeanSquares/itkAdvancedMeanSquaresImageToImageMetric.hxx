@@ -275,6 +275,8 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const TransformParametersType & parameters) const
 {
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
+
   /** Option for now to still use the single threaded code. */
   if (!this->m_UseMultiThread)
   {
@@ -316,9 +318,9 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
                                                                            const int fosIndex) const
 {
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex];
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex + 1];
   this->BeforeThreadedGetValueAndDerivative(parameters);
-  this->LaunchGetValueThreaderCallbackPartial();
+  this->LaunchGetValueThreaderCallback();
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
@@ -505,6 +507,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
   }
 
   value /= static_cast<RealType>(this->GetNumberOfFixedImageSamples());
+  value += static_cast<RealType>(this->m_NumberOfPixelsMissed * 512);
 } // end AfterThreadedGetValue()
 
 
