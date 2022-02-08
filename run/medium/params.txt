@@ -48,7 +48,7 @@
 
 // ********** ImageSampler
 
-(ImageSampler "Full")
+(ImageSampler "Random")
 (NumberOfSpatialSamples 10000)
 (SamplingPercentage 0.05)
 

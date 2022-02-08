@@ -26,8 +26,8 @@
 // ********** Optimizer
 
 (MaximumNumberOfIterations 20)
-//(PartialEvaluations "true")
-//(FosElementSize -6)
+(PartialEvaluations "true")
+(FosElementSize -6)
 (BasePopulationSize 30)
 
 // ********** Transform

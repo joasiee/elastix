@@ -352,6 +352,7 @@ protected:
    */
   typedef typename ImageSampleContainerType::Element ImageSampleType;
   mutable ImageSamplerPointer                        m_ImageSampler;
+  std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
   mutable ImageSampleContainerReferencePointer       m_CurrentSampleContainer;
   std::vector<ImageSampleContainerReferencePointer>  m_FOSImageSamples;
   double                                             m_SamplingPercentage{ 0.05 };

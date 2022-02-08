@@ -1013,11 +1013,11 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   this->m_FOSImageSamples.reserve(length);
 
   // init fos region samplers
-  ImageSamplerPointer              base = this->GetImageSampler();
+  ImageSamplerPointer base = this->GetImageSampler();
+  this->SetUseImageSampler(false);
   ImageSampleContainerType &       a = *(base->GetOutput());
-  std::vector<ImageSamplerPointer> samplers;
   int                              n_cpoints = this->m_BSplineFOSRegions.size();
-  samplers.reserve(n_cpoints);
+  this->m_SubfunctionSamplers.reserve(n_cpoints);
   for (i = 0; i < n_cpoints; ++i)
   {
     ImageSamplerPointer              subfunctionSampler = base->Clone();
@@ -1026,7 +1026,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     subfunctionSampler->SetInputImageRegion(region);
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
     subfunctionSampler->Update();
-    samplers.push_back(subfunctionSampler);
+    this->m_SubfunctionSamplers.push_back(subfunctionSampler);
 
     ImageSampleContainerType & b = *(subfunctionSampler->GetOutput());
     a.insert(a.end(), b.begin(), b.end());
@@ -1040,7 +1040,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     ImageSampleContainerReferenceType & a = *(this->m_FOSImageSamples[i]);
     for (const int & cpoint : this->m_BSplinePointsRegions[i])
     {
-      ImageSampleContainerType & b = *(samplers[cpoint]->GetOutput());
+      ImageSampleContainerType & b = *(this->m_SubfunctionSamplers[cpoint]->GetOutput());
       a.insert(a.end(), b.begin(), b.end());
     }
   }
