@@ -30,6 +30,8 @@
 namespace itk
 {
 
+static const int MISSED_PIXEL_PENALTY = 1048;
+
 /**
  * ******************* Constructor *******************
  */
@@ -275,8 +277,6 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const TransformParametersType & parameters) const
 {
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
-
   /** Option for now to still use the single threaded code. */
   if (!this->m_UseMultiThread)
   {
@@ -324,6 +324,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
+
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
 
   return value;
 } // end GetValuePartial()
@@ -507,7 +509,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
   }
 
   value /= static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-  value += static_cast<RealType>(this->m_NumberOfPixelsMissed * 512);
+  value += static_cast<RealType>(this->m_NumberOfPixelsMissed * MISSED_PIXEL_PENALTY);
 } // end AfterThreadedGetValue()
 
 

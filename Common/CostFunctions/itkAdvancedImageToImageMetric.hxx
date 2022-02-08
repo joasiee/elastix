@@ -973,8 +973,9 @@ template <class TFixedImage, class TMovingImage>
 void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets, int * set_length, int length)
 {
-  Superclass::InitPartialEvaluations(sets, set_length, length);
   int i;
+
+  this->GetRegionsForFOS(sets, set_length, length);
   this->m_FOSImageSamples.clear();
   this->m_FOSImageSamples.reserve(length + 1);
   this->m_ThreadedGetValueFn = &AdvancedImageToImageMetric::ThreadedGetValuePartial;
@@ -998,6 +999,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     a.insert(a.end(), b.begin(), b.end());
   }
   this->SetNumberOfFixedImageSamples(a.Size());
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
 
   // init per fos set container of samples
   for (i = 0; i < length; ++i)
@@ -1008,6 +1010,98 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     {
       ImageSampleContainerType & b = *(this->m_SubfunctionSamplers[cpoint]->GetOutput());
       a.insert(a.end(), b.begin(), b.end());
+    }
+  }
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** sets, int * set_length, int length)
+{
+  unsigned int i, j, d;
+
+  CombinationTransformType * comboPtr =
+    dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
+  const BSplineOrder3TransformType * bsplinePtr =
+    dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
+
+  ImagePointer     coefficientImage = bsplinePtr->GetCoefficientImages()[0];
+  const FixedImageType * fixedImage = this->GetFixedImage();
+  const int        num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
+  RegionType       coeffRegionCropped = coefficientImage->GetLargestPossibleRegion();
+  IndexType        coeffRegionCroppedIndex;
+  std::vector<int> cpointOffsetMap(coeffRegionCropped.GetNumberOfPixels());
+
+  // crop control points grid to only contain those at lower left corners of fixed image pixel areas.
+  for (d = 0; d < FixedImageDimension; ++d)
+  {
+    coeffRegionCropped.SetSize(d, coeffRegionCropped.GetSize(d) - 3);
+    coeffRegionCroppedIndex[d] = coeffRegionCropped.GetIndex()[d] + 1;
+  }
+  coeffRegionCropped.SetIndex(coeffRegionCroppedIndex);
+
+  this->m_BSplineFOSRegions.clear();
+  this->m_BSplinePointsRegions.clear();
+  this->m_BSplineFOSRegions.resize(coeffRegionCropped.GetNumberOfPixels());
+  this->m_BSplinePointsRegions.resize(length);
+
+  // iterate over these control points and calculate fixed image pixel region
+  ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(coefficientImage, coeffRegionCropped);
+  i = 0;
+  while (!coeffImageIterator.IsAtEnd())
+  {
+    IndexType  imageIndex;
+    OriginType physicalIndex =
+      coefficientImage->template TransformIndexToPhysicalPoint<PixelType>(coeffImageIterator.GetIndex()) -
+      fixedImage->GetOrigin();
+    unsigned int offset = coefficientImage->ComputeOffset(coeffImageIterator.GetIndex());
+    for (d = 0; d < FixedImageDimension; ++d)
+    {
+      imageIndex[d] = std::max(static_cast<int>(ceil(physicalIndex[d] / fixedImage->GetSpacing()[d])), 0);
+      int sizingIndex = ceil((physicalIndex[d] + coefficientImage->GetSpacing()[d]) / fixedImage->GetSpacing()[d]);
+      sizingIndex = std::min(sizingIndex, static_cast<int>(fixedImage->GetLargestPossibleRegion().GetSize()[d]));
+      this->m_BSplineFOSRegions[i].SetSize(d, sizingIndex - imageIndex[d]);
+    }
+    this->m_BSplineFOSRegions[i].SetIndex(imageIndex);
+    cpointOffsetMap[offset] = i;
+    ++coeffImageIterator;
+    ++i;
+  }
+
+  // assign fixed image regions to control points which affect them.
+  std::vector<bool> pointAdded(this->m_BSplineFOSRegions.size(), false);
+  for (j = 0; j < (unsigned)length; ++j)
+  {
+    std::fill(pointAdded.begin(), pointAdded.end(), false);
+    for (i = 0; i < (unsigned)set_length[j]; ++i)
+    {
+      int            cpoint = (sets[j][i] % num_points);
+      ImageIndexType p = coefficientImage->ComputeIndex(cpoint);
+
+      ImageIndexType lower, upper;
+      RegionType     hypercube;
+      for (d = 0; d < FixedImageDimension; ++d)
+      {
+        lower[d] = std::max(static_cast<int>(p[d] - 2), 1);
+        upper[d] = std::min(static_cast<int>(p[d] + 2),
+                            static_cast<int>(coefficientImage->GetLargestPossibleRegion().GetSize(d) - 2));
+        hypercube.SetSize(d, upper[d] - lower[d]);
+      }
+      hypercube.SetIndex(lower);
+      ImageRegionConstIteratorWithIndex<ImageType> imageIterator(coefficientImage, hypercube);
+
+      while (!imageIterator.IsAtEnd())
+      {
+        // offset needs to be adjusted to cropped coefficient grid.
+        unsigned int offset = coefficientImage->ComputeOffset(imageIterator.GetIndex());
+        offset = cpointOffsetMap[offset];
+        if (!pointAdded[offset])
+        {
+          this->m_BSplinePointsRegions[j].push_back(offset);
+          pointAdded[offset] = true;
+        }
+        ++imageIterator;
+      }
     }
   }
 }

@@ -302,16 +302,6 @@ public:
    */
   typedef ContinuousIndex<ScalarType, SpaceDimension> ContinuousIndexType;
 
-  void
-  GetRegionsForFOS(int **                          sets,
-                   int *                           set_length,
-                   int                             length,
-                   std::vector<RegionType> &       regions,
-                   std::vector<std::vector<int>> & points,
-                   const RegionType &                    fixedImageRegion,
-                   const SpacingType &                   fixedImageSpacing,
-                   const OriginType &                    fixedImageOrigin) const;
-
   /** Wrap flat array into images of coefficients. */
   void
   WrapAsImages(void);

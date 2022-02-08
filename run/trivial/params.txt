@@ -10,7 +10,7 @@
 (FixedImagePyramid "FixedSmoothingImagePyramid")
 (MovingImagePyramid "MovingSmoothingImagePyramid")
 (Interpolator "LinearInterpolator")
-(Metric "TransformBendingEnergyPenalty")
+(Metric "AdvancedMeanSquares")
 (Optimizer "GOMEA")
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
@@ -27,7 +27,7 @@
 
 (MaximumNumberOfIterations 20)
 (PartialEvaluations "true")
-(FosElementSize -6)
+(FosElementSize 1)
 (BasePopulationSize 30)
 
 // ********** Transform

@@ -170,6 +170,14 @@ public:
   typedef typename BSplineOrder2TransformType::Pointer                           BSplineOrder2TransformPointer;
   typedef typename BSplineOrder3TransformType::Pointer                           BSplineOrder3TransformPointer;
 
+  typedef typename BSplineOrder3TransformType::ImagePointer ImagePointer;
+  typedef typename BSplineOrder3TransformType::PixelType    PixelType;
+  typedef typename BSplineOrder3TransformType::RegionType   RegionType;
+  typedef typename BSplineOrder3TransformType::OriginType   OriginType;
+  typedef typename BSplineOrder3TransformType::IndexType    IndexType;
+  typedef typename BSplineOrder3TransformType::ImageType    ImageType;
+  typedef typename ImageType::IndexType                     ImageIndexType;
+
   /** Hessian type; for SelfHessian (experimental feature) */
   typedef typename DerivativeType::ValueType  HessianValueType;
   typedef vnl_sparse_matrix<HessianValueType> HessianType;
@@ -304,6 +312,9 @@ public:
 
   void
   InitPartialEvaluations(int ** sets, int * set_length, int length) override;
+
+  void
+  GetRegionsForFOS(int ** sets, int * set_length, int length);
 
 protected:
   /** Constructor. */

@@ -48,7 +48,6 @@ typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureTyp
 TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const
 {
   RealType measure = NumericTraits<RealType>::Zero;
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
 
   if (!this->m_UseMultiThread)
   {
@@ -83,6 +82,8 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
+
+  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
 
   return value;
 } // end GetValuePartial()
@@ -204,7 +205,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValuePar
 
   /** Get a handle to the sample container. */
   ImageSampleContainerReferencePointer sampleContainer = this->m_CurrentSampleContainer;
-  const unsigned long         sampleContainerSize = sampleContainer->Size();
+  const unsigned long                  sampleContainerSize = sampleContainer->Size();
 
   /** Get the samples for this thread. */
   const unsigned long nrOfSamplesPerThreads = static_cast<unsigned long>(
