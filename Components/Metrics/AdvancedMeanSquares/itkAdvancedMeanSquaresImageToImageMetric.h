@@ -108,6 +108,8 @@ public:
   using typename Superclass::ImageSamplerPointer;
   using typename Superclass::ImageSampleContainerType;
   using typename Superclass::ImageSampleContainerPointer;
+  using typename Superclass::ImageSampleContainerReferenceType;
+  using typename Superclass::ImageSampleContainerReferencePointer;
   using typename Superclass::FixedImageLimiterType;
   using typename Superclass::MovingImageLimiterType;
   using typename Superclass::FixedImageLimiterOutputType;
@@ -246,6 +248,10 @@ protected:
   inline void
   ThreadedGetValue(ThreadIdType threadID) override;
 
+  /** Get value for each thread. */
+  inline void
+  ThreadedGetValuePartial(ThreadIdType threadID) override;
+
   /** Gather the values from all threads. */
   inline void
   AfterThreadedGetValue(MeasureType & value) const override;
@@ -263,10 +269,10 @@ private:
   void
   operator=(const Self &) = delete;
 
-  bool          m_UseNormalization;
-  double        m_SelfHessianSmoothingSigma;
-  double        m_SelfHessianNoiseRange;
-  unsigned int  m_NumberOfSamplesForSelfHessian;
+  bool                  m_UseNormalization;
+  double                m_SelfHessianSmoothingSigma;
+  double                m_SelfHessianNoiseRange;
+  unsigned int          m_NumberOfSamplesForSelfHessian;
   mutable unsigned long m_MovingImageBufferMisses{ 0L };
 };
 

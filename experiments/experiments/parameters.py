@@ -132,7 +132,7 @@ class Parameters:
             total_samples *= voxel_dim
 
         self["FinalGridSpacingInVoxels"] = voxel_spacings
-        # self["NumberOfSpatialSamples"] = int(total_samples * self["SamplingPercentage"])
+        self["NumberOfSpatialSamples"] = int(total_samples * self["SamplingPercentage"])
         return self
 
     def get_voxel_dimensions(self) -> List[int]:
@@ -169,6 +169,8 @@ class Parameters:
             for elem in value:
                 res += f" {esc(elem)}"
             res += f")\n"
+        elif isinstance(value, bool):
+            res += f"({key} {esc(str(value).lower())})\n"
         else:
             res += f"({key} {esc(value)})\n"
         return res

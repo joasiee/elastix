@@ -18,6 +18,8 @@
 #ifndef itkAdvancedImageToImageMetric_h
 #define itkAdvancedImageToImageMetric_h
 
+#include <functional>
+
 #include "itkImageToImageMetric.h"
 
 #include "itkImageSamplerBase.h"
@@ -140,7 +142,11 @@ public:
   typedef typename ImageSamplerType::Pointer                      ImageSamplerPointer;
   typedef typename ImageSamplerType::InputImageRegionType         ImageSamplerInputImageRegionType;
   typedef typename ImageSamplerType::OutputVectorContainerType    ImageSampleContainerType;
+  typedef typename ImageSampleContainerType::Element              ImageSampleContainerElementType;
   typedef typename ImageSamplerType::OutputVectorContainerPointer ImageSampleContainerPointer;
+  typedef VectorDataContainer<std::size_t, std::reference_wrapper<ImageSampleContainerElementType>>
+                                                              ImageSampleContainerReferenceType;
+  typedef typename ImageSampleContainerReferenceType::Pointer ImageSampleContainerReferencePointer;
 
   /** Typedefs for Limiter support. */
   typedef LimiterFunctionBase<RealType, FixedImageDimension>  FixedImageLimiterType;
@@ -346,9 +352,9 @@ protected:
    */
   typedef typename ImageSampleContainerType::Element ImageSampleType;
   mutable ImageSamplerPointer                        m_ImageSampler;
-  mutable ImageSampleContainerPointer                m_CurrentSampleContainer;
-  std::vector<ImageSampleContainerPointer>           m_FOSImageSamples;
-  double                                             m_SamplingPercentage{ 0.01 };
+  mutable ImageSampleContainerReferencePointer       m_CurrentSampleContainer;
+  std::vector<ImageSampleContainerReferencePointer>  m_FOSImageSamples;
+  double                                             m_SamplingPercentage{ 0.05 };
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear;
@@ -386,6 +392,11 @@ protected:
   ThreadedGetValue(ThreadIdType threadID)
   {}
 
+  /** Multi-threaded version of GetValue(). */
+  virtual inline void
+  ThreadedGetValuePartial(ThreadIdType threadID)
+  {}
+
   /** Finalize multi-threaded metric computation. */
   virtual inline void
   AfterThreadedGetValue(MeasureType & value) const
@@ -395,9 +406,17 @@ protected:
   static ITK_THREAD_RETURN_FUNCTION_CALL_CONVENTION
   GetValueThreaderCallback(void * arg);
 
+  /** GetValue threader callback function. */
+  static ITK_THREAD_RETURN_FUNCTION_CALL_CONVENTION
+  GetValueThreaderCallbackPartial(void * arg);
+
   /** Launch MultiThread GetValue. */
   void
   LaunchGetValueThreaderCallback(void) const;
+
+  /** Launch MultiThread GetValue. */
+  void
+  LaunchGetValueThreaderCallbackPartial(void) const;
 
   /** Multi-threaded version of GetValueAndDerivative(). */
   virtual inline void
@@ -452,6 +471,7 @@ protected:
   struct GetValuePerThreadStruct
   {
     SizeValueType st_NumberOfPixelsCounted;
+    SizeValueType st_NumberOfPixelsMissed;
     MeasureType   st_Value;
   };
   itkPadStruct(ITK_CACHE_LINE_ALIGNMENT, GetValuePerThreadStruct, PaddedGetValuePerThreadStruct);
@@ -463,6 +483,7 @@ protected:
   struct GetValueAndDerivativePerThreadStruct
   {
     SizeValueType  st_NumberOfPixelsCounted;
+    SizeValueType  st_NumberOfPixelsMissed;
     MeasureType    st_Value;
     DerivativeType st_Derivative;
   };
@@ -474,6 +495,8 @@ protected:
                     AlignedGetValueAndDerivativePerThreadStruct);
   mutable AlignedGetValueAndDerivativePerThreadStruct * m_GetValueAndDerivativePerThreadVariables;
   mutable ThreadIdType                                  m_GetValueAndDerivativePerThreadVariablesSize;
+
+  mutable SizeValueType m_NumberOfPixelsMissed{ 0 };
 
   /** Initialize some multi-threading related parameters. */
   virtual void

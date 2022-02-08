@@ -6,11 +6,13 @@
 
 // ********** Components
 
-(Registration "MultiResolutionRegistration")
-(FixedImagePyramid "FixedSmoothingImagePyramid")
-(MovingImagePyramid "MovingSmoothingImagePyramid")
-(Interpolator "BSplineInterpolator")
-(Metric "AdvancedMeanSquares")
+(Registration "MultiMetricMultiResolutionRegistration")
+(FixedImagePyramid "FixedSmoothingImagePyramid" "FixedSmoothingImagePyramid")
+(MovingImagePyramid "MovingSmoothingImagePyramid" "MovingSmoothingImagePyramid")
+(Interpolator "LinearInterpolator" "LinearInterpolator")
+(Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
+(Metric0Weight 1.0)
+(Metric1Weight 1000.0)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
@@ -21,20 +23,32 @@
 
 // Total number of resolutions
 (NumberOfResolutions 1)
+//(ImagePyramidSchedule 1)
+
 
 // ********** Transform
 
-(FinalGridSpacingInVoxels 15)
+(FinalGridSpacingInPhysicalUnits 20.0)
+//(GridSpacingSchedule 1.0)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 30)
-(BasePopulationSize 10)
-(PartialEvaluations "true")
-(FosElementSize -6)
+//(MaximumNumberOfIterations 10 5)
+//(PartialEvaluations "true")
+//(BasePopulationSize 30)
+//(FosElementSize -6)
+(FitnessVarianceTolerance 0)
+
+(AutomaticParameterEstimation "true")
+(UseAdaptiveStepSizes "true")
+(ASGDParameterEstimationMethod "Original")
+
+
+// ********** Metric
+
 
 // ********** Several
 
@@ -48,9 +62,8 @@
 
 // ********** ImageSampler
 
-(ImageSampler "Full")
-(NumberOfSpatialSamples 10000)
-(SamplingPercentage 0.05)
+//Number of spatial samples used to compute the mutual information in each resolution level:
+(ImageSampler "Full" "Full")
 
 
 // ********** Interpolator and Resampler

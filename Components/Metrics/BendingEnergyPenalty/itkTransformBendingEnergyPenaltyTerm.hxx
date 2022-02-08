@@ -49,7 +49,6 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
 {
   this->m_NumberOfPixelsCounted = 0;
   RealType measure = NumericTraits<RealType>::Zero;
-  this->m_CurrentSampleContainer = this->GetImageSampler()->GetOutput();
 
   if (!this->m_UseMultiThread)
   {
@@ -126,7 +125,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValue(Th
   bool                                         transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
   /** Get a handle to the sample container. */
-  ImageSampleContainerPointer & sampleContainer = this->m_CurrentSampleContainer;
+  ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
   const unsigned long           sampleContainerSize = sampleContainer->Size();
 
   /** Get the samples for this thread. */

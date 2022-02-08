@@ -4,6 +4,7 @@ import tempfile
 import subprocess
 import logging
 from timeit import default_timer as timer
+from typing import Any, Dict
 import pandas as pd
 from experiments import TimeoutException, time_limit
 from bson.binary import Binary
@@ -15,7 +16,7 @@ logger = logging.getLogger("Wrapper")
 app_logger = logging.getLogger("AppOutput")
 
 
-def run(params: Parameters):
+def run(params: Parameters) -> Dict[str, Any]:
     with tempfile.TemporaryDirectory() as tmp_dir:
         params_file = params.write(Path(tmp_dir))
         out_dir = Path(tmp_dir).joinpath(Path("out"))
@@ -32,7 +33,8 @@ def run(params: Parameters):
         except TimeoutException:
             logger.info(
                 f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
-            pass
+        except KeyboardInterrupt:
+            logger.info(f"Run ended prematurely by user, saving results.")
 
         logger.info("Run finished successfully.")
         return get_output(out_dir, params, timer() - start)

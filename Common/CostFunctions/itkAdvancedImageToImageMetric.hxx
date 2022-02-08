@@ -849,8 +849,24 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValueThreaderCallback(
   temp->st_Metric->ThreadedGetValue(threadID);
 
   return itk::ITK_THREAD_RETURN_DEFAULT_VALUE;
-
 } // end GetValueThreaderCallback()
+
+/**
+ * **************** GetValueThreaderCallbackPartial *******
+ */
+
+template <class TFixedImage, class TMovingImage>
+ITK_THREAD_RETURN_TYPE
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValueThreaderCallbackPartial(void * arg)
+{
+  ThreadInfoType * infoStruct = static_cast<ThreadInfoType *>(arg);
+  ThreadIdType     threadID = infoStruct->WorkUnitID;
+
+  MultiThreaderParameterType * temp = static_cast<MultiThreaderParameterType *>(infoStruct->UserData);
+  temp->st_Metric->ThreadedGetValuePartial(threadID);
+
+  return itk::ITK_THREAD_RETURN_DEFAULT_VALUE;
+} // end GetValueThreaderCallbackPartial()
 
 
 /**
@@ -869,6 +885,23 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::LaunchGetValueThreaderCal
   this->m_Threader->SingleMethodExecute();
 
 } // end LaunchGetValueThreaderCallback()
+
+/**
+ * *********************** LaunchGetValueThreaderCallbackPartial***************
+ */
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::LaunchGetValueThreaderCallbackPartial(void) const
+{
+  /** Setup threader. */
+  this->m_Threader->SetSingleMethod(this->GetValueThreaderCallbackPartial,
+                                    const_cast<void *>(static_cast<const void *>(&this->m_ThreaderMetricParameters)));
+
+  /** Launch. */
+  this->m_Threader->SingleMethodExecute();
+
+} // end LaunchGetValueThreaderCallbackPartial()
 
 
 /**
@@ -980,9 +1013,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   this->m_FOSImageSamples.reserve(length);
 
   // init fos region samplers
-  ImageSamplerPointer base = this->GetImageSampler();
-  this->SetUseImageSampler(false);
-  ImageSampleContainerType & a = *(base->GetOutput());
+  ImageSamplerPointer              base = this->GetImageSampler();
+  ImageSampleContainerType &       a = *(base->GetOutput());
   std::vector<ImageSamplerPointer> samplers;
   int                              n_cpoints = this->m_BSplineFOSRegions.size();
   samplers.reserve(n_cpoints);
@@ -1004,8 +1036,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   // init per fos set container of samples
   for (i = 0; i < length; ++i)
   {
-    this->m_FOSImageSamples.push_back(ImageSampleContainerType::New());
-    ImageSampleContainerType & a = *(this->m_FOSImageSamples[i]);
+    this->m_FOSImageSamples.push_back(ImageSampleContainerReferenceType::New());
+    ImageSampleContainerReferenceType & a = *(this->m_FOSImageSamples[i]);
     for (const int & cpoint : this->m_BSplinePointsRegions[i])
     {
       ImageSampleContainerType & b = *(samplers[cpoint]->GetOutput());
