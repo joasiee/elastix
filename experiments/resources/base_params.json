@@ -2,8 +2,8 @@
     "FixedInternalImagePixelType": "float",
     "MovingInternalImagePixelType": "float",
     "Registration": "MultiResolutionRegistration",
-    "FixedImagePyramid": "FixedSmoothingImagePyramid",
-    "MovingImagePyramid": "MovingSmoothingImagePyramid",
+    "FixedImagePyramid": "FixedRecursiveImagePyramid",
+    "MovingImagePyramid": "MovingRecursiveImagePyramid",
     "Interpolator": "BSplineInterpolator",
     "ErodeMask": "false",
     "ResampleInterpolator": "FinalBSplineInterpolator",
@@ -14,5 +14,6 @@
     "UseDirectionCosines": "true",
     "BSplineInterpolationOrder": 1,
     "FinalBSplineInterpolationOrder": 3,
-    "DefaultPixelValue": 0
+    "DefaultPixelValue": 0,
+    "WriteResultImageAfterEachResolution": "true"
 }

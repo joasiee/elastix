@@ -19,6 +19,10 @@
 #define itkAdvancedMeanSquaresImageToImageMetric_h
 
 #include "algorithm"
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+using namespace boost::accumulators;
 
 #include "itkAdvancedImageToImageMetric.h"
 
@@ -194,7 +198,8 @@ public:
    */
   itkSetMacro(UseOpenMP, bool);
 
-  itkGetConstReferenceMacro(MovingImageBufferMisses, unsigned long);
+  typedef accumulator_set<long, stats<tag::mean>> MeanAccumulator;
+  itkGetConstReferenceMacro(MissedPixelsMean, MeanAccumulator);
 
 
 protected:
@@ -269,11 +274,12 @@ private:
   void
   operator=(const Self &) = delete;
 
-  bool                  m_UseNormalization;
-  double                m_SelfHessianSmoothingSigma;
-  double                m_SelfHessianNoiseRange;
-  unsigned int          m_NumberOfSamplesForSelfHessian;
-  mutable unsigned long m_MovingImageBufferMisses{ 0L };
+  bool         m_UseNormalization;
+  double       m_SelfHessianSmoothingSigma;
+  double       m_SelfHessianNoiseRange;
+  unsigned int m_NumberOfSamplesForSelfHessian;
+
+  mutable MeanAccumulator m_MissedPixelsMean;
 };
 
 } // end namespace itk

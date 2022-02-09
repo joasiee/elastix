@@ -30,6 +30,8 @@ if(ELASTIX_USE_OPENCL)
   list(APPEND _GPU_depends ITKGPUCommon)
 endif()
 
+find_package(Boost)
+
 # Find ITK.
 find_package( ITK 5.2.0 REQUIRED COMPONENTS
     ITKCommon

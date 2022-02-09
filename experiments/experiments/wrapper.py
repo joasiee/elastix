@@ -37,7 +37,8 @@ def run(params: Parameters) -> Dict[str, Any]:
             logger.info(f"Run ended prematurely by user, saving results.")
 
         logger.info("Run finished successfully.")
-        return get_output(out_dir, params, timer() - start)
+        results = get_output(out_dir, params, timer() - start)
+        return results
 
 
 def get_output(out_dir: Path, params: Parameters, duration: float):
@@ -50,10 +51,13 @@ def get_output(out_dir: Path, params: Parameters, duration: float):
         "duration": duration
     }
     for r in range(params["NumberOfResolutions"]):
-        resolution_results = pd.read_csv(
-            out_dir / f"IterationInfo.0.R{r}.txt", sep="	").to_dict()
-        results["resolutions"].append(
-            {k: list(v.values()) for k, v in resolution_results.items()})
+        try:
+            resolution_results = pd.read_csv(
+                out_dir / f"IterationInfo.0.R{r}.txt", sep="	").to_dict()
+            results["resolutions"].append(
+                {k: list(v.values()) for k, v in resolution_results.items()})
+        except FileNotFoundError:
+            logger.warning(f"Output file for resolution {r} not found.")
 
     results["final_metric"] = results["resolutions"][-1]["2:Metric"][-1]
     i = 0

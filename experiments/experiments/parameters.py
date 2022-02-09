@@ -37,7 +37,6 @@ class Parameters:
         self["ImageSampler"] = sampler
         self["SamplingPercentage"] = sampling_p
         self["MeshSize"] = mesh_size
-        self["WriteResultImage"] = False
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
         folder = INSTANCES_CONFIG[collection.value]["folder"]
@@ -123,16 +122,20 @@ class Parameters:
             self["MeshSize"] = [self["MeshSize"]]
         voxel_dims = self.get_voxel_dimensions()
         voxel_spacings = []
-        total_samples = 1
+        total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
             voxel_spacings.append(
                 ceil(voxel_dim / self["MeshSize"]
                      [min(i, len(self["MeshSize"]) - 1)])
             )
-            total_samples *= voxel_dim
+            div = 2**(len(total_samples)-1)
+            for n in range(len(total_samples)):
+                total_samples[n] *= int(voxel_dim / div)
+                div /= 2
+
 
         self["FinalGridSpacingInVoxels"] = voxel_spacings
-        self["NumberOfSpatialSamples"] = int(total_samples * self["SamplingPercentage"])
+        self["NumberOfSpatialSamples"] = [int(x * self["SamplingPercentage"]) for x in total_samples]
         return self
 
     def get_voxel_dimensions(self) -> List[int]:
@@ -198,3 +201,8 @@ class Parameters:
             except ValueError:
                 return res
         return res
+
+
+if __name__ == "__main__":
+    params = Parameters().gomea().instance(Collection.EXAMPLES, 2)
+    params.write(Path())

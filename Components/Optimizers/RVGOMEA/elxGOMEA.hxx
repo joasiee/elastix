@@ -49,7 +49,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetMaximumNumberOfIterations(maximumNumberOfIterations);
 
   /** Set MaxNumberOfEvaluations.*/
-  int maxNumberOfEvaluations = 1000000;
+  int maxNumberOfEvaluations = static_cast<int>(1e12);
   this->m_Configuration->ReadParameter(
     maxNumberOfEvaluations, "MaxNumberOfEvaluations", this->GetComponentLabel(), level, 0);
   this->SetMaxNumberOfEvaluations(maxNumberOfEvaluations);
