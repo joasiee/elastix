@@ -89,7 +89,6 @@ void
 GOMEAOptimizer::ResumeOptimization()
 {
   itkDebugMacro("ResumeOptimization");
-  this->m_StopCondition = Unknown;
   InvokeEvent(StartEvent());
   this->run();
 }

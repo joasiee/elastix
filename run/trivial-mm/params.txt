@@ -12,7 +12,7 @@
 (Interpolator "LinearInterpolator" "LinearInterpolator")
 (Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
 (Metric0Weight 1.0)
-(Metric1Weight 100.0)
+(Metric1Weight 1000.0)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
@@ -22,7 +22,7 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 1)
+(NumberOfResolutions 3)
 
 // ********** Transform
 
@@ -33,20 +33,10 @@
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 5)
+(MaximumNumberOfIterations 3)
 (PartialEvaluations "true")
 (FosElementSize -6)
-(BasePopulationSize 12)
-
-
-
-(AutomaticParameterEstimation "true")
-(UseAdaptiveStepSizes "true")
-(ASGDParameterEstimationMethod "Original")
-
-
-// ********** Metric
-
+(BasePopulationSize 30)
 
 // ********** Several
 
@@ -55,7 +45,7 @@
 (WriteResultImageAfterEachResolution "false")
 (WriteResultImage "true")
 (ShowExactMetricValue "false")
-(ErodeMask "true")
+(ErodeMask "false")
 
 
 // ********** ImageSampler

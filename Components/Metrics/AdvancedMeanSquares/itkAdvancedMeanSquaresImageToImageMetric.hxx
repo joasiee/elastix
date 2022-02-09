@@ -507,7 +507,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
   }
 
   value /= static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-  value += static_cast<RealType>(this->m_NumberOfPixelsMissed * this->m_NumberOfPixelsMissed * MissedPixelPenalty);
+  value += static_cast<RealType>(this->m_NumberOfPixelsMissed * MissedPixelPenalty);
 
   this->m_MissedPixelsMean(this->m_NumberOfPixelsMissed);
 } // end AfterThreadedGetValue()

@@ -687,8 +687,7 @@ typename CombinationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const ParametersType & parameters) const
 {
   /** Initialise. */
-  MeasureType              measure = NumericTraits<MeasureType>::Zero;
-  std::vector<MeasureType> tmpValues(this->m_NumberOfMetrics);
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
 
   /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
@@ -698,44 +697,15 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
     timer.Start();
 
     /** Compute ... */
-    tmpValues[i] = this->m_Metrics[i]->GetValue(parameters);
+    this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters);
     timer.Stop();
 
-    /** store ... */
-    if (tmpValues[i] < this->m_MetricValues[i])
-    {
-      this->m_MetricValues[i] = tmpValues[i];
-      this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
-    }
-
     /** and combine. */
-    if (this->m_UseMetric[i])
-    {
-      if (!this->m_UseRelativeWeights)
-      {
-        measure += this->m_MetricWeights[i] * tmpValues[i];
-      }
-      else
-      {
-        /** The relative weight of metric i is such that the
-         * value of metric i is rescaled
-         * to be a fraction of that of metric 0; the fraction is
-         * defined by the fraction of the two relative weights.
-         * Note that this weight is different in each iteration.
-         */
-        double weight = 1.0;
-        if (tmpValues[i] > 1e-10)
-        {
-          weight = this->m_MetricRelativeWeights[i] * tmpValues[0] / tmpValues[i];
-          measure += weight * tmpValues[i];
-        }
-      }
-    }
+    measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
   }
 
   /** Return a value. */
   return measure;
-
 } // end GetValue()
 
 /**
@@ -758,33 +728,11 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
     tmpValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex);
 
     /** and combine. */
-    if (this->m_UseMetric[i])
-    {
-      if (!this->m_UseRelativeWeights)
-      {
-        measure += this->m_MetricWeights[i] * tmpValues[i];
-      }
-      else
-      {
-        /** The relative weight of metric i is such that the
-         * value of metric i is rescaled
-         * to be a fraction of that of metric 0; the fraction is
-         * defined by the fraction of the two relative weights.
-         * Note that this weight is different in each iteration.
-         */
-        double weight = 1.0;
-        if (tmpValues[i] > 1e-10)
-        {
-          weight = this->m_MetricRelativeWeights[i] * tmpValues[0] / tmpValues[i];
-          measure += weight * tmpValues[i];
-        }
-      }
-    }
+    measure += this->m_MetricWeights[i] * tmpValues[i];
   }
 
   /** Return a value. */
   return measure;
-
 } // end GetValuePartial()
 
 

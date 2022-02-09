@@ -984,6 +984,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   this->m_FOSImageSamples.push_back(ImageSampleContainerReferenceType::New());
   ImageSampleContainerReferenceType & a = *(this->m_FOSImageSamples[0]);
   int                                 n_cpoints = this->m_BSplineFOSRegions.size();
+  this->m_SubfunctionSamplers.clear();
   this->m_SubfunctionSamplers.reserve(n_cpoints);
   for (i = 0; i < n_cpoints; ++i)
   {
