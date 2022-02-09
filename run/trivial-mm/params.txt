@@ -11,8 +11,8 @@
 (MovingImagePyramid "MovingSmoothingImagePyramid" "MovingSmoothingImagePyramid")
 (Interpolator "LinearInterpolator" "LinearInterpolator")
 (Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
-(Metric0Weight 0.0001)
-(Metric1Weight 0.9999)
+(Metric0Weight 1.0)
+(Metric1Weight 100.0)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
@@ -23,13 +23,10 @@
 
 // Total number of resolutions
 (NumberOfResolutions 1)
-(ImagePyramidSchedule 1)
-
 
 // ********** Transform
 
 (FinalGridSpacingInPhysicalUnits 10.0)
-(GridSpacingSchedule 1.0)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 

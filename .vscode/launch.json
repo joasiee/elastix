@@ -66,6 +66,39 @@
             ]
         },
         {
+            "name": "trivial-mm",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/bin/elastix",
+            "args": [
+                "-f",
+                "fixed.png",
+                "-m",
+                "moving.png",
+                "-p",
+                "params.txt",
+                "-out",
+                "dir"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/run/trivial-mm",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Enable all-exceptions",
+                    "text": "catch throw",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "easy",
             "type": "cppdbg",
             "request": "launch",

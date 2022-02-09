@@ -204,5 +204,5 @@ class Parameters:
 
 
 if __name__ == "__main__":
-    params = Parameters().gomea().instance(Collection.EXAMPLES, 2)
+    params = Parameters().gomea().instance(Collection.EXAMPLES, 2).multi_metric()
     params.write(Path())

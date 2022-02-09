@@ -133,6 +133,8 @@ public:
   /** The moving image dimension. */
   itkStaticConstMacro(MovingImageDimension, unsigned int, MovingImageType::ImageDimension);
 
+  itkStaticConstMacro(MissedPixelPenalty, unsigned int, 256);
+
   /** Get the value for single valued optimizers. */
   virtual MeasureType
   GetValueSingleThreaded(const TransformParametersType & parameters) const;
@@ -197,10 +199,6 @@ public:
    * Note that MS Visual Studio and gcc support OpenMP.
    */
   itkSetMacro(UseOpenMP, bool);
-
-  typedef accumulator_set<long, stats<tag::mean>> MeanAccumulator;
-  itkGetConstReferenceMacro(MissedPixelsMean, MeanAccumulator);
-
 
 protected:
   AdvancedMeanSquaresImageToImageMetric();
@@ -269,6 +267,9 @@ protected:
   inline void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
 
+  typedef accumulator_set<long, stats<tag::mean>> MeanAccumulator;
+  mutable MeanAccumulator                         m_MissedPixelsMean;
+
 private:
   AdvancedMeanSquaresImageToImageMetric(const Self &) = delete;
   void
@@ -278,8 +279,6 @@ private:
   double       m_SelfHessianSmoothingSigma;
   double       m_SelfHessianNoiseRange;
   unsigned int m_NumberOfSamplesForSelfHessian;
-
-  mutable MeanAccumulator m_MissedPixelsMean;
 };
 
 } // end namespace itk

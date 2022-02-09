@@ -1,54 +1,29 @@
-// ********** Image Types
-
 (FixedInternalImagePixelType "float")
 (MovingInternalImagePixelType "float")
-
-
-// ********** Components
-
 (Registration "MultiResolutionRegistration")
-(FixedImagePyramid "FixedSmoothingImagePyramid")
-(MovingImagePyramid "MovingSmoothingImagePyramid")
-(Interpolator "LinearInterpolator")
-(Metric "AdvancedMeanSquares")
-(Optimizer "GOMEA")
+(FixedImagePyramid "FixedRecursiveImagePyramid")
+(MovingImagePyramid "MovingRecursiveImagePyramid")
+(Interpolator "BSplineInterpolator")
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
+(ErodeMask "true")
 (Transform "BSplineTransform")
-
-
-// ********** Pyramid
-
-// Total number of resolutions
-(NumberOfResolutions 1)
-//(ImagePyramidSchedule 1 1)
-
-// ********** Optimizer
-
-(MaximumNumberOfIterations 20)
-(PartialEvaluations "true")
-(FosElementSize 1)
-(BasePopulationSize 30)
-
-// ********** Transform
-
-(FinalGridSpacingInVoxels 5)
-//(GridSpacingSchedule 2.0 1.0)
+(NumberOfResolutions 3)
+(ImagePyramidSchedule 1 1 1 1 1 1)
 (HowToCombineTransforms "Compose")
-
-// ********** Several
-
-(WriteResultImage "true")
-
-
-// ********** ImageSampler
-
-(ImageSampler "Full")
-(NumberOfSpatialSamples 100)
-
-
-// ********** Interpolator and Resampler
-
+(UseDirectionCosines "true")
 (BSplineInterpolationOrder 1)
 (FinalBSplineInterpolationOrder 3)
 (DefaultPixelValue 0)
+(WriteResultImageAfterEachResolution "true")
+(Metric "TransformBendingEnergyPenalty")
+(FitnessVarianceTolerance 0)
+(ImageSampler "Full")
+(SamplingPercentage 0.05)
+(MeshSize 20)
+(Optimizer "GOMEA")
+(Collection "EXAMPLES")
+(Instance 2)
+(FinalGridSpacingInVoxels 10)
+(NumberOfSpatialSamples 125)
+(MaximumNumberOfIterations 20)

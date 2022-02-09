@@ -99,7 +99,8 @@ template <class TElastix>
 void
 AdvancedMeanSquaresMetric<TElastix>::AfterEachIteration(void)
 {
-  this->GetIterationInfoAt("3:MissedPixels") << boost::accumulators::mean(this->GetMissedPixelsMean());
+  this->GetIterationInfoAt("3:MissedPixels") << boost::accumulators::mean(this->m_MissedPixelsMean);
+  this->m_MissedPixelsMean = {};
 }
 
 
