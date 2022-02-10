@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import shutil
 import threading
 import time
@@ -21,31 +22,36 @@ class Watchdog(threading.Thread):
         line_counts = [0 for _ in range(self.n_resolutions)]
         file_names = [
             self.out_dir / f"IterationInfo.0.R{r}.txt" for r in range(self.n_resolutions)]
+        r = 0
+
         while not self._stop_event.is_set():
             time.sleep(0.1)
-            for r in range(self.n_resolutions):
-                if not os.path.exists(file_names[r]):
-                    continue
-                
-                try:
-                    resolution_results = pd.read_csv(
-                        file_names[r], sep="	").to_dict()
-                except pd.errors.EmptyDataError:
-                    continue
+            if not os.path.exists(file_names[r]):
+                continue
 
-                headers = list(resolution_results.keys())
-                values = [list(v.values())
-                          for v in resolution_results.values()]
+            try:
+                resolution_results = pd.read_csv(
+                    file_names[r], sep="	").to_dict()
+            except pd.errors.EmptyDataError:
+                continue
 
-                len_values = len(values[0])
-                len_diff = len_values - line_counts[r]
-                line_counts[r] = len_values
-                for line in range(len_values-len_diff, len_values):
-                    for index, header in enumerate(headers):
-                        it_nr = values[0][line]
-                        # wandb.log({header: values[index][-1 * line]}, step=it_nr)
-                        print(f"{it_nr}: {header}={values[index][line]}")
+            headers = list(resolution_results.keys())[1:]
+            values = [list(v.values())
+                      for v in resolution_results.values()][1:]
+
+            len_values = len(values[0])
+            len_diff = len_values - line_counts[r]
+            line_counts[r] = len_values
+            for line in range(len_values-len_diff, len_values):
+                scalars = {}
+                for index, header in enumerate(headers):
+                    header = re.sub(r'\d:', '', header).lower()
+                    scalars[f"R{r}/"+header] = values[index][line]
+                wandb.log(scalars)
+
+            if r < self.n_resolutions - 1 and os.path.exists(file_names[r+1]):
+                r += 1
 
     def stop(self):
-        time.sleep(2.0)
+        time.sleep(1.0)
         self._stop_event.set()

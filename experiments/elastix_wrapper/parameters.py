@@ -29,7 +29,7 @@ class Parameters:
         metric: str = "AdvancedMeanSquares",
         sampler: str = "RandomCoordinate",
         sampling_p: float = 0.1,
-        mesh_size: List[int] | int = 20,
+        mesh_size: List[int] | int = 12,
     ) -> None:
         with BASE_PARAMS_PATH.open() as f:
             self.params: Dict[str, Any] = json.loads(f.read())
