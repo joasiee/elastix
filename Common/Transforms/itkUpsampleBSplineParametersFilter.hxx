@@ -63,9 +63,9 @@ UpsampleBSplineParametersFilter<TArray, TImage>::UpsampleParameters(const ArrayT
   }
 
   /** Typedefs. */
-  typedef itk::ResampleImageFilter<ImageType, ImageType>             UpsampleFilterType;
-  typedef itk::BSplineResampleImageFunction<ImageType, ValueType>    CoefficientUpsampleFunctionType;
-  typedef itk::BSplineDecompositionImageFilter<ImageType, ImageType> DecompositionFilterType;
+  using UpsampleFilterType = itk::ResampleImageFilter<ImageType, ImageType>;
+  using CoefficientUpsampleFunctionType = itk::BSplineResampleImageFunction<ImageType, ValueType>;
+  using DecompositionFilterType = itk::BSplineDecompositionImageFilter<ImageType, ImageType>;
 
   /** Get the number of parameters. */
   const unsigned int currentNumberOfPixels = this->m_CurrentGridRegion.GetNumberOfPixels();
@@ -102,9 +102,9 @@ UpsampleBSplineParametersFilter<TArray, TImage>::UpsampleParameters(const ArrayT
      *
      * This code is derived from the itk-example DeformableRegistration6.cxx.
      */
-    typename UpsampleFilterType::Pointer              upsampler = UpsampleFilterType::New();
-    typename CoefficientUpsampleFunctionType::Pointer coeffUpsampleFunction = CoefficientUpsampleFunctionType::New();
-    typename DecompositionFilterType::Pointer         decompositionFilter = DecompositionFilterType::New();
+    auto upsampler = UpsampleFilterType::New();
+    auto coeffUpsampleFunction = CoefficientUpsampleFunctionType::New();
+    auto decompositionFilter = DecompositionFilterType::New();
 
     /** Setup the upsampler. */
     upsampler->SetInterpolator(coeffUpsampleFunction);
@@ -156,7 +156,7 @@ UpsampleBSplineParametersFilter<TArray, TImage>::UpsampleParameters(const ArrayT
 
 template <class TArray, class TImage>
 bool
-UpsampleBSplineParametersFilter<TArray, TImage>::DoUpsampling(void)
+UpsampleBSplineParametersFilter<TArray, TImage>::DoUpsampling()
 {
   bool ret = (this->m_CurrentGridOrigin != this->m_RequiredGridOrigin);
   ret |= (this->m_CurrentGridSpacing != this->m_RequiredGridSpacing);

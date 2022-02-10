@@ -37,10 +37,10 @@ template <typename TTypeList, typename NDimensions>
 class ITK_TEMPLATE_EXPORT GPUNearestNeighborInterpolateImageFunctionFactory2 : public GPUObjectFactoryBase<NDimensions>
 {
 public:
-  typedef GPUNearestNeighborInterpolateImageFunctionFactory2 Self;
-  typedef GPUObjectFactoryBase<NDimensions>                  Superclass;
-  typedef SmartPointer<Self>                                 Pointer;
-  typedef SmartPointer<const Self>                           ConstPointer;
+  using Self = GPUNearestNeighborInterpolateImageFunctionFactory2;
+  using Superclass = GPUObjectFactoryBase<NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Return a descriptive string describing the factory. */
   const char *
@@ -62,11 +62,11 @@ public:
   /** Operator() to register override. */
   template <typename TType, unsigned int VImageDimension>
   void
-  operator()(void)
+  operator()()
   {
     // Image typedefs
-    typedef Image<TType, VImageDimension>    InputImageType;
-    typedef GPUImage<TType, VImageDimension> GPUInputImageType;
+    using InputImageType = Image<TType, VImageDimension>;
+    using GPUInputImageType = GPUImage<TType, VImageDimension>;
 
     // Override default with the coordinate representation type as float
     this->RegisterOverride(

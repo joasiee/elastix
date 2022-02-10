@@ -20,7 +20,7 @@
 
 #include "itkVarianceOverLastDimensionImageMetric.h"
 #include "itkMersenneTwisterRandomVariateGenerator.h"
-#include "vnl/algo/vnl_matrix_update.h"
+#include <vnl/algo/vnl_matrix_update.h>
 #include <numeric>
 
 namespace itk
@@ -46,7 +46,7 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::VarianceOverLas
 
 template <class TFixedImage, class TMovingImage>
 void
-VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::Initialize(void)
+VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::Initialize()
 {
   /** Initialize transform, interpolator, etc. */
   Superclass::Initialize();
@@ -164,20 +164,17 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::EvaluateTransfo
   const MovingImageDerivativeType & movingImageDerivative,
   DerivativeType &                  imageJacobian) const
 {
-  typedef typename TransformJacobianType::const_iterator JacobianIteratorType;
-  typedef typename DerivativeType::iterator              DerivativeIteratorType;
-  JacobianIteratorType                                   jac = jacobian.begin();
+  using JacobianIteratorType = typename TransformJacobianType::const_iterator;
+  JacobianIteratorType jac = jacobian.begin();
   imageJacobian.Fill(0.0);
-  const unsigned int sizeImageJacobian = imageJacobian.GetSize();
+
   for (unsigned int dim = 0; dim < FixedImageDimension; ++dim)
   {
-    const double           imDeriv = movingImageDerivative[dim];
-    DerivativeIteratorType imjac = imageJacobian.begin();
+    const double imDeriv = movingImageDerivative[dim];
 
-    for (unsigned int mu = 0; mu < sizeImageJacobian; ++mu)
+    for (auto & imageJacobianElement : imageJacobian)
     {
-      (*imjac) += (*jac) * imDeriv;
-      ++imjac;
+      imageJacobianElement += (*jac) * imDeriv;
       ++jac;
     }
   }
@@ -189,9 +186,9 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::EvaluateTransfo
  */
 
 template <class TFixedImage, class TMovingImage>
-typename VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   itkDebugMacro("GetValue( " << parameters << " ) ");
 
@@ -263,8 +260,7 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValue(
     for (unsigned int d = 0; d < realNumLastDimPositions; ++d)
     {
       /** Initialize some variables. */
-      RealType             movingImageValue;
-      MovingImagePointType mappedPoint;
+      RealType movingImageValue;
 
       /** Set fixed point's last dimension to lastDimPosition. */
       voxelCoord[lastDim] = lastDimPositions[d];
@@ -272,21 +268,18 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValue(
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
 
-      /** Transform point and check if it is inside the B-spline support region. */
-      bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+      /** Transform point. */
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-      /** Check if point is inside mask. */
-      if (sampleOk)
-      {
-        sampleOk = this->IsInsideMovingMask(mappedPoint);
-      }
+      /** Check if the point is inside the moving mask. */
+      bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
       /** Compute the moving image value and check if the point is
        * inside the moving image buffer.
        */
       if (sampleOk)
       {
-        sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+        sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
       }
 
       if (sampleOk)
@@ -358,7 +351,7 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValueAndDeri
   itkDebugMacro("GetValueAndDerivative( " << parameters << " ) ");
 
   /** Define derivative and Jacobian types. */
-  typedef typename DerivativeType::ValueType DerivativeValueType;
+  using DerivativeValueType = typename DerivativeType::ValueType;
 
   /** Initialize some variables */
   this->m_NumberOfPixelsCounted = 0;
@@ -449,27 +442,24 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValueAndDeri
     {
       /** Initialize some variables. */
       RealType                  movingImageValue;
-      MovingImagePointType      mappedPoint;
       MovingImageDerivativeType movingImageDerivative;
 
       /** Set fixed point's last dimension to lastDimPosition. */
       voxelCoord[lastDim] = lastDimPositions[d];
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
-      /** Transform point and check if it is inside the B-spline support region. */
-      bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+      /** Transform point. */
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-      /** Check if point is inside mask. */
-      if (sampleOk)
-      {
-        sampleOk = this->IsInsideMovingMask(mappedPoint);
-      }
+      /** Check if the point is inside the moving mask. */
+      bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
       /** Compute the moving image value and check if the point is
        * inside the moving image buffer. */
       if (sampleOk)
       {
-        sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+        sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(
+          mappedPoint, movingImageValue, &movingImageDerivative);
       }
 
       if (sampleOk)

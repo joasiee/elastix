@@ -30,7 +30,7 @@ namespace elastix
 
 template <class TElastix>
 void
-MultiResolutionRegistrationWithFeatures<TElastix>::BeforeRegistration(void)
+MultiResolutionRegistrationWithFeatures<TElastix>::BeforeRegistration()
 {
   /** Get the components from this->m_Elastix and set them. */
   this->GetAndSetComponents();
@@ -55,7 +55,7 @@ MultiResolutionRegistrationWithFeatures<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-MultiResolutionRegistrationWithFeatures<TElastix>::BeforeEachResolution(void)
+MultiResolutionRegistrationWithFeatures<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = this->GetCurrentLevel();
@@ -73,7 +73,7 @@ MultiResolutionRegistrationWithFeatures<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetComponents(void)
+MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetComponents()
 {
   /** Get the component from this->GetElastix() (as elx::...BaseType *),
    * cast it to the appropriate type and set it in 'this'.
@@ -87,8 +87,8 @@ MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetComponents(void)
   }
   else
   {
-    itkExceptionMacro(<< "ERROR: MultiResolutionRegistrationWithFeatures "
-                      << "expects the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(
+      << "ERROR: MultiResolutionRegistrationWithFeatures expects the metric to be of type AdvancedImageToImageMetric!");
   }
 
   /** Set the fixed images. */
@@ -151,7 +151,7 @@ MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetComponents(void)
 
 template <class TElastix>
 void
-MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetFixedImageRegions(void)
+MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetFixedImageRegions()
 {
   for (unsigned int i = 0; i < this->GetElastix()->GetNumberOfFixedImages(); ++i)
   {
@@ -184,7 +184,7 @@ MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetFixedImageRegions(vo
 
 template <class TElastix>
 void
-MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetFixedImageInterpolators(void)
+MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetFixedImageInterpolators()
 {
   /** Shrot cut. */
   const unsigned int noFixIm = this->GetNumberOfFixedImages();
@@ -199,9 +199,9 @@ MultiResolutionRegistrationWithFeatures<TElastix>::GetAndSetFixedImageInterpolat
   }
 
   /** Create and set interpolators for the fixed feature images. */
-  typedef itk::BSplineInterpolateImageFunction<FixedImageType>      FixedImageInterpolatorType;
-  typedef std::vector<typename FixedImageInterpolatorType::Pointer> FixedImageInterpolatorVectorType;
-  FixedImageInterpolatorVectorType                                  interpolators(noFixIm);
+  using FixedImageInterpolatorType = itk::BSplineInterpolateImageFunction<FixedImageType>;
+  using FixedImageInterpolatorVectorType = std::vector<typename FixedImageInterpolatorType::Pointer>;
+  FixedImageInterpolatorVectorType interpolators(noFixIm);
   for (unsigned int i = 0; i < noFixIm; ++i)
   {
     interpolators[i] = FixedImageInterpolatorType::New();

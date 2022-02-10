@@ -59,7 +59,7 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage,
 
 template <class TFixedImage, class TMovingImage>
 void
-NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
+NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
 {
   /** Initialize the base class */
   Superclass::Initialize();
@@ -91,8 +91,8 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Init
   }
   else
   {
-    itkExceptionMacro(<< "ERROR: the NormalizedGradientCorrelationImageToImageMetric is currently "
-                      << "only suitable for 2D-3D registration.\n"
+    itkExceptionMacro(<< "ERROR: the NormalizedGradientCorrelationImageToImageMetric is currently only suitable for "
+                         "2D-3D registration.\n"
                       << "  Therefore it expects an interpolator of type RayCastInterpolator.");
   }
   this->m_TransformMovingImageFilter->SetInterpolator(this->m_Interpolator);
@@ -140,7 +140,7 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Prin
 
 template <class TFixedImage, class TMovingImage>
 void
-NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::ComputeMeanFixedGradient(void) const
+NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::ComputeMeanFixedGradient() const
 {
   typename FixedGradientImageType::IndexType currentIndex;
   typename FixedGradientImageType::PointType point;
@@ -150,7 +150,7 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Comp
     this->m_FixedSobelFilters[iDimension]->UpdateLargestPossibleRegion();
   }
 
-  typedef itk::ImageRegionConstIteratorWithIndex<FixedGradientImageType> FixedIteratorType;
+  using FixedIteratorType = itk::ImageRegionConstIteratorWithIndex<FixedGradientImageType>;
   FixedIteratorType fixedIteratorx(this->m_FixedSobelFilters[0]->GetOutput(), this->GetFixedImageRegion());
   FixedIteratorType fixedIteratory(this->m_FixedSobelFilters[1]->GetOutput(), this->GetFixedImageRegion());
 
@@ -213,7 +213,7 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Comp
 
 template <class TFixedImage, class TMovingImage>
 void
-NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::ComputeMeanMovedGradient(void) const
+NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::ComputeMeanMovedGradient() const
 {
   typename MovedGradientImageType::IndexType currentIndex;
   typename MovedGradientImageType::PointType point;
@@ -223,7 +223,7 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Comp
     this->m_MovedSobelFilters[iDimension]->UpdateLargestPossibleRegion();
   }
 
-  typedef itk::ImageRegionConstIteratorWithIndex<MovedGradientImageType> MovedIteratorType;
+  using MovedIteratorType = itk::ImageRegionConstIteratorWithIndex<MovedGradientImageType>;
 
   MovedIteratorType movedIteratorx(this->m_MovedSobelFilters[0]->GetOutput(), this->GetFixedImageRegion());
   MovedIteratorType movedIteratory(this->m_MovedSobelFilters[1]->GetOutput(), this->GetFixedImageRegion());
@@ -288,9 +288,9 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Comp
  */
 
 template <class TFixedImage, class TMovingImage>
-typename NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::ComputeMeasure(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   this->SetTransformParameters(parameters);
   this->m_TransformMovingImageFilter->Modified();
@@ -315,7 +315,7 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Comp
     this->m_MovedSobelFilters[iDimension]->UpdateLargestPossibleRegion();
   }
 
-  typedef itk::ImageRegionConstIteratorWithIndex<FixedGradientImageType> FixedIteratorType;
+  using FixedIteratorType = itk::ImageRegionConstIteratorWithIndex<FixedGradientImageType>;
 
   FixedIteratorType fixedIteratorx(this->m_FixedSobelFilters[0]->GetOutput(), this->GetFixedImageRegion());
   FixedIteratorType fixedIteratory(this->m_FixedSobelFilters[1]->GetOutput(), this->GetFixedImageRegion());
@@ -323,7 +323,7 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Comp
   fixedIteratorx.GoToBegin();
   fixedIteratory.GoToBegin();
 
-  typedef itk::ImageRegionConstIteratorWithIndex<MovedGradientImageType> MovedIteratorType;
+  using MovedIteratorType = itk::ImageRegionConstIteratorWithIndex<MovedGradientImageType>;
 
   MovedIteratorType movedIteratorx(this->m_MovedSobelFilters[0]->GetOutput(), this->GetFixedImageRegion());
   MovedIteratorType movedIteratory(this->m_MovedSobelFilters[1]->GetOutput(), this->GetFixedImageRegion());
@@ -387,9 +387,9 @@ NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Comp
  */
 
 template <class TFixedImage, class TMovingImage>
-typename NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 NormalizedGradientCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   /** Call non-thread-safe stuff, such as:
    *   this->SetTransformParameters( parameters );

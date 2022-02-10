@@ -20,10 +20,9 @@
 
 #include "itkTransformToSpatialJacobianSource.h"
 
-#include "itkAdvancedIdentityTransform.h"
 #include "itkProgressReporter.h"
 #include "itkImageRegionIteratorWithIndex.h"
-#include "vnl/vnl_copy.h"
+#include <vnl/vnl_copy.h>
 
 namespace itk
 {
@@ -34,20 +33,6 @@ namespace itk
 template <class TOutputImage, class TTransformPrecisionType>
 TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::TransformToSpatialJacobianSource()
 {
-  this->m_OutputSpacing.Fill(1.0);
-  this->m_OutputOrigin.Fill(0.0);
-  this->m_OutputDirection.SetIdentity();
-
-  SizeType size;
-  size.Fill(0);
-  this->m_OutputRegion.SetSize(size);
-
-  IndexType index;
-  index.Fill(0);
-  this->m_OutputRegion.SetIndex(index);
-
-  this->m_Transform = AdvancedIdentityTransform<TTransformPrecisionType, ImageDimension>::New();
-
   // Check if the output pixel type is valid
   // TODO: should maybe be done at compile time, using concept checking.
   const unsigned int pixrow = PixelType::RowDimensions;
@@ -101,8 +86,8 @@ TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::SetOutp
  * Get the output image size.
  */
 template <class TOutputImage, class TTransformPrecisionType>
-const typename TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::SizeType &
-TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::GetOutputSize()
+auto
+TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::GetOutputSize() -> const SizeType &
 {
   return this->m_OutputRegion.GetSize();
 }
@@ -122,8 +107,8 @@ TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::SetOutp
  * Get the output image index.
  */
 template <class TOutputImage, class TTransformPrecisionType>
-const typename TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::IndexType &
-TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::GetOutputIndex()
+auto
+TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::GetOutputIndex() -> const IndexType &
 {
   return this->m_OutputRegion.GetIndex();
 }
@@ -179,7 +164,7 @@ TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::SetOutp
  */
 template <class TOutputImage, class TTransformPrecisionType>
 void
-TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::BeforeThreadedGenerateData(void)
+TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::BeforeThreadedGenerateData()
 {
   if (!this->m_Transform)
   {
@@ -230,8 +215,8 @@ TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::Nonline
   OutputImagePointer outputPtr = this->GetOutput();
 
   // Create an iterator that will walk the output region for this thread.
-  typedef ImageRegionIteratorWithIndex<TOutputImage> OutputIteratorType;
-  OutputIteratorType                                 it(outputPtr, outputRegionForThread);
+  using OutputIteratorType = ImageRegionIteratorWithIndex<TOutputImage>;
+  OutputIteratorType it(outputPtr, outputRegionForThread);
   it.GoToBegin();
 
   // pixel coordinates
@@ -268,7 +253,7 @@ TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::Nonline
 
 template <class TOutputImage, class TTransformPrecisionType>
 void
-TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::LinearGenerateData(void)
+TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::LinearGenerateData()
 {
   // Use an unthreaded implementation here, since the FillBuffer method
   // is used.
@@ -301,7 +286,7 @@ TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::LinearG
  */
 template <class TOutputImage, class TTransformPrecisionType>
 void
-TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::GenerateOutputInformation(void)
+TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::GenerateOutputInformation()
 {
   // call the superclass' implementation of this method
   Superclass::GenerateOutputInformation();
@@ -327,7 +312,7 @@ TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::Generat
  */
 template <class TOutputImage, class TTransformPrecisionType>
 ModifiedTimeType
-TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::GetMTime(void) const
+TransformToSpatialJacobianSource<TOutputImage, TTransformPrecisionType>::GetMTime() const
 {
   ModifiedTimeType latestTime = Object::GetMTime();
 

@@ -23,33 +23,10 @@
 #include "itkBSplineKernelFunction2.h"
 #include "itkBSplineDerivativeKernelFunction2.h"
 #include "itkBSplineSecondOrderDerivativeKernelFunction2.h"
+#include "itkMath.h"
 
 namespace itk
 {
-/** Recursive template to retrieve the number of B-spline indices at compile time. */
-template <unsigned int SplineOrder, unsigned int Dimension>
-class ITK_TEMPLATE_EXPORT GetConstNumberOfIndicesHack
-{
-public:
-  typedef GetConstNumberOfIndicesHack<SplineOrder, Dimension - 1> OneDimensionLess;
-  itkStaticConstMacro(Value, unsigned int, (SplineOrder + 1) * OneDimensionLess::Value);
-};
-
-template <unsigned int SplineOrder>
-class ITK_TEMPLATE_EXPORT GetConstNumberOfIndicesHack<SplineOrder, 0>
-{
-public:
-  itkStaticConstMacro(Value, unsigned int, 1);
-};
-
-/** Recursive template to retrieve the number of B-spline weights at compile time. */
-template <unsigned int SplineOrder, unsigned int Dimension>
-class ITK_TEMPLATE_EXPORT GetConstNumberOfWeightsHackRecursiveBSpline
-{
-public:
-  itkStaticConstMacro(Value, unsigned int, (SplineOrder + 1) * Dimension);
-};
-
 /** \class RecursiveBSplineInterpolationWeightFunction
  * \brief Returns the weights over the support region used for B-spline
  * interpolation/reconstruction.
@@ -73,10 +50,10 @@ class ITK_TEMPLATE_EXPORT RecursiveBSplineInterpolationWeightFunction
 {
 public:
   /** Standard class typedefs. */
-  typedef RecursiveBSplineInterpolationWeightFunction                                  Self;
-  typedef BSplineInterpolationWeightFunction<TCoordRep, VSpaceDimension, VSplineOrder> Superclass;
-  typedef SmartPointer<Self>                                                           Pointer;
-  typedef SmartPointer<const Self>                                                     ConstPointer;
+  using Self = RecursiveBSplineInterpolationWeightFunction;
+  using Superclass = BSplineInterpolationWeightFunction<TCoordRep, VSpaceDimension, VSplineOrder>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New macro for creation of through the object factory. */
   itkNewMacro(Self);
@@ -96,12 +73,11 @@ public:
   using typename Superclass::SizeType;
   using typename Superclass::ContinuousIndexType;
 
-  /** Get number of hacks. */
-  typedef GetConstNumberOfWeightsHackRecursiveBSpline<Self::SplineOrder, Self::SpaceDimension>
-    GetConstNumberOfWeightsHackRecursiveBSplineType;
-  itkStaticConstMacro(NumberOfWeights, unsigned int, GetConstNumberOfWeightsHackRecursiveBSplineType::Value);
-  typedef GetConstNumberOfIndicesHack<Self::SplineOrder, Self::SpaceDimension> GetConstNumberOfIndicesHackType;
-  itkStaticConstMacro(NumberOfIndices, unsigned int, GetConstNumberOfIndicesHackType::Value);
+  /** The number of weights. */
+  static constexpr unsigned NumberOfWeights = (VSplineOrder + 1) * VSpaceDimension;
+
+  /** The number of indices. */
+  static constexpr unsigned NumberOfIndices = Math::UnsignedPower(VSplineOrder + 1, VSpaceDimension);
 
   /** Get number of indices. */
   itkGetConstMacro(NumberOfIndices, unsigned int);
@@ -147,14 +123,9 @@ private:
   SizeType     m_SupportSize;
 
   /** Interpolation kernel type. */
-  typedef BSplineKernelFunction2<Self::SplineOrder>                      KernelType;
-  typedef BSplineDerivativeKernelFunction2<Self::SplineOrder>            DerivativeKernelType;
-  typedef BSplineSecondOrderDerivativeKernelFunction2<Self::SplineOrder> SecondOrderDerivativeKernelType;
-
-  /** Interpolation kernel. */
-  typename KernelType::Pointer                      m_Kernel;
-  typename DerivativeKernelType::Pointer            m_DerivativeKernel;
-  typename SecondOrderDerivativeKernelType::Pointer m_SecondOrderDerivativeKernel;
+  using KernelType = BSplineKernelFunction2<VSplineOrder>;
+  using DerivativeKernelType = BSplineDerivativeKernelFunction2<VSplineOrder>;
+  using SecondOrderDerivativeKernelType = BSplineSecondOrderDerivativeKernelFunction2<VSplineOrder>;
 };
 
 } // end namespace itk

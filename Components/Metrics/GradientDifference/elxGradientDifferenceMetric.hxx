@@ -30,7 +30,7 @@ namespace elastix
 
 template <class TElastix>
 void
-GradientDifferenceMetric<TElastix>::Initialize(void)
+GradientDifferenceMetric<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -48,7 +48,7 @@ GradientDifferenceMetric<TElastix>::Initialize(void)
 
 template <class TElastix>
 void
-GradientDifferenceMetric<TElastix>::BeforeRegistration(void)
+GradientDifferenceMetric<TElastix>::BeforeRegistration()
 {
 
   if (this->m_Elastix->GetFixedImage()->GetImageDimension() != 3)
@@ -72,9 +72,9 @@ GradientDifferenceMetric<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-GradientDifferenceMetric<TElastix>::BeforeEachResolution(void)
+GradientDifferenceMetric<TElastix>::BeforeEachResolution()
 {
-  typedef typename elastix::OptimizerBase<TElastix>::ITKBaseType::ScalesType ScalesType;
+  using ScalesType = typename elastix::OptimizerBase<TElastix>::ITKBaseType::ScalesType;
   ScalesType scales = this->m_Elastix->GetElxOptimizerBase()->GetAsITKBaseType()->GetScales();
   this->SetScales(scales);
 

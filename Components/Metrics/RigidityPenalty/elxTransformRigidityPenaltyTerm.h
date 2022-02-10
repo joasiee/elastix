@@ -113,11 +113,11 @@ class ITK_TEMPLATE_EXPORT TransformRigidityPenalty
 {
 public:
   /** Standard ITK-stuff. */
-  typedef TransformRigidityPenalty                                                                 Self;
-  typedef itk::TransformRigidityPenaltyTerm<typename MetricBase<TElastix>::FixedImageType, double> Superclass1;
-  typedef MetricBase<TElastix>                                                                     Superclass2;
-  typedef itk::SmartPointer<Self>                                                                  Pointer;
-  typedef itk::SmartPointer<const Self>                                                            ConstPointer;
+  using Self = TransformRigidityPenalty;
+  using Superclass1 = itk::TransformRigidityPenaltyTerm<typename MetricBase<TElastix>::FixedImageType, double>;
+  using Superclass2 = MetricBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -186,20 +186,20 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Sets up a timer to measure the initialization time and
    * calls the Superclass' implementation.
    */
   void
-  Initialize(void) override;
+  Initialize() override;
 
   /**
    * Do some things before each resolution:
    * \li Read all parameters.
    */
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
   /**
    * Do some things before registration:
@@ -208,21 +208,21 @@ public:
    * \li Setup some extra target cells.
    */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   /**
    * Do some things after each iteration:
    * \li Print the OC, PC, LC parts of the rigidity term.
    */
   void
-  AfterEachIteration(void) override;
+  AfterEachIteration() override;
 
   /** This metric is advanced (so it has a sampling possibility), but it
    * purposely does not use samplers. The MetricBase class, however, issues
    * a warning if this is the case, so we overwrite that function.
    */
   void
-  SelectNewSamples(void) override
+  SelectNewSamples() override
   {}
 
 protected:

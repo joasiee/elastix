@@ -83,11 +83,11 @@ class ITK_TEMPLATE_EXPORT FiniteDifferenceGradientDescent
 {
 public:
   /** Standard ITK.*/
-  typedef FiniteDifferenceGradientDescent          Self;
-  typedef FiniteDifferenceGradientDescentOptimizer Superclass1;
-  typedef OptimizerBase<TElastix>                  Superclass2;
-  typedef itk::SmartPointer<Self>                  Pointer;
-  typedef itk::SmartPointer<const Self>            ConstPointer;
+  using Self = FiniteDifferenceGradientDescent;
+  using Superclass1 = FiniteDifferenceGradientDescentOptimizer;
+  using Superclass2 = OptimizerBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -113,31 +113,31 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Typedef for the ParametersType. */
   using typename Superclass1::ParametersType;
 
   /** Methods that take care of setting parameters and printing progress information.*/
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
   void
-  AfterEachResolution(void) override;
+  AfterEachResolution() override;
 
   void
-  AfterEachIteration(void) override;
+  AfterEachIteration() override;
 
   void
-  AfterRegistration(void) override;
+  AfterRegistration() override;
 
   /** Check if any scales are set, and set the UseScales flag on or off;
    * after that call the superclass' implementation */
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
 protected:
   FiniteDifferenceGradientDescent();

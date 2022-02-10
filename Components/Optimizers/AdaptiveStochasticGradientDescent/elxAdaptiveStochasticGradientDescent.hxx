@@ -68,7 +68,7 @@ AdaptiveStochasticGradientDescent<TElastix>::AdaptiveStochasticGradientDescent()
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::BeforeRegistration(void)
+AdaptiveStochasticGradientDescent<TElastix>::BeforeRegistration()
 {
   /** Add the target cell "stepsize" to IterationInfo. */
   this->AddTargetCellToIterationInfo("2:Metric");
@@ -93,12 +93,13 @@ AdaptiveStochasticGradientDescent<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::BeforeEachResolution(void)
+AdaptiveStochasticGradientDescent<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
-  const unsigned int P = this->GetElastix()->GetElxTransformBase()->GetAsITKBaseType()->GetNumberOfParameters();
+  const unsigned int numberOfParameters =
+    this->GetElastix()->GetElxTransformBase()->GetAsITKBaseType()->GetNumberOfParameters();
 
   /** Set the maximumNumberOfIterations. */
   SizeValueType maximumNumberOfIterations = 500;
@@ -202,7 +203,8 @@ AdaptiveStochasticGradientDescent<TElastix>::BeforeEachResolution(void)
      * M = max( 1000, nrofparams );
      * This is a rather crude rule of thumb, which seems to work in practice.
      */
-    this->m_NumberOfJacobianMeasurements = std::max(static_cast<unsigned int>(1000), static_cast<unsigned int>(P));
+    this->m_NumberOfJacobianMeasurements =
+      std::max(static_cast<unsigned int>(1000), static_cast<unsigned int>(numberOfParameters));
     this->GetConfiguration()->ReadParameter(
       this->m_NumberOfJacobianMeasurements, "NumberOfJacobianMeasurements", this->GetComponentLabel(), level, 0);
 
@@ -263,7 +265,7 @@ AdaptiveStochasticGradientDescent<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::AfterEachIteration(void)
+AdaptiveStochasticGradientDescent<TElastix>::AfterEachIteration()
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->GetValue();
@@ -294,16 +296,16 @@ AdaptiveStochasticGradientDescent<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::AfterEachResolution(void)
+AdaptiveStochasticGradientDescent<TElastix>::AfterEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
   /**
-   * typedef enum {
+   * enum StopConditionType {
    *   MaximumNumberOfIterations,
    *   MetricError,
-   *   MinimumStepSize } StopConditionType;
+   *   MinimumStepSize };
    */
   std::string stopcondition;
 
@@ -354,11 +356,11 @@ AdaptiveStochasticGradientDescent<TElastix>::AfterEachResolution(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::AfterRegistration(void)
+AdaptiveStochasticGradientDescent<TElastix>::AfterRegistration()
 {
   /** Print the best metric value. */
   double bestValue = this->GetValue();
-  elxout << std::endl << "Final metric value  = " << bestValue << std::endl;
+  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
 
   elxout << "Settings of " << this->elxGetClassName() << " for all resolutions:" << std::endl;
   this->PrintSettingsVector(this->m_SettingsVector);
@@ -372,7 +374,7 @@ AdaptiveStochasticGradientDescent<TElastix>::AfterRegistration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::StartOptimization(void)
+AdaptiveStochasticGradientDescent<TElastix>::StartOptimization()
 {
   /** Check if the entered scales are correct and != [ 1 1 1 ...]. */
   this->SetUseScales(false);
@@ -401,7 +403,7 @@ AdaptiveStochasticGradientDescent<TElastix>::StartOptimization(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::ResumeOptimization(void)
+AdaptiveStochasticGradientDescent<TElastix>::ResumeOptimization()
 {
   /** The following code relies on the fact that all
    * components have been set up and that the initial
@@ -458,7 +460,7 @@ AdaptiveStochasticGradientDescent<TElastix>::MetricErrorResponse(itk::ExceptionO
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimation(void)
+AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimation()
 {
   /** Total time. */
   itk::TimeProbe timer1;
@@ -502,7 +504,7 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimation(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOriginal(void)
+AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOriginal()
 {
   itk::TimeProbe timer2, timer3;
 
@@ -519,16 +521,16 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOrigina
   this->GetRegistration()->GetAsITKBaseType()->GetModifiableTransform()->SetParameters(this->GetCurrentPosition());
 
   /** Cast to advanced metric type. */
-  typedef typename ElastixType::MetricBaseType::AdvancedMetricType MetricType;
+  using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
   MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
   if (!testPtr)
   {
-    itkExceptionMacro(<< "ERROR: AdaptiveStochasticGradientDescent expects "
-                      << "the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(
+      << "ERROR: AdaptiveStochasticGradientDescent expects the metric to be of type AdvancedImageToImageMetric!");
   }
 
   /** Construct computeJacobianTerms to initialize the parameter estimation. */
-  typename ComputeJacobianTermsType::Pointer computeJacobianTerms = ComputeJacobianTermsType::New();
+  auto computeJacobianTerms = ComputeJacobianTermsType::New();
   computeJacobianTerms->SetFixedImage(testPtr->GetFixedImage());
   computeJacobianTerms->SetFixedImageRegion(testPtr->GetFixedImageRegion());
   computeJacobianTerms->SetFixedImageMask(testPtr->GetFixedImageMask());
@@ -646,7 +648,7 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOrigina
 
 template <class TElastix>
 void
-AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationUsingDisplacementDistribution(void)
+AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationUsingDisplacementDistribution()
 {
   itk::TimeProbe timer4, timer5;
 
@@ -658,12 +660,12 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationUsingDi
   double       maxJJ = 0;
 
   /** Cast to advanced metric type. */
-  typedef typename ElastixType::MetricBaseType::AdvancedMetricType MetricType;
+  using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
   MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
   if (!testPtr)
   {
-    itkExceptionMacro(<< "ERROR: AdaptiveStochasticGradientDescent expects "
-                      << "the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(
+      << "ERROR: AdaptiveStochasticGradientDescent expects the metric to be of type AdvancedImageToImageMetric!");
   }
 
   /** Construct computeJacobianTerms to initialize the parameter estimation. */
@@ -809,8 +811,9 @@ AdaptiveStochasticGradientDescent<TElastix>::SampleGradients(const ParametersTyp
           {
             if (this->GetUseAdaptiveStepSizes())
             {
-              xl::xout["warning"] << "WARNING: UseAdaptiveStepSizes is turned off, "
-                                  << "because UseRandomSampleRegion is set to \"true\"." << std::endl;
+              xl::xout["warning"]
+                << "WARNING: UseAdaptiveStepSizes is turned off, because UseRandomSampleRegion is set to \"true\"."
+                << std::endl;
               this->SetUseAdaptiveStepSizes(false);
             }
           }
@@ -853,12 +856,13 @@ AdaptiveStochasticGradientDescent<TElastix>::SampleGradients(const ParametersTyp
   elxout << "  Sampling gradients ..." << std::endl;
 
   /** Initialize some variables for storing gradients and their magnitudes. */
-  const unsigned int P = this->GetElastix()->GetElxTransformBase()->GetAsITKBaseType()->GetNumberOfParameters();
-  DerivativeType     approxgradient(P);
-  DerivativeType     exactgradient(P);
-  DerivativeType     diffgradient;
-  double             exactgg = 0.0;
-  double             diffgg = 0.0;
+  const unsigned int numberOfParameters =
+    this->GetElastix()->GetElxTransformBase()->GetAsITKBaseType()->GetNumberOfParameters();
+  DerivativeType approxgradient(numberOfParameters);
+  DerivativeType exactgradient(numberOfParameters);
+  DerivativeType diffgradient;
+  double         exactgg = 0.0;
+  double         diffgg = 0.0;
 
   /** Compute gg for some random parameters. */
   for (unsigned int i = 0; i < this->m_NumberOfGradientMeasurements; ++i)

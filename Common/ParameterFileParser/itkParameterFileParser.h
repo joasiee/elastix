@@ -79,10 +79,10 @@ class ParameterFileParser : public Object
 {
 public:
   /** Standard ITK typedefs. */
-  typedef ParameterFileParser      Self;
-  typedef Object                   Superclass;
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Self = ParameterFileParser;
+  using Superclass = Object;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -91,26 +91,30 @@ public:
   itkTypeMacro(ParameterFileParser, Object);
 
   /** Typedefs. */
-  typedef std::vector<std::string>                   ParameterValuesType;
-  typedef std::map<std::string, ParameterValuesType> ParameterMapType;
+  using ParameterValuesType = std::vector<std::string>;
+  using ParameterMapType = std::map<std::string, ParameterValuesType>;
 
   /** Set the name of the file containing the parameters. */
   itkSetStringMacro(ParameterFileName);
   itkGetStringMacro(ParameterFileName);
 
   /** Return the parameter map. */
-  virtual const ParameterMapType &
-  GetParameterMap(void) const;
+  const ParameterMapType &
+  GetParameterMap() const;
 
   /** Read the parameters in the parameter map. */
   void
-  ReadParameterFile(void);
+  ReadParameterFile();
 
   /** Read the parameter file and return the content as a string.
    * Useful for printing the content.
    */
   std::string
-  ReturnParameterFileAsString(void);
+  ReturnParameterFileAsString();
+
+  /** Read the specified file into a parameter map and return the map. */
+  static ParameterMapType
+  ReadParameterMap(const std::string & fileName);
 
 protected:
   ParameterFileParser();
@@ -128,7 +132,7 @@ private:
    * If one of these conditions fail, an exception is thrown.
    */
   void
-  BasicFileChecking(void) const;
+  BasicFileChecking() const;
 
   /** Checks a line.
    * - Returns  true if it is a valid line: containing a parameter.

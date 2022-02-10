@@ -35,19 +35,12 @@ MeshPenalty<TFixedPointSet, TMovingPointSet>::MeshPenalty()
 
 
 /**
- * ******************* Destructor *******************
- */
-
-template <class TFixedPointSet, class TMovingPointSet>
-MeshPenalty<TFixedPointSet, TMovingPointSet>::~MeshPenalty() = default; // end Destructor
-
-/**
  * *********************** Initialize *****************************
  */
 
 template <class TFixedPointSet, class TMovingPointSet>
 void
-MeshPenalty<TFixedPointSet, TMovingPointSet>::Initialize(void)
+MeshPenalty<TFixedPointSet, TMovingPointSet>::Initialize()
 {
   /** Call the initialize of the superclass. */
   // this->Superclass::Initialize();
@@ -84,13 +77,13 @@ MeshPenalty<TFixedPointSet, TMovingPointSet>::Initialize(void)
     //  itkExceptionMacro( << "numberOfPoints does not match numberOfNormals" );
     //}
 
-    typename MeshPointsContainerType::Pointer mappedPoints = MeshPointsContainerType::New();
+    auto mappedPoints = MeshPointsContainerType::New();
     mappedPoints->Reserve(numberOfPoints);
 
-    // MeshPointDataContainerType::Pointer mappedPointNormals = MeshPointDataContainerType::New();
+    // auto mappedPointNormals = MeshPointDataContainerType::New();
     // mappedPointNormals->Reserve(numberOfNormals);
 
-    typename FixedMeshType::Pointer mappedMesh = FixedMeshType::New();
+    auto mappedMesh = FixedMeshType::New();
     mappedMesh->SetPoints(mappedPoints);
 
     mappedMesh->SetPointData(nullptr);
@@ -113,8 +106,8 @@ MeshPenalty<TFixedPointSet, TMovingPointSet>::Initialize(void)
  */
 
 template <class TFixedPointSet, class TMovingPointSet>
-typename MeshPenalty<TFixedPointSet, TMovingPointSet>::MeasureType
-MeshPenalty<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
+auto
+MeshPenalty<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const -> MeasureType
 {
   /** Sanity checks. */
   FixedMeshContainerConstPointer fixedMeshContainer = this->GetFixedMeshContainer();

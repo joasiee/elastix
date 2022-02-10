@@ -56,10 +56,10 @@ class FiniteDifferenceGradientDescentOptimizer : public ScaledSingleValuedNonLin
 {
 public:
   /** Standard class typedefs. */
-  typedef FiniteDifferenceGradientDescentOptimizer Self;
-  typedef ScaledSingleValuedNonLinearOptimizer     Superclass;
-  typedef SmartPointer<Self>                       Pointer;
-  typedef SmartPointer<const Self>                 ConstPointer;
+  using Self = FiniteDifferenceGradientDescentOptimizer;
+  using Superclass = ScaledSingleValuedNonLinearOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -68,29 +68,29 @@ public:
   itkTypeMacro(FiniteDifferenceGradientDescentOptimizer, ScaledSingleValuedNonLinearOptimizer);
 
   /** Codes of stopping conditions */
-  typedef enum
+  enum StopConditionType
   {
     MaximumNumberOfIterations,
     MetricError
-  } StopConditionType;
+  };
 
   /** Advance one step following the gradient direction. */
   virtual void
-  AdvanceOneStep(void);
+  AdvanceOneStep();
 
   /** Start optimization. */
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
   /** Resume previously stopped optimization with current parameters
    * \sa StopOptimization. */
   void
-  ResumeOptimization(void);
+  ResumeOptimization();
 
   /** Stop optimization.
    * \sa ResumeOptimization */
   void
-  StopOptimization(void);
+  StopOptimization();
 
   /** Set the number of iterations. */
   itkSetMacro(NumberOfIterations, unsigned long);

@@ -21,7 +21,7 @@
 #include "elxIncludes.h"
 /** Include itk transforms needed. */
 #include "itkAdvancedCombinationTransform.h"
-#include "itkStackTransform.h"
+#include "itkEulerStackTransform.h"
 #include "itkEulerTransform.h"
 
 namespace elastix
@@ -85,13 +85,12 @@ class ITK_TEMPLATE_EXPORT EulerStackTransform
 {
 public:
   /** Standard ITK-stuff. */
-  typedef EulerStackTransform Self;
-  typedef itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                            elx::TransformBase<TElastix>::FixedImageDimension>
-                                        Superclass1;
-  typedef elx::TransformBase<TElastix>  Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = EulerStackTransform;
+  using Superclass1 = itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                        elx::TransformBase<TElastix>::FixedImageDimension>;
+  using Superclass2 = elx::TransformBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -112,24 +111,18 @@ public:
   /** The ITK-class that provides most of the functionality, and
    * that is set as the "CurrentTransform" in the CombinationTransform.
    */
-  typedef itk::EulerTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::SpaceDimension>
-                                                      EulerTransformType;
-  typedef typename EulerTransformType::Pointer        EulerTransformPointer;
-  typedef typename EulerTransformType::InputPointType InputPointType;
+  using EulerTransformType =
+    itk::EulerTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::SpaceDimension>;
+  using EulerTransformPointer = typename EulerTransformType::Pointer;
+  using InputPointType = typename EulerTransformType::InputPointType;
 
   /** The ITK-class for the sub transforms, which have a reduced dimension. */
-  typedef itk::EulerTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::ReducedSpaceDimension>
-                                                               ReducedDimensionEulerTransformType;
-  typedef typename ReducedDimensionEulerTransformType::Pointer ReducedDimensionEulerTransformPointer;
+  using ReducedDimensionEulerTransformType =
+    itk::EulerTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::ReducedSpaceDimension>;
+  using ReducedDimensionEulerTransformPointer = typename ReducedDimensionEulerTransformType::Pointer;
 
-  typedef typename ReducedDimensionEulerTransformType::OutputVectorType ReducedDimensionOutputVectorType;
-  typedef typename ReducedDimensionEulerTransformType::InputPointType   ReducedDimensionInputPointType;
-
-  /** Typedef for stack transform. */
-  typedef itk::
-    StackTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::SpaceDimension, Self::SpaceDimension>
-                                                    EulerStackTransformType;
-  typedef typename EulerStackTransformType::Pointer EulerStackTransformPointer;
+  using ReducedDimensionOutputVectorType = typename ReducedDimensionEulerTransformType::OutputVectorType;
+  using ReducedDimensionInputPointType = typename ReducedDimensionEulerTransformType::InputPointType;
 
   /** Typedefs inherited from the superclass. */
   using typename Superclass1::ParametersType;
@@ -146,37 +139,37 @@ public:
   using typename Superclass2::CoordRepType;
   using typename Superclass2::FixedImageType;
   using typename Superclass2::MovingImageType;
-  typedef typename Superclass2::ITKBaseType              ITKBaseType;
-  typedef typename Superclass2::CombinationTransformType CombinationTransformType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
+  using CombinationTransformType = typename Superclass2::CombinationTransformType;
 
   /** Reduced Dimension typedef's. */
-  typedef float                                              PixelType;
-  typedef itk::Image<PixelType, Self::ReducedSpaceDimension> ReducedDimensionImageType;
-  typedef itk::ImageRegion<Self::ReducedSpaceDimension>      ReducedDimensionRegionType;
-  typedef typename ReducedDimensionImageType::PointType      ReducedDimensionPointType;
-  typedef typename ReducedDimensionImageType::SizeType       ReducedDimensionSizeType;
-  typedef typename ReducedDimensionRegionType::IndexType     ReducedDimensionIndexType;
-  typedef typename ReducedDimensionImageType::SpacingType    ReducedDimensionSpacingType;
-  typedef typename ReducedDimensionImageType::DirectionType  ReducedDimensionDirectionType;
-  typedef typename ReducedDimensionImageType::PointType      ReducedDimensionOriginType;
+  using PixelType = float;
+  using ReducedDimensionImageType = itk::Image<PixelType, Self::ReducedSpaceDimension>;
+  using ReducedDimensionRegionType = itk::ImageRegion<Self::ReducedSpaceDimension>;
+  using ReducedDimensionPointType = typename ReducedDimensionImageType::PointType;
+  using ReducedDimensionSizeType = typename ReducedDimensionImageType::SizeType;
+  using ReducedDimensionIndexType = typename ReducedDimensionRegionType::IndexType;
+  using ReducedDimensionSpacingType = typename ReducedDimensionImageType::SpacingType;
+  using ReducedDimensionDirectionType = typename ReducedDimensionImageType::DirectionType;
+  using ReducedDimensionOriginType = typename ReducedDimensionImageType::PointType;
 
   /** For scales setting in the optimizer */
   using typename Superclass2::ScalesType;
 
   /** Other typedef's. */
-  typedef typename FixedImageType::IndexType                                 IndexType;
-  typedef typename FixedImageType::SizeType                                  SizeType;
-  typedef typename FixedImageType::PointType                                 PointType;
-  typedef typename FixedImageType::SpacingType                               SpacingType;
-  typedef typename FixedImageType::RegionType                                RegionType;
-  typedef typename FixedImageType::DirectionType                             DirectionType;
-  typedef typename itk::ContinuousIndex<CoordRepType, ReducedSpaceDimension> ReducedDimensionContinuousIndexType;
-  typedef typename itk::ContinuousIndex<CoordRepType, SpaceDimension>        ContinuousIndexType;
+  using IndexType = typename FixedImageType::IndexType;
+  using SizeType = typename FixedImageType::SizeType;
+  using PointType = typename FixedImageType::PointType;
+  using SpacingType = typename FixedImageType::SpacingType;
+  using RegionType = typename FixedImageType::RegionType;
+  using DirectionType = typename FixedImageType::DirectionType;
+  using ReducedDimensionContinuousIndexType = typename itk::ContinuousIndex<CoordRepType, ReducedSpaceDimension>;
+  using ContinuousIndexType = typename itk::ContinuousIndex<CoordRepType, SpaceDimension>;
 
   /** Execute stuff before anything else is done:*/
 
   int
-  BeforeAll(void) override;
+  BeforeAll() override;
 
   /** Execute stuff before the actual registration:
    * \li Set the stack transform parameters.
@@ -184,11 +177,7 @@ public:
    * \li Create initial registration parameters.
    */
   void
-  BeforeRegistration(void) override;
-
-  /** Method initialize the parameters (to 0). */
-  virtual void
-  InitializeTransform(void);
+  BeforeRegistration() override;
 
   /** Set the scales
    * \li If AutomaticScalesEstimation is "true" estimate scales
@@ -198,11 +187,11 @@ public:
    * the InitializeTransform function is called
    */
   virtual void
-  SetScales(void);
+  SetScales();
 
   /** Function to read transform-parameters from a file. */
   void
-  ReadFromFile(void) override;
+  ReadFromFile() override;
 
   /** Function to rotate center of rotation point using initial transformation. */
   virtual void
@@ -210,7 +199,7 @@ public:
 
 protected:
   /** The constructor. */
-  EulerStackTransform();
+  EulerStackTransform() { this->Superclass1::SetCurrentTransform(m_StackTransform); }
 
   /** The destructor. */
   ~EulerStackTransform() override = default;
@@ -226,20 +215,27 @@ protected:
 private:
   elxOverrideGetSelfMacro;
 
+  /** Method initialize the parameters (to 0). */
+  void
+  InitializeTransform();
+
   /** Creates a map of the parameters specific for this (derived) transform type. */
   ParameterMapType
-  CreateDerivedTransformParametersMap(void) const override;
+  CreateDerivedTransformParametersMap() const override;
 
   /** The deleted copy constructor and assignment operator. */
   EulerStackTransform(const Self &) = delete;
   void
   operator=(const Self &) = delete;
 
+  /** Typedef for stack transform. */
+  using StackTransformType = itk::EulerStackTransform<SpaceDimension>;
+
   /** The Affine stack transform. */
-  EulerStackTransformPointer m_EulerStackTransform;
+  const typename StackTransformType::Pointer m_StackTransform{ StackTransformType::New() };
 
   /** Dummy sub transform to be used to set sub transforms of stack transform. */
-  ReducedDimensionEulerTransformPointer m_EulerDummySubTransform;
+  ReducedDimensionEulerTransformPointer m_DummySubTransform;
 
   /** Stack variables. */
   unsigned int m_NumberOfSubTransforms;

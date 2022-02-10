@@ -42,18 +42,18 @@ class ComponentLoader : public itk::Object
 {
 public:
   /** Standard ITK typedef's. */
-  typedef ComponentLoader               Self;
-  typedef itk::Object                   Superclass;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = ComponentLoader;
+  using Superclass = itk::Object;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Standard ITK stuff. */
   itkNewMacro(Self);
   itkTypeMacro(ComponentLoader, Object);
 
   /** Typedef's. */
-  typedef ComponentDatabase              ComponentDatabaseType;
-  typedef ComponentDatabaseType::Pointer ComponentDatabasePointer;
+  using ComponentDatabaseType = ComponentDatabase;
+  using ComponentDatabasePointer = ComponentDatabaseType::Pointer;
 
   /** Set and get the ComponentDatabase. */
   itkSetObjectMacro(ComponentDatabase, ComponentDatabaseType);
@@ -61,7 +61,7 @@ public:
 
   /** Function to load components. */
   int
-  LoadComponents(void);
+  LoadComponents();
 
 protected:
   /** Standard constructor and destructor. */
@@ -72,7 +72,7 @@ protected:
 
   bool m_ImageTypeSupportInstalled;
   virtual int
-  InstallSupportedImageTypes(void);
+  InstallSupportedImageTypes();
 
 private:
   /** Standard private (copy)constructor. */

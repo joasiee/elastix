@@ -37,10 +37,10 @@ template <typename TTypeList, typename NDimensions>
 class ITK_TEMPLATE_EXPORT GPUImageFactory2 : public GPUObjectFactoryBase<NDimensions>
 {
 public:
-  typedef GPUImageFactory2                  Self;
-  typedef GPUObjectFactoryBase<NDimensions> Superclass;
-  typedef SmartPointer<Self>                Pointer;
-  typedef SmartPointer<const Self>          ConstPointer;
+  using Self = GPUImageFactory2;
+  using Superclass = GPUObjectFactoryBase<NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Return a descriptive string describing the factory. */
   const char *
@@ -62,7 +62,7 @@ public:
   /** Operator() to register override. */
   template <typename TType, unsigned int VImageDimension>
   void
-  operator()(void)
+  operator()()
   {
     this->RegisterOverride(typeid(Image<TType, VImageDimension>).name(),
                            typeid(GPUImage<TType, VImageDimension>).name(),

@@ -71,7 +71,7 @@ StochasticVarianceReducedGradientDescentOptimizer::PrintSelf(std::ostream & os, 
  */
 
 void
-StochasticVarianceReducedGradientDescentOptimizer::StartOptimization(void)
+StochasticVarianceReducedGradientDescentOptimizer::StartOptimization()
 {
   itkDebugMacro("StartOptimization");
 
@@ -96,7 +96,7 @@ StochasticVarianceReducedGradientDescentOptimizer::StartOptimization(void)
  */
 
 void
-StochasticVarianceReducedGradientDescentOptimizer::ResumeOptimization(void)
+StochasticVarianceReducedGradientDescentOptimizer::ResumeOptimization()
 {
   itkDebugMacro("ResumeOptimization");
 
@@ -176,7 +176,7 @@ StochasticVarianceReducedGradientDescentOptimizer::MetricErrorResponse(Exception
  */
 
 void
-StochasticVarianceReducedGradientDescentOptimizer::StopOptimization(void)
+StochasticVarianceReducedGradientDescentOptimizer::StopOptimization()
 {
   itkDebugMacro("StopOptimization");
 
@@ -190,7 +190,7 @@ StochasticVarianceReducedGradientDescentOptimizer::StopOptimization(void)
  */
 
 void
-StochasticVarianceReducedGradientDescentOptimizer::AdvanceOneStep(void)
+StochasticVarianceReducedGradientDescentOptimizer::AdvanceOneStep()
 {
   itkDebugMacro("AdvanceOneStep");
 
@@ -238,7 +238,7 @@ StochasticVarianceReducedGradientDescentOptimizer::AdvanceOneStep(void)
     const double           learningRate = this->m_LearningRate;
 
     /** Wrap itk::Arrays into Eigen jackets. */
-    typedef Eigen::VectorXd               ParametersTypeEigen;
+    using ParametersTypeEigen = Eigen::VectorXd;
     Eigen::Map<ParametersTypeEigen>       newPositionE(newPosition.data_block(), spaceDimension);
     Eigen::Map<const ParametersTypeEigen> currentPositionE(currentPosition.data_block(), spaceDimension);
     Eigen::Map<ParametersTypeEigen>       gradientE(this->m_Gradient.data_block(), spaceDimension);
@@ -255,7 +255,7 @@ StochasticVarianceReducedGradientDescentOptimizer::AdvanceOneStep(void)
     const double           learningRate = this->m_LearningRate;
 
     /** Wrap itk::Arrays into Eigen jackets. */
-    typedef Eigen::VectorXd               ParametersTypeEigen;
+    using ParametersTypeEigen = Eigen::VectorXd;
     Eigen::Map<ParametersTypeEigen>       newPositionE(newPosition.data_block(), spaceDimension);
     Eigen::Map<const ParametersTypeEigen> currentPositionE(currentPosition.data_block(), spaceDimension);
     Eigen::Map<ParametersTypeEigen>       gradientE(this->m_Gradient.data_block(), spaceDimension);
@@ -286,7 +286,7 @@ StochasticVarianceReducedGradientDescentOptimizer::AdvanceOneStep(void)
     temp->t_Optimizer = this;
 
     /** Call multi-threaded AdvanceOneStep(). */
-    ThreaderType::Pointer local_threader = ThreaderType::New();
+    auto local_threader = ThreaderType::New();
     local_threader->SetNumberOfWorkUnits(this->m_Threader->GetNumberOfWorkUnits());
     local_threader->SetSingleMethod(AdvanceOneStepThreaderCallback, temp);
     local_threader->SingleMethodExecute();

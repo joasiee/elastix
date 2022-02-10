@@ -43,7 +43,6 @@
 (WriteResultImageAfterEachResolution "false")
 (WriteResultImage "true")
 (ShowExactMetricValue "false")
-(ErodeMask "true")
 
 
 // ********** ImageSampler

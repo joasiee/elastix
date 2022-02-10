@@ -36,27 +36,27 @@
 // Test function templated over the dimension
 template <unsigned int Dimension>
 bool
-TestInterpolators(void)
+TestInterpolators()
 {
-  typedef itk::Image<short, Dimension>         InputImageType;
-  typedef typename InputImageType::SizeType    SizeType;
-  typedef typename InputImageType::SpacingType SpacingType;
-  typedef typename InputImageType::PointType   OriginType;
-  typedef typename InputImageType::RegionType  RegionType;
+  using InputImageType = itk::Image<short, Dimension>;
+  using SizeType = typename InputImageType::SizeType;
+  using SpacingType = typename InputImageType::SpacingType;
+  using OriginType = typename InputImageType::PointType;
+  using RegionType = typename InputImageType::RegionType;
   // typedef typename RegionType::IndexType         IndexType;
-  typedef typename InputImageType::DirectionType DirectionType;
-  typedef double                                 CoordRepType;
-  typedef double                                 CoefficientType;
+  using DirectionType = typename InputImageType::DirectionType;
+  using CoordRepType = double;
+  using CoefficientType = double;
 
-  typedef itk::LinearInterpolateImageFunction<InputImageType, CoordRepType>         LinearInterpolatorType;
-  typedef itk::AdvancedLinearInterpolateImageFunction<InputImageType, CoordRepType> AdvancedLinearInterpolatorType;
-  typedef itk::BSplineInterpolateImageFunction<InputImageType, CoordRepType, CoefficientType> BSplineInterpolatorType;
-  typedef typename LinearInterpolatorType::ContinuousIndexType                                ContinuousIndexType;
-  typedef typename AdvancedLinearInterpolatorType::CovariantVectorType                        CovariantVectorType;
-  typedef typename AdvancedLinearInterpolatorType::OutputType OutputType; // double scalar
+  using LinearInterpolatorType = itk::LinearInterpolateImageFunction<InputImageType, CoordRepType>;
+  using AdvancedLinearInterpolatorType = itk::AdvancedLinearInterpolateImageFunction<InputImageType, CoordRepType>;
+  using BSplineInterpolatorType = itk::BSplineInterpolateImageFunction<InputImageType, CoordRepType, CoefficientType>;
+  using ContinuousIndexType = typename LinearInterpolatorType::ContinuousIndexType;
+  using CovariantVectorType = typename AdvancedLinearInterpolatorType::CovariantVectorType;
+  using OutputType = typename AdvancedLinearInterpolatorType::OutputType; // double scalar
 
-  typedef itk::ImageRegionIterator<InputImageType>               IteratorType;
-  typedef itk::Statistics::MersenneTwisterRandomVariateGenerator RandomNumberGeneratorType;
+  using IteratorType = itk::ImageRegionIterator<InputImageType>;
+  using RandomNumberGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
   // typedef itk::ImageFileWriter< InputImageType >                 WriterType;
 
   RandomNumberGeneratorType::Pointer randomNum = RandomNumberGeneratorType::GetInstance();
@@ -89,7 +89,7 @@ TestInterpolators(void)
     direction[2][0] = 1.0;
   }
 
-  typename InputImageType::Pointer image = InputImageType::New();
+  auto image = InputImageType::New();
   image->SetRegions(region);
   image->SetOrigin(origin);
   image->SetSpacing(spacing);
@@ -107,15 +107,15 @@ TestInterpolators(void)
   }
 
   /** Write the image. */
-  // WriterType::Pointer writer = WriterType::New();
+  // auto writer = WriterType::New();
   // writer->SetInput( image );
   // writer->SetFileName( "image.mhd" );
   // writer->Update();
 
   /** Create and setup interpolators. */
-  typename LinearInterpolatorType::Pointer         linear = LinearInterpolatorType::New();
-  typename AdvancedLinearInterpolatorType::Pointer linearA = AdvancedLinearInterpolatorType::New();
-  typename BSplineInterpolatorType::Pointer        bspline = BSplineInterpolatorType::New();
+  auto linear = LinearInterpolatorType::New();
+  auto linearA = AdvancedLinearInterpolatorType::New();
+  auto bspline = BSplineInterpolatorType::New();
   linear->SetInputImage(image);
   linearA->SetInputImage(image);
   bspline->SetSplineOrder(1); // prior to SetInputImage()
@@ -188,26 +188,30 @@ TestInterpolators(void)
 
     if (std::abs(valueLinA - valueBSpline) > 1.0e-3)
     {
-      std::cerr << "ERROR: there is a difference in the interpolated value, "
-                << "between the linear and the 1st-order B-spline interpolator." << std::endl;
+      std::cerr << "ERROR: there is a difference in the interpolated value, between the linear and the 1st-order "
+                   "B-spline interpolator."
+                << std::endl;
       return false;
     }
     if (std::abs(valueBSpline - valueBSpline2) > 1.0e-3)
     {
-      std::cerr << "ERROR: there is a difference in the interpolated value, "
-                << "within the 1st-order B-spline interpolator (inconsistency)." << std::endl;
+      std::cerr << "ERROR: there is a difference in the interpolated value, within the 1st-order B-spline interpolator "
+                   "(inconsistency)."
+                << std::endl;
       return false;
     }
     if ((derivLinA - derivBSpline).GetVnlVector().magnitude() > 1.0e-3)
     {
-      std::cerr << "ERROR: there is a difference in the interpolated gradient, "
-                << "between the linear and the 1st-order B-spline interpolator." << std::endl;
+      std::cerr << "ERROR: there is a difference in the interpolated gradient, between the linear and the 1st-order "
+                   "B-spline interpolator."
+                << std::endl;
       return false;
     }
     if ((derivBSpline - derivBSpline2).GetVnlVector().magnitude() > 1.0e-3)
     {
-      std::cerr << "ERROR: there is a difference in the interpolated gradient, "
-                << "within the 1st-order B-spline interpolator (inconsistency)." << std::endl;
+      std::cerr << "ERROR: there is a difference in the interpolated gradient, within the 1st-order B-spline "
+                   "interpolator (inconsistency)."
+                << std::endl;
       return false;
     }
   }
@@ -274,7 +278,7 @@ TestInterpolators(void)
 
 
 int
-main(void)
+main()
 {
   // 2D tests
   bool success = TestInterpolators<2>();

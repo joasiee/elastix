@@ -16,21 +16,33 @@
  *
  *=========================================================================*/
 
+#define _USE_MATH_DEFINES
 
 // First include the header file to be tested:
 #include <itkElastixRegistrationMethod.h>
 
 #include "elxCoreMainGTestUtilities.h"
+#include "elxDefaultConstructibleSubclass.h"
+#include "elxTransformIO.h"
 #include "GTesting/elxGTestUtilities.h"
 
 // ITK header file:
+#include <itkAffineTransform.h>
+#include <itkBSplineTransform.h>
+#include <itkCompositeTransform.h>
+#include <itkEuler2DTransform.h>
 #include <itkImage.h>
 #include <itkIndexRange.h>
+#include <itkFileTools.h>
+#include <itkSimilarity2DTransform.h>
+#include <itkTranslationTransform.h>
+#include <itkTransformFileReader.h>
 
 // GoogleTest header file:
 #include <gtest/gtest.h>
 
 #include <algorithm> // For transform
+#include <cmath>     // For M_PI
 #include <map>
 #include <string>
 #include <utility> // For pair
@@ -39,20 +51,102 @@
 // Using-declarations:
 using elx::CoreMainGTestUtilities::CheckNew;
 using elx::CoreMainGTestUtilities::ConvertToOffset;
+using elx::CoreMainGTestUtilities::CreateImage;
+using elx::CoreMainGTestUtilities::CreateImageFilledWithSequenceOfNaturalNumbers;
 using elx::CoreMainGTestUtilities::CreateParameterObject;
 using elx::CoreMainGTestUtilities::Deref;
+using elx::CoreMainGTestUtilities::DerefSmartPointer;
 using elx::CoreMainGTestUtilities::FillImageRegion;
 using elx::CoreMainGTestUtilities::Front;
+using elx::CoreMainGTestUtilities::GetCurrentBinaryDirectoryPath;
 using elx::CoreMainGTestUtilities::GetDataDirectoryPath;
+using elx::CoreMainGTestUtilities::GetNameOfTest;
 using elx::CoreMainGTestUtilities::GetTransformParametersFromFilter;
 using elx::GTestUtilities::MakePoint;
+using elx::GTestUtilities::MakeVector;
+
+
+namespace
+{
+template <unsigned NDimension, unsigned NSplineOrder>
+void
+Test_WriteBSplineTransformToItkFileFormat(const std::string & rootOutputDirectoryPath)
+{
+  using PixelType = float;
+  using ImageType = itk::Image<PixelType, NDimension>;
+  const auto image = CreateImage<PixelType>(itk::Size<NDimension>::Filled(4));
+
+  using ItkBSplineTransformType = itk::BSplineTransform<double, NDimension, NSplineOrder>;
+  const elx::DefaultConstructibleSubclass<ItkBSplineTransformType> itkBSplineTransform;
+
+  const auto defaultFixedParameters = itkBSplineTransform.GetFixedParameters();
+
+  // FixedParameters store the grid size, origin, spacing, and direction, according to the ITK `BSplineTransform`
+  // default-constructor at
+  // https://github.com/InsightSoftwareConsortium/ITK/blob/v5.2.0/Modules/Core/Transform/include/itkBSplineTransform.hxx#L35-L61.
+  constexpr auto expectedNumberOfFixedParameters = NDimension * (NDimension + 3);
+  ASSERT_EQ(defaultFixedParameters.size(), expectedNumberOfFixedParameters);
+
+  const auto filter = CheckNew<itk::ElastixRegistrationMethod<ImageType, ImageType>>();
+
+  filter->SetFixedImage(image);
+  filter->SetMovingImage(image);
+
+  for (const std::string fileNameExtension : { "h5", "tfm" })
+  {
+    const std::string outputDirectoryPath = rootOutputDirectoryPath + "/" + std::to_string(NDimension) + "D_" +
+                                            "SplineOrder=" + std::to_string(NSplineOrder) +
+                                            "_FileNameExtension=" + fileNameExtension;
+    itk::FileTools::CreateDirectory(outputDirectoryPath);
+
+    filter->SetOutputDirectory(outputDirectoryPath);
+    filter->SetParameterObject(CreateParameterObject({ // Parameters in alphabetic order:
+                                                       { "AutomaticTransformInitialization", "false" },
+                                                       { "ImageSampler", "Full" },
+                                                       { "BSplineTransformSplineOrder", std::to_string(NSplineOrder) },
+                                                       { "ITKTransformOutputFileNameExtension", fileNameExtension },
+                                                       { "MaximumNumberOfIterations", "0" },
+                                                       { "Metric", "AdvancedNormalizedCorrelation" },
+                                                       { "Optimizer", "AdaptiveStochasticGradientDescent" },
+                                                       { "Transform", "BSplineTransform" } }));
+    filter->Update();
+
+    const itk::TransformBase::ConstPointer readTransform =
+      elx::TransformIO::Read(outputDirectoryPath + "/TransformParameters.0." + fileNameExtension);
+
+    const itk::TransformBase & actualTransform = DerefSmartPointer(readTransform);
+
+    EXPECT_EQ(typeid(actualTransform), typeid(ItkBSplineTransformType));
+    EXPECT_EQ(actualTransform.GetParameters(), itkBSplineTransform.GetParameters());
+
+    const auto actualFixedParameters = actualTransform.GetFixedParameters();
+    ASSERT_EQ(actualFixedParameters.size(), expectedNumberOfFixedParameters);
+
+    for (unsigned i{}; i < NDimension; ++i)
+    {
+      EXPECT_EQ(actualFixedParameters[i], defaultFixedParameters[i]);
+    }
+    for (unsigned i{ NDimension }; i < 3 * NDimension; ++i)
+    {
+      // The actual values of the FixedParameters for grid origin and spacing differ from the corresponding
+      // default-constructed transform! That is expected!
+      EXPECT_NE(actualFixedParameters[i], defaultFixedParameters[i]);
+    }
+    for (unsigned i{ 3 * NDimension }; i < expectedNumberOfFixedParameters; ++i)
+    {
+      EXPECT_EQ(actualFixedParameters[i], defaultFixedParameters[i]);
+    }
+  }
+}
+} // namespace
 
 
 // Tests registering two small (5x6) binary images, which are translated with respect to each other.
 GTEST_TEST(itkElastixRegistrationMethod, Translation)
 {
   constexpr auto ImageDimension = 2U;
-  using ImageType = itk::Image<float, ImageDimension>;
+  using PixelType = float;
+  using ImageType = itk::Image<PixelType, ImageDimension>;
   using SizeType = itk::Size<ImageDimension>;
   using IndexType = itk::Index<ImageDimension>;
   using OffsetType = itk::Offset<ImageDimension>;
@@ -62,14 +156,9 @@ GTEST_TEST(itkElastixRegistrationMethod, Translation)
   const SizeType   imageSize{ { 5, 6 } };
   const IndexType  fixedImageRegionIndex{ { 1, 3 } };
 
-  const auto fixedImage = ImageType::New();
-  fixedImage->SetRegions(imageSize);
-  fixedImage->Allocate(true);
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*fixedImage, fixedImageRegionIndex, regionSize);
-
-  const auto movingImage = ImageType::New();
-  movingImage->SetRegions(imageSize);
-  movingImage->Allocate(true);
+  const auto movingImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*movingImage, fixedImageRegionIndex + translationOffset, regionSize);
 
   const auto filter = CheckNew<itk::ElastixRegistrationMethod<ImageType, ImageType>>();
@@ -93,7 +182,8 @@ GTEST_TEST(itkElastixRegistrationMethod, Translation)
 GTEST_TEST(itkElastixRegistrationMethod, MaximumNumberOfIterationsZero)
 {
   constexpr auto ImageDimension = 2U;
-  using ImageType = itk::Image<float, ImageDimension>;
+  using PixelType = float;
+  using ImageType = itk::Image<PixelType, ImageDimension>;
   using SizeType = itk::Size<ImageDimension>;
   using IndexType = itk::Index<ImageDimension>;
   using OffsetType = itk::Offset<ImageDimension>;
@@ -103,14 +193,9 @@ GTEST_TEST(itkElastixRegistrationMethod, MaximumNumberOfIterationsZero)
   const SizeType   imageSize{ { 5, 6 } };
   const IndexType  fixedImageRegionIndex{ { 1, 3 } };
 
-  const auto fixedImage = ImageType::New();
-  fixedImage->SetRegions(imageSize);
-  fixedImage->Allocate(true);
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*fixedImage, fixedImageRegionIndex, regionSize);
-
-  const auto movingImage = ImageType::New();
-  movingImage->SetRegions(imageSize);
-  movingImage->Allocate(true);
+  const auto movingImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*movingImage, fixedImageRegionIndex + translationOffset, regionSize);
 
   for (const auto optimizer :
@@ -142,7 +227,8 @@ GTEST_TEST(itkElastixRegistrationMethod, MaximumNumberOfIterationsZero)
 GTEST_TEST(itkElastixRegistrationMethod, AutomaticTransformInitializationCenterOfGravity)
 {
   constexpr auto ImageDimension = 2U;
-  using ImageType = itk::Image<float, ImageDimension>;
+  using PixelType = float;
+  using ImageType = itk::Image<PixelType, ImageDimension>;
   using SizeType = itk::Size<ImageDimension>;
   using IndexType = itk::Index<ImageDimension>;
   using OffsetType = itk::Offset<ImageDimension>;
@@ -152,14 +238,9 @@ GTEST_TEST(itkElastixRegistrationMethod, AutomaticTransformInitializationCenterO
   const SizeType   imageSize{ { 5, 6 } };
   const IndexType  fixedImageRegionIndex{ { 1, 3 } };
 
-  const auto fixedImage = ImageType::New();
-  fixedImage->SetRegions(imageSize);
-  fixedImage->Allocate(true);
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*fixedImage, fixedImageRegionIndex, regionSize);
-
-  const auto movingImage = ImageType::New();
-  movingImage->SetRegions(imageSize);
-  movingImage->Allocate(true);
+  const auto movingImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*movingImage, fixedImageRegionIndex + translationOffset, regionSize);
 
   for (const bool automaticTransformInitialization : { false, true })
@@ -190,7 +271,8 @@ GTEST_TEST(itkElastixRegistrationMethod, AutomaticTransformInitializationCenterO
 GTEST_TEST(itkElastixRegistrationMethod, WriteResultImage)
 {
   constexpr auto ImageDimension = 2U;
-  using ImageType = itk::Image<float, ImageDimension>;
+  using PixelType = float;
+  using ImageType = itk::Image<PixelType, ImageDimension>;
   using SizeType = itk::Size<ImageDimension>;
   using IndexType = itk::Index<ImageDimension>;
   using OffsetType = itk::Offset<ImageDimension>;
@@ -200,14 +282,9 @@ GTEST_TEST(itkElastixRegistrationMethod, WriteResultImage)
   const SizeType   imageSize{ { 5, 6 } };
   const IndexType  fixedImageRegionIndex{ { 1, 3 } };
 
-  const auto fixedImage = ImageType::New();
-  fixedImage->SetRegions(imageSize);
-  fixedImage->Allocate(true);
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*fixedImage, fixedImageRegionIndex, regionSize);
-
-  const auto movingImage = ImageType::New();
-  movingImage->SetRegions(imageSize);
-  movingImage->Allocate(true);
+  const auto movingImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*movingImage, fixedImageRegionIndex + translationOffset, regionSize);
 
   for (const bool writeResultImage : { true, false })
@@ -258,7 +335,8 @@ GTEST_TEST(itkElastixRegistrationMethod, WriteResultImage)
 GTEST_TEST(itkElastixRegistrationMethod, OutputHasSameOriginAsFixedImage)
 {
   constexpr auto ImageDimension = 2U;
-  using ImageType = itk::Image<float, ImageDimension>;
+  using PixelType = float;
+  using ImageType = itk::Image<PixelType, ImageDimension>;
   using SizeType = itk::Size<ImageDimension>;
   using IndexType = itk::Index<ImageDimension>;
   using OffsetType = itk::Offset<ImageDimension>;
@@ -268,14 +346,9 @@ GTEST_TEST(itkElastixRegistrationMethod, OutputHasSameOriginAsFixedImage)
   const SizeType   imageSize{ { 12, 16 } };
   const IndexType  fixedImageRegionIndex{ { 3, 9 } };
 
-  const auto fixedImage = ImageType::New();
-  fixedImage->SetRegions(imageSize);
-  fixedImage->Allocate(true);
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*fixedImage, fixedImageRegionIndex, regionSize);
-
-  const auto movingImage = ImageType::New();
-  movingImage->SetRegions(imageSize);
-  movingImage->Allocate(true);
+  const auto movingImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*movingImage, fixedImageRegionIndex + translationOffset, regionSize);
 
   for (const auto fixedImageOrigin : { MakePoint(-1.0, -2.0), ImageType::PointType(), MakePoint(0.25, 0.75) })
@@ -328,8 +401,9 @@ GTEST_TEST(itkElastixRegistrationMethod, OutputHasSameOriginAsFixedImage)
 
 GTEST_TEST(itkElastixRegistrationMethod, InitialTransformParameterFile)
 {
+  using PixelType = float;
   constexpr auto ImageDimension = 2U;
-  using ImageType = itk::Image<float, ImageDimension>;
+  using ImageType = itk::Image<PixelType, ImageDimension>;
   using SizeType = itk::Size<ImageDimension>;
   using IndexType = itk::Index<ImageDimension>;
   using OffsetType = itk::Offset<ImageDimension>;
@@ -339,14 +413,10 @@ GTEST_TEST(itkElastixRegistrationMethod, InitialTransformParameterFile)
   const SizeType   imageSize{ { 5, 6 } };
   const IndexType  fixedImageRegionIndex{ { 1, 3 } };
 
-  const auto fixedImage = ImageType::New();
-  fixedImage->SetRegions(imageSize);
-  fixedImage->Allocate(true);
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*fixedImage, fixedImageRegionIndex, regionSize);
 
-  const auto movingImage = ImageType::New();
-  movingImage->SetRegions(imageSize);
-  movingImage->Allocate();
+  const auto movingImage = CreateImage<PixelType>(imageSize);
 
   const auto filter = CheckNew<itk::ElastixRegistrationMethod<ImageType, ImageType>>();
 
@@ -383,8 +453,9 @@ GTEST_TEST(itkElastixRegistrationMethod, InitialTransformParameterFile)
 
 GTEST_TEST(itkElastixRegistrationMethod, InitialTransformParameterFileLinkToTransformFile)
 {
+  using PixelType = float;
   constexpr auto ImageDimension = 2U;
-  using ImageType = itk::Image<float, ImageDimension>;
+  using ImageType = itk::Image<PixelType, ImageDimension>;
   using SizeType = itk::Size<ImageDimension>;
   using IndexType = itk::Index<ImageDimension>;
   using OffsetType = itk::Offset<ImageDimension>;
@@ -396,14 +467,10 @@ GTEST_TEST(itkElastixRegistrationMethod, InitialTransformParameterFileLinkToTran
   const SizeType   imageSize{ { 5, 6 } };
   const IndexType  fixedImageRegionIndex{ { 1, 3 } };
 
-  const auto fixedImage = ImageType::New();
-  fixedImage->SetRegions(imageSize);
-  fixedImage->Allocate(true);
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
   FillImageRegion(*fixedImage, fixedImageRegionIndex, regionSize);
 
-  const auto movingImage = ImageType::New();
-  movingImage->SetRegions(imageSize);
-  movingImage->Allocate();
+  const auto movingImage = CreateImage<PixelType>(imageSize);
 
   const auto toOffset = [](const IndexType & index) { return index - IndexType(); };
 
@@ -464,5 +531,267 @@ GTEST_TEST(itkElastixRegistrationMethod, InitialTransformParameterFileLinkToTran
         }
       }
     }
+  }
+}
+
+
+GTEST_TEST(itkElastixRegistrationMethod, WriteCompositeTransform)
+{
+  constexpr auto ImageDimension = 2U;
+  using ImageType = itk::Image<float, ImageDimension>;
+  const auto image =
+    CreateImageFilledWithSequenceOfNaturalNumbers<ImageType::PixelType>(itk::Size<ImageDimension>{ 5, 6 });
+
+  struct NameAndItkTransform
+  {
+    const char *                                                    name;
+    itk::Transform<double, ImageDimension, ImageDimension>::Pointer itkTransform;
+  };
+
+  const auto filter = CheckNew<itk::ElastixRegistrationMethod<ImageType, ImageType>>();
+  filter->SetFixedImage(image);
+  filter->SetMovingImage(image);
+
+  const std::string rootOutputDirectoryPath = GetCurrentBinaryDirectoryPath() + '/' + GetNameOfTest(*this);
+  itk::FileTools::CreateDirectory(rootOutputDirectoryPath);
+
+  for (const bool useInitialTransform : { false, true })
+  {
+    filter->SetInitialTransformParameterFileName(
+      useInitialTransform ? (GetDataDirectoryPath() + "/Translation(1,-2)/TransformParameters.txt") : "");
+
+    const std::string outputSubdirectoryPath =
+      rootOutputDirectoryPath + "/" + (useInitialTransform ? "InitialTranslation(1,-2)" : "NoInitialTransform");
+    itk::FileTools::CreateDirectory(outputSubdirectoryPath);
+
+    for (const auto nameAndItkTransform :
+         { NameAndItkTransform{ "AffineTransform", itk::AffineTransform<double, ImageDimension>::New() },
+           NameAndItkTransform{ "BSplineTransform", itk::BSplineTransform<double, ImageDimension>::New() },
+           NameAndItkTransform{ "EulerTransform", itk::Euler2DTransform<>::New() },
+           NameAndItkTransform{ "RecursiveBSplineTransform", itk::BSplineTransform<double, ImageDimension>::New() },
+           NameAndItkTransform{ "SimilarityTransform", itk::Similarity2DTransform<>::New() },
+           NameAndItkTransform{ "TranslationTransform", itk::TranslationTransform<double, ImageDimension>::New() } })
+    {
+      for (const std::string fileNameExtension : { "", "h5", "tfm" })
+      {
+        const std::string outputDirectoryPath =
+          outputSubdirectoryPath + "/" + nameAndItkTransform.name + fileNameExtension;
+        itk::FileTools::CreateDirectory(outputDirectoryPath);
+
+        filter->SetOutputDirectory(outputDirectoryPath);
+
+        filter->SetParameterObject(CreateParameterObject({ // Parameters in alphabetic order:
+                                                           { "AutomaticTransformInitialization", "false" },
+                                                           { "ImageSampler", "Full" },
+                                                           { "ITKTransformOutputFileNameExtension", fileNameExtension },
+                                                           { "MaximumNumberOfIterations", "0" },
+                                                           { "Metric", "AdvancedNormalizedCorrelation" },
+                                                           { "Optimizer", "AdaptiveStochasticGradientDescent" },
+                                                           { "Transform", nameAndItkTransform.name },
+                                                           { "WriteITKCompositeTransform", "true" } }));
+        filter->Update();
+
+        if (!fileNameExtension.empty())
+        {
+          const auto & expectedItkTransform = *(nameAndItkTransform.itkTransform);
+          const auto   expectedNumberOfFixedParameters = expectedItkTransform.GetFixedParameters().size();
+
+          const itk::TransformBase::ConstPointer singleTransform =
+            elx::TransformIO::Read(outputDirectoryPath + "/TransformParameters.0." + fileNameExtension);
+
+          using CompositeTransformType = itk::CompositeTransform<double, ImageDimension>;
+
+          const itk::TransformBase::Pointer compositeTransform =
+            elx::TransformIO::Read(outputDirectoryPath + "/TransformParameters.0-Composite." + fileNameExtension);
+          const auto & transformQueue =
+            Deref(dynamic_cast<const CompositeTransformType *>(compositeTransform.GetPointer())).GetTransformQueue();
+
+          ASSERT_EQ(transformQueue.size(), useInitialTransform ? 2 : 1);
+
+          const itk::TransformBase * const frontTransform = transformQueue.front();
+
+          for (const auto actualTransformPtr : { singleTransform.GetPointer(), frontTransform })
+          {
+            const itk::TransformBase & actualTransform = Deref(actualTransformPtr);
+
+            EXPECT_EQ(typeid(actualTransform), typeid(expectedItkTransform));
+            EXPECT_EQ(actualTransform.GetParameters(), expectedItkTransform.GetParameters());
+
+            // Note that the actual values of the FixedParameters may not be exactly like the expected
+            // default-constructed transform.
+            EXPECT_EQ(actualTransform.GetFixedParameters().size(), expectedNumberOfFixedParameters);
+          }
+          EXPECT_EQ(singleTransform->GetFixedParameters(), frontTransform->GetFixedParameters());
+
+          if (useInitialTransform)
+          {
+            // Expect that the back of the transformQueue has a translation according to the
+            // InitialTransformParameterFileName.
+            const auto & backTransform = DerefSmartPointer(transformQueue.back());
+            const auto & translationTransform =
+              Deref(dynamic_cast<const itk::TranslationTransform<double, ImageDimension> *>(&backTransform));
+            EXPECT_EQ(translationTransform.GetOffset(), MakeVector(1.0, -2.0));
+          }
+        }
+      }
+    }
+  }
+}
+
+
+GTEST_TEST(itkElastixRegistrationMethod, WriteBSplineTransformToItkFileFormat)
+{
+  const std::string rootOutputDirectoryPath = GetCurrentBinaryDirectoryPath() + '/' + GetNameOfTest(*this);
+  itk::FileTools::CreateDirectory(rootOutputDirectoryPath);
+
+  Test_WriteBSplineTransformToItkFileFormat<2, 1>(rootOutputDirectoryPath);
+  Test_WriteBSplineTransformToItkFileFormat<2, 2>(rootOutputDirectoryPath);
+  Test_WriteBSplineTransformToItkFileFormat<2, 3>(rootOutputDirectoryPath);
+  Test_WriteBSplineTransformToItkFileFormat<3, 1>(rootOutputDirectoryPath);
+  Test_WriteBSplineTransformToItkFileFormat<3, 2>(rootOutputDirectoryPath);
+  Test_WriteBSplineTransformToItkFileFormat<3, 3>(rootOutputDirectoryPath);
+}
+
+
+// Tests registering two small (8x8) binary images, which are translated with respect to each other.
+GTEST_TEST(itkElastixRegistrationMethod, EulerTranslation2D)
+{
+  using PixelType = float;
+  constexpr auto ImageDimension = 2U;
+  using ImageType = itk::Image<PixelType, ImageDimension>;
+  using SizeType = itk::Size<ImageDimension>;
+  using IndexType = itk::Index<ImageDimension>;
+  using OffsetType = itk::Offset<ImageDimension>;
+
+  const auto imageSizeValue = 8;
+  const auto imageSize = SizeType::Filled(imageSizeValue);
+  const auto fixedImageRegionIndex = IndexType::Filled(imageSizeValue / 2 - 1);
+
+  const auto setPixelsOfSquareRegion = [](ImageType & image, const IndexType & regionIndex) {
+    // Set a different value to each of the pixels of a little square region, to ensure that no rotation is assumed.
+    const itk::ImageRegionRange<ImageType> imageRegionRange{ image, { regionIndex, SizeType::Filled(2) } };
+    std::iota(std::begin(imageRegionRange), std::end(imageRegionRange), 1);
+  };
+
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
+  setPixelsOfSquareRegion(*fixedImage, fixedImageRegionIndex);
+
+  const auto filter = CheckNew<itk::ElastixRegistrationMethod<ImageType, ImageType>>();
+  filter->SetFixedImage(fixedImage);
+  filter->SetParameterObject(CreateParameterObject({ // Parameters in alphabetic order:
+                                                     { "AutomaticTransformInitialization", "false" },
+                                                     { "ImageSampler", "Full" },
+                                                     { "MaximumNumberOfIterations", "2" },
+                                                     { "Metric", "AdvancedNormalizedCorrelation" },
+                                                     { "Optimizer", "AdaptiveStochasticGradientDescent" },
+                                                     { "Transform", "EulerTransform" } }));
+
+  const auto movingImage = CreateImage<PixelType>(imageSize);
+
+  // Test translation for each direction from (-1, -1) to (1, 1).
+  for (const auto & index : itk::ZeroBasedIndexRange<ImageDimension>(SizeType::Filled(3)))
+  {
+    movingImage->FillBuffer(0);
+    const OffsetType translation = index - IndexType::Filled(1);
+    setPixelsOfSquareRegion(*movingImage, fixedImageRegionIndex + translation);
+
+    filter->SetMovingImage(movingImage);
+    filter->Update();
+
+    const auto transformParameters = GetTransformParametersFromFilter(*filter);
+    ASSERT_EQ(transformParameters.size(), 3);
+
+    // The detected rotation angle is expected to be close to zero.
+    // (Absolute angle values of up to 3.77027e-06 were encountered, which seems acceptable.)
+    const auto rotationAngle = transformParameters[0];
+    EXPECT_LT(std::abs(rotationAngle), 1e-5);
+
+    for (unsigned i{}; i <= 1; ++i)
+    {
+      EXPECT_EQ(std::round(transformParameters[i + 1]), translation[i]);
+    }
+  }
+}
+
+
+// Tests registering two images which are rotated with respect to each other.
+GTEST_TEST(itkElastixRegistrationMethod, EulerDiscRotation2D)
+{
+  using PixelType = float;
+  enum
+  {
+    ImageDimension = 2,
+    imageSizeValue = 128
+  };
+
+  using ImageType = itk::Image<PixelType, ImageDimension>;
+  using SizeType = itk::Size<ImageDimension>;
+  using RegionType = ImageType::RegionType;
+
+  const auto imageSize = SizeType::Filled(imageSizeValue);
+  const auto setPixelsOfDisc = [imageSize](ImageType & image, const double rotationAngle) {
+    for (const auto & index : itk::ZeroBasedIndexRange<ImageDimension>{ imageSize })
+    {
+      std::array<double, ImageDimension> offset;
+
+      for (int i{}; i < ImageDimension; ++i)
+      {
+        offset[i] = index[i] - ((imageSizeValue - 1) / 2.0);
+      }
+
+      constexpr auto radius = (imageSizeValue / 2.0) - 2.0;
+
+      if (std::inner_product(offset.begin(), offset.end(), offset.begin(), 0.0) < (radius * radius))
+      {
+        const auto directionAngle = std::atan2(offset[1], offset[0]);
+
+        // Estimate the turn (between 0 and 1), rotated according to the specified rotation angle.
+        const auto rotatedDirectionTurn =
+          std::fmod(std::fmod((directionAngle + rotationAngle) / (2.0 * M_PI), 1.0) + 1.0, 1.0);
+
+        // Multiplication by 64 may be useful for integer pixel types.
+        image.SetPixel(index, static_cast<PixelType>(64.0 * rotatedDirectionTurn));
+      }
+    }
+  };
+
+  const auto fixedImage = CreateImage<PixelType>(imageSize);
+  setPixelsOfDisc(*fixedImage, 0.0);
+
+  const auto movingImage = CreateImage<PixelType>(imageSize);
+
+  const auto filter = CheckNew<itk::ElastixRegistrationMethod<ImageType, ImageType>>();
+
+  filter->SetFixedImage(fixedImage);
+  filter->SetParameterObject(CreateParameterObject({ // Parameters in alphabetic order:
+                                                     { "AutomaticTransformInitialization", "false" },
+                                                     { "ImageSampler", "Full" },
+                                                     { "MaximumNumberOfIterations", "50" },
+                                                     { "Metric", "AdvancedNormalizedCorrelation" },
+                                                     { "Optimizer", "AdaptiveStochasticGradientDescent" },
+                                                     { "Transform", "EulerTransform" } }));
+
+  for (const auto degree :
+       { -1
+#ifdef NDEBUG
+         // Test three degrees only in Release mode, as it takes too much time for a Debug configuration.
+         ,
+         0,
+         1
+#endif
+       })
+  {
+    constexpr auto radiansPerDegree = M_PI / 180.0;
+
+    setPixelsOfDisc(*movingImage, degree * radiansPerDegree);
+    filter->SetMovingImage(movingImage);
+    filter->Update();
+
+    const auto transformParameters = GetTransformParametersFromFilter(*filter);
+    ASSERT_EQ(transformParameters.size(), 3);
+
+    EXPECT_EQ(std::round(transformParameters[0] / radiansPerDegree), -degree); // rotation angle
+    EXPECT_EQ(std::round(transformParameters[1]), 0.0);                        // translation X
+    EXPECT_EQ(std::round(transformParameters[2]), 0.0);                        // translation Y
   }
 }

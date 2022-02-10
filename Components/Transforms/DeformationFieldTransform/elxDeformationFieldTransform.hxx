@@ -57,19 +57,19 @@ DeformationFieldTransform<TElastix>::DeformationFieldTransform()
 
 template <class TElastix>
 void
-DeformationFieldTransform<TElastix>::ReadFromFile(void)
+DeformationFieldTransform<TElastix>::ReadFromFile()
 {
   // \todo Test this ReadFromFile function.
 
   /** Call the ReadFromFile from the TransformBase. */
   this->Superclass2::ReadFromFile();
 
-  typedef itk::ChangeInformationImageFilter<DeformationFieldType> ChangeInfoFilterType;
-  typedef typename ChangeInfoFilterType::Pointer                  ChangeInfoFilterPointer;
+  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<DeformationFieldType>;
+  using ChangeInfoFilterPointer = typename ChangeInfoFilterType::Pointer;
 
   /** Setup VectorImageReader. */
-  typedef itk::ImageFileReader<DeformationFieldType> VectorReaderType;
-  typename VectorReaderType::Pointer                 vectorReader = VectorReaderType::New();
+  using VectorReaderType = itk::ImageFileReader<DeformationFieldType>;
+  auto vectorReader = VectorReaderType::New();
 
   /** Read deformationFieldImage-name from parameter-file. */
   std::string fileName = "";
@@ -114,9 +114,9 @@ DeformationFieldTransform<TElastix>::ReadFromFile(void)
    */
   this->m_DeformationFieldInterpolatingTransform->SetDeformationField(infoChanger->GetOutput());
 
-  typedef typename DeformationFieldInterpolatingTransformType::DeformationFieldInterpolatorType  InterpolatorType;
-  typedef itk::VectorNearestNeighborInterpolateImageFunction<DeformationFieldType, CoordRepType> NNInterpolatorType;
-  typedef itk::VectorLinearInterpolateImageFunction<DeformationFieldType, CoordRepType>          LinInterpolatorType;
+  using InterpolatorType = typename DeformationFieldInterpolatingTransformType::DeformationFieldInterpolatorType;
+  using NNInterpolatorType = itk::VectorNearestNeighborInterpolateImageFunction<DeformationFieldType, CoordRepType>;
+  using LinInterpolatorType = itk::VectorLinearInterpolateImageFunction<DeformationFieldType, CoordRepType>;
 
   typename InterpolatorType::Pointer interpolator; // default-constructed (null)
   unsigned int                       interpolationOrder = 0;
@@ -149,25 +149,25 @@ DeformationFieldTransform<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 void
-DeformationFieldTransform<TElastix>::WriteDerivedTransformDataToFile(void) const
+DeformationFieldTransform<TElastix>::WriteDerivedTransformDataToFile() const
 {
   // \todo Finish and Test this function.
 
-  typedef itk::ChangeInformationImageFilter<DeformationFieldType> ChangeInfoFilterType;
+  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<DeformationFieldType>;
 
   /** Write the interpolation order to file */
   std::string interpolatorName =
     this->m_DeformationFieldInterpolatingTransform->GetDeformationFieldInterpolator()->GetNameOfClass();
 
   /** Possibly change the direction cosines to there original value */
-  typename ChangeInfoFilterType::Pointer infoChanger = ChangeInfoFilterType::New();
+  auto infoChanger = ChangeInfoFilterType::New();
   infoChanger->SetOutputDirection(this->m_OriginalDeformationFieldDirection);
   infoChanger->SetChangeDirection(!this->GetElastix()->GetUseDirectionCosines());
   infoChanger->SetInput(this->m_DeformationFieldInterpolatingTransform->GetDeformationField());
 
   /** Write the deformation field image. */
-  typedef itk::ImageFileWriter<DeformationFieldType> VectorWriterType;
-  typename VectorWriterType::Pointer                 writer = VectorWriterType::New();
+  using VectorWriterType = itk::ImageFileWriter<DeformationFieldType>;
+  auto writer = VectorWriterType::New();
   writer->SetFileName(TransformIO::MakeDeformationFieldFileName(*this));
   writer->SetInput(infoChanger->GetOutput());
 
@@ -196,7 +196,7 @@ DeformationFieldTransform<TElastix>::WriteDerivedTransformDataToFile(void) const
 
 template <class TElastix>
 auto
-DeformationFieldTransform<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+DeformationFieldTransform<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   const std::string interpolatorName =
     m_DeformationFieldInterpolatingTransform->GetDeformationFieldInterpolator()->GetNameOfClass();

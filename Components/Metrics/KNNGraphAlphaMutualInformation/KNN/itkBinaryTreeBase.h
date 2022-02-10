@@ -37,21 +37,21 @@ class ITK_TEMPLATE_EXPORT BinaryTreeBase : public DataObject
 {
 public:
   /** Standard itk. */
-  typedef BinaryTreeBase           Self;
-  typedef DataObject               Superclass;
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Self = BinaryTreeBase;
+  using Superclass = DataObject;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** ITK type info. */
   itkTypeMacro(BinaryTreeBase, DataObject);
 
   /** Typedef's. */
-  typedef TListSample SampleType;
+  using SampleType = TListSample;
 
   /** Typedef's. */
-  typedef typename SampleType::MeasurementVectorType      MeasurementVectorType;
-  typedef typename SampleType::MeasurementVectorSizeType  MeasurementVectorSizeType;
-  typedef typename SampleType::TotalAbsoluteFrequencyType TotalAbsoluteFrequencyType;
+  using MeasurementVectorType = typename SampleType::MeasurementVectorType;
+  using MeasurementVectorSizeType = typename SampleType::MeasurementVectorSizeType;
+  using TotalAbsoluteFrequencyType = typename SampleType::TotalAbsoluteFrequencyType;
 
   /** Set and get the samples: the array of points. */
   itkSetObjectMacro(Sample, SampleType);
@@ -59,19 +59,19 @@ public:
 
   /** Get the number of data points. */
   TotalAbsoluteFrequencyType
-  GetNumberOfDataPoints(void) const;
+  GetNumberOfDataPoints() const;
 
   /** Get the actual number of data points. */
   TotalAbsoluteFrequencyType
-  GetActualNumberOfDataPoints(void) const;
+  GetActualNumberOfDataPoints() const;
 
   /** Get the dimension of the input data. */
   MeasurementVectorSizeType
-  GetDataDimension(void) const;
+  GetDataDimension() const;
 
   /** Generate the tree. */
   virtual void
-  GenerateTree(void) = 0;
+  GenerateTree() = 0;
 
 protected:
   /** Constructor. */

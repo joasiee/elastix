@@ -41,7 +41,7 @@ MissingStructurePenalty<TElastix>::MissingStructurePenalty()
 
 template <class TElastix>
 void
-MissingStructurePenalty<TElastix>::Initialize(void)
+MissingStructurePenalty<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -58,7 +58,7 @@ MissingStructurePenalty<TElastix>::Initialize(void)
 
 template <class TElastix>
 int
-MissingStructurePenalty<TElastix>::BeforeAllBase(void)
+MissingStructurePenalty<TElastix>::BeforeAllBase()
 {
   this->Superclass2::BeforeAllBase();
 
@@ -127,7 +127,7 @@ MissingStructurePenalty<TElastix>::BeforeAllBase(void)
 
 template <class TElastix>
 void
-MissingStructurePenalty<TElastix>::BeforeRegistration(void)
+MissingStructurePenalty<TElastix>::BeforeRegistration()
 {
   std::string componentLabel(this->GetComponentLabel());
   std::string metricNumber = componentLabel.substr(6, 2); // strip "Metric" keep number
@@ -159,7 +159,7 @@ MissingStructurePenalty<TElastix>::BeforeRegistration(void)
 
   this->SetFixedMeshContainer(meshPointerContainer);
 
-  typename PointSetType::Pointer dummyPointSet = PointSetType::New();
+  auto dummyPointSet = PointSetType::New();
   this->SetFixedPointSet(dummyPointSet);  // TODO solve dirty hack
   this->SetMovingPointSet(dummyPointSet); // TODO solve dirty hack
   // itkCombinationImageToImageMetric.hxx checks if metric base class is ImageMetricType or PointSetMetricType.
@@ -177,7 +177,7 @@ MissingStructurePenalty<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-MissingStructurePenalty<TElastix>::AfterEachIteration(void)
+MissingStructurePenalty<TElastix>::AfterEachIteration()
 {
   /** What is the current resolution level? */
   const unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -229,7 +229,7 @@ MissingStructurePenalty<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-MissingStructurePenalty<TElastix>::AfterEachResolution(void)
+MissingStructurePenalty<TElastix>::AfterEachResolution()
 {
   /** What is the current resolution level? */
   const unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -279,10 +279,10 @@ template <class TElastix>
 unsigned int
 MissingStructurePenalty<TElastix>::ReadMesh(const std::string & meshFileName, typename FixedMeshType::Pointer & mesh)
 {
-  typedef itk::MeshFileReader<MeshType> MeshReaderType;
+  using MeshReaderType = itk::MeshFileReader<MeshType>;
 
   /** Read the input mesh. */
-  typename MeshReaderType::Pointer meshReader = MeshReaderType::New();
+  auto meshReader = MeshReaderType::New();
   meshReader->SetFileName(meshFileName.c_str());
   elxout << "  Reading input mesh file: " << meshFileName << std::endl;
   try
@@ -313,10 +313,10 @@ void
 MissingStructurePenalty<TElastix>::WriteResultMesh(const char * filename, MeshIdType meshId)
 {
   /** Typedef's for writing the output mesh. */
-  typedef itk::MeshFileWriter<MeshType> MeshWriterType;
+  using MeshWriterType = itk::MeshFileWriter<MeshType>;
 
   /** Create writer. */
-  typename MeshWriterType::Pointer meshWriter = MeshWriterType::New();
+  auto meshWriter = MeshWriterType::New();
 
   /** Setup the pipeline. */
 
@@ -405,24 +405,24 @@ Function to read 2d structures by reading elastix point files (transformix forma
 the sequence of points to form a 2d connected polydata contour.
   */
   /** Typedef's. */
-  typedef typename FixedImageType::RegionType               FixedImageRegionType;
-  typedef typename FixedImageType::PointType                FixedImageOriginType;
-  typedef typename FixedImageType::SpacingType              FixedImageSpacingType;
-  typedef typename FixedImageType::IndexType                FixedImageIndexType;
-  typedef typename FixedImageIndexType::IndexValueType      FixedImageIndexValueType;
-  typedef typename MovingImageType::IndexType               MovingImageIndexType;
-  typedef itk::ContinuousIndex<double, FixedImageDimension> FixedImageContinuousIndexType;
-  typedef typename FixedImageType::DirectionType            FixedImageDirectionType;
+  using FixedImageRegionType = typename FixedImageType::RegionType;
+  using FixedImageOriginType = typename FixedImageType::PointType;
+  using FixedImageSpacingType = typename FixedImageType::SpacingType;
+  using FixedImageIndexType = typename FixedImageType::IndexType;
+  using FixedImageIndexValueType = typename FixedImageIndexType::IndexValueType;
+  using MovingImageIndexType = typename MovingImageType::IndexType;
+  using FixedImageContinuousIndexType = itk::ContinuousIndex<double, FixedImageDimension>;
+  using FixedImageDirectionType = typename FixedImageType::DirectionType;
 
-  typedef unsigned char DummyIPPPixelType;
-  typedef itk::DefaultStaticMeshTraits<DummyIPPPixelType, FixedImageDimension, FixedImageDimension, CoordRepType>
-                                                                                MeshTraitsType;
-  typedef itk::PointSet<DummyIPPPixelType, FixedImageDimension, MeshTraitsType> PointSetType;
-  typedef itk::TransformixInputPointFileReader<PointSetType>                    IPPReaderType;
-  typedef itk::Vector<float, FixedImageDimension>                               DeformationVectorType;
+  using DummyIPPPixelType = unsigned char;
+  using MeshTraitsType =
+    itk::DefaultStaticMeshTraits<DummyIPPPixelType, FixedImageDimension, FixedImageDimension, CoordRepType>;
+  using PointSetType = itk::PointSet<DummyIPPPixelType, FixedImageDimension, MeshTraitsType>;
+  using IPPReaderType = itk::TransformixInputPointFileReader<PointSetType>;
+  using DeformationVectorType = itk::Vector<float, FixedImageDimension>;
 
   /** Construct an ipp-file reader. */
-  typename IPPReaderType::Pointer ippReader = IPPReaderType::New();
+  auto ippReader = IPPReaderType::New();
   ippReader->SetFileName(filename.c_str());
 
   /** Read the input points. */
@@ -473,7 +473,7 @@ the sequence of points to form a 2d connected polydata contour.
   region.SetIndex(this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetOutputStartIndex());
   region.SetSize(this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetSize());
 
-  typename FixedImageType::Pointer dummyImage = FixedImageType::New();
+  auto dummyImage = FixedImageType::New();
   dummyImage->SetRegions(region);
   dummyImage->SetOrigin(origin);
   dummyImage->SetSpacing(spacing);
@@ -533,8 +533,8 @@ the sequence of points to form a 2d connected polydata contour.
   /** FB: make connected mesh (polygon) for data that is 2d by assuming the sequence of points being connected**/
   if (FixedImageDimension == 2)
   {
-    typedef typename MeshType::CellType::CellAutoPointer CellAutoPointer;
-    typedef itk::LineCell<typename MeshType::CellType>   LineType;
+    using CellAutoPointer = typename MeshType::CellType::CellAutoPointer;
+    using LineType = itk::LineCell<typename MeshType::CellType>;
 
     for (unsigned int i = 0; i < nrofpoints; ++i)
     {

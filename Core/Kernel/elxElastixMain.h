@@ -127,10 +127,10 @@ class ElastixMain : public itk::Object
 {
 public:
   /** Standard itk. */
-  typedef ElastixMain                   Self;
-  typedef itk::Object                   Superclass;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = ElastixMain;
+  using Superclass = itk::Object;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -141,35 +141,35 @@ public:
   /** Typedef's.*/
 
   /** ITK base objects. */
-  typedef itk::Object             ObjectType;
-  typedef ObjectType::Pointer     ObjectPointer;
-  typedef itk::DataObject         DataObjectType;
-  typedef DataObjectType::Pointer DataObjectPointer;
+  using ObjectType = itk::Object;
+  using ObjectPointer = ObjectType::Pointer;
+  using DataObjectType = itk::DataObject;
+  using DataObjectPointer = DataObjectType::Pointer;
 
   /** elastix components. */
-  typedef ElastixBase                                   ElastixBaseType;
-  typedef ElastixBase::ConfigurationType                ConfigurationType;
-  typedef ConfigurationType::CommandLineArgumentMapType ArgumentMapType;
-  typedef ConfigurationType::Pointer                    ConfigurationPointer;
-  typedef ElastixBase::ObjectContainerType              ObjectContainerType;
-  typedef ElastixBase::DataObjectContainerType          DataObjectContainerType;
-  typedef ElastixBase::ObjectContainerPointer           ObjectContainerPointer;
-  typedef ElastixBase::DataObjectContainerPointer       DataObjectContainerPointer;
-  typedef ElastixBase::FlatDirectionCosinesType         FlatDirectionCosinesType;
+  using ElastixBaseType = ElastixBase;
+  using ConfigurationType = ElastixBase::ConfigurationType;
+  using ArgumentMapType = ConfigurationType::CommandLineArgumentMapType;
+  using ConfigurationPointer = ConfigurationType::Pointer;
+  using ObjectContainerType = ElastixBase::ObjectContainerType;
+  using DataObjectContainerType = ElastixBase::DataObjectContainerType;
+  using ObjectContainerPointer = ElastixBase::ObjectContainerPointer;
+  using DataObjectContainerPointer = ElastixBase::DataObjectContainerPointer;
+  using FlatDirectionCosinesType = ElastixBase::FlatDirectionCosinesType;
 
   /** Typedefs for the database that holds pointers to New() functions.
    * Those functions are used to instantiate components, such as the metric etc.
    */
-  typedef ComponentDatabase                               ComponentDatabaseType;
-  typedef ComponentDatabaseType::Pointer                  ComponentDatabasePointer;
-  typedef ComponentDatabaseType::PtrToCreator             PtrToCreator;
-  typedef ComponentDatabaseType::ComponentDescriptionType ComponentDescriptionType;
-  typedef ComponentDatabaseType::PixelTypeDescriptionType PixelTypeDescriptionType;
-  typedef ComponentDatabaseType::ImageDimensionType       ImageDimensionType;
-  typedef ComponentDatabaseType::IndexType                DBIndexType;
+  using ComponentDatabaseType = ComponentDatabase;
+  using ComponentDatabasePointer = ComponentDatabaseType::Pointer;
+  using PtrToCreator = ComponentDatabaseType::PtrToCreator;
+  using ComponentDescriptionType = ComponentDatabaseType::ComponentDescriptionType;
+  using PixelTypeDescriptionType = ComponentDatabaseType::PixelTypeDescriptionType;
+  using ImageDimensionType = ComponentDatabaseType::ImageDimensionType;
+  using DBIndexType = ComponentDatabaseType::IndexType;
 
   /** Typedef that is used in the elastix dll version. */
-  typedef itk::ParameterMapInterface::ParameterMapType ParameterMapType;
+  using ParameterMapType = itk::ParameterMapInterface::ParameterMapType;
 
   /** Set/Get functions for the description of the image type. */
   itkSetMacro(FixedImagePixelType, PixelTypeDescriptionType);
@@ -223,7 +223,7 @@ public:
    * a pointer to an ElastixBaseType. Use only after having called run()!
    */
   ElastixBaseType &
-  GetElastixBase(void) const;
+  GetElastixBase() const;
 
   /** Get the final transform (the result of running elastix).
    * You may pass this as an InitialTransform in an other instantiation
@@ -245,21 +245,21 @@ public:
   SetOriginalFixedImageDirectionFlat(const FlatDirectionCosinesType & arg);
 
   virtual const FlatDirectionCosinesType &
-  GetOriginalFixedImageDirectionFlat(void) const;
+  GetOriginalFixedImageDirectionFlat() const;
 
   /** Get and Set the elastix level. */
   void
   SetElastixLevel(unsigned int level);
 
   unsigned int
-  GetElastixLevel(void);
+  GetElastixLevel();
 
   /** Get and Set the total number of elastix levels. */
   void
   SetTotalNumberOfElastixLevels(unsigned int levels);
 
   unsigned int
-  GetTotalNumberOfElastixLevels(void);
+  GetTotalNumberOfElastixLevels();
 
   /** Returns the Index that is used in elx::ComponentDatabase. */
   itkGetConstMacro(DBIndex, DBIndexType);
@@ -284,7 +284,7 @@ public:
    * m_Configuration is initialized in a different way.
    */
   virtual int
-  Run(void);
+  Run();
 
   /** Start the registration
    * this version of 'run' first calls this->EnterCommandLineParameters(argc,argv)
@@ -301,22 +301,22 @@ public:
    * -priority \<high, belownormal\>
    */
   virtual void
-  SetProcessPriority(void) const;
+  SetProcessPriority() const;
 
   /** Set maximum number of threads, which is read from the command line arguments.
    * Syntax:
    * -threads \<int\>
    */
   virtual void
-  SetMaximumNumberOfThreads(void) const;
+  SetMaximumNumberOfThreads() const;
 
   /** Function to get the ComponentDatabase. */
   static const ComponentDatabase &
-  GetComponentDatabase(void);
+  GetComponentDatabase();
 
   /** GetTransformParametersMap */
   virtual ParameterMapType
-  GetTransformParametersMap(void) const;
+  GetTransformParametersMap() const;
 
 protected:
   ElastixMain();
@@ -366,7 +366,7 @@ protected:
    * DB index from the ComponentDatabase.
    */
   virtual int
-  InitDBIndex(void);
+  InitDBIndex();
 
   /** Create a component. Make sure InitDBIndex has been called before.
    * The input is a string, e.g. "MattesMutualInformation".

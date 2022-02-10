@@ -26,8 +26,8 @@ template <typename NDimensions>
 void
 GPUTranslationTransformFactory2<NDimensions>::RegisterOneFactory()
 {
-  typedef GPUTranslationTransformFactory2<NDimensions> GPUTransformFactoryType;
-  typename GPUTransformFactoryType::Pointer            factory = GPUTransformFactoryType::New();
+  using GPUTransformFactoryType = GPUTranslationTransformFactory2<NDimensions>;
+  auto factory = GPUTransformFactoryType::New();
   ObjectFactoryBase::RegisterFactory(factory);
 }
 

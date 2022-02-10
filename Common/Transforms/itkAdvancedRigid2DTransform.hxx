@@ -35,24 +35,14 @@
 #define itkAdvancedRigid2DTransform_hxx
 
 #include "itkAdvancedRigid2DTransform.h"
-#include "vnl/algo/vnl_svd_fixed.h"
+#include <vnl/algo/vnl_svd_fixed.h>
 
 namespace itk
 {
 
-// Constructor with default arguments
+// Default-constructor
 template <class TScalarType>
 AdvancedRigid2DTransform<TScalarType>::AdvancedRigid2DTransform()
-  : Superclass(ParametersDimension)
-{
-  m_Angle = NumericTraits<TScalarType>::Zero;
-  this->PrecomputeJacobianOfSpatialJacobian();
-}
-
-
-// Constructor with arguments
-template <class TScalarType>
-AdvancedRigid2DTransform<TScalarType>::AdvancedRigid2DTransform(unsigned int parametersDimension)
   : Superclass(ParametersDimension)
 {
   m_Angle = NumericTraits<TScalarType>::Zero;
@@ -70,10 +60,6 @@ AdvancedRigid2DTransform<TScalarType>::AdvancedRigid2DTransform(unsigned int spa
   this->PrecomputeJacobianOfSpatialJacobian();
 }
 
-
-// Destructor
-template <class TScalarType>
-AdvancedRigid2DTransform<TScalarType>::~AdvancedRigid2DTransform() = default;
 
 // Print self
 template <class TScalarType>
@@ -112,7 +98,7 @@ AdvancedRigid2DTransform<TScalarType>::SetMatrix(const MatrixType & matrix)
 /** Compute the Angle from the Rotation Matrix */
 template <class TScalarType>
 void
-AdvancedRigid2DTransform<TScalarType>::ComputeMatrixParameters(void)
+AdvancedRigid2DTransform<TScalarType>::ComputeMatrixParameters()
 {
   // Extract the orthogonal part of the matrix
   //
@@ -137,46 +123,10 @@ AdvancedRigid2DTransform<TScalarType>::ComputeMatrixParameters(void)
 }
 
 
-// Compose with a translation
-template <class TScalarType>
-void
-AdvancedRigid2DTransform<TScalarType>::Translate(const OffsetType & offset, bool)
-{
-  OutputVectorType newOffset = this->GetOffset();
-  newOffset += offset;
-  this->SetOffset(newOffset);
-  this->ComputeTranslation();
-}
-
-
-// Create and return an inverse transformation
-template <class TScalarType>
-void
-AdvancedRigid2DTransform<TScalarType>::CloneInverseTo(Pointer & result) const
-{
-  result = New();
-  result->SetCenter(this->GetCenter()); // inverse have the same center
-  result->SetAngle(-this->GetAngle());
-  result->SetTranslation(-(this->GetInverseMatrix() * this->GetTranslation()));
-}
-
-
-// Create and return a clone of the transformation
-template <class TScalarType>
-void
-AdvancedRigid2DTransform<TScalarType>::CloneTo(Pointer & result) const
-{
-  result = New();
-  result->SetCenter(this->GetCenter());
-  result->SetAngle(this->GetAngle());
-  result->SetTranslation(this->GetTranslation());
-}
-
-
 // Reset the transform to an identity transform
 template <class TScalarType>
 void
-AdvancedRigid2DTransform<TScalarType>::SetIdentity(void)
+AdvancedRigid2DTransform<TScalarType>::SetIdentity()
 {
   this->Superclass::SetIdentity();
   m_Angle = NumericTraits<TScalarType>::Zero;
@@ -197,20 +147,10 @@ AdvancedRigid2DTransform<TScalarType>::SetAngle(TScalarType angle)
 }
 
 
-// Set the angle of rotation
-template <class TScalarType>
-void
-AdvancedRigid2DTransform<TScalarType>::SetAngleInDegrees(TScalarType angle)
-{
-  const TScalarType angleInRadians = angle * std::atan(1.0) / 45.0;
-  this->SetAngle(angleInRadians);
-}
-
-
 // Compute the matrix from the angle
 template <class TScalarType>
 void
-AdvancedRigid2DTransform<TScalarType>::ComputeMatrix(void)
+AdvancedRigid2DTransform<TScalarType>::ComputeMatrix()
 {
   const double ca = std::cos(m_Angle);
   const double sa = std::sin(m_Angle);
@@ -258,13 +198,13 @@ AdvancedRigid2DTransform<TScalarType>::SetParameters(const ParametersType & para
 
 // Get Parameters
 template <class TScalarType>
-const typename AdvancedRigid2DTransform<TScalarType>::ParametersType &
-AdvancedRigid2DTransform<TScalarType>::GetParameters(void) const
+auto
+AdvancedRigid2DTransform<TScalarType>::GetParameters() const -> const ParametersType &
 {
   itkDebugMacro(<< "Getting parameters ");
 
   // Get the angle
-  this->m_Parameters[0] = this->GetAngle();
+  this->m_Parameters[0] = m_Angle;
 
   // Get the translation
   for (unsigned int i = 0; i < OutputSpaceDimension; ++i)
@@ -291,10 +231,10 @@ AdvancedRigid2DTransform<TScalarType>::GetJacobian(const InputPointType &       
   j.Fill(0.0);
 
   // Some helper variables
-  const double ca = std::cos(this->GetAngle());
-  const double sa = std::sin(this->GetAngle());
-  const double cx = this->GetCenter()[0];
-  const double cy = this->GetCenter()[1];
+  const double ca = std::cos(m_Angle);
+  const double sa = std::sin(m_Angle);
+  const double cx = Superclass::GetCenter()[0];
+  const double cy = Superclass::GetCenter()[1];
 
   // derivatives with respect to the angle
   j[0][0] = -sa * (p[0] - cx) - ca * (p[1] - cy);
@@ -315,7 +255,7 @@ AdvancedRigid2DTransform<TScalarType>::GetJacobian(const InputPointType &       
 // Precompute Jacobian of Spatial Jacobian
 template <class TScalarType>
 void
-AdvancedRigid2DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian(void)
+AdvancedRigid2DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian()
 {
   /** The Jacobian of spatial Jacobian remains constant, so is precomputed */
   const double                    ca = std::cos(m_Angle);

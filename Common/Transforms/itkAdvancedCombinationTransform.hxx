@@ -47,8 +47,8 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::AdvancedCombinationTrans
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-typename AdvancedCombinationTransform<TScalarType, NDimensions>::NumberOfParametersType
-AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfParameters(void) const
+auto
+AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfParameters() const -> NumberOfParametersType
 {
   /** Return the number of parameters that completely define
    * the m_CurrentTransform.
@@ -72,7 +72,7 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfParameters(vo
 
 template <typename TScalarType, unsigned int NDimensions>
 SizeValueType
-AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfTransforms(void) const
+AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfTransforms() const
 {
   SizeValueType                num = 0;
   CurrentTransformConstPointer currentTransform = GetCurrentTransform();
@@ -103,8 +103,9 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfTransforms(vo
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-const typename AdvancedCombinationTransform<TScalarType, NDimensions>::TransformTypePointer
+auto
 AdvancedCombinationTransform<TScalarType, NDimensions>::GetNthTransform(SizeValueType n) const
+  -> const TransformTypePointer
 {
   const SizeValueType numTransforms = GetNumberOfTransforms();
   if (n > numTransforms - 1)
@@ -150,8 +151,9 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetNthTransform(SizeValu
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-typename AdvancedCombinationTransform<TScalarType, NDimensions>::NumberOfParametersType
-AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfNonZeroJacobianIndices(void) const
+auto
+AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfNonZeroJacobianIndices() const
+  -> NumberOfParametersType
 {
   /** Return the number of parameters that completely define
    * the m_CurrentTransform.
@@ -175,7 +177,7 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetNumberOfNonZeroJacobi
 
 template <typename TScalarType, unsigned int NDimensions>
 bool
-AdvancedCombinationTransform<TScalarType, NDimensions>::IsLinear(void) const
+AdvancedCombinationTransform<TScalarType, NDimensions>::IsLinear() const
 {
   const auto isTransformLinear = [](const auto & transform) { return transform.IsNull() || transform->IsLinear(); };
 
@@ -189,8 +191,8 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::IsLinear(void) const
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-typename AdvancedCombinationTransform<TScalarType, NDimensions>::TransformCategoryEnum
-AdvancedCombinationTransform<TScalarType, NDimensions>::GetTransformCategory() const
+auto
+AdvancedCombinationTransform<TScalarType, NDimensions>::GetTransformCategory() const -> TransformCategoryEnum
 {
   // Check if all linear
   if (this->IsLinear())
@@ -209,8 +211,8 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetTransformCategory() c
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-const typename AdvancedCombinationTransform<TScalarType, NDimensions>::ParametersType &
-AdvancedCombinationTransform<TScalarType, NDimensions>::GetParameters(void) const
+auto
+AdvancedCombinationTransform<TScalarType, NDimensions>::GetParameters() const -> const ParametersType &
 {
   /** Return the parameters that completely define the m_CurrentTransform. */
   if (this->m_CurrentTransform.IsNotNull())
@@ -230,8 +232,8 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetParameters(void) cons
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-const typename AdvancedCombinationTransform<TScalarType, NDimensions>::FixedParametersType &
-AdvancedCombinationTransform<TScalarType, NDimensions>::GetFixedParameters(void) const
+auto
+AdvancedCombinationTransform<TScalarType, NDimensions>::GetFixedParameters() const -> const FixedParametersType &
 {
   /** Return the fixed parameters that define the m_CurrentTransform. */
   if (this->m_CurrentTransform.IsNotNull())
@@ -397,7 +399,7 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetInverse(Self * invers
 
 template <typename TScalarType, unsigned int NDimensions>
 bool
-AdvancedCombinationTransform<TScalarType, NDimensions>::GetHasNonZeroSpatialHessian(void) const
+AdvancedCombinationTransform<TScalarType, NDimensions>::GetHasNonZeroSpatialHessian() const
 {
   /** Set the parameters in the m_CurrentTransfom. */
   if (this->m_CurrentTransform.IsNull())
@@ -426,7 +428,7 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetHasNonZeroSpatialHess
 
 template <typename TScalarType, unsigned int NDimensions>
 bool
-AdvancedCombinationTransform<TScalarType, NDimensions>::HasNonZeroJacobianOfSpatialHessian(void) const
+AdvancedCombinationTransform<TScalarType, NDimensions>::HasNonZeroJacobianOfSpatialHessian() const
 {
   /** Set the parameters in the m_CurrentTransfom. */
   if (this->m_CurrentTransform.IsNull())
@@ -543,7 +545,7 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::SetUseComposition(bool _
 
 template <typename TScalarType, unsigned int NDimensions>
 void
-AdvancedCombinationTransform<TScalarType, NDimensions>::UpdateCombinationMethod(void)
+AdvancedCombinationTransform<TScalarType, NDimensions>::UpdateCombinationMethod()
 {
   /** Update the m_SelectedTransformPointFunction and
    * the m_SelectedGetJacobianFunction
@@ -638,8 +640,9 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::UpdateCombinationMethod(
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-typename AdvancedCombinationTransform<TScalarType, NDimensions>::OutputPointType
+auto
 AdvancedCombinationTransform<TScalarType, NDimensions>::TransformPointUseAddition(const InputPointType & point) const
+  -> OutputPointType
 {
   /** The Initial transform. */
   OutputPointType out0 = this->m_InitialTransform->TransformPoint(point);
@@ -663,8 +666,9 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::TransformPointUseAdditio
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-typename AdvancedCombinationTransform<TScalarType, NDimensions>::OutputPointType
+auto
 AdvancedCombinationTransform<TScalarType, NDimensions>::TransformPointUseComposition(const InputPointType & point) const
+  -> OutputPointType
 {
   return this->m_CurrentTransform->TransformPoint(this->m_InitialTransform->TransformPoint(point));
 
@@ -676,9 +680,9 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::TransformPointUseComposi
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-typename AdvancedCombinationTransform<TScalarType, NDimensions>::OutputPointType
+auto
 AdvancedCombinationTransform<TScalarType, NDimensions>::TransformPointNoInitialTransform(
-  const InputPointType & point) const
+  const InputPointType & point) const -> OutputPointType
 {
   return this->m_CurrentTransform->TransformPoint(point);
 
@@ -690,9 +694,9 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::TransformPointNoInitialT
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-typename AdvancedCombinationTransform<TScalarType, NDimensions>::OutputPointType
+auto
 AdvancedCombinationTransform<TScalarType, NDimensions>::TransformPointNoCurrentTransform(
-  const InputPointType & point) const
+  const InputPointType & point) const -> OutputPointType
 {
   /** Throw an exception. */
   itkExceptionMacro(<< NoCurrentTransformSet);
@@ -1411,8 +1415,9 @@ AdvancedCombinationTransform<TScalarType, NDimensions>::GetJacobianOfSpatialHess
  */
 
 template <typename TScalarType, unsigned int NDimensions>
-typename AdvancedCombinationTransform<TScalarType, NDimensions>::OutputPointType
+auto
 AdvancedCombinationTransform<TScalarType, NDimensions>::TransformPoint(const InputPointType & point) const
+  -> OutputPointType
 {
   /** Call the selected TransformPoint. */
   return ((*this).*m_SelectedTransformPointFunction)(point);

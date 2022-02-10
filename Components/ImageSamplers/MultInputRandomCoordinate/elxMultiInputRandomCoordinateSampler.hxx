@@ -30,7 +30,7 @@ namespace elastix
 
 template <class TElastix>
 void
-MultiInputRandomCoordinateSampler<TElastix>::BeforeEachResolution(void)
+MultiInputRandomCoordinateSampler<TElastix>::BeforeEachResolution()
 {
   const unsigned int level = (this->m_Registration->GetAsITKBaseType())->GetCurrentLevel();
 
@@ -41,8 +41,8 @@ MultiInputRandomCoordinateSampler<TElastix>::BeforeEachResolution(void)
   this->SetNumberOfSamples(numberOfSpatialSamples);
 
   /** Set up the fixed image interpolator and set the SplineOrder, default value = 1. */
-  typename DefaultInterpolatorType::Pointer fixedImageInterpolator = DefaultInterpolatorType::New();
-  unsigned int                              splineOrder = 1;
+  auto         fixedImageInterpolator = DefaultInterpolatorType::New();
+  unsigned int splineOrder = 1;
   this->GetConfiguration()->ReadParameter(
     splineOrder, "FixedImageBSplineInterpolationOrder", this->GetComponentLabel(), level, 0);
   fixedImageInterpolator->SetSplineOrder(splineOrder);

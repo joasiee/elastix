@@ -38,7 +38,7 @@ class ITKOpenCL_EXPORT OpenCLProgram
 {
 public:
   /** Standard class typedefs. */
-  typedef OpenCLProgram Self;
+  using Self = OpenCLProgram;
 
   /** Constructs a null OpenCL program object. */
   OpenCLProgram();
@@ -160,7 +160,7 @@ operator<<(std::basic_ostream<charT, traits> & strm, const OpenCLProgram & progr
 
   const char indent = ' ';
 
-  strm << "OpenCLProgram" << std::endl << indent << "Id: " << program.GetProgramId() << std::endl;
+  strm << "OpenCLProgram\n" << indent << "Id: " << program.GetProgramId() << std::endl;
 
   return strm;
 }

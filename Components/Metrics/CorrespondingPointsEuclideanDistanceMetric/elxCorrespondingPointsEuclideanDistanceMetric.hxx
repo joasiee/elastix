@@ -31,7 +31,7 @@ namespace elastix
 
 template <class TElastix>
 void
-CorrespondingPointsEuclideanDistanceMetric<TElastix>::Initialize(void)
+CorrespondingPointsEuclideanDistanceMetric<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -49,7 +49,7 @@ CorrespondingPointsEuclideanDistanceMetric<TElastix>::Initialize(void)
 
 template <class TElastix>
 int
-CorrespondingPointsEuclideanDistanceMetric<TElastix>::BeforeAllBase(void)
+CorrespondingPointsEuclideanDistanceMetric<TElastix>::BeforeAllBase()
 {
   this->Superclass2::BeforeAllBase();
 
@@ -107,7 +107,7 @@ CorrespondingPointsEuclideanDistanceMetric<TElastix>::BeforeAllBase(void)
 
 template <class TElastix>
 void
-CorrespondingPointsEuclideanDistanceMetric<TElastix>::BeforeRegistration(void)
+CorrespondingPointsEuclideanDistanceMetric<TElastix>::BeforeRegistration()
 {
   /** Read and set the fixed pointset. */
   std::string                            fixedName = this->GetConfiguration()->GetCommandLineArgument("-fp");
@@ -145,15 +145,15 @@ CorrespondingPointsEuclideanDistanceMetric<TElastix>::ReadLandmarks(const std::s
                                                                     const typename ImageType::ConstPointer image)
 {
   /** Typedefs. */
-  typedef typename ImageType::IndexType                      IndexType;
-  typedef typename ImageType::IndexValueType                 IndexValueType;
-  typedef typename ImageType::PointType                      PointType;
-  typedef itk::TransformixInputPointFileReader<PointSetType> PointSetReaderType;
+  using IndexType = typename ImageType::IndexType;
+  using IndexValueType = typename ImageType::IndexValueType;
+  using PointType = typename ImageType::PointType;
+  using PointSetReaderType = itk::TransformixInputPointFileReader<PointSetType>;
 
   elxout << "Loading landmarks for " << this->GetComponentLabel() << ":" << this->elxGetClassName() << "." << std::endl;
 
   /** Read the landmarks. */
-  typename PointSetReaderType::Pointer reader = PointSetReaderType::New();
+  auto reader = PointSetReaderType::New();
   reader->SetFileName(landmarkFileName.c_str());
   elxout << "  Reading landmark file: " << landmarkFileName << std::endl;
   try

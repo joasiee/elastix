@@ -20,8 +20,8 @@
 
 #include "itkAdvancedImageMomentsCalculator.h"
 
-#include "vnl/algo/vnl_real_eigensystem.h"
-#include "vnl/algo/vnl_symmetric_eigensystem.h"
+#include <vnl/algo/vnl_real_eigensystem.h>
+#include <vnl/algo/vnl_symmetric_eigensystem.h>
 #include "itkImageRegionConstIteratorWithIndex.h"
 
 namespace itk
@@ -30,7 +30,7 @@ namespace itk
 //----------------------------------------------------------------------
 // Construct without computing moments
 template <typename TImage>
-AdvancedImageMomentsCalculator<TImage>::AdvancedImageMomentsCalculator(void)
+AdvancedImageMomentsCalculator<TImage>::AdvancedImageMomentsCalculator()
 {
   m_Valid = false;
   m_Image = nullptr;
@@ -72,7 +72,7 @@ AdvancedImageMomentsCalculator<TImage>::~AdvancedImageMomentsCalculator()
 
 template <typename TImage>
 void
-AdvancedImageMomentsCalculator<TImage>::InitializeThreadingParameters(void)
+AdvancedImageMomentsCalculator<TImage>::InitializeThreadingParameters()
 {
   /** Resize and initialize the threading related parameters.
    * The SetSize() functions do not resize the data when this is not
@@ -114,7 +114,7 @@ AdvancedImageMomentsCalculator<TImage>::ComputeSingleThreaded()
 {
   if (this->m_CenterOfGravityUsesLowerThreshold)
   {
-    typename BinaryThresholdImageFilterType::Pointer thresholdFilter = BinaryThresholdImageFilterType::New();
+    auto thresholdFilter = BinaryThresholdImageFilterType::New();
     thresholdFilter->SetInput(this->m_Image);
     thresholdFilter->SetLowerThreshold(this->m_LowerThresholdForCenterGravity);
     thresholdFilter->SetInsideValue(1);
@@ -129,7 +129,7 @@ AdvancedImageMomentsCalculator<TImage>::ComputeSingleThreaded()
   m_Cg.Fill(NumericTraits<typename VectorType::ValueType>::ZeroValue());
   m_Cm.Fill(NumericTraits<typename MatrixType::ValueType>::ZeroValue());
 
-  typedef typename ImageType::IndexType IndexType;
+  using IndexType = typename ImageType::IndexType;
 
   if (!m_Image)
   {
@@ -223,7 +223,7 @@ AdvancedImageMomentsCalculator<TImage>::BeforeThreadedCompute()
 
   if (this->m_CenterOfGravityUsesLowerThreshold)
   {
-    typename BinaryThresholdImageFilterType::Pointer thresholdFilter = BinaryThresholdImageFilterType::New();
+    auto thresholdFilter = BinaryThresholdImageFilterType::New();
     thresholdFilter->SetInput(this->m_Image);
     thresholdFilter->SetLowerThreshold(this->m_LowerThresholdForCenterGravity);
     thresholdFilter->SetInsideValue(1);
@@ -241,7 +241,7 @@ AdvancedImageMomentsCalculator<TImage>::BeforeThreadedCompute()
 
 template <typename TImage>
 void
-AdvancedImageMomentsCalculator<TImage>::LaunchComputeThreaderCallback(void) const
+AdvancedImageMomentsCalculator<TImage>::LaunchComputeThreaderCallback() const
 {
   /** Setup threader. */
   this->m_Threader->SetSingleMethod(this->ComputeThreaderCallback,
@@ -444,8 +444,8 @@ AdvancedImageMomentsCalculator<TImage>::DoPostProcessing()
 //---------------------------------------------------------------------
 // Get sum of intensities
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::ScalarType
-AdvancedImageMomentsCalculator<TImage>::GetTotalMass() const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetTotalMass() const -> ScalarType
 {
   if (!m_Valid)
   {
@@ -457,8 +457,8 @@ AdvancedImageMomentsCalculator<TImage>::GetTotalMass() const
 //--------------------------------------------------------------------
 // Get first moments about origin, in index coordinates
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::VectorType
-AdvancedImageMomentsCalculator<TImage>::GetFirstMoments() const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetFirstMoments() const -> VectorType
 {
   if (!m_Valid)
   {
@@ -470,8 +470,8 @@ AdvancedImageMomentsCalculator<TImage>::GetFirstMoments() const
 //--------------------------------------------------------------------
 // Get second moments about origin, in index coordinates
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::MatrixType
-AdvancedImageMomentsCalculator<TImage>::GetSecondMoments() const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetSecondMoments() const -> MatrixType
 {
   if (!m_Valid)
   {
@@ -483,8 +483,8 @@ AdvancedImageMomentsCalculator<TImage>::GetSecondMoments() const
 //--------------------------------------------------------------------
 // Get center of gravity, in physical coordinates
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::VectorType
-AdvancedImageMomentsCalculator<TImage>::GetCenterOfGravity() const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetCenterOfGravity() const -> VectorType
 {
   if (!m_Valid)
   {
@@ -496,8 +496,8 @@ AdvancedImageMomentsCalculator<TImage>::GetCenterOfGravity() const
 //--------------------------------------------------------------------
 // Get second central moments, in physical coordinates
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::MatrixType
-AdvancedImageMomentsCalculator<TImage>::GetCentralMoments() const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetCentralMoments() const -> MatrixType
 {
   if (!m_Valid)
   {
@@ -509,8 +509,8 @@ AdvancedImageMomentsCalculator<TImage>::GetCentralMoments() const
 //--------------------------------------------------------------------
 // Get principal moments, in physical coordinates
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::VectorType
-AdvancedImageMomentsCalculator<TImage>::GetPrincipalMoments() const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetPrincipalMoments() const -> VectorType
 {
   if (!m_Valid)
   {
@@ -523,8 +523,8 @@ AdvancedImageMomentsCalculator<TImage>::GetPrincipalMoments() const
 //--------------------------------------------------------------------
 // Get principal axes, in physical coordinates
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::MatrixType
-AdvancedImageMomentsCalculator<TImage>::GetPrincipalAxes() const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetPrincipalAxes() const -> MatrixType
 {
   if (!m_Valid)
   {
@@ -536,8 +536,8 @@ AdvancedImageMomentsCalculator<TImage>::GetPrincipalAxes() const
 //--------------------------------------------------------------------
 // Get principal axes to physical axes transform
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::AffineTransformPointer
-AdvancedImageMomentsCalculator<TImage>::GetPrincipalAxesToPhysicalAxesTransform(void) const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetPrincipalAxesToPhysicalAxesTransform() const -> AffineTransformPointer
 {
   typename AffineTransformType::MatrixType matrix;
   typename AffineTransformType::OffsetType offset;
@@ -562,8 +562,8 @@ AdvancedImageMomentsCalculator<TImage>::GetPrincipalAxesToPhysicalAxesTransform(
 // Get physical axes to principal axes transform
 
 template <typename TImage>
-typename AdvancedImageMomentsCalculator<TImage>::AffineTransformPointer
-AdvancedImageMomentsCalculator<TImage>::GetPhysicalAxesToPrincipalAxesTransform(void) const
+auto
+AdvancedImageMomentsCalculator<TImage>::GetPhysicalAxesToPrincipalAxesTransform() const -> AffineTransformPointer
 {
   typename AffineTransformType::MatrixType matrix;
   typename AffineTransformType::OffsetType offset;

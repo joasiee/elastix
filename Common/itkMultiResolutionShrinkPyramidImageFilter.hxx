@@ -21,7 +21,7 @@
 #include "itkMultiResolutionShrinkPyramidImageFilter.h"
 
 #include "itkShrinkImageFilter.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -31,11 +31,11 @@ namespace itk
  */
 template <class TInputImage, class TOutputImage>
 void
-MultiResolutionShrinkPyramidImageFilter<TInputImage, TOutputImage>::GenerateData(void)
+MultiResolutionShrinkPyramidImageFilter<TInputImage, TOutputImage>::GenerateData()
 {
   /** Create the shrinking filter. */
-  typedef ShrinkImageFilter<TInputImage, TOutputImage> ShrinkerType;
-  typename ShrinkerType::Pointer                       shrinker = ShrinkerType::New();
+  using ShrinkerType = ShrinkImageFilter<TInputImage, TOutputImage>;
+  auto shrinker = ShrinkerType::New();
   shrinker->SetInput(this->GetInput());
 
   /** Loop over all resolution levels. */
@@ -70,7 +70,7 @@ MultiResolutionShrinkPyramidImageFilter<TInputImage, TOutputImage>::GenerateData
  */
 template <class TInputImage, class TOutputImage>
 void
-MultiResolutionShrinkPyramidImageFilter<TInputImage, TOutputImage>::GenerateInputRequestedRegion(void)
+MultiResolutionShrinkPyramidImageFilter<TInputImage, TOutputImage>::GenerateInputRequestedRegion()
 {
   // call the superclass' implementation of this method
   Superclass::Superclass::GenerateInputRequestedRegion();

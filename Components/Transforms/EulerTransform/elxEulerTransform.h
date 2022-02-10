@@ -78,22 +78,20 @@ class ITK_TEMPLATE_EXPORT EulerTransformElastix
 {
 public:
   /** Standard ITK-stuff.*/
-  typedef EulerTransformElastix Self;
+  using Self = EulerTransformElastix;
 
-  typedef itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                            elx::TransformBase<TElastix>::FixedImageDimension>
-    Superclass1;
+  using Superclass1 = itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                        elx::TransformBase<TElastix>::FixedImageDimension>;
 
-  typedef elx::TransformBase<TElastix> Superclass2;
+  using Superclass2 = elx::TransformBase<TElastix>;
 
   /** The ITK-class that provides most of the functionality, and
    * that is set as the "CurrentTransform" in the CombinationTransform */
-  typedef itk::EulerTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                              elx::TransformBase<TElastix>::FixedImageDimension>
-    EulerTransformType;
+  using EulerTransformType = itk::EulerTransform<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                 elx::TransformBase<TElastix>::FixedImageDimension>;
 
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -128,8 +126,8 @@ public:
   using typename Superclass1::InputVnlVectorType;
   using typename Superclass1::OutputVnlVectorType;
 
-  typedef typename EulerTransformType::Pointer    EulerTransformPointer;
-  typedef typename EulerTransformType::OffsetType OffsetType;
+  using EulerTransformPointer = typename EulerTransformType::Pointer;
+  using OffsetType = typename EulerTransformType::OffsetType;
 
   /** Typedef's inherited from TransformBase. */
   using typename Superclass2::ElastixType;
@@ -142,21 +140,21 @@ public:
   using typename Superclass2::CoordRepType;
   using typename Superclass2::FixedImageType;
   using typename Superclass2::MovingImageType;
-  typedef typename Superclass2::ITKBaseType              ITKBaseType;
-  typedef typename Superclass2::CombinationTransformType CombinationTransformType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
+  using CombinationTransformType = typename Superclass2::CombinationTransformType;
 
   /** Other typedef's. */
-  typedef typename FixedImageType::IndexType     IndexType;
-  typedef typename IndexType::IndexValueType     IndexValueType;
-  typedef typename FixedImageType::SizeType      SizeType;
-  typedef typename FixedImageType::PointType     PointType;
-  typedef typename FixedImageType::SpacingType   SpacingType;
-  typedef typename FixedImageType::RegionType    RegionType;
-  typedef typename FixedImageType::DirectionType DirectionType;
+  using IndexType = typename FixedImageType::IndexType;
+  using IndexValueType = typename IndexType::IndexValueType;
+  using SizeType = typename FixedImageType::SizeType;
+  using PointType = typename FixedImageType::PointType;
+  using SpacingType = typename FixedImageType::SpacingType;
+  using RegionType = typename FixedImageType::RegionType;
+  using DirectionType = typename FixedImageType::DirectionType;
 
-  typedef itk::CenteredTransformInitializer<EulerTransformType, FixedImageType, MovingImageType>
-                                                     TransformInitializerType;
-  typedef typename TransformInitializerType::Pointer TransformInitializerPointer;
+  using TransformInitializerType =
+    itk::CenteredTransformInitializer<EulerTransformType, FixedImageType, MovingImageType>;
+  using TransformInitializerPointer = typename TransformInitializerType::Pointer;
 
   /** For scales setting in the optimizer */
   using typename Superclass2::ScalesType;
@@ -166,25 +164,7 @@ public:
    * \li Set the scales.
    */
   void
-  BeforeRegistration(void) override;
-
-  /** Initialize Transform.
-   * \li Set all parameters to zero.
-   * \li Set center of rotation:
-   *  automatically initialized to the geometric center of the image, or
-   *   assigned a user entered voxel index, given by the parameter
-   *   (CenterOfRotation <index-x> <index-y> ...);
-   *   If an initial transform is present and HowToCombineTransforms is
-   *   set to "Compose", the initial transform is taken into account
-   *   while setting the center of rotation.
-   * \li Set initial translation:
-   *  the initial translation between fixed and moving image is guessed,
-   *  if the user has set (AutomaticTransformInitialization "true").
-   *
-   * It is not yet possible to enter an initial rotation angle.
-   */
-  virtual void
-  InitializeTransform(void);
+  BeforeRegistration() override;
 
   /** Set the scales
    * \li If AutomaticScalesEstimation is "true" estimate scales
@@ -194,14 +174,14 @@ public:
    * the InitializeTransform function is called
    */
   virtual void
-  SetScales(void);
+  SetScales();
 
   /** Function to read transform-parameters from a file.
    *
    * It reads the center of rotation and calls the superclass' implementation.
    */
   void
-  ReadFromFile(void) override;
+  ReadFromFile() override;
 
 protected:
   /** The constructor. */
@@ -220,9 +200,27 @@ protected:
 private:
   elxOverrideGetSelfMacro;
 
+  /** Initialize Transform.
+   * \li Set all parameters to zero.
+   * \li Set center of rotation:
+   *  automatically initialized to the geometric center of the image, or
+   *   assigned a user entered voxel index, given by the parameter
+   *   (CenterOfRotation <index-x> <index-y> ...);
+   *   If an initial transform is present and HowToCombineTransforms is
+   *   set to "Compose", the initial transform is taken into account
+   *   while setting the center of rotation.
+   * \li Set initial translation:
+   *  the initial translation between fixed and moving image is guessed,
+   *  if the user has set (AutomaticTransformInitialization "true").
+   *
+   * It is not yet possible to enter an initial rotation angle.
+   */
+  void
+  InitializeTransform();
+
   /** Creates a map of the parameters specific for this (derived) transform type. */
   ParameterMapType
-  CreateDerivedTransformParametersMap(void) const override;
+  CreateDerivedTransformParametersMap() const override;
 
   /** The deleted copy constructor. */
   EulerTransformElastix(const Self &) = delete;

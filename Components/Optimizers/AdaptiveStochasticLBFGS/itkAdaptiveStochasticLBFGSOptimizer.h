@@ -70,10 +70,10 @@ class AdaptiveStochasticLBFGSOptimizer : public StandardStochasticGradientOptimi
 {
 public:
   /** Standard ITK.*/
-  typedef AdaptiveStochasticLBFGSOptimizer    Self;
-  typedef StandardStochasticGradientOptimizer Superclass;
-  typedef SmartPointer<Self>                  Pointer;
-  typedef SmartPointer<const Self>            ConstPointer;
+  using Self = AdaptiveStochasticLBFGSOptimizer;
+  using Superclass = StandardStochasticGradientOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -126,7 +126,7 @@ protected:
    * In that case, also the m_PreviousGradient is updated.
    */
   void
-  UpdateCurrentTime(void) override;
+  UpdateCurrentTime() override;
 
   /** The PreviousGradient, necessary for the CruzAcceleration */
   // m_previousGradient m_PrePreviousGradient are not used, where should I put them?

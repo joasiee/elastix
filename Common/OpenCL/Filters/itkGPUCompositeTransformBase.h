@@ -39,17 +39,17 @@ class ITK_TEMPLATE_EXPORT GPUCompositeTransformBase : public GPUTransformBase
 {
 public:
   /** Standard class typedefs. */
-  typedef GPUCompositeTransformBase Self;
-  typedef GPUTransformBase          GPUSuperclass;
+  using Self = GPUCompositeTransformBase;
+  using GPUSuperclass = GPUTransformBase;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(GPUCompositeTransformBase, GPUSuperclass);
 
   /** Sub transform types. */
-  typedef TScalarType                                      ScalarType;
-  typedef Transform<TScalarType, NDimensions, NDimensions> TransformType;
-  typedef typename TransformType::Pointer                  TransformTypePointer;
-  typedef typename TransformType::ConstPointer             TransformTypeConstPointer;
+  using ScalarType = TScalarType;
+  using TransformType = Transform<TScalarType, NDimensions, NDimensions>;
+  using TransformTypePointer = typename TransformType::Pointer;
+  using TransformTypeConstPointer = typename TransformType::ConstPointer;
 
   /** Dimension of the domain space. */
   itkStaticConstMacro(InputSpaceDimension, unsigned int, NDimensions);
@@ -66,22 +66,22 @@ public:
   /** Returns true if the derived composite transform has identity transform,
    * false otherwise. */
   virtual bool
-  HasIdentityTransform(void) const;
+  HasIdentityTransform() const;
 
   /** Returns true if the derived composite transform has matrix offset transform,
    * false otherwise. */
   virtual bool
-  HasMatrixOffsetTransform(void) const;
+  HasMatrixOffsetTransform() const;
 
   /** Returns true if the derived composite transform has translation transform,
    * false otherwise. */
   virtual bool
-  HasTranslationTransform(void) const;
+  HasTranslationTransform() const;
 
   /** Returns true if the derived composite transform has BSpline transform,
    * false otherwise. */
   virtual bool
-  HasBSplineTransform(void) const;
+  HasBSplineTransform() const;
 
   /** Returns true if the transform at \a index is identity transform,
    * false otherwise. */

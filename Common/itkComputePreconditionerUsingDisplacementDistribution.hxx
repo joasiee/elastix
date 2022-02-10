@@ -20,7 +20,7 @@
 
 #include "itkComputePreconditionerUsingDisplacementDistribution.h"
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 #include "itkImageScanlineIterator.h"
 #include "itkImageSliceIteratorWithIndex.h"
@@ -103,12 +103,12 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
    */
 
   /** Get the number of parameters. */
-  const unsigned int P = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
+  const unsigned int numberOfParameters = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
 
   /** Get the exact gradient. Uses a random coordinate sampler with
-   * NumberOfSamplesForPrecondition samples, which equals P.
+   * NumberOfSamplesForPrecondition samples, which equals numberOfParameters.
    */
-  DerivativeType exactgradient(P);
+  DerivativeType exactgradient(numberOfParameters);
   this->GetScaledDerivative(mu, exactgradient);
 
   /** Get samples. Uses a grid sampler with m_NumberOfJacobianMeasurements samples. */
@@ -139,7 +139,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   double globalDeformation = 0.0;
   double globalDeformationSquare = 0.0;
 
-  std::vector<double> localStepSizeSquared(P, 0.0);
+  std::vector<double> localStepSizeSquared(numberOfParameters, 0.0);
 
   /** Create a compact region. */
   // MS: Better cast transform to a B-spline transform and ask for
@@ -147,9 +147,9 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   // MS: why is all this needed?
   // MS: ok, to have 1's in the middle and 0 in outer rim
 #if METHOD_BSPLINE == 1
-  typename FixedImageType::Pointer compactImage = FixedImageType::New();
-  FixedImageRegionType             supportRegion;
-  FixedImageRegionType             compactRegion;
+  auto                 compactImage = FixedImageType::New();
+  FixedImageRegionType supportRegion;
+  FixedImageRegionType compactRegion;
 
   typename FixedImageRegionType::SizeType size;
   unsigned int                            supportRegionSize = sizejacind / outdim;
@@ -199,7 +199,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
 #endif
 
   /** Loop over all voxels in the sample container. */
-  ParametersType binCount(P, 0.0);
+  ParametersType binCount(numberOfParameters, 0.0);
   unsigned int   samplenr = 0; // needed for global value only
 
   for (iter = begin; iter != end; ++iter)
@@ -238,7 +238,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
       unsigned int nonzerodim = j / outdim; // Affine, first 9 parameters
       if (j >= outdim * outdim)
         nonzerodim = j - outdim * outdim; // Affine, last 3
-      if (P > 13)
+      if (numberOfParameters > 13)
         nonzerodim = j / (sizejacind / outdim); // B-spline
 
       double displacement = jacj_g[nonzerodim];
@@ -293,7 +293,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
 
   /** Convert the local step sizes to a scaling factor. */
   unsigned int counter_tmp = 0;
-  for (unsigned int i = 0; i < P; ++i)
+  for (unsigned int i = 0; i < numberOfParameters; ++i)
   {
     if (preconditioner[i] > 0)
     {
@@ -349,17 +349,17 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   maxJJ = 0.0;
 
   /** Get the number of parameters. */
-  const unsigned int P = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
+  const unsigned int numberOfParameters = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
 
   // Replace by a general check later.
   bool transformIsBSpline = false;
-  if (P > 13)
+  if (numberOfParameters > 13)
     transformIsBSpline = true; // assume B-spline
 
   /** Get the exact gradient. Uses a random coordinate sampler with
-   * NumberOfSamplesForPrecondition samples, which equals P.
+   * NumberOfSamplesForPrecondition samples, which equals numberOfParameters.
    */
-  DerivativeType exactgradient(P);
+  DerivativeType exactgradient(numberOfParameters);
   this->GetScaledDerivative(mu, exactgradient);
 
   /** Get samples. Uses a grid sampler with m_NumberOfJacobianMeasurements samples. */
@@ -387,8 +387,8 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   jacj_g.Fill(0.0);
   JacobianType        jacjjacj(outdim, outdim);
   const double        sqrt2 = std::sqrt(static_cast<double>(2.0));
-  std::vector<double> localStepSizeSquared(P, 0.0);
-  ParametersType      binCount(P);
+  std::vector<double> localStepSizeSquared(numberOfParameters, 0.0);
+  ParametersType      binCount(numberOfParameters);
   binCount.Fill(0.0);
 
   /** Loop over all voxels in the sample container. */
@@ -531,7 +531,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   /** Compute the mean local step sizes and apply the 2 sigma rule. */
   double maxEigenvalue = -1e+9;
   double minEigenvalue = 1e+9;
-  for (unsigned int i = 0; i < P; ++i)
+  for (unsigned int i = 0; i < numberOfParameters; ++i)
   {
     /** Mean deformation magnitude. */
     double nonZeroBin = binCount[i];
@@ -575,7 +575,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   if (transformIsBSpline && conditionNumber > this->m_ConditionNumber)
   {
     minEigenvalue = maxEigenvalue / this->m_ConditionNumber;
-    for (unsigned int i = 0; i < P; ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       if (preconditioner[i] > this->m_MaximumStepLength / minEigenvalue)
       {
@@ -602,11 +602,11 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   maxJJ = 0.0;
 
   /** Get the number of parameters. */
-  const unsigned int P = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
+  const unsigned int numberOfParameters = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
 
   // Replace by a general check later.
   bool transformIsBSpline = false;
-  if (P > 13)
+  if (numberOfParameters > 13)
     transformIsBSpline = true; // assume B-spline
 
   /** Get samples. Uses a grid sampler with m_NumberOfJacobianMeasurements samples. */
@@ -630,7 +630,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   JacobianType               jacjjacj(outdim, outdim);
   const double               sqrt2 = std::sqrt(static_cast<double>(2.0));
   NonZeroJacobianIndicesType jacind(sizejacind);
-  ParametersType             binCount(P, 0.0);
+  ParametersType             binCount(numberOfParameters, 0.0);
 
   /** Loop over all voxels in the sample container. */
   for (iter = begin; iter != end; ++iter)
@@ -662,7 +662,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
 
   double maxEigenvalue = -1e+9;
   double minEigenvalue = 1e+9;
-  for (unsigned int i = 0; i < P; ++i)
+  for (unsigned int i = 0; i < numberOfParameters; ++i)
   {
     double nonZeroBin = binCount[i] / outdim;
     if (nonZeroBin > 0 && preconditioner[i] > 1e-9)
@@ -690,7 +690,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   if (transformIsBSpline && conditionNumber > this->m_ConditionNumber)
   {
     minEigenvalue = maxEigenvalue / this->m_ConditionNumber;
-    for (unsigned int i = 0; i < P; ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       if (preconditioner[i] > 1.0 / minEigenvalue)
       {
@@ -720,25 +720,25 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Pre
 {
   // Note: This function is only meant for the B-spline transformation
 #define UseOldMethod
-  const unsigned int                                                                   SplineOrder = 3;
-  typedef AdvancedCombinationTransform<double, FixedImageDimension>                    CombinationTransformType;
-  typedef AdvancedBSplineDeformableTransform<double, FixedImageDimension, SplineOrder> BSplineTransformType;
-  typedef typename BSplineTransformType::SizeType                                      GridSizeType;
-  typedef typename BSplineTransformType::IndexType                                     GridIndexType;
-  typedef typename BSplineTransformType::SpacingType                                   GridSpacingType;
-  typedef typename BSplineTransformType::OriginType                                    GridOriginType;
-  typedef typename BSplineTransformType::DirectionType                                 GridDirectionType;
-  typedef typename BSplineTransformType::RegionType                                    GridRegionType;
-  typedef typename BSplineTransformType::ImageType                                     CoefficientImageType;
+  const unsigned int SplineOrder = 3;
+  using CombinationTransformType = AdvancedCombinationTransform<double, FixedImageDimension>;
+  using BSplineTransformType = AdvancedBSplineDeformableTransform<double, FixedImageDimension, SplineOrder>;
+  using GridSizeType = typename BSplineTransformType::SizeType;
+  using GridIndexType = typename BSplineTransformType::IndexType;
+  using GridSpacingType = typename BSplineTransformType::SpacingType;
+  using GridOriginType = typename BSplineTransformType::OriginType;
+  using GridDirectionType = typename BSplineTransformType::DirectionType;
+  using GridRegionType = typename BSplineTransformType::RegionType;
+  using CoefficientImageType = typename BSplineTransformType::ImageType;
 
-  typedef ImageRegionIteratorWithIndex<CoefficientImageType> IteratorType;
-  typedef ImageLinearIteratorWithIndex<CoefficientImageType> ImageScanlineIteratorType;
-  typedef ImageSliceIteratorWithIndex<CoefficientImageType>  SliceIteratorType;
+  using IteratorType = ImageRegionIteratorWithIndex<CoefficientImageType>;
+  using ImageScanlineIteratorType = ImageLinearIteratorWithIndex<CoefficientImageType>;
+  using SliceIteratorType = ImageSliceIteratorWithIndex<CoefficientImageType>;
 
-  typedef CropImageFilter<CoefficientImageType, CoefficientImageType> CropImageFilterType;
+  using CropImageFilterType = CropImageFilter<CoefficientImageType, CoefficientImageType>;
   // typedef MirrorPadImageFilter<CoefficientImageType,CoefficientImageType> PadImageFilterType;
-  typedef ZeroFluxNeumannPadImageFilter<CoefficientImageType, CoefficientImageType>         PadImageFilterType;
-  typedef SmoothingRecursiveGaussianImageFilter<CoefficientImageType, CoefficientImageType> SmoothingFilterType;
+  using PadImageFilterType = ZeroFluxNeumannPadImageFilter<CoefficientImageType, CoefficientImageType>;
+  using SmoothingFilterType = SmoothingRecursiveGaussianImageFilter<CoefficientImageType, CoefficientImageType>;
 
   CombinationTransformType * testPtr_combo = dynamic_cast<CombinationTransformType *>(this->m_Transform.GetPointer());
   if (!testPtr_combo)
@@ -752,14 +752,14 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Pre
   GridOriginType    gridOrigin = testPtr_bspline->GetGridOrigin();
   GridDirectionType gridDirection = testPtr_bspline->GetGridDirection();
 
-  typename CoefficientImageType::Pointer coefImage = CoefficientImageType::New();
+  auto coefImage = CoefficientImageType::New();
   coefImage->SetRegions(gridRegion);
   coefImage->SetSpacing(gridSpacing);
   coefImage->SetOrigin(gridOrigin);
   coefImage->SetDirection(gridDirection);
   coefImage->Allocate();
 
-  //   typename MaskImageType::Pointer mask = MaskImageType::New();
+  //   auto mask = MaskImageType::New();
   //   mask->CopyInformation( coefImage );
   //   mask->Allocate();
   //   mask->FillBuffer( 0 );
@@ -801,20 +801,20 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Pre
     }
 
     // tmp write
-    //     typedef ImageFileWriter<CoefficientImageType> WriterType;
-    //     typename WriterType::Pointer writer1 = WriterType::New();
+    //     using WriterType = ImageFileWriter<CoefficientImageType>;
+    //     auto writer1 = WriterType::New();
     //     writer1->SetFileName( "P_0.mha" );
     //     writer1->SetInput( coefImage );
     //     writer1->Update();
 
     // first time smooth
-    typename SmoothingFilterType::Pointer smoother = SmoothingFilterType::New();
+    auto smoother = SmoothingFilterType::New();
     //     smoother->SetInput(coefImage);
     //     smoother->SetSigma(0.5);
     //     smoother->Update();
     //
     //     // tmp write
-    //     typename WriterType::Pointer writer3 = WriterType::New();
+    //     auto writer3 = WriterType::New();
     //     writer3->SetFileName("P_coefImageSmooth.mha");
     //     //writer2->SetInput( padder->GetOutput() );
     //     writer3->SetInput(smoother->GetOutput());
@@ -952,7 +952,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Pre
 #endif
 
     // tmp write
-    //     typename WriterType::Pointer writer2 = WriterType::New();
+    //     auto writer2 = WriterType::New();
     //     writer2->SetFileName("P_1.mha");
     //     writer2->SetInput( coefImage );
     //     writer2->Update();
@@ -960,7 +960,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Pre
 #ifdef UseOldMethod
     GridSizeType size_tmp;
     // First remove the outer border with -1 information
-    typename CropImageFilterType::Pointer cropper = CropImageFilterType::New();
+    auto cropper = CropImageFilterType::New();
     cropper->SetInput(coefImage);
     size_tmp.Fill(1);
     cropper->SetUpperBoundaryCropSize(size_tmp);
@@ -968,7 +968,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Pre
     cropper->SetLowerBoundaryCropSize(size_tmp);
 
     // Then add the border using zero flux Neumann
-    typename PadImageFilterType::Pointer padder = PadImageFilterType::New();
+    auto padder = PadImageFilterType::New();
     padder->SetInput(cropper->GetOutput());
     size_tmp.Fill(1);
     padder->SetPadUpperBound(size_tmp);
@@ -977,7 +977,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Pre
 #endif
 
     // smooth?
-    // typename SmoothingFilterType::Pointer smoother = SmoothingFilterType::New();
+    // auto smoother = SmoothingFilterType::New();
 #ifdef UseOldMethod
     smoother->SetInput(padder->GetOutput());
 #else
@@ -986,7 +986,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Pre
     smoother->SetSigma(0.5);
 
     // tmp write
-    // typename WriterType::Pointer writer2 = WriterType::New();
+    // auto writer2 = WriterType::New();
     // writer2->SetFileName( "P_3.mha" );
 #ifdef UseOldMethod
     // writer2->SetInput( padder->GetOutput() );

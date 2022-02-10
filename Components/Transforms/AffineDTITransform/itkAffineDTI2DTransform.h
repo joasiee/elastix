@@ -66,10 +66,10 @@ class AffineDTI2DTransform : public AdvancedMatrixOffsetTransformBase<TScalarTyp
 {
 public:
   /** Standard class typedefs. */
-  typedef AffineDTI2DTransform                                 Self;
-  typedef AdvancedMatrixOffsetTransformBase<TScalarType, 2, 2> Superclass;
-  typedef SmartPointer<Self>                                   Pointer;
-  typedef SmartPointer<const Self>                             ConstPointer;
+  using Self = AffineDTI2DTransform;
+  using Superclass = AdvancedMatrixOffsetTransformBase<TScalarType, 2, 2>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New macro for creation of through a Smart Pointer. */
   itkNewMacro(Self);
@@ -100,7 +100,7 @@ public:
   using typename Superclass::CenterType;
   using typename Superclass::TranslationType;
   using typename Superclass::OffsetType;
-  typedef typename Superclass::ScalarType AngleType;
+  using AngleType = typename Superclass::ScalarType;
 
   using typename Superclass::NonZeroJacobianIndicesType;
   using typename Superclass::SpatialJacobianType;
@@ -109,7 +109,7 @@ public:
   using typename Superclass::JacobianOfSpatialHessianType;
   using typename Superclass::InternalMatrixType;
 
-  typedef FixedArray<ScalarType> ScalarArrayType;
+  using ScalarArrayType = FixedArray<ScalarType>;
 
   /** Set/Get the transformation from a container of parameters
    * This is typically used by optimizers.  There are 7 parameters.
@@ -120,14 +120,14 @@ public:
   SetParameters(const ParametersType & parameters) override;
 
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** Compute the Jacobian of the transformation. */
   void
   GetJacobian(const InputPointType &, JacobianType &, NonZeroJacobianIndicesType &) const override;
 
   void
-  SetIdentity(void) override;
+  SetIdentity() override;
 
 protected:
   AffineDTI2DTransform();
@@ -145,14 +145,14 @@ protected:
 
   /** Compute the components of the rotation matrix in the superclass. */
   void
-  ComputeMatrix(void) override;
+  ComputeMatrix() override;
 
   void
-  ComputeMatrixParameters(void) override;
+  ComputeMatrixParameters() override;
 
   /** Update the m_JacobianOfSpatialJacobian.  */
   virtual void
-  PrecomputeJacobianOfSpatialJacobian(void);
+  PrecomputeJacobianOfSpatialJacobian();
 
 private:
   AffineDTI2DTransform(const Self &) = delete;

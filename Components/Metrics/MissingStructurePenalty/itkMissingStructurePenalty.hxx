@@ -36,20 +36,12 @@ MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::MissingVolumeMeshPena
 
 
 /**
- * ******************* Destructor *******************
- */
-
-template <class TFixedPointSet, class TMovingPointSet>
-MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::~MissingVolumeMeshPenalty() = default; // end Destructor
-
-
-/**
  * *********************** Initialize *****************************
  */
 
 template <class TFixedPointSet, class TMovingPointSet>
 void
-MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::Initialize(void)
+MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::Initialize()
 {
   /** Call the initialize of the superclass. */
   // this->Superclass::Initialize();
@@ -73,10 +65,10 @@ MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::Initialize(void)
     MeshPointsContainerConstPointer fixedPoints = fixedMesh->GetPoints();
     const unsigned int              numberOfPoints = fixedPoints->Size();
 
-    typename MeshPointsContainerType::Pointer mappedPoints = MeshPointsContainerType::New();
+    auto mappedPoints = MeshPointsContainerType::New();
     mappedPoints->Reserve(numberOfPoints);
 
-    typename FixedMeshType::Pointer mappedMesh = FixedMeshType::New();
+    auto mappedMesh = FixedMeshType::New();
     mappedMesh->SetPoints(mappedPoints);
 
     // mappedMesh was constructed with a Cellscontainer and CellDatacontainer of size 0.
@@ -97,8 +89,9 @@ MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::Initialize(void)
  */
 
 template <class TFixedPointSet, class TMovingPointSet>
-typename MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::MeasureType
+auto
 MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::GetValue(const TransformParametersType & parameters) const
+  -> MeasureType
 {
   /** Sanity checks. */
   FixedMeshContainerConstPointer fixedMeshContainer = this->GetFixedMeshContainer();
@@ -189,8 +182,8 @@ MissingVolumeMeshPenalty<TFixedPointSet, TMovingPointSet>::GetValueAndDerivative
     const FixedMeshPointer           mappedMesh = this->m_MappedMeshContainer->ElementAt(meshId);
     const MeshPointsContainerPointer mappedPoints = mappedMesh->GetPoints();
 
-    typename FixedMeshType::PointType &              pointCentroid = pointCentroids->ElementAt(meshId);
-    typedef typename FixedMeshType::PointsContainer  FixedMeshPointsContainerType;
+    typename FixedMeshType::PointType & pointCentroid = pointCentroids->ElementAt(meshId);
+    using FixedMeshPointsContainerType = typename FixedMeshType::PointsContainer;
     typename FixedMeshType::PointsContainer::Pointer derivPoints = FixedMeshPointsContainerType::New();
 
     derivPoints->resize(numberOfPoints);

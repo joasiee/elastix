@@ -26,8 +26,8 @@ template <typename TTypeList, typename NDimensions>
 void
 GPUNearestNeighborInterpolateImageFunctionFactory2<TTypeList, NDimensions>::RegisterOneFactory()
 {
-  typedef GPUNearestNeighborInterpolateImageFunctionFactory2<TTypeList, NDimensions> GPUInterpolateFactoryType;
-  typename GPUInterpolateFactoryType::Pointer factory = GPUInterpolateFactoryType::New();
+  using GPUInterpolateFactoryType = GPUNearestNeighborInterpolateImageFunctionFactory2<TTypeList, NDimensions>;
+  auto factory = GPUInterpolateFactoryType::New();
   ObjectFactoryBase::RegisterFactory(factory);
 }
 
@@ -55,8 +55,8 @@ GPUNearestNeighborInterpolateImageFunctionFactory2<TTypeList, NDimensions>::Regi
   const bool inputHasFloat = typelist::HasType<TTypeList, float>::Type;
   if (!inputHasFloat)
   {
-    typedef typelist::MakeTypeList<float>::Type FloatTypeList;
-    typelist::VisitDimension<FloatTypeList, 1>  visitor1;
+    using FloatTypeList = typelist::MakeTypeList<float>::Type;
+    typelist::VisitDimension<FloatTypeList, 1> visitor1;
     visitor1(*this);
   }
 }
@@ -75,8 +75,8 @@ GPUNearestNeighborInterpolateImageFunctionFactory2<TTypeList, NDimensions>::Regi
   const bool inputHasFloat = typelist::HasType<TTypeList, float>::Type;
   if (!inputHasFloat)
   {
-    typedef typelist::MakeTypeList<float>::Type FloatTypeList;
-    typelist::VisitDimension<FloatTypeList, 2>  visitor1;
+    using FloatTypeList = typelist::MakeTypeList<float>::Type;
+    typelist::VisitDimension<FloatTypeList, 2> visitor1;
     visitor1(*this);
   }
 }
@@ -95,8 +95,8 @@ GPUNearestNeighborInterpolateImageFunctionFactory2<TTypeList, NDimensions>::Regi
   const bool inputHasFloat = typelist::HasType<TTypeList, float>::Type;
   if (!inputHasFloat)
   {
-    typedef typelist::MakeTypeList<float>::Type FloatTypeList;
-    typelist::VisitDimension<FloatTypeList, 3>  visitor1;
+    using FloatTypeList = typelist::MakeTypeList<float>::Type;
+    typelist::VisitDimension<FloatTypeList, 3> visitor1;
     visitor1(*this);
   }
 }

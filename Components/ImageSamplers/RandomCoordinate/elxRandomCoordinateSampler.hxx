@@ -30,7 +30,7 @@ namespace elastix
 
 template <class TElastix>
 void
-RandomCoordinateSampler<TElastix>::BeforeEachResolution(void)
+RandomCoordinateSampler<TElastix>::BeforeEachResolution()
 {
   const unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
 
@@ -46,13 +46,13 @@ RandomCoordinateSampler<TElastix>::BeforeEachResolution(void)
     splineOrder, "FixedImageBSplineInterpolationOrder", this->GetComponentLabel(), level, 0);
   if (splineOrder == 1)
   {
-    typedef itk::LinearInterpolateImageFunction<InputImageType, CoordRepType> LinearInterpolatorType;
-    typename LinearInterpolatorType::Pointer fixedImageLinearInterpolator = LinearInterpolatorType::New();
+    using LinearInterpolatorType = itk::LinearInterpolateImageFunction<InputImageType, CoordRepType>;
+    auto fixedImageLinearInterpolator = LinearInterpolatorType::New();
     this->SetInterpolator(fixedImageLinearInterpolator);
   }
   else
   {
-    typename DefaultInterpolatorType::Pointer fixedImageBSplineInterpolator = DefaultInterpolatorType::New();
+    auto fixedImageBSplineInterpolator = DefaultInterpolatorType::New();
     fixedImageBSplineInterpolator->SetSplineOrder(splineOrder);
     this->SetInterpolator(fixedImageBSplineInterpolator);
   }

@@ -44,12 +44,9 @@ template <class TScalarType, unsigned int NDimensions>
 AdvancedTranslationTransform<TScalarType, NDimensions>::AdvancedTranslationTransform()
   : Superclass(ParametersDimension)
 {
-  m_Offset.Fill(0);
-
   // The Jacobian of this transform is constant.
   // Therefore the m_Jacobian variable can be
   // initialized here and be shared among all the threads.
-  this->m_LocalJacobian.SetSize(SpaceDimension, ParametersDimension);
   this->m_LocalJacobian.Fill(0.0);
 
   for (unsigned int i = 0; i < NDimensions; ++i)
@@ -57,19 +54,11 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::AdvancedTranslationTrans
     this->m_LocalJacobian(i, i) = 1.0;
   }
 
-  /** SpatialJacobian is also constant */
-  this->m_SpatialJacobian.SetIdentity();
-
   /** Nonzero Jacobian indices, for GetJacobian */
-  this->m_NonZeroJacobianIndices.resize(ParametersDimension);
   for (unsigned int i = 0; i < ParametersDimension; ++i)
   {
     this->m_NonZeroJacobianIndices[i] = i;
   }
-
-  /** Set to correct size. The elements are automatically initialized to 0 */
-  this->m_JacobianOfSpatialJacobian.resize(ParametersDimension);
-  this->m_JacobianOfSpatialHessian.resize(ParametersDimension);
 
   /** m_SpatialHessian is automatically initialized with zeros */
   this->m_HasNonZeroSpatialHessian = false;
@@ -108,8 +97,8 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::SetParameters(const Para
 
 // Get the parameters
 template <class TScalarType, unsigned int NDimensions>
-const typename AdvancedTranslationTransform<TScalarType, NDimensions>::ParametersType &
-AdvancedTranslationTransform<TScalarType, NDimensions>::GetParameters(void) const
+auto
+AdvancedTranslationTransform<TScalarType, NDimensions>::GetParameters() const -> const ParametersType &
 {
   for (unsigned int i = 0; i < SpaceDimension; ++i)
   {
@@ -129,35 +118,11 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::PrintSelf(std::ostream &
 }
 
 
-// Compose with another affine transformation
-template <class TScalarType, unsigned int NDimensions>
-void
-AdvancedTranslationTransform<TScalarType, NDimensions>::Compose(const Self * other, bool)
-{
-  this->Translate(other->m_Offset);
-  return;
-}
-
-
-// Compose with a translation
-template <class TScalarType, unsigned int NDimensions>
-void
-AdvancedTranslationTransform<TScalarType, NDimensions>::Translate(const OutputVectorType & offset, bool)
-{
-  ParametersType newOffset(SpaceDimension);
-  for (unsigned int i = 0; i < SpaceDimension; ++i)
-  {
-    newOffset[i] = m_Offset[i] + offset[i];
-  }
-  this->SetParameters(newOffset);
-  return;
-}
-
-
 // Transform a point
 template <class TScalarType, unsigned int NDimensions>
-typename AdvancedTranslationTransform<TScalarType, NDimensions>::OutputPointType
+auto
 AdvancedTranslationTransform<TScalarType, NDimensions>::TransformPoint(const InputPointType & point) const
+  -> OutputPointType
 {
   return point + m_Offset;
 }
@@ -165,8 +130,9 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::TransformPoint(const Inp
 
 // Transform a vector
 template <class TScalarType, unsigned int NDimensions>
-typename AdvancedTranslationTransform<TScalarType, NDimensions>::OutputVectorType
+auto
 AdvancedTranslationTransform<TScalarType, NDimensions>::TransformVector(const InputVectorType & vect) const
+  -> OutputVectorType
 {
   return vect;
 }
@@ -174,8 +140,9 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::TransformVector(const In
 
 // Transform a vnl_vector_fixed
 template <class TScalarType, unsigned int NDimensions>
-typename AdvancedTranslationTransform<TScalarType, NDimensions>::OutputVnlVectorType
+auto
 AdvancedTranslationTransform<TScalarType, NDimensions>::TransformVector(const InputVnlVectorType & vect) const
+  -> OutputVnlVectorType
 {
   return vect;
 }
@@ -183,26 +150,11 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::TransformVector(const In
 
 // Transform a CovariantVector
 template <class TScalarType, unsigned int NDimensions>
-typename AdvancedTranslationTransform<TScalarType, NDimensions>::OutputCovariantVectorType
+auto
 AdvancedTranslationTransform<TScalarType, NDimensions>::TransformCovariantVector(
-  const InputCovariantVectorType & vect) const
+  const InputCovariantVectorType & vect) const -> OutputCovariantVectorType
 {
   return vect;
-}
-
-
-// return an inverse transformation
-template <class TScalarType, unsigned int NDimensions>
-bool
-AdvancedTranslationTransform<TScalarType, NDimensions>::GetInverse(Self * inverse) const
-{
-  if (!inverse)
-  {
-    return false;
-  }
-
-  inverse->m_Offset = -m_Offset;
-  return true;
 }
 
 
@@ -324,7 +276,7 @@ AdvancedTranslationTransform<TScalarType, NDimensions>::GetJacobianOfSpatialHess
 // Set the parameters for an Identity transform of this class
 template <class TScalarType, unsigned int NDimensions>
 void
-AdvancedTranslationTransform<TScalarType, NDimensions>::SetIdentity(void)
+AdvancedTranslationTransform<TScalarType, NDimensions>::SetIdentity()
 {
   m_Offset.Fill(0.0);
 }

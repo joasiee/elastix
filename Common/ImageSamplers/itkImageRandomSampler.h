@@ -40,10 +40,10 @@ class ITK_TEMPLATE_EXPORT ImageRandomSampler : public ImageRandomSamplerBase<TIn
 {
 public:
   /** Standard ITK-stuff. */
-  typedef ImageRandomSampler                  Self;
-  typedef ImageRandomSamplerBase<TInputImage> Superclass;
-  typedef SmartPointer<Self>                  Pointer;
-  typedef SmartPointer<const Self>            ConstPointer;
+  using Self = ImageRandomSampler;
+  using Superclass = ImageRandomSamplerBase<TInputImage>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -71,8 +71,8 @@ public:
   itkStaticConstMacro(InputImageDimension, unsigned int, Superclass::InputImageDimension);
 
   /** Other typedefs. */
-  typedef typename InputImageType::IndexType InputImageIndexType;
-  typedef typename InputImageType::PointType InputImagePointType;
+  using InputImageIndexType = typename InputImageType::IndexType;
+  using InputImagePointType = typename InputImageType::PointType;
 
 protected:
   /** The constructor. */
@@ -82,7 +82,7 @@ protected:
 
   /** Functions that do the work. */
   void
-  GenerateData(void) override;
+  GenerateData() override;
 
   void
   ThreadedGenerateData(const InputImageRegionType & inputRegionForThread, ThreadIdType threadId) override;

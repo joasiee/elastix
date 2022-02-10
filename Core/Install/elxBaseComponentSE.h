@@ -50,22 +50,22 @@ public:
   ITK_DISALLOW_COPY_AND_MOVE(BaseComponentSE);
 
   /** Standard stuff. */
-  typedef BaseComponentSE Self;
-  typedef BaseComponent   Superclass;
+  using Self = BaseComponentSE;
+  using Superclass = BaseComponent;
 
   /** Elastix typedef's. */
-  typedef TElastix                      ElastixType;
-  typedef itk::WeakPointer<ElastixType> ElastixPointer;
+  using ElastixType = TElastix;
+  using ElastixPointer = itk::WeakPointer<ElastixType>;
 
   /** ConfigurationType. */
-  typedef Configuration          ConfigurationType;
-  typedef Configuration::Pointer ConfigurationPointer;
+  using ConfigurationType = Configuration;
+  using ConfigurationPointer = Configuration::Pointer;
 
   /** RegistrationType; NB: this is the elx::RegistrationBase
    * not an itk::Object or something like that.
    */
-  typedef typename ElastixType::RegistrationBaseType RegistrationType;
-  typedef RegistrationType *                         RegistrationPointer;
+  using RegistrationType = typename ElastixType::RegistrationBaseType;
+  using RegistrationPointer = RegistrationType *;
 
   /**
    * Get/Set functions for Elastix.
@@ -86,7 +86,7 @@ public:
    * without the itkDebug call.
    */
   ElastixType *
-  GetElastix(void) const
+  GetElastix() const
   {
     return this->m_Elastix.GetPointer();
   }
@@ -114,7 +114,7 @@ public:
    * read parameters and command line arguments.
    */
   ConfigurationType *
-  GetConfiguration(void) const
+  GetConfiguration() const
   {
     return this->m_Configuration.GetPointer();
   }
@@ -130,7 +130,7 @@ public:
    * It could be accessed also via GetElastix->GetElxRegistrationBase().
    */
   RegistrationPointer
-  GetRegistration(void) const
+  GetRegistration() const
   {
     return this->m_Registration;
   }
@@ -146,10 +146,10 @@ protected:
 
 private:
   virtual const itk::Object &
-  GetSelf(void) const = 0;
+  GetSelf() const = 0;
 
   virtual itk::Object &
-  GetSelf(void) = 0;
+  GetSelf() = 0;
 };
 
 } // end namespace elastix

@@ -65,10 +65,10 @@ class StandardStochasticGradientOptimizer : public StochasticGradientDescentOpti
 {
 public:
   /** Standard ITK.*/
-  typedef StandardStochasticGradientOptimizer Self;
-  typedef StochasticGradientDescentOptimizer  Superclass;
-  typedef SmartPointer<Self>                  Pointer;
-  typedef SmartPointer<const Self>            ConstPointer;
+  using Self = StandardStochasticGradientOptimizer;
+  using Superclass = StochasticGradientDescentOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -105,11 +105,11 @@ public:
   /** Sets a new LearningRate before calling the Superclass'
    * implementation, and updates the current time. */
   void
-  AdvanceOneStep(void) override;
+  AdvanceOneStep() override;
 
   /** Set current time to 0 and call superclass' implementation. */
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
   /** Set/Get the initial time. Should be >=0. This function is
    * superfluous, since Param_A does effectively the same.
@@ -127,7 +127,7 @@ public:
    * to 'reset' the optimisation, for example if you changed the
    * cost function while optimisation. Be careful with this function. */
   virtual void
-  ResetCurrentTimeToInitialTime(void)
+  ResetCurrentTimeToInitialTime()
   {
     this->m_CurrentTime = this->m_InitialTime;
   }
@@ -149,7 +149,7 @@ protected:
    * Inheriting functions may implement something smarter,
    * for example, dependent on the progress */
   virtual void
-  UpdateCurrentTime(void);
+  UpdateCurrentTime();
 
   /** The current time, which serves as input for Compute_a */
   double m_CurrentTime{ 0.0 };

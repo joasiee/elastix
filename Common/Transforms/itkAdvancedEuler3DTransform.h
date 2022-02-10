@@ -66,10 +66,10 @@ class ITK_TEMPLATE_EXPORT AdvancedEuler3DTransform : public AdvancedRigid3DTrans
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedEuler3DTransform              Self;
-  typedef AdvancedRigid3DTransform<TScalarType> Superclass;
-  typedef SmartPointer<Self>                    Pointer;
-  typedef SmartPointer<const Self>              ConstPointer;
+  using Self = AdvancedEuler3DTransform;
+  using Superclass = AdvancedRigid3DTransform<TScalarType>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New macro for creation of through a Smart Pointer. */
   itkNewMacro(Self);
@@ -100,7 +100,7 @@ public:
   using typename Superclass::CenterType;
   using typename Superclass::TranslationType;
   using typename Superclass::OffsetType;
-  typedef typename Superclass::ScalarType AngleType;
+  using AngleType = typename Superclass::ScalarType;
 
   using typename Superclass::NonZeroJacobianIndicesType;
   using typename Superclass::SpatialJacobianType;
@@ -117,7 +117,7 @@ public:
   SetParameters(const ParametersType & parameters) override;
 
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** Set the rotational part of the transform. */
   void
@@ -136,32 +136,25 @@ public:
   itkGetConstMacro(ComputeZYX, bool);
 
   void
-  SetIdentity(void) override;
+  SetIdentity() override;
 
 protected:
   AdvancedEuler3DTransform();
-  AdvancedEuler3DTransform(const MatrixType & matrix, const OutputPointType & offset);
-  explicit AdvancedEuler3DTransform(unsigned int paramsSpaceDims);
-
   ~AdvancedEuler3DTransform() override = default;
 
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
 
-  /** Set values of angles directly without recomputing other parameters. */
-  void
-  SetVarRotation(ScalarType angleX, ScalarType angleY, ScalarType angleZ);
-
   /** Compute the components of the rotation matrix in the superclass. */
   void
-  ComputeMatrix(void) override;
+  ComputeMatrix() override;
 
   void
-  ComputeMatrixParameters(void) override;
+  ComputeMatrixParameters() override;
 
   /** Update the m_JacobianOfSpatialJacobian.  */
   virtual void
-  PrecomputeJacobianOfSpatialJacobian(void);
+  PrecomputeJacobianOfSpatialJacobian();
 
 private:
   AdvancedEuler3DTransform(const Self &) = delete;

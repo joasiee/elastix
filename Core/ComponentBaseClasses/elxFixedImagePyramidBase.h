@@ -59,8 +59,8 @@ class ITK_TEMPLATE_EXPORT FixedImagePyramidBase : public BaseComponentSE<TElasti
 {
 public:
   /** Standard ITK-stuff. */
-  typedef FixedImagePyramidBase     Self;
-  typedef BaseComponentSE<TElastix> Superclass;
+  using Self = FixedImagePyramidBase;
+  using Superclass = BaseComponentSE<TElastix>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(FixedImagePyramidBase, BaseComponentSE);
@@ -74,18 +74,18 @@ public:
   using typename Superclass::RegistrationPointer;
 
   /** Typedefs inherited from Elastix. */
-  typedef typename ElastixType::FixedImageType InputImageType;
-  typedef typename ElastixType::FixedImageType OutputImageType;
+  using InputImageType = typename ElastixType::FixedImageType;
+  using OutputImageType = typename ElastixType::FixedImageType;
 
   /** Other typedef's. */
-  typedef itk::MultiResolutionPyramidImageFilter<InputImageType, OutputImageType> ITKBaseType;
+  using ITKBaseType = itk::MultiResolutionPyramidImageFilter<InputImageType, OutputImageType>;
 
   /** Typedef's from ITKBaseType. */
-  typedef typename ITKBaseType::ScheduleType ScheduleType;
+  using ScheduleType = typename ITKBaseType::ScheduleType;
 
   /** Retrieves this object as ITKBaseType. */
   ITKBaseType *
-  GetAsITKBaseType(void)
+  GetAsITKBaseType()
   {
     return &(this->GetSelf());
   }
@@ -93,7 +93,7 @@ public:
 
   /** Retrieves this object as ITKBaseType, to use in const functions. */
   const ITKBaseType *
-  GetAsITKBaseType(void) const
+  GetAsITKBaseType() const
   {
     return &(this->GetSelf());
   }
@@ -103,17 +103,17 @@ public:
    * \li Set the schedule of the fixed image pyramid.
    */
   void
-  BeforeRegistrationBase(void) override;
+  BeforeRegistrationBase() override;
 
   /** Execute stuff before each resolution:
    * \li Write the pyramid image to file.
    */
   void
-  BeforeEachResolutionBase(void) override;
+  BeforeEachResolutionBase() override;
 
   /** Method for setting the schedule. */
   virtual void
-  SetFixedSchedule(void);
+  SetFixedSchedule();
 
   /** Method to write the pyramid image. */
   virtual void

@@ -80,10 +80,10 @@ class ITK_TEMPLATE_EXPORT AdvancedSimilarity2DTransform : public AdvancedRigid2D
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedSimilarity2DTransform         Self;
-  typedef AdvancedRigid2DTransform<TScalarType> Superclass;
-  typedef SmartPointer<Self>                    Pointer;
-  typedef SmartPointer<const Self>              ConstPointer;
+  using Self = AdvancedSimilarity2DTransform;
+  using Superclass = AdvancedRigid2DTransform<TScalarType>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New macro for creation of through a Smart Pointer. */
   itkNewMacro(Self);
@@ -99,7 +99,7 @@ public:
 
   /** Scalar type. */
   using typename Superclass::ScalarType;
-  typedef TScalarType ScaleType;
+  using ScaleType = TScalarType;
 
   /** Parameters type. */
   using typename Superclass::ParametersType;
@@ -165,7 +165,7 @@ public:
    * \sa Transform::GetParameters()
    * \sa Transform::GetFixedParameters() */
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** This method computes the Jacobian matrix of the transformation
    * at a given input point.
@@ -178,21 +178,7 @@ public:
 
   /** Set the transformation to an identity. */
   void
-  SetIdentity(void) override;
-
-  /**
-   * This method creates and returns a new AdvancedSimilarity2DTransform object
-   * which is the inverse of self.
-   **/
-  void
-  CloneInverseTo(Pointer & newinverse) const;
-
-  /**
-   * This method creates and returns a new AdvancedSimilarity2DTransform object
-   * which has the same parameters.
-   **/
-  void
-  CloneTo(Pointer & clone) const;
+  SetIdentity() override;
 
   /**
    * Set the rotation Matrix of a Similarity 2D Transform
@@ -212,8 +198,6 @@ public:
 
 protected:
   AdvancedSimilarity2DTransform();
-  AdvancedSimilarity2DTransform(unsigned int spaceDimension, unsigned int parametersDimension);
-
   ~AdvancedSimilarity2DTransform() override = default;
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
@@ -222,14 +206,14 @@ protected:
    * to update the underlying matrix whenever a transform parameter
    * is changed. */
   void
-  ComputeMatrix(void) override;
+  ComputeMatrix() override;
 
   /** Compute the angle and scale from the matrix. This is used to compute
    * transform parameters from a given matrix. This is used in
    * MatrixOffsetTransformBase::Compose() and
    * MatrixOffsetTransformBase::GetInverse(). */
   void
-  ComputeMatrixParameters(void) override;
+  ComputeMatrixParameters() override;
 
   /** Set the scale without updating underlying variables. */
   void
@@ -240,7 +224,7 @@ protected:
 
   /** Update the m_JacobianOfSpatialJacobian.  */
   void
-  PrecomputeJacobianOfSpatialJacobian(void) override;
+  PrecomputeJacobianOfSpatialJacobian() override;
 
 private:
   AdvancedSimilarity2DTransform(const Self &) = delete;

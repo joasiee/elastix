@@ -183,10 +183,7 @@ ParameterObject::RemoveParameter(const ParameterKeyType & key)
 void
 ParameterObject::ReadParameterFile(const ParameterFileNameType & parameterFileName)
 {
-  ParameterFileParserPointer parameterFileParser = ParameterFileParserType::New();
-  parameterFileParser->SetParameterFileName(parameterFileName);
-  parameterFileParser->ReadParameterFile();
-  this->SetParameterMap(ParameterMapVectorType(1, parameterFileParser->GetParameterMap()));
+  this->SetParameterMap(ParameterMapVectorType{ ParameterFileParserType::ReadParameterMap(parameterFileName) });
 }
 
 
@@ -223,10 +220,7 @@ ParameterObject::ReadParameterFile(const ParameterFileNameVectorType & parameter
 void
 ParameterObject::AddParameterFile(const ParameterFileNameType & parameterFileName)
 {
-  ParameterFileParserPointer parameterFileParser = ParameterFileParserType::New();
-  parameterFileParser->SetParameterFileName(parameterFileName);
-  parameterFileParser->ReadParameterFile();
-  this->m_ParameterMap.push_back(parameterFileParser->GetParameterMap());
+  this->m_ParameterMap.push_back(ParameterFileParserType::ReadParameterMap(parameterFileName));
 }
 
 
@@ -236,7 +230,7 @@ ParameterObject::AddParameterFile(const ParameterFileNameType & parameterFileNam
 
 
 void
-ParameterObject::WriteParameterFile(void)
+ParameterObject::WriteParameterFile()
 {
   ParameterFileNameVectorType parameterFileNameVector;
   for (unsigned int i = 0; i < m_ParameterMap.size(); ++i)
@@ -327,8 +321,9 @@ ParameterObject::WriteParameterFile(const ParameterFileNameType & parameterFileN
 
   if (this->m_ParameterMap.size() > 1)
   {
-    itkExceptionMacro(<< "Error writing to disk: The number of parameter maps (" << this->m_ParameterMap.size() << ")"
-                      << " does not match the number of provided filenames (1). Please provide a vector of filenames.");
+    itkExceptionMacro(
+      << "Error writing to disk: The number of parameter maps (" << this->m_ParameterMap.size()
+      << ") does not match the number of provided filenames (1). Please provide a vector of filenames.");
   }
 
   this->WriteParameterFile(this->m_ParameterMap[0], parameterFileName);
@@ -345,8 +340,8 @@ ParameterObject::WriteParameterFile(const ParameterMapVectorType &      paramete
 {
   if (parameterMapVector.size() != parameterFileNameVector.size())
   {
-    itkExceptionMacro(<< "Error writing to disk: The number of parameter maps (" << parameterMapVector.size() << ")"
-                      << " does not match the number of provided filenames (" << parameterFileNameVector.size()
+    itkExceptionMacro(<< "Error writing to disk: The number of parameter maps (" << parameterMapVector.size()
+                      << ") does not match the number of provided filenames (" << parameterFileNameVector.size()
                       << ").");
   }
 

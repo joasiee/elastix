@@ -46,15 +46,13 @@ template <class TElastix>
 void
 OptimizerBase<TElastix>::SetCurrentPositionPublic(const ParametersType & /** param */)
 {
-  xl::xout["error"] << "ERROR: This function should be overridden or just "
-                    << "not used.\n";
-  xl::xout["error"] << "  Are you using BSplineTransformWithDiffusion in "
-                    << "combination with another optimizer than the "
-                    << "StandardGradientDescentOptimizer? Don't!" << std::endl;
+  xl::xout["error"] << "ERROR: This function should be overridden or just not used.\n";
+  xl::xout["error"] << "  Are you using BSplineTransformWithDiffusion in combination with another optimizer than the "
+                       "StandardGradientDescentOptimizer? Don't!"
+                    << std::endl;
 
   /** Throw an exception if this function is not overridden. */
-  itkExceptionMacro(<< "ERROR: The SetCurrentPositionPublic method is not "
-                    << "implemented in your optimizer");
+  itkExceptionMacro(<< "ERROR: The SetCurrentPositionPublic method is not implemented in your optimizer");
 
 } // end SetCurrentPositionPublic()
 
@@ -65,7 +63,7 @@ OptimizerBase<TElastix>::SetCurrentPositionPublic(const ParametersType & /** par
 
 template <class TElastix>
 void
-OptimizerBase<TElastix>::BeforeEachResolutionBase(void)
+OptimizerBase<TElastix>::BeforeEachResolutionBase()
 {
   /** Get the current resolution level. */
   unsigned int level = this->GetRegistration()->GetAsITKBaseType()->GetCurrentLevel();
@@ -87,9 +85,9 @@ OptimizerBase<TElastix>::BeforeEachResolutionBase(void)
 
 template <class TElastix>
 void
-OptimizerBase<TElastix>::AfterRegistrationBase(void)
+OptimizerBase<TElastix>::AfterRegistrationBase()
 {
-  typedef typename ParametersType::ValueType ParametersValueType;
+  using ParametersValueType = typename ParametersType::ValueType;
 
   /** Get the final parameters, round to six decimals. */
   ParametersType      finalTP = this->GetAsITKBaseType()->GetCurrentPosition();
@@ -116,7 +114,7 @@ OptimizerBase<TElastix>::AfterRegistrationBase(void)
 
 template <class TElastix>
 void
-OptimizerBase<TElastix>::SelectNewSamples(void)
+OptimizerBase<TElastix>::SelectNewSamples()
 {
   /** Force the metric to base its computation on a new subset of image samples.
    * Not every metric may have implemented this.
@@ -135,7 +133,7 @@ OptimizerBase<TElastix>::SelectNewSamples(void)
 
 template <class TElastix>
 bool
-OptimizerBase<TElastix>::GetNewSamplesEveryIteration(void) const
+OptimizerBase<TElastix>::GetNewSamplesEveryIteration() const
 {
   /** itkGetConstMacro Without the itkDebugMacro. */
   return this->m_NewSamplesEveryIteration;
@@ -151,7 +149,7 @@ template <class TElastix>
 void
 OptimizerBase<TElastix>::SetSinusScales(double amplitude, double frequency, unsigned long numberOfParameters)
 {
-  typedef typename ITKBaseType::ScalesType ScalesType;
+  using ScalesType = typename ITKBaseType::ScalesType;
 
   const double nrofpar = static_cast<double>(numberOfParameters);
   ScalesType   scales(numberOfParameters);

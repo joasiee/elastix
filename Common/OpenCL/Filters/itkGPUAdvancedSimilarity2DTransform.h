@@ -41,11 +41,11 @@ class ITK_TEMPLATE_EXPORT GPUAdvancedSimilarity2DTransform
 {
 public:
   /** Standard class typedefs. */
-  typedef GPUAdvancedSimilarity2DTransform                Self;
-  typedef TParentTransform                                CPUSuperclass;
-  typedef GPUMatrixOffsetTransformBase<TScalarType, 2, 2> GPUSuperclass;
-  typedef SmartPointer<Self>                              Pointer;
-  typedef SmartPointer<const Self>                        ConstPointer;
+  using Self = GPUAdvancedSimilarity2DTransform;
+  using CPUSuperclass = TParentTransform;
+  using GPUSuperclass = GPUMatrixOffsetTransformBase<TScalarType, 2, 2>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -54,27 +54,27 @@ public:
   itkTypeMacro(GPUAdvancedSimilarity2DTransform, CPUSuperclass);
 
   /** Typedefs from GPUSuperclass. */
-  typedef typename GPUSuperclass::CPUMatrixType        CPUMatrixType;
-  typedef typename GPUSuperclass::CPUInverseMatrixType CPUInverseMatrixType;
-  typedef typename GPUSuperclass::CPUOutputVectorType  CPUOutputVectorType;
+  using CPUMatrixType = typename GPUSuperclass::CPUMatrixType;
+  using CPUInverseMatrixType = typename GPUSuperclass::CPUInverseMatrixType;
+  using CPUOutputVectorType = typename GPUSuperclass::CPUOutputVectorType;
 
   /** Get CPU matrix of an MatrixOffsetTransformBase. */
   const CPUMatrixType &
-  GetCPUMatrix(void) const override
+  GetCPUMatrix() const override
   {
     return this->GetMatrix();
   }
 
   /** Get CPU inverse matrix of an MatrixOffsetTransformBase. */
   const CPUInverseMatrixType &
-  GetCPUInverseMatrix(void) const override
+  GetCPUInverseMatrix() const override
   {
     return this->GetInverseMatrix();
   }
 
   /** Get CPU offset of an MatrixOffsetTransformBase. */
   const CPUOutputVectorType &
-  GetCPUOffset(void) const override
+  GetCPUOffset() const override
   {
     return this->GetOffset();
   }

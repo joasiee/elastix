@@ -43,7 +43,7 @@ AffineLogTransformElastix<TElastix>::AffineLogTransformElastix()
 
 template <class TElastix>
 void
-AffineLogTransformElastix<TElastix>::BeforeRegistration(void)
+AffineLogTransformElastix<TElastix>::BeforeRegistration()
 {
   elxout << "BeforeRegistration" << std::endl;
   /** Set center of rotation and initial translation. */
@@ -61,24 +61,22 @@ AffineLogTransformElastix<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-AffineLogTransformElastix<TElastix>::ReadFromFile(void)
+AffineLogTransformElastix<TElastix>::ReadFromFile()
 {
   elxout << "ReadFromFile" << std::endl;
   /** Variables. */
   InputPointType centerOfRotationPoint;
   centerOfRotationPoint.Fill(0.0);
-  bool pointRead = false;
 
   /** Try first to read the CenterOfRotationPoint from the
    * transform parameter file, this is the new, and preferred
    * way, since elastix 3.402.
    */
-  pointRead = this->ReadCenterOfRotationPoint(centerOfRotationPoint);
+  const bool pointRead = this->ReadCenterOfRotationPoint(centerOfRotationPoint);
 
   if (!pointRead)
   {
-    xl::xout["error"] << "ERROR: No center of rotation is specified in "
-                      << "the transform parameter file" << std::endl;
+    xl::xout["error"] << "ERROR: No center of rotation is specified in the transform parameter file" << std::endl;
     itkExceptionMacro(<< "Transform parameter file is corrupt.");
   }
 
@@ -100,7 +98,7 @@ AffineLogTransformElastix<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 auto
-AffineLogTransformElastix<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+AffineLogTransformElastix<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   const auto & itkTransform = *m_AffineLogTransform;
 
@@ -118,7 +116,7 @@ AffineLogTransformElastix<TElastix>::CreateDerivedTransformParametersMap(void) c
 
 template <class TElastix>
 void
-AffineLogTransformElastix<TElastix>::InitializeTransform(void)
+AffineLogTransformElastix<TElastix>::InitializeTransform()
 {
   elxout << "InitializeTransform" << std::endl;
   /** Set all parameters to zero (no rotations, no translation). */
@@ -166,8 +164,8 @@ AffineLogTransformElastix<TElastix>::InitializeTransform(void)
 
   if (centerGivenAsPoint)
   {
-    typedef itk::ContinuousIndex<double, SpaceDimension> ContinuousIndexType;
-    ContinuousIndexType                                  cindex;
+    using ContinuousIndexType = itk::ContinuousIndex<double, SpaceDimension>;
+    ContinuousIndexType cindex;
     CORPointInImage =
       this->m_Registration->GetAsITKBaseType()->GetFixedImage()->TransformPhysicalPointToContinuousIndex(
         centerOfRotationPoint, cindex);
@@ -176,15 +174,13 @@ AffineLogTransformElastix<TElastix>::InitializeTransform(void)
   /** Give a warning if necessary. */
   if (!CORIndexInImage && centerGivenAsIndex)
   {
-    xl::xout["warning"] << "WARNING: Center of Rotation (index) is not "
-                        << "within image boundaries!" << std::endl;
+    xl::xout["warning"] << "WARNING: Center of Rotation (index) is not within image boundaries!" << std::endl;
   }
 
   /** Give a warning if necessary. */
   if (!CORPointInImage && centerGivenAsPoint && !centerGivenAsIndex)
   {
-    xl::xout["warning"] << "WARNING: Center of Rotation (point) is not "
-                        << "within image boundaries!" << std::endl;
+    xl::xout["warning"] << "WARNING: Center of Rotation (point) is not within image boundaries!" << std::endl;
   }
 
   /** Check if user wants automatic transform initialization; false by default.
@@ -275,12 +271,12 @@ AffineLogTransformElastix<TElastix>::InitializeTransform(void)
 
 template <class TElastix>
 void
-AffineLogTransformElastix<TElastix>::SetScales(void)
+AffineLogTransformElastix<TElastix>::SetScales()
 {
   elxout << "SetScales" << std::endl;
   /** Create the new scales. */
-  const NumberOfParametersType N = this->GetNumberOfParameters();
-  ScalesType                   newscales(N);
+  const NumberOfParametersType numberOfParameters = this->GetNumberOfParameters();
+  ScalesType                   newscales(numberOfParameters);
   newscales.Fill(1.0);
 
   /** Always estimate scales automatically */
@@ -289,11 +285,11 @@ AffineLogTransformElastix<TElastix>::SetScales(void)
 
   std::size_t count = this->m_Configuration->CountNumberOfParameterEntries("Scales");
 
-  if (count == this->GetNumberOfParameters())
+  if (count == numberOfParameters)
   {
     /** Overrule the automatically estimated scales with the user-specified
      * scales. Values <= 0 are not used; the default is kept then. */
-    for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       double scale_i = -1.0;
       this->m_Configuration->ReadParameter(scale_i, "Scales", i);
@@ -309,8 +305,7 @@ AffineLogTransformElastix<TElastix>::SetScales(void)
      * An error is thrown, because using erroneous scales in the optimizer
      * can give unpredictable results.
      */
-    itkExceptionMacro(<< "ERROR: The Scales-option in the parameter-file"
-                      << " has not been set properly.");
+    itkExceptionMacro(<< "ERROR: The Scales-option in the parameter-file has not been set properly.");
   }
 
   elxout << "Scales for transform parameters are: " << newscales << std::endl;

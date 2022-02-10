@@ -39,16 +39,16 @@ main(int argc, char * argv[])
 {
   const unsigned int ImageDimension = 3; // 2
 
-  typedef float                                          InputPixelType;
-  typedef float                                          OutputPixelType;
-  typedef itk::GPUImage<InputPixelType, ImageDimension>  InputImageType;
-  typedef itk::GPUImage<OutputPixelType, ImageDimension> OutputImageType;
+  using InputPixelType = float;
+  using OutputPixelType = float;
+  using InputImageType = itk::GPUImage<InputPixelType, ImageDimension>;
+  using OutputImageType = itk::GPUImage<OutputPixelType, ImageDimension>;
 
-  typedef itk::RecursiveGaussianImageFilter<InputImageType, OutputImageType>    CPUFilterType;
-  typedef itk::GPURecursiveGaussianImageFilter<InputImageType, OutputImageType> GPUFilterType;
+  using CPUFilterType = itk::RecursiveGaussianImageFilter<InputImageType, OutputImageType>;
+  using GPUFilterType = itk::GPURecursiveGaussianImageFilter<InputImageType, OutputImageType>;
 
-  typedef itk::ImageFileReader<InputImageType>  ReaderType;
-  typedef itk::ImageFileWriter<OutputImageType> WriterType;
+  using ReaderType = itk::ImageFileReader<InputImageType>;
+  using WriterType = itk::ImageFileWriter<OutputImageType>;
 
   if (argc < 3)
   {
@@ -78,7 +78,7 @@ main(int argc, char * argv[])
   std::cout << std::showpoint << std::setprecision(4);
 
   // Reader
-  ReaderType::Pointer reader = ReaderType::New();
+  auto reader = ReaderType::New();
   reader->SetFileName(inputFileName);
   try
   {
@@ -94,7 +94,7 @@ main(int argc, char * argv[])
   itk::TimeProbe cputimer;
   itk::TimeProbe gputimer;
 
-  CPUFilterType::Pointer cpuFilter = CPUFilterType::New();
+  auto cpuFilter = CPUFilterType::New();
 
   // Test 1~n threads for CPU
   // Speed CPU vs GPU
@@ -116,7 +116,7 @@ main(int argc, char * argv[])
   }
 
   /** Write the CPU result. */
-  WriterType::Pointer writer = WriterType::New();
+  auto writer = WriterType::New();
   writer->SetInput(cpuFilter->GetOutput());
   writer->SetFileName(outputFileNameCPU.c_str());
   try
@@ -158,7 +158,7 @@ main(int argc, char * argv[])
             << cputimer.GetMean() / gputimer.GetMean();
 
   /** Write the GPU result. */
-  WriterType::Pointer gpuWriter = WriterType::New();
+  auto gpuWriter = WriterType::New();
   gpuWriter->SetInput(gpuFilter->GetOutput());
   gpuWriter->SetFileName(outputFileNameGPU.c_str());
   try

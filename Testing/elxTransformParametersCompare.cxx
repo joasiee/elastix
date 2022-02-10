@@ -37,11 +37,11 @@
  */
 
 std::string
-GetHelpString(void)
+GetHelpString()
 {
   std::stringstream ss;
-  ss << "Usage:" << std::endl
-     << "elxTransformParametersCompare" << std::endl
+  ss << "Usage:\n"
+     << "elxTransformParametersCompare\n"
      << "  -test      transform parameters file to test against baseline\n"
      << "  -base      baseline transform parameters filename\n"
      << "  [-mask]    mask image, only supported for the B-spline\n"
@@ -62,20 +62,20 @@ int
 main(int argc, char ** argv)
 {
   /** Typedefs. */
-  typedef itk::Image<float, ITK_TEST_DIMENSION_MAX>               CoefficientImageType;
-  typedef CoefficientImageType::RegionType                        RegionType;
-  typedef RegionType::SizeType                                    SizeType;
-  typedef RegionType::IndexType                                   IndexType;
-  typedef CoefficientImageType::SpacingType                       SpacingType;
-  typedef CoefficientImageType::PointType                         PointType;
-  typedef CoefficientImageType::PointType                         OriginType;
-  typedef CoefficientImageType::DirectionType                     DirectionType;
-  typedef itk::ImageRegionIteratorWithIndex<CoefficientImageType> IteratorType;
-  typedef itk::ImageFileWriter<CoefficientImageType>              WriterType;
+  using CoefficientImageType = itk::Image<float, ITK_TEST_DIMENSION_MAX>;
+  using RegionType = CoefficientImageType::RegionType;
+  using SizeType = RegionType::SizeType;
+  using IndexType = RegionType::IndexType;
+  using SpacingType = CoefficientImageType::SpacingType;
+  using PointType = CoefficientImageType::PointType;
+  using OriginType = CoefficientImageType::PointType;
+  using DirectionType = CoefficientImageType::DirectionType;
+  using IteratorType = itk::ImageRegionIteratorWithIndex<CoefficientImageType>;
+  using WriterType = itk::ImageFileWriter<CoefficientImageType>;
 
-  typedef itk::Image<unsigned char, ITK_TEST_DIMENSION_MAX> MaskImageType;
-  typedef itk::ImageFileReader<MaskImageType>               MaskReaderType;
-  typedef itk::ImageRegionIteratorWithIndex<MaskImageType>  MaskIteratorType;
+  using MaskImageType = itk::Image<unsigned char, ITK_TEST_DIMENSION_MAX>;
+  using MaskReaderType = itk::ImageFileReader<MaskImageType>;
+  using MaskIteratorType = itk::ImageRegionIteratorWithIndex<MaskImageType>;
 
   /** Create command line argument parser. */
   itk::CommandLineArgumentParser::Pointer parser = itk::CommandLineArgumentParser::New();
@@ -118,14 +118,14 @@ main(int argc, char ** argv)
   }
 
   /** Create parameter file reader. */
-  typedef itk::ParameterFileParser   ParserType;
-  typedef itk::ParameterMapInterface InterfaceType;
+  using ParserType = itk::ParameterFileParser;
+  using InterfaceType = itk::ParameterMapInterface;
 
-  typedef double ScalarType;
-  std::string    dummyErrorMessage = "";
+  using ScalarType = double;
+  std::string dummyErrorMessage = "";
 
-  ParserType::Pointer    parameterFileParser = ParserType::New();
-  InterfaceType::Pointer config = InterfaceType::New();
+  auto parameterFileParser = ParserType::New();
+  auto config = InterfaceType::New();
 
   /** Read test parameters. */
   parameterFileParser->SetParameterFileName(testFileName.c_str());
@@ -233,8 +233,8 @@ main(int argc, char ** argv)
     }
 
     /** Create the coefficient image. */
-    CoefficientImageType::Pointer coefImage = CoefficientImageType::New();
-    RegionType                    region;
+    auto       coefImage = CoefficientImageType::New();
+    RegionType region;
     region.SetSize(gridSize);
     region.SetIndex(gridIndex);
     coefImage->SetRegions(region);
@@ -248,7 +248,7 @@ main(int argc, char ** argv)
     MaskIteratorType       itM;
     if (!maskFileName.empty())
     {
-      MaskReaderType::Pointer maskReader = MaskReaderType::New();
+      auto maskReader = MaskReaderType::New();
       maskReader->SetFileName(maskFileName);
       maskReader->Update();
       maskImage = maskReader->GetOutput();
@@ -325,7 +325,7 @@ main(int argc, char ** argv)
     /** Write the difference image. */
     if (diffNormNormalized > 1e-10)
     {
-      WriterType::Pointer writer = WriterType::New();
+      auto writer = WriterType::New();
       writer->SetFileName(diffImageFileName);
       writer->SetInput(coefImage);
       try
@@ -341,8 +341,7 @@ main(int argc, char ** argv)
   } // end B-spline
 
   /** Print result to screen. */
-  std::cerr << "The norm of the difference between baseline and test "
-            << "transform parameters was computed, using\n"
+  std::cerr << "The norm of the difference between baseline and test transform parameters was computed, using\n"
             << "    || baseline - test ||\n"
             << "    ---------------------\n"
             << "       || baseline ||\n";

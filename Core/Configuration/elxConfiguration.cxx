@@ -20,6 +20,7 @@
 
 #include "elxConversion.h"
 #include "elxTransformIO.h"
+#include "elxTransformFactoryRegistration.h"
 
 namespace elastix
 {
@@ -94,13 +95,13 @@ Configuration::Configuration()
  */
 
 void
-Configuration::PrintParameterFile(void) const
+Configuration::PrintParameterFile() const
 {
   /** Read what's in the parameter file. */
   std::string params = this->m_ParameterFileParser->ReturnParameterFileAsString();
 
   /** Separate clearly in log-file. */
-  xl::xout["logonly"] << std::endl
+  xl::xout["logonly"] << '\n'
                       << "=============== start of ParameterFile: " << this->GetParameterFileName()
                       << " ===============" << std::endl;
 
@@ -109,7 +110,7 @@ Configuration::PrintParameterFile(void) const
   // std::cerr << params;
 
   /** Separate clearly in log-file. */
-  xl::xout["logonly"] << std::endl
+  xl::xout["logonly"] << '\n'
                       << "=============== end of ParameterFile: " << this->GetParameterFileName()
                       << " ===============\n"
                       << std::endl;
@@ -122,7 +123,7 @@ Configuration::PrintParameterFile(void) const
  */
 
 int
-Configuration::BeforeAll(void)
+Configuration::BeforeAll()
 {
   if (!BaseComponent::IsElastixLibrary())
   {
@@ -138,7 +139,7 @@ Configuration::BeforeAll(void)
  */
 
 int
-Configuration::BeforeAllTransformix(void)
+Configuration::BeforeAllTransformix()
 {
   this->PrintParameterFile();
   return 0;
@@ -153,6 +154,8 @@ Configuration::BeforeAllTransformix(void)
 int
 Configuration::Initialize(const CommandLineArgumentMapType & _arg)
 {
+  TransformFactoryRegistration::RegisterTransforms();
+
   /** The first part is getting the command line arguments and setting them
    * in the configuration. From the command line arguments we find the name
    * of the parameter text file. The second part is then to get and set the
@@ -192,8 +195,7 @@ Configuration::Initialize(const CommandLineArgumentMapType & _arg)
   else
   {
     /** Both "p" and "tp" are used, which is prohibited. */
-    xl::xout["error"] << "ERROR: Both \"-p\" and \"-tp\" are used, "
-                      << "which is prohibited." << std::endl;
+    xl::xout["error"] << "ERROR: Both \"-p\" and \"-tp\" are used, which is prohibited." << std::endl;
     return 1;
   }
 
@@ -237,6 +239,8 @@ int
 Configuration::Initialize(const CommandLineArgumentMapType &                _arg,
                           const ParameterFileParserType::ParameterMapType & inputMap)
 {
+  TransformFactoryRegistration::RegisterTransforms();
+
   /** The first part is getting the command line arguments and setting them
    * in the configuration. From the command line arguments we find the name
    * of the parameter text file. The second part is then to get and set the
@@ -268,7 +272,7 @@ Configuration::Initialize(const CommandLineArgumentMapType &                _arg
  */
 
 bool
-Configuration::IsInitialized(void) const
+Configuration::IsInitialized() const
 {
   return this->m_IsInitialized;
 

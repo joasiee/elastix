@@ -31,7 +31,7 @@ namespace elastix
 
 template <class TElastix>
 void
-MovingImagePyramidBase<TElastix>::BeforeRegistrationBase(void)
+MovingImagePyramidBase<TElastix>::BeforeRegistrationBase()
 {
   /** Call SetMovingSchedule.*/
   this->SetMovingSchedule();
@@ -45,7 +45,7 @@ MovingImagePyramidBase<TElastix>::BeforeRegistrationBase(void)
 
 template <class TElastix>
 void
-MovingImagePyramidBase<TElastix>::BeforeEachResolutionBase(void)
+MovingImagePyramidBase<TElastix>::BeforeEachResolutionBase()
 {
   /** What is the current resolution level? */
   const unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -90,7 +90,7 @@ MovingImagePyramidBase<TElastix>::BeforeEachResolutionBase(void)
 
 template <class TElastix>
 void
-MovingImagePyramidBase<TElastix>::SetMovingSchedule(void)
+MovingImagePyramidBase<TElastix>::SetMovingSchedule()
 {
   /** Get the ImageDimension. */
   const unsigned int MovingImageDimension = InputImageType::ImageDimension;
@@ -170,8 +170,8 @@ MovingImagePyramidBase<TElastix>::WritePyramidImage(const std::string &  filenam
   this->m_Configuration->ReadParameter(doCompression, "CompressResultImage", 0, false);
 
   /** Create writer. */
-  typedef itk::ImageFileCastWriter<OutputImageType> WriterType;
-  typename WriterType::Pointer                      writer = WriterType::New();
+  using WriterType = itk::ImageFileCastWriter<OutputImageType>;
+  auto writer = WriterType::New();
 
   /** Setup the pipeline. */
   writer->SetInput(this->GetAsITKBaseType()->GetOutput(level));

@@ -39,10 +39,10 @@ class ANNBinaryTreeCreator : public Object
 {
 public:
   /** Standard itk. */
-  typedef ANNBinaryTreeCreator     Self;
-  typedef Object                   Superclass;
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Self = ANNBinaryTreeCreator;
+  using Superclass = Object;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New method for creating an object using a factory. */
   itkNewMacro(Self);
@@ -52,12 +52,12 @@ public:
 
   /** ANN typedef's. */
   // typedef ANNpointSet     ANNTreeBaseType;
-  typedef ANNkd_tree    ANNkDTreeType;
-  typedef ANNbd_tree    ANNbdTreeType;
-  typedef ANNbruteForce ANNBruteForceTreeType;
-  typedef ANNpointArray ANNPointArrayType;
-  typedef ANNsplitRule  ANNSplitRuleType;
-  typedef ANNshrinkRule ANNShrinkRuleType;
+  using ANNkDTreeType = ANNkd_tree;
+  using ANNbdTreeType = ANNbd_tree;
+  using ANNBruteForceTreeType = ANNbruteForce;
+  using ANNPointArrayType = ANNpointArray;
+  using ANNSplitRuleType = ANNsplitRule;
+  using ANNShrinkRuleType = ANNshrinkRule;
 
   /** Static funtions to create and delete ANN trees.
    * We keep a reference count so that when no more trees
@@ -93,11 +93,11 @@ public:
 
   /** Static function to increase the reference count to ANN trees. */
   static void
-  IncreaseReferenceCount(void);
+  IncreaseReferenceCount();
 
   /** Static function to decrease the reference count to ANN trees. */
   static void
-  DecreaseReferenceCount(void);
+  DecreaseReferenceCount();
 
 protected:
   ANNBinaryTreeCreator() = default;

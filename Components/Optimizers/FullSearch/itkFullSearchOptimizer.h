@@ -47,10 +47,10 @@ class FullSearchOptimizer : public SingleValuedNonLinearOptimizer
 {
 public:
   /** Standard class typedefs. */
-  typedef FullSearchOptimizer            Self;
-  typedef SingleValuedNonLinearOptimizer Superclass;
-  typedef SmartPointer<Self>             Pointer;
-  typedef SmartPointer<const Self>       ConstPointer;
+  using Self = FullSearchOptimizer;
+  using Superclass = SingleValuedNonLinearOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -59,11 +59,11 @@ public:
   itkTypeMacro(FullSearchOptimizer, SingleValuedNonLinearOptimizer);
 
   /** Codes of stopping conditions */
-  typedef enum
+  enum StopConditionType
   {
     FullRangeSearched,
     MetricError
-  } StopConditionType;
+  };
 
   /* Typedefs inherited from superclass */
   using Superclass::ParametersType;
@@ -71,23 +71,23 @@ public:
   using Superclass::CostFunctionPointer;
   using Superclass::MeasureType;
 
-  typedef ParametersType::ValueType             ParameterValueType; // = double
-  typedef ParameterValueType                    RangeValueType;
-  typedef FixedArray<RangeValueType, 3>         RangeType;
-  typedef MapContainer<unsigned int, RangeType> SearchSpaceType;
-  typedef SearchSpaceType::Pointer              SearchSpacePointer;
-  typedef SearchSpaceType::ConstIterator        SearchSpaceIteratorType;
+  using ParameterValueType = ParametersType::ValueType; // = double
+  using RangeValueType = ParameterValueType;
+  using RangeType = FixedArray<RangeValueType, 3>;
+  using SearchSpaceType = MapContainer<unsigned int, RangeType>;
+  using SearchSpacePointer = SearchSpaceType::Pointer;
+  using SearchSpaceIteratorType = SearchSpaceType::ConstIterator;
 
   /** Type that stores the parameter values of the parameters to be optimized.
    * Updated every iteration. */
-  typedef Array<ParameterValueType> SearchSpacePointType;
+  using SearchSpacePointType = Array<ParameterValueType>;
 
   /** The same values, but transformed to integer indices.
    * These can be used to create an image visualizing the search space. */
-  typedef Array<IndexValueType> SearchSpaceIndexType;
+  using SearchSpaceIndexType = Array<IndexValueType>;
 
   /** The size of each dimension to be searched ((max-min)/step)) */
-  typedef Array<SizeValueType> SearchSpaceSizeType;
+  using SearchSpaceSizeType = Array<SizeValueType>;
 
   /** NB: The methods SetScales has no influence! */
 
@@ -131,25 +131,25 @@ public:
    * Then the appropriate parameters in the ParameterArray are updated.
    */
   virtual void
-  UpdateCurrentPosition(void);
+  UpdateCurrentPosition();
 
   /** Start optimization.
    * Make sure to set the initial position before starting the optimization
    */
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
   /** Resume previously stopped optimization with current parameters
    * \sa StopOptimization.
    */
   virtual void
-  ResumeOptimization(void);
+  ResumeOptimization();
 
   /** Stop optimization.
    * \sa ResumeOptimization
    */
   virtual void
-  StopOptimization(void);
+  StopOptimization();
 
   /**
    * Set/Get the SearchSpace, which is defined by a pointer to an
@@ -173,15 +173,15 @@ public:
 
   /** Get the total number of iterations = sizes[0]*sizes[1]*sizes[2]* etc..... */
   virtual unsigned long
-  GetNumberOfIterations(void);
+  GetNumberOfIterations();
 
   /** Get the Dimension of the SearchSpace. Calculated from the SearchSpace. */
   virtual unsigned int
-  GetNumberOfSearchSpaceDimensions(void);
+  GetNumberOfSearchSpaceDimensions();
 
   /** Returns an array containing trunc((max-min)/step) for each SearchSpaceDimension) */
   virtual const SearchSpaceSizeType &
-  GetSearchSpaceSize(void);
+  GetSearchSpaceSize();
 
   /** Convert an index to a full parameter array. Requires a valid InitialPosition! */
   virtual ParametersType
@@ -236,7 +236,7 @@ protected:
 
   unsigned long m_LastSearchSpaceChanges{ 0 };
   virtual void
-  ProcessSearchSpaceChanges(void);
+  ProcessSearchSpaceChanges();
 
 private:
   FullSearchOptimizer(const Self &) = delete;

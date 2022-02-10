@@ -214,7 +214,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeDeformationContribution(const
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::ComputeD(void)
+KernelTransform2<TScalarType, NDimensions>::ComputeD()
 {
   const unsigned long numberOfLandmarks = this->m_SourceLandmarks->GetNumberOfPoints();
 
@@ -241,7 +241,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeD(void)
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::ComputeWMatrix(void)
+KernelTransform2<TScalarType, NDimensions>::ComputeWMatrix()
 {
   /** Compute L and Y. */
   if (!this->m_LMatrixComputed)
@@ -299,7 +299,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeWMatrix(void)
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::ComputeLInverse(void)
+KernelTransform2<TScalarType, NDimensions>::ComputeLInverse()
 {
   if (!this->m_LMatrixComputed)
   {
@@ -331,7 +331,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeLInverse(void)
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::ComputeL(void)
+KernelTransform2<TScalarType, NDimensions>::ComputeL()
 {
   const unsigned long     numberOfLandmarks = this->m_SourceLandmarks->GetNumberOfPoints();
   vnl_matrix<TScalarType> O2(NDimensions * (NDimensions + 1), NDimensions * (NDimensions + 1), 0);
@@ -358,7 +358,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeL(void)
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::ComputeK(void)
+KernelTransform2<TScalarType, NDimensions>::ComputeK()
 {
   const unsigned long numberOfLandmarks = this->m_SourceLandmarks->GetNumberOfPoints();
   GMatrixType         G;
@@ -409,7 +409,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeK(void)
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::ComputeP(void)
+KernelTransform2<TScalarType, NDimensions>::ComputeP()
 {
   const unsigned long numberOfLandmarks = this->m_SourceLandmarks->GetNumberOfPoints();
   IMatrixType         I;
@@ -443,7 +443,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeP(void)
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::ComputeY(void)
+KernelTransform2<TScalarType, NDimensions>::ComputeY()
 {
   /** In ComputeD() the displacements are computed. */
   this->ComputeD();
@@ -477,7 +477,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeY(void)
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::ReorganizeW(void)
+KernelTransform2<TScalarType, NDimensions>::ReorganizeW()
 {
   const unsigned long numberOfLandmarks = this->m_SourceLandmarks->GetNumberOfPoints();
 
@@ -520,8 +520,8 @@ KernelTransform2<TScalarType, NDimensions>::ReorganizeW(void)
  */
 
 template <class TScalarType, unsigned int NDimensions>
-typename KernelTransform2<TScalarType, NDimensions>::OutputPointType
-KernelTransform2<TScalarType, NDimensions>::TransformPoint(const InputPointType & thisPoint) const
+auto
+KernelTransform2<TScalarType, NDimensions>::TransformPoint(const InputPointType & thisPoint) const -> OutputPointType
 {
   OutputPointType opp;
   opp.Fill(NumericTraits<typename OutputPointType::ValueType>::ZeroValue());
@@ -556,7 +556,7 @@ KernelTransform2<TScalarType, NDimensions>::TransformPoint(const InputPointType 
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::SetIdentity(void)
+KernelTransform2<TScalarType, NDimensions>::SetIdentity()
 {
   this->SetParameters(this->GetFixedParameters());
 } // end SetIdentity()
@@ -577,8 +577,8 @@ void
 KernelTransform2<TScalarType, NDimensions>::SetParameters(const ParametersType & parameters)
 {
   this->m_Parameters = parameters;
-  typename PointsContainer::Pointer landmarks = PointsContainer::New();
-  const unsigned int                numberOfLandmarks = parameters.Size() / NDimensions;
+  auto               landmarks = PointsContainer::New();
+  const unsigned int numberOfLandmarks = parameters.Size() / NDimensions;
   landmarks->Reserve(numberOfLandmarks);
 
   PointsIterator itr = landmarks->Begin();
@@ -622,8 +622,8 @@ template <class TScalarType, unsigned int NDimensions>
 void
 KernelTransform2<TScalarType, NDimensions>::SetFixedParameters(const ParametersType & parameters)
 {
-  typename PointsContainer::Pointer landmarks = PointsContainer::New();
-  const unsigned int                numberOfLandmarks = parameters.Size() / NDimensions;
+  auto               landmarks = PointsContainer::New();
+  const unsigned int numberOfLandmarks = parameters.Size() / NDimensions;
   landmarks->Reserve(numberOfLandmarks);
 
   PointsIterator itr = landmarks->Begin();
@@ -662,7 +662,7 @@ KernelTransform2<TScalarType, NDimensions>::SetFixedParameters(const ParametersT
 
 template <class TScalarType, unsigned int NDimensions>
 void
-KernelTransform2<TScalarType, NDimensions>::UpdateParameters(void)
+KernelTransform2<TScalarType, NDimensions>::UpdateParameters()
 {
   this->m_Parameters = ParametersType(this->m_TargetLandmarks->GetNumberOfPoints() * NDimensions);
 
@@ -689,8 +689,8 @@ KernelTransform2<TScalarType, NDimensions>::UpdateParameters(void)
  */
 
 template <class TScalarType, unsigned int NDimensions>
-const typename KernelTransform2<TScalarType, NDimensions>::ParametersType &
-KernelTransform2<TScalarType, NDimensions>::GetParameters(void) const
+auto
+KernelTransform2<TScalarType, NDimensions>::GetParameters() const -> const ParametersType &
 {
   return this->m_Parameters;
 } // end GetParameters()
@@ -700,8 +700,8 @@ KernelTransform2<TScalarType, NDimensions>::GetParameters(void) const
  */
 
 template <class TScalarType, unsigned int NDimensions>
-const typename KernelTransform2<TScalarType, NDimensions>::ParametersType &
-KernelTransform2<TScalarType, NDimensions>::GetFixedParameters(void) const
+auto
+KernelTransform2<TScalarType, NDimensions>::GetFixedParameters() const -> const ParametersType &
 {
   this->m_FixedParameters = ParametersType(this->m_SourceLandmarks->GetNumberOfPoints() * NDimensions);
   PointsIterator itr = this->m_SourceLandmarks->GetPoints()->Begin();

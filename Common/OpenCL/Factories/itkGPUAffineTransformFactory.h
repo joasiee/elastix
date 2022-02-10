@@ -37,10 +37,10 @@ template <typename NDimensions>
 class ITK_TEMPLATE_EXPORT GPUAffineTransformFactory2 : public GPUObjectFactoryBase<NDimensions>
 {
 public:
-  typedef GPUAffineTransformFactory2        Self;
-  typedef GPUObjectFactoryBase<NDimensions> Superclass;
-  typedef SmartPointer<Self>                Pointer;
-  typedef SmartPointer<const Self>          ConstPointer;
+  using Self = GPUAffineTransformFactory2;
+  using Superclass = GPUObjectFactoryBase<NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Return a descriptive string describing the factory. */
   const char *
@@ -62,7 +62,7 @@ public:
   /** Operator() to register override. */
   template <typename TType, unsigned int VImageDimension>
   void
-  operator()(void)
+  operator()()
   {
     this->RegisterOverride(typeid(AffineTransform<TType, VImageDimension>).name(),
                            typeid(GPUAffineTransform<TType, VImageDimension>).name(),
@@ -77,7 +77,7 @@ protected:
   virtual ~GPUAffineTransformFactory2() {}
 
   /** Typedef for real type list. */
-  typedef typelist::MakeTypeList<float, double>::Type RealTypeList;
+  using RealTypeList = typelist::MakeTypeList<float, double>::Type;
 
   /** Register methods for 1D. */
   virtual void

@@ -45,16 +45,19 @@ class ITK_TEMPLATE_EXPORT AdvancedBSplineDeformableTransformBase
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedBSplineDeformableTransformBase                   Self;
-  typedef AdvancedTransform<TScalarType, NDimensions, NDimensions> Superclass;
-  typedef SmartPointer<Self>                                       Pointer;
-  typedef SmartPointer<const Self>                                 ConstPointer;
+  using Self = AdvancedBSplineDeformableTransformBase;
+  using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(AdvancedBSplineDeformableTransformBase, AdvancedTransform);
 
   /** Dimension of the domain space. */
   itkStaticConstMacro(SpaceDimension, unsigned int, NDimensions);
+
+  /** The number of fixed parameters. For Grid size, origin, spacing, and direction. */
+  static constexpr unsigned int NumberOfFixedParameters = NDimensions * (NDimensions + 3);
 
   /** Typedefs from Superclass. */
   using typename Superclass::ParametersType;
@@ -82,6 +85,34 @@ public:
   using typename Superclass::InternalMatrixType;
   using typename Superclass::MovingImageGradientType;
   using typename Superclass::MovingImageGradientValueType;
+
+  /* Creates a `BSplineDeformableTransform` of the specified derived type and spline order. */
+  template <template <class, unsigned, unsigned> class TBSplineDeformableTransform>
+  static Pointer
+  Create(const unsigned splineOrder)
+  {
+    switch (splineOrder)
+    {
+      case 1: {
+        return TBSplineDeformableTransform<TScalarType, NDimensions, 1>::New();
+      }
+      case 2: {
+        return TBSplineDeformableTransform<TScalarType, NDimensions, 2>::New();
+      }
+      case 3: {
+        return TBSplineDeformableTransform<TScalarType, NDimensions, 3>::New();
+      }
+    }
+    itkGenericExceptionMacro(<< "ERROR: The provided spline order (" << splineOrder << ") is not supported.");
+  }
+
+
+  unsigned
+  GetSplineOrder() const
+  {
+    return m_SplineOrder;
+  }
+
 
   /** This method sets the parameters of the transform.
    * For a B-spline deformation transform, the parameters are the BSpline
@@ -150,21 +181,21 @@ public:
    *  the values get modified when the user invokes SetIdentity().
    */
   void
-  SetIdentity(void);
+  SetIdentity();
 
   /** Get the Transformation Parameters. */
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** Get the Transformation Fixed Parameters. */
   const FixedParametersType &
-  GetFixedParameters(void) const override;
+  GetFixedParameters() const override;
 
   /** Parameters as SpaceDimension number of images. */
-  typedef typename ParametersType::ValueType     PixelType;
-  typedef Image<PixelType, Self::SpaceDimension> ImageType;
-  typedef typename ImageType::IndexType          ImageIndexType;
-  typedef typename ImageType::Pointer            ImagePointer;
+  using PixelType = typename ParametersType::ValueType;
+  using ImageType = Image<PixelType, Self::SpaceDimension>;
+  using ImagePointer = typename ImageType::Pointer;
+  using ImageIndexType = typename ImageType::IndexType;
 
   typedef TScalarType                                 FixedPixelType;
   typedef Image<FixedPixelType, Self::SpaceDimension> FixedImageType;
@@ -173,7 +204,7 @@ public:
 
   /** Get the array of coefficient images. */
   virtual const ImagePointer *
-  GetCoefficientImages(void) const
+  GetCoefficientImages() const
   {
     return this->m_CoefficientImages;
   }
@@ -193,14 +224,14 @@ public:
   SetCoefficientImages(ImagePointer images[]);
 
   /** Typedefs for specifying the extend to the grid. */
-  typedef ImageRegion<Self::SpaceDimension> RegionType;
+  using RegionType = ImageRegion<Self::SpaceDimension>;
 
-  typedef typename RegionType::IndexType    IndexType;
-  typedef typename RegionType::SizeType     SizeType;
-  typedef typename ImageType::SpacingType   SpacingType;
-  typedef typename ImageType::DirectionType DirectionType;
-  typedef typename ImageType::PointType     OriginType;
-  typedef IndexType                         GridOffsetType;
+  using IndexType = typename RegionType::IndexType;
+  using SizeType = typename RegionType::SizeType;
+  using SpacingType = typename ImageType::SpacingType;
+  using DirectionType = typename ImageType::DirectionType;
+  using OriginType = typename ImageType::PointType;
+  using GridOffsetType = IndexType;
 
   /** This method specifies the region over which the grid resides. */
   virtual void
@@ -227,7 +258,7 @@ public:
   itkGetConstMacro(GridOrigin, OriginType);
 
   /** Parameter index array type. */
-  typedef Array<unsigned long> ParameterIndexArrayType;
+  using ParameterIndexArrayType = Array<unsigned long>;
 
   /** Method to transform a vector -
    *  not applicable for this type of transform.
@@ -261,11 +292,11 @@ public:
 
   /** Return the number of parameters that completely define the Transform. */
   NumberOfParametersType
-  GetNumberOfParameters(void) const override;
+  GetNumberOfParameters() const override;
 
   /** Return the number of parameters per dimension */
   virtual NumberOfParametersType
-  GetNumberOfParametersPerDimension(void) const;
+  GetNumberOfParametersPerDimension() const;
 
   /** Return the region of the grid wholly within the support region */
   itkGetConstReferenceMacro(ValidRegion, RegionType);
@@ -276,7 +307,7 @@ public:
    *           T( a*P + b*Q ) = a * T(P) + b * T(Q)
    */
   bool
-  IsLinear(void) const override
+  IsLinear() const override
   {
     return false;
   }
@@ -285,41 +316,41 @@ public:
    *  e.g. an affine transform, or a local one, e.g. a deformation field.
    */
   TransformCategoryEnum
-  GetTransformCategory(void) const override
+  GetTransformCategory() const override
   {
     return TransformCategoryEnum::BSpline;
   }
 
+  /** Wrap flat array into images of coefficients. */
+  void
+  WrapAsImages();
 
   virtual unsigned int
-  GetNumberOfAffectedWeights(void) const = 0;
+  GetNumberOfAffectedWeights() const = 0;
 
   NumberOfParametersType
-  GetNumberOfNonZeroJacobianIndices(void) const override = 0;
+  GetNumberOfNonZeroJacobianIndices() const override = 0;
 
   /** This typedef should be equal to the typedef used
    * in derived classes based on the weights function.
    */
-  typedef ContinuousIndex<ScalarType, SpaceDimension> ContinuousIndexType;
-
-  /** Wrap flat array into images of coefficients. */
-  void
-  WrapAsImages(void);
+  using ContinuousIndexType = ContinuousIndex<ScalarType, SpaceDimension>;
 
 protected:
   /** Print contents of an AdvancedBSplineDeformableTransformBase. */
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
 
-  AdvancedBSplineDeformableTransformBase();
-  ~AdvancedBSplineDeformableTransformBase() override;
+  AdvancedBSplineDeformableTransformBase() = delete;
+  explicit AdvancedBSplineDeformableTransformBase(const unsigned splineOrder);
+  ~AdvancedBSplineDeformableTransformBase() override = default;
 
   /** Convert an input point to a continuous index inside the B-spline grid. */
-  void
-  TransformPointToContinuousGridIndex(const InputPointType & point, ContinuousIndexType & index) const;
+  ContinuousIndexType
+  TransformPointToContinuousGridIndex(const InputPointType & point) const;
 
   void
-  UpdatePointIndexConversions(void);
+  UpdatePointIndexConversions();
 
   virtual void
   ComputeNonZeroJacobianIndices(NonZeroJacobianIndicesType & nonZeroJacobianIndices,
@@ -329,17 +360,21 @@ protected:
   virtual bool
   InsideValidRegion(const ContinuousIndexType & index) const;
 
+private:
+  const unsigned m_SplineOrder;
+
+protected:
   /** Array of images representing the B-spline coefficients
    *  in each dimension.
    */
   ImagePointer m_CoefficientImages[NDimensions];
 
   /** Variables defining the coefficient grid extend. */
-  RegionType     m_GridRegion;
-  SpacingType    m_GridSpacing;
-  DirectionType  m_GridDirection;
-  OriginType     m_GridOrigin;
-  GridOffsetType m_GridOffsetTable;
+  RegionType     m_GridRegion{};
+  SpacingType    m_GridSpacing{ 1.0 }; // default spacing is all ones
+  DirectionType  m_GridDirection{ DirectionType::GetIdentity() };
+  OriginType     m_GridOrigin{};
+  GridOffsetType m_GridOffsetTable{};
 
   DirectionType                                     m_PointToIndexMatrix;
   SpatialJacobianType                               m_PointToIndexMatrix2;
@@ -358,15 +393,12 @@ protected:
   ContinuousIndexType m_ValidRegionBegin;
   ContinuousIndexType m_ValidRegionEnd;
 
-  /** Odd or even order B-spline. */
-  bool m_SplineOrderOdd;
-
   /** Keep a pointer to the input parameters. */
   const ParametersType * m_InputParametersPointer;
 
   /** Jacobian as SpaceDimension number of images. */
-  typedef typename JacobianType::ValueType               JacobianPixelType;
-  typedef Image<JacobianPixelType, Self::SpaceDimension> JacobianImageType;
+  using JacobianPixelType = typename JacobianType::ValueType;
+  using JacobianImageType = Image<JacobianPixelType, Self::SpaceDimension>;
 
   typename JacobianImageType::Pointer m_JacobianImage[NDimensions];
 
@@ -382,7 +414,7 @@ protected:
   ParametersType m_InternalParametersBuffer;
 
   void
-  UpdateGridOffsetTable(void);
+  UpdateGridOffsetTable();
 
 private:
   AdvancedBSplineDeformableTransformBase(const Self &) = delete;

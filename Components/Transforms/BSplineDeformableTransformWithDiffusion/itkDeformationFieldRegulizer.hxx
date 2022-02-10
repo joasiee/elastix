@@ -44,13 +44,13 @@ DeformationFieldRegulizer<TAnyITKTransform>::DeformationFieldRegulizer()
 
 template <class TAnyITKTransform>
 void
-DeformationFieldRegulizer<TAnyITKTransform>::InitializeDeformationFields(void)
+DeformationFieldRegulizer<TAnyITKTransform>::InitializeDeformationFields()
 {
   /** Initialize this->m_IntermediaryDeformationFieldTransform. */
   this->m_IntermediaryDeformationFieldTransform = IntermediaryDFTransformType::New();
 
   /** Initialize this->m_IntermediaryDeformationField. */
-  typename VectorImageType::Pointer intermediaryDeformationField = VectorImageType::New();
+  auto intermediaryDeformationField = VectorImageType::New();
   intermediaryDeformationField->SetRegions(this->m_DeformationFieldRegion);
   intermediaryDeformationField->SetSpacing(this->m_DeformationFieldSpacing);
   intermediaryDeformationField->SetOrigin(this->m_DeformationFieldOrigin);

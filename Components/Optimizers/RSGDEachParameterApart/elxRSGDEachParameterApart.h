@@ -75,11 +75,11 @@ class ITK_TEMPLATE_EXPORT RSGDEachParameterApart
 {
 public:
   /** Standard ITK.*/
-  typedef RSGDEachParameterApart          Self;
-  typedef RSGDEachParameterApartOptimizer Superclass1;
-  typedef OptimizerBase<TElastix>         Superclass2;
-  typedef itk::SmartPointer<Self>         Pointer;
-  typedef itk::SmartPointer<const Self>   ConstPointer;
+  using Self = RSGDEachParameterApart;
+  using Superclass1 = RSGDEachParameterApartOptimizer;
+  using Superclass2 = OptimizerBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -104,26 +104,26 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Typedef for the ParametersType. */
   using typename Superclass1::ParametersType;
 
   /** Methods that have to be present everywhere.*/
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
   void
-  AfterEachResolution(void) override;
+  AfterEachResolution() override;
 
   void
-  AfterEachIteration(void) override;
+  AfterEachIteration() override;
 
   void
-  AfterRegistration(void) override;
+  AfterRegistration() override;
 
   /** Override the SetInitialPosition.
    * Override the implementation in itkOptimizer.h, to

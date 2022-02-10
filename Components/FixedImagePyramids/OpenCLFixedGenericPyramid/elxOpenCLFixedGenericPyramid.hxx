@@ -88,7 +88,7 @@ OpenCLFixedGenericPyramid<TElastix>::OpenCLFixedGenericPyramid()
 
 template <class TElastix>
 void
-OpenCLFixedGenericPyramid<TElastix>::BeforeGenerateData(void)
+OpenCLFixedGenericPyramid<TElastix>::BeforeGenerateData()
 {
   // Local GPU input image
   GPUInputImagePointer gpuInputImage;
@@ -144,7 +144,7 @@ OpenCLFixedGenericPyramid<TElastix>::BeforeGenerateData(void)
 
 template <class TElastix>
 void
-OpenCLFixedGenericPyramid<TElastix>::GenerateData(void)
+OpenCLFixedGenericPyramid<TElastix>::GenerateData()
 {
   if (!this->m_ContextCreated || !this->m_GPUPyramidCreated || !this->m_UseOpenCL || !this->m_GPUPyramidReady)
   {
@@ -176,8 +176,7 @@ OpenCLFixedGenericPyramid<TElastix>::GenerateData(void)
     itk::OpenCLLogger::Pointer logger = itk::OpenCLLogger::GetInstance();
     logger->Write(itk::LoggerBase::PriorityLevelEnum::CRITICAL, e.GetDescription());
 
-    xl::xout["error"] << "ERROR: OpenCL program has not been compiled"
-                      << " during updating GPU fixed pyramid calculation." << std::endl
+    xl::xout["error"] << "ERROR: OpenCL program has not been compiled during updating GPU fixed pyramid calculation.\n"
                       << "  Please check the '" << logger->GetLogFileName() << "' in output directory." << std::endl;
     computedUsingOpenCL = false;
   }
@@ -218,28 +217,28 @@ OpenCLFixedGenericPyramid<TElastix>::GenerateData(void)
 
 template <class TElastix>
 void
-OpenCLFixedGenericPyramid<TElastix>::RegisterFactories(void)
+OpenCLFixedGenericPyramid<TElastix>::RegisterFactories()
 {
   // Typedefs for factories
-  typedef itk::GPUImageFactory2<OpenCLImageTypes, OpenCLImageDimentions> ImageFactoryType;
-  typedef itk::GPURecursiveGaussianImageFilterFactory2<OpenCLImageTypes, OpenCLImageTypes, OpenCLImageDimentions>
-                                                                                                     RecursiveGaussianFactoryType;
-  typedef itk::GPUCastImageFilterFactory2<OpenCLImageTypes, OpenCLImageTypes, OpenCLImageDimentions> CastFactoryType;
-  typedef itk::GPUShrinkImageFilterFactory2<OpenCLImageTypes, OpenCLImageTypes, OpenCLImageDimentions>
-    ShrinkFactoryType;
-  typedef itk::GPUResampleImageFilterFactory2<OpenCLImageTypes, OpenCLImageTypes, OpenCLImageDimentions>
-                                                                                                  ResampleFactoryType;
-  typedef itk::GPUIdentityTransformFactory2<OpenCLImageDimentions>                                IdentityFactoryType;
-  typedef itk::GPULinearInterpolateImageFunctionFactory2<OpenCLImageTypes, OpenCLImageDimentions> LinearFactoryType;
+  using ImageFactoryType = itk::GPUImageFactory2<OpenCLImageTypes, OpenCLImageDimentions>;
+  using RecursiveGaussianFactoryType =
+    itk::GPURecursiveGaussianImageFilterFactory2<OpenCLImageTypes, OpenCLImageTypes, OpenCLImageDimentions>;
+  using CastFactoryType = itk::GPUCastImageFilterFactory2<OpenCLImageTypes, OpenCLImageTypes, OpenCLImageDimentions>;
+  using ShrinkFactoryType =
+    itk::GPUShrinkImageFilterFactory2<OpenCLImageTypes, OpenCLImageTypes, OpenCLImageDimentions>;
+  using ResampleFactoryType =
+    itk::GPUResampleImageFilterFactory2<OpenCLImageTypes, OpenCLImageTypes, OpenCLImageDimentions>;
+  using IdentityFactoryType = itk::GPUIdentityTransformFactory2<OpenCLImageDimentions>;
+  using LinearFactoryType = itk::GPULinearInterpolateImageFunctionFactory2<OpenCLImageTypes, OpenCLImageDimentions>;
 
   // Create factories
-  typename ImageFactoryType::Pointer             imageFactory = ImageFactoryType::New();
-  typename RecursiveGaussianFactoryType::Pointer recursiveFactory = RecursiveGaussianFactoryType::New();
-  typename CastFactoryType::Pointer              castFactory = CastFactoryType::New();
-  typename ShrinkFactoryType::Pointer            shrinkFactory = ShrinkFactoryType::New();
-  typename ResampleFactoryType::Pointer          resampleFactory = ResampleFactoryType::New();
-  typename IdentityFactoryType::Pointer          identityFactory = IdentityFactoryType::New();
-  typename LinearFactoryType::Pointer            linearFactory = LinearFactoryType::New();
+  auto imageFactory = ImageFactoryType::New();
+  auto recursiveFactory = RecursiveGaussianFactoryType::New();
+  auto castFactory = CastFactoryType::New();
+  auto shrinkFactory = ShrinkFactoryType::New();
+  auto resampleFactory = ResampleFactoryType::New();
+  auto identityFactory = IdentityFactoryType::New();
+  auto linearFactory = LinearFactoryType::New();
 
   // Register factories
   itk::ObjectFactoryBase::RegisterFactory(imageFactory);
@@ -268,7 +267,7 @@ OpenCLFixedGenericPyramid<TElastix>::RegisterFactories(void)
 
 template <class TElastix>
 void
-OpenCLFixedGenericPyramid<TElastix>::UnregisterFactories(void)
+OpenCLFixedGenericPyramid<TElastix>::UnregisterFactories()
 {
   for (std::vector<ObjectFactoryBasePointer>::iterator it = this->m_Factories.begin(); it != this->m_Factories.end();
        ++it)
@@ -285,7 +284,7 @@ OpenCLFixedGenericPyramid<TElastix>::UnregisterFactories(void)
 
 template <class TElastix>
 void
-OpenCLFixedGenericPyramid<TElastix>::BeforeRegistration(void)
+OpenCLFixedGenericPyramid<TElastix>::BeforeRegistration()
 {
   // Are we using a OpenCL enabled GPU for pyramid?
   this->m_UseOpenCL = true;
@@ -300,7 +299,7 @@ OpenCLFixedGenericPyramid<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-OpenCLFixedGenericPyramid<TElastix>::ReadFromFile(void)
+OpenCLFixedGenericPyramid<TElastix>::ReadFromFile()
 {
   // OpenCL pyramid specific.
   this->m_UseOpenCL = true;
@@ -338,7 +337,7 @@ OpenCLFixedGenericPyramid<TElastix>::SwitchingToCPUAndReport(const bool configEr
 
 template <class TElastix>
 void
-OpenCLFixedGenericPyramid<TElastix>::ReportToLog(void)
+OpenCLFixedGenericPyramid<TElastix>::ReportToLog()
 {
   itk::OpenCLContext::Pointer context = itk::OpenCLContext::GetInstance();
   itk::OpenCLDevice           device = context->GetDefaultDevice();

@@ -60,7 +60,7 @@ PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::PatternIntensityI
 
 template <class TFixedImage, class TMovingImage>
 void
-PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
+PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
 {
   Superclass::Initialize();
 
@@ -72,8 +72,8 @@ PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
   }
   else
   {
-    itkExceptionMacro(<< "ERROR: the NormalizedGradientCorrelationImageToImageMetric is currently "
-                      << "only suitable for 2D-3D registration.\n"
+    itkExceptionMacro(<< "ERROR: the NormalizedGradientCorrelationImageToImageMetric is currently only suitable for "
+                         "2D-3D registration.\n"
                       << "  Therefore it expects an interpolator of type RayCastInterpolator.");
   }
   this->m_TransformMovingImageFilter->SetInterpolator(this->m_Interpolator);
@@ -126,8 +126,8 @@ PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::PrintSelf(std::os
  */
 
 template <class TFixedImage, class TMovingImage>
-typename PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::ComputePIFixed() const
+auto
+PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::ComputePIFixed() const -> MeasureType
 {
   MeasureType measure = NumericTraits<MeasureType>::Zero;
   MeasureType diff = NumericTraits<MeasureType>::Zero;
@@ -151,7 +151,7 @@ PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::ComputePIFixed() 
   iterationRegion.SetIndex(iterationStartIndex);
   iterationRegion.SetSize(iterationSize);
 
-  typedef itk::ImageRegionConstIteratorWithIndex<FixedImageType> FixedImageTypeIteratorType;
+  using FixedImageTypeIteratorType = itk::ImageRegionConstIteratorWithIndex<FixedImageType>;
 
   FixedImageTypeIteratorType fixedImageIt(this->m_FixedImage, iterationRegion);
   fixedImageIt.GoToBegin();
@@ -219,9 +219,9 @@ PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::ComputePIFixed() 
  */
 
 template <class TFixedImage, class TMovingImage>
-typename PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::ComputePIDiff(const TransformParametersType & parameters,
-                                                                             float scalingfactor) const
+                                                                             float scalingfactor) const -> MeasureType
 {
   /** Call non-thread-safe stuff, such as:
    *   this->SetTransformParameters( parameters );
@@ -264,7 +264,7 @@ PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::ComputePIDiff(con
   iterationRegion.SetIndex(iterationStartIndex);
   iterationRegion.SetSize(iterationSize);
 
-  typedef itk::ImageRegionConstIteratorWithIndex<TransformedMovingImageType> DifferenceImageIteratorType;
+  using DifferenceImageIteratorType = itk::ImageRegionConstIteratorWithIndex<TransformedMovingImageType>;
   DifferenceImageIteratorType differenceImageIt(this->m_DifferenceImageFilter->GetOutput(), iterationRegion);
   differenceImageIt.GoToBegin();
 
@@ -330,9 +330,9 @@ PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::ComputePIDiff(con
  */
 
 template <class TFixedImage, class TMovingImage>
-typename PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 PatternIntensityImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   /** Call non-thread-safe stuff, such as:
    *   this->SetTransformParameters( parameters );

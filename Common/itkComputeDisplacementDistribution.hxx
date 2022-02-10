@@ -21,9 +21,9 @@
 #include "itkComputeDisplacementDistribution.h"
 
 #include <string>
-#include "vnl/vnl_math.h"
-#include "vnl/vnl_fastops.h"
-#include "vnl/vnl_diag_matrix.h"
+#include <vnl/vnl_math.h>
+#include <vnl/vnl_fastops.h>
+#include <vnl/vnl_diag_matrix.h>
 
 #include "itkImageScanlineIterator.h"
 #include "itkImageSliceIteratorWithIndex.h"
@@ -80,7 +80,7 @@ ComputeDisplacementDistribution<TFixedImage, TTransform>::~ComputeDisplacementDi
 
 template <class TFixedImage, class TTransform>
 void
-ComputeDisplacementDistribution<TFixedImage, TTransform>::InitializeThreadingParameters(void)
+ComputeDisplacementDistribution<TFixedImage, TTransform>::InitializeThreadingParameters()
 {
   /** Resize and initialize the threading related parameters.
    * The SetSize() functions do not resize the data when this is not
@@ -104,9 +104,9 @@ ComputeDisplacementDistribution<TFixedImage, TTransform>::InitializeThreadingPar
   /** Some initialization. */
   for (ThreadIdType i = 0; i < numberOfThreads; ++i)
   {
-    this->m_ComputePerThreadVariables[i].st_MaxJJ = NumericTraits<double>::Zero;
-    this->m_ComputePerThreadVariables[i].st_Displacement = NumericTraits<double>::Zero;
-    this->m_ComputePerThreadVariables[i].st_DisplacementSquared = NumericTraits<double>::Zero;
+    this->m_ComputePerThreadVariables[i].st_MaxJJ = 0.0;
+    this->m_ComputePerThreadVariables[i].st_Displacement = 0.0;
+    this->m_ComputePerThreadVariables[i].st_DisplacementSquared = 0.0;
     this->m_ComputePerThreadVariables[i].st_NumberOfPixelsCounted = NumericTraits<SizeValueType>::Zero;
   }
 
@@ -139,14 +139,14 @@ ComputeDisplacementDistribution<TFixedImage, TTransform>::ComputeSingleThreaded(
   const SizeValueType nrofsamples = sampleContainer->Size();
 
   /** Get the number of parameters. */
-  const unsigned int P = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
+  const unsigned int numberOfParameters = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
 
   /** Get scales vector */
   const ScalesType & scales = this->GetScales();
   this->m_ScaledCostFunction->SetScales(scales);
 
   /** Get the exact gradient. */
-  this->m_ExactGradient = DerivativeType(P);
+  this->m_ExactGradient = DerivativeType(numberOfParameters);
   this->m_ExactGradient.Fill(0.0);
   this->GetScaledDerivative(mu, this->m_ExactGradient);
 
@@ -314,7 +314,7 @@ ComputeDisplacementDistribution<TFixedImage, TTransform>::BeforeThreadedCompute(
 
 template <class TFixedImage, class TTransform>
 void
-ComputeDisplacementDistribution<TFixedImage, TTransform>::LaunchComputeThreaderCallback(void) const
+ComputeDisplacementDistribution<TFixedImage, TTransform>::LaunchComputeThreaderCallback() const
 {
   /** Setup threader. */
   this->m_Threader->SetSingleMethod(this->ComputeThreaderCallback,
@@ -524,14 +524,14 @@ ComputeDisplacementDistribution<TFixedImage, TTransform>::ComputeUsingSearchDire
   const SizeValueType nrofsamples = sampleContainer->Size();
 
   /** Get the number of parameters. */
-  const unsigned int P = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
+  const unsigned int numberOfParameters = static_cast<unsigned int>(this->m_Transform->GetNumberOfParameters());
 
   /** Get scales vector */
   const ScalesType & scales = this->GetScales();
   this->m_ScaledCostFunction->SetScales(scales);
 
   /** Get the exact gradient. */
-  DerivativeType exactgradient(P);
+  DerivativeType exactgradient(numberOfParameters);
   exactgradient = mu;
 
   /** Get transform and set current position. */

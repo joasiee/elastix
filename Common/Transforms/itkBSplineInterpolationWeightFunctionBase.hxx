@@ -47,7 +47,7 @@ BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>
 
 template <class TCoordRep, unsigned int VSpaceDimension, unsigned int VSplineOrder>
 void
-BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>::InitializeSupport(void)
+BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>::InitializeSupport()
 {
   /** Initialize support region. */
   this->m_SupportSize.Fill(SplineOrder + 1);
@@ -68,17 +68,17 @@ BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>
 
 template <class TCoordRep, unsigned int VSpaceDimension, unsigned int VSplineOrder>
 void
-BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>::InitializeOffsetToIndexTable(void)
+BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>::InitializeOffsetToIndexTable()
 {
   /** Create a temporary image. */
-  typedef Image<char, SpaceDimension> CharImageType;
-  typename CharImageType::Pointer     tempImage = CharImageType::New();
+  using CharImageType = Image<char, SpaceDimension>;
+  auto tempImage = CharImageType::New();
   tempImage->SetRegions(this->m_SupportSize);
   tempImage->Allocate();
 
   /** Create an iterator over the image. */
-  typedef ImageRegionConstIteratorWithIndex<CharImageType> IteratorType;
-  IteratorType                                             it(tempImage, tempImage->GetBufferedRegion());
+  using IteratorType = ImageRegionConstIteratorWithIndex<CharImageType>;
+  IteratorType it(tempImage, tempImage->GetBufferedRegion());
   it.GoToBegin();
 
   /** Fill the OffsetToIndexTable. */
@@ -113,9 +113,7 @@ BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>
   os << indent << "NumberOfWeights: " << this->m_NumberOfWeights << std::endl;
   os << indent << "SupportSize: " << this->m_SupportSize << std::endl;
   os << indent << "OffsetToIndexTable: " << this->m_OffsetToIndexTable << std::endl;
-  os << indent << "Kernel: " << this->m_Kernel.GetPointer() << std::endl;
   os << indent << "DerivativeKernel: " << this->m_DerivativeKernel.GetPointer() << std::endl;
-  os << indent << "SecondOrderDerivativeKernel: " << this->m_SecondOrderDerivativeKernel.GetPointer() << std::endl;
 
 } // end PrintSelf()
 
@@ -145,9 +143,9 @@ BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>
  */
 
 template <class TCoordRep, unsigned int VSpaceDimension, unsigned int VSplineOrder>
-typename BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>::WeightsType
+auto
 BSplineInterpolationWeightFunctionBase<TCoordRep, VSpaceDimension, VSplineOrder>::Evaluate(
-  const ContinuousIndexType & cindex) const
+  const ContinuousIndexType & cindex) const -> WeightsType
 {
   /** Construct arguments for the Evaluate function that really does the work. */
   WeightsType weights(this->m_NumberOfWeights);

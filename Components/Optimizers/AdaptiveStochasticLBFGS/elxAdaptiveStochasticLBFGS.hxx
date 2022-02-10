@@ -95,7 +95,7 @@ AdaptiveStochasticLBFGS<TElastix>::AdaptiveStochasticLBFGS()
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::BeforeRegistration(void)
+AdaptiveStochasticLBFGS<TElastix>::BeforeRegistration()
 {
   /** Add the target cell "stepsize" to IterationInfo. */
   this->AddTargetCellToIterationInfo("2:Metric");
@@ -122,7 +122,7 @@ AdaptiveStochasticLBFGS<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::BeforeEachResolution(void)
+AdaptiveStochasticLBFGS<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
@@ -347,7 +347,7 @@ AdaptiveStochasticLBFGS<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::AfterEachIteration(void)
+AdaptiveStochasticLBFGS<TElastix>::AfterEachIteration()
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->GetValue();
@@ -371,16 +371,16 @@ AdaptiveStochasticLBFGS<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::AfterEachResolution(void)
+AdaptiveStochasticLBFGS<TElastix>::AfterEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
   /**
-   * typedef enum {
+   * enum StopConditionType {
    *   MaximumNumberOfIterations,
    *   MetricError,
-   *   MinimumStepSize } StopConditionType;
+   *   MinimumStepSize };
    */
   std::string stopcondition;
 
@@ -440,12 +440,12 @@ AdaptiveStochasticLBFGS<TElastix>::AfterEachResolution(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::AfterRegistration(void)
+AdaptiveStochasticLBFGS<TElastix>::AfterRegistration()
 {
   /** Print the best metric value. */
 
   double bestValue = this->GetValue();
-  elxout << std::endl << "Final metric value  = " << bestValue << std::endl;
+  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
 
   elxout << "Settings of " << this->elxGetClassName() << " for all resolutions:" << std::endl;
   this->PrintSettingsVector(this->m_SettingsVector);
@@ -459,7 +459,7 @@ AdaptiveStochasticLBFGS<TElastix>::AfterRegistration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::StartOptimization(void)
+AdaptiveStochasticLBFGS<TElastix>::StartOptimization()
 {
   /** Reset some variables */
   this->m_CurrentT = 0;
@@ -518,7 +518,7 @@ AdaptiveStochasticLBFGS<TElastix>::StartOptimization(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::LBFGSUpdate(void)
+AdaptiveStochasticLBFGS<TElastix>::LBFGSUpdate()
 {
   itkDebugMacro("LBFGSUpdate");
 
@@ -548,7 +548,7 @@ AdaptiveStochasticLBFGS<TElastix>::LBFGSUpdate(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::AdvanceOneStep(void)
+AdaptiveStochasticLBFGS<TElastix>::AdvanceOneStep()
 {
   itkDebugMacro("AdvanceOneStep");
 
@@ -579,7 +579,7 @@ AdaptiveStochasticLBFGS<TElastix>::AdvanceOneStep(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::StopOptimization(void)
+AdaptiveStochasticLBFGS<TElastix>::StopOptimization()
 {
   itkDebugMacro("StopOptimization");
 
@@ -594,7 +594,7 @@ AdaptiveStochasticLBFGS<TElastix>::StopOptimization(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::ResumeOptimization(void)
+AdaptiveStochasticLBFGS<TElastix>::ResumeOptimization()
 {
   /** The following code relies on the fact that all
    * components have been set up and that the initial
@@ -863,7 +863,7 @@ AdaptiveStochasticLBFGS<TElastix>::MetricErrorResponse(itk::ExceptionObject & er
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimation(void)
+AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimation()
 {
   /** Setup timers. */
   itk::TimeProbe timer1;
@@ -909,7 +909,7 @@ AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimation(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimationOriginal(void)
+AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimationOriginal()
 {
   itk::TimeProbe timer2, timer3;
 
@@ -926,16 +926,15 @@ AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimationOriginal(void)
   this->GetRegistration()->GetAsITKBaseType()->GetModifiableTransform()->SetParameters(this->GetCurrentPosition());
 
   /** Cast to advanced metric type. */
-  typedef typename ElastixType::MetricBaseType::AdvancedMetricType MetricType;
+  using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
   MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
   if (!testPtr)
   {
-    itkExceptionMacro(<< "ERROR: AdaptiveStochasticLBFGS expects "
-                      << "the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(<< "ERROR: AdaptiveStochasticLBFGS expects the metric to be of type AdvancedImageToImageMetric!");
   }
 
   /** Construct computeJacobianTerms to initialize the parameter estimation. */
-  typename ComputeJacobianTermsType::Pointer computeJacobianTerms = ComputeJacobianTermsType::New();
+  auto computeJacobianTerms = ComputeJacobianTermsType::New();
   computeJacobianTerms->SetFixedImage(testPtr->GetFixedImage());
   computeJacobianTerms->SetFixedImageRegion(testPtr->GetFixedImageRegion());
   computeJacobianTerms->SetFixedImageMask(testPtr->GetFixedImageMask());
@@ -1053,7 +1052,7 @@ AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimationOriginal(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimationUsingDisplacementDistribution(void)
+AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimationUsingDisplacementDistribution()
 {
   itk::TimeProbe timer4, timer5;
 
@@ -1065,12 +1064,11 @@ AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimationUsingDisplacement
   double       maxJJ = 0;
 
   /** Cast to advanced metric type. */
-  typedef typename ElastixType::MetricBaseType::AdvancedMetricType MetricType;
+  using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
   MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
   if (!testPtr)
   {
-    itkExceptionMacro(<< "ERROR: AdaptiveStochasticLBFGS expects "
-                      << "the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(<< "ERROR: AdaptiveStochasticLBFGS expects the metric to be of type AdvancedImageToImageMetric!");
   }
 
   /** Construct computeJacobianTerms to initialize the parameter estimation. */
@@ -1166,7 +1164,7 @@ AdaptiveStochasticLBFGS<TElastix>::AutomaticParameterEstimationUsingDisplacement
 
 template <class TElastix>
 void
-AdaptiveStochasticLBFGS<TElastix>::AutomaticLBFGSStepsizeEstimation(void)
+AdaptiveStochasticLBFGS<TElastix>::AutomaticLBFGSStepsizeEstimation()
 {
   /** Get current position to start the parameter estimation. */
   this->GetRegistration()->GetAsITKBaseType()->GetModifiableTransform()->SetParameters(this->GetCurrentPosition());
@@ -1176,12 +1174,11 @@ AdaptiveStochasticLBFGS<TElastix>::AutomaticLBFGSStepsizeEstimation(void)
   double       maxJJ = 0;
 
   /** Cast to advanced metric type. */
-  typedef typename ElastixType::MetricBaseType::AdvancedMetricType MetricType;
+  using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
   MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
   if (!testPtr)
   {
-    itkExceptionMacro(<< "ERROR: AdaptiveStochasticLBFGS expects "
-                      << "the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(<< "ERROR: AdaptiveStochasticLBFGS expects the metric to be of type AdvancedImageToImageMetric!");
   }
 
   /** Construct computeJacobianTerms to initialize the parameter estimation. */
@@ -1300,8 +1297,9 @@ AdaptiveStochasticLBFGS<TElastix>::SampleGradients(const ParametersType & mu0,
           {
             if (this->GetUseAdaptiveStepSizes())
             {
-              xl::xout["warning"] << "WARNING: UseAdaptiveStepSizes is turned off, "
-                                  << "because UseRandomSampleRegion is set to \"true\"." << std::endl;
+              xl::xout["warning"]
+                << "WARNING: UseAdaptiveStepSizes is turned off, because UseRandomSampleRegion is set to \"true\"."
+                << std::endl;
               this->SetUseAdaptiveStepSizes(false);
             }
           }
@@ -1597,8 +1595,8 @@ AdaptiveStochasticLBFGS<TElastix>::ComputeSearchDirection(const DerivativeType &
   itkDebugMacro("ComputeSearchDirection");
 
   /** Assumes m_Rho, m_S, and m_Y are up-to-date at m_PreviousPoint */
-  typedef itk::Array<double> AlphaType;
-  AlphaType                  alpha(this->m_LBFGSMemory);
+  using AlphaType = itk::Array<double>;
+  AlphaType alpha(this->m_LBFGSMemory);
 
   const unsigned int numberOfParameters = gradient.GetSize();
 

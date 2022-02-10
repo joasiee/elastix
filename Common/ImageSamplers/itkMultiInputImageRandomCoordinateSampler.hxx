@@ -19,7 +19,7 @@
 #define itkMultiInputImageRandomCoordinateSampler_hxx
 
 #include "itkMultiInputImageRandomCoordinateSampler.h"
-#include "vnl/vnl_inverse.h"
+#include <vnl/vnl_inverse.h>
 #include "itkConfigure.h"
 
 namespace itk
@@ -33,7 +33,7 @@ template <class TInputImage>
 MultiInputImageRandomCoordinateSampler<TInputImage>::MultiInputImageRandomCoordinateSampler()
 {
   /** Set the default interpolator. */
-  typename DefaultInterpolatorType::Pointer bsplineInterpolator = DefaultInterpolatorType::New();
+  auto bsplineInterpolator = DefaultInterpolatorType::New();
   bsplineInterpolator->SetSplineOrder(3);
   this->m_Interpolator = bsplineInterpolator;
 
@@ -52,13 +52,13 @@ MultiInputImageRandomCoordinateSampler<TInputImage>::MultiInputImageRandomCoordi
 
 template <class TInputImage>
 void
-MultiInputImageRandomCoordinateSampler<TInputImage>::GenerateData(void)
+MultiInputImageRandomCoordinateSampler<TInputImage>::GenerateData()
 {
   /** Check. */
   if (!this->CheckInputImageRegions())
   {
-    itkExceptionMacro(<< "ERROR: at least one of the InputImageRegions "
-                      << "is not a subregion of the LargestPossibleRegion");
+    itkExceptionMacro(
+      << "ERROR: at least one of the InputImageRegions is not a subregion of the LargestPossibleRegion");
   }
 
   /** Get handles to the input image, output sample container, and mask. */
@@ -134,8 +134,8 @@ MultiInputImageRandomCoordinateSampler<TInputImage>::GenerateData(void)
           typename ImageSampleContainerType::iterator stlend = sampleContainer->end();
           stlnow += iter.Index();
           sampleContainer->erase(stlnow, stlend);
-          itkExceptionMacro(<< "Could not find enough image samples within "
-                            << "reasonable time. Probably the mask is too small");
+          itkExceptionMacro(
+            << "Could not find enough image samples within reasonable time. Probably the mask is too small");
         }
 
         /** Generate a point in the input image region. */
@@ -172,10 +172,10 @@ MultiInputImageRandomCoordinateSampler<TInputImage>::GenerateSampleRegion(
     itkExceptionMacro(<< "ERROR: The number of regions should be 1 or the number of inputs.");
   }
 
-  typedef typename InputImageType::DirectionType DirectionType;
-  DirectionType                                  dir0 = this->GetInput(0)->GetDirection();
-  typename DirectionType::InternalMatrixType     dir0invtemp = vnl_inverse(dir0.GetVnlMatrix());
-  DirectionType                                  dir0inv(dir0invtemp);
+  using DirectionType = typename InputImageType::DirectionType;
+  DirectionType                              dir0 = this->GetInput(0)->GetDirection();
+  typename DirectionType::InternalMatrixType dir0invtemp = vnl_inverse(dir0.GetVnlMatrix());
+  DirectionType                              dir0inv(dir0invtemp);
   for (unsigned int i = 1; i < numberOfInputs; ++i)
   {
     DirectionType diri = this->GetInput(i)->GetDirection();
@@ -234,8 +234,8 @@ MultiInputImageRandomCoordinateSampler<TInputImage>::GenerateSampleRegion(
   if (this->GetUseRandomSampleRegion())
   {
     /** Convert sampleRegionSize to continuous index space */
-    typedef typename InputImageContinuousIndexType::VectorType CIndexVectorType;
-    CIndexVectorType                                           sampleRegionSize;
+    using CIndexVectorType = typename InputImageContinuousIndexType::VectorType;
+    CIndexVectorType sampleRegionSize;
     for (unsigned int i = 0; i < InputImageDimension; ++i)
     {
       sampleRegionSize[i] = this->GetSampleRegionSize()[i] / this->GetInput()->GetSpacing()[i];

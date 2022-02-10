@@ -48,13 +48,13 @@ ErodeMaskImageFilter<TImage>::ErodeMaskImageFilter()
 
 template <class TImage>
 void
-ErodeMaskImageFilter<TImage>::GenerateData(void)
+ErodeMaskImageFilter<TImage>::GenerateData()
 {
   /** Typedefs. */
   // typedef itk::ThresholdImageFilter<InputImageType> ThresholdFilterType;
-  typedef itk::ParabolicErodeImageFilter<InputImageType, OutputImageType> ErodeFilterType;
-  typedef typename ErodeFilterType::RadiusType                            RadiusType;
-  typedef typename ErodeFilterType::ScalarRealType                        ScalarRealType;
+  using ErodeFilterType = itk::ParabolicErodeImageFilter<InputImageType, OutputImageType>;
+  using RadiusType = typename ErodeFilterType::RadiusType;
+  using ScalarRealType = typename ErodeFilterType::ScalarRealType;
 
   /** Get the correct radius. */
   RadiusType     radiusarray;
@@ -79,13 +79,13 @@ ErodeMaskImageFilter<TImage>::GenerateData(void)
 
   /** Threshold the data first. Every voxel with intensity >= 1 is used.
   // Not needed since IsInside of a mask checks for != 0.
-  typename ThresholdFilterType::Pointer threshold = ThresholdFilterType::New();
+  auto threshold = ThresholdFilterType::New();
   threshold->ThresholdAbove(  itk::NumericTraits<InputPixelType>::OneValue() );
   threshold->SetOutsideValue( itk::NumericTraits<InputPixelType>::OneValue() );
   threshold->SetInput( this->GetInput() ); */
 
   /** Create and run the erosion filter. */
-  typename ErodeFilterType::Pointer erosion = ErodeFilterType::New();
+  auto erosion = ErodeFilterType::New();
   erosion->SetUseImageSpacing(false);
   erosion->SetScale(radiusarray);
   // erosion->SetInput( threshold->GetOutput() );

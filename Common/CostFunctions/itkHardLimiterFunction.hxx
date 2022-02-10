@@ -19,14 +19,14 @@
 #define itkHardLimiterFunction_hxx
 
 #include "itkHardLimiterFunction.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
 
 template <class TInput, unsigned int NDimension>
-typename HardLimiterFunction<TInput, NDimension>::OutputType
-HardLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input) const
+auto
+HardLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input) const -> OutputType
 {
   OutputType output = std::min(static_cast<OutputType>(input), this->m_UpperBound);
   return (std::max(output, this->m_LowerBound));
@@ -34,8 +34,9 @@ HardLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input) const
 
 
 template <class TInput, unsigned int NDimension>
-typename HardLimiterFunction<TInput, NDimension>::OutputType
+auto
 HardLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input, DerivativeType & derivative) const
+  -> OutputType
 {
   if (input > this->m_UpperBound)
   {

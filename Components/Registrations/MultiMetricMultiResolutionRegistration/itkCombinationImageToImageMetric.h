@@ -32,7 +32,7 @@ namespace itk
  *
  * NB: while it may seem not logical that the SetInterpolator(arg)
  * sets the interpolator in all submetrics whereas the
- * GetInterpolator(void) returns GetInterpolator(0) it is logical.
+ * GetInterpolator() returns GetInterpolator(0) it is logical.
  * If you set the interpolator the same in all metrics, you will
  * receive the correct interpolator with GetInterpolator(0).
  * If you set the interpolator differently in all metrics, the most
@@ -60,10 +60,10 @@ class ITK_TEMPLATE_EXPORT CombinationImageToImageMetric : public AdvancedImageTo
 {
 public:
   /** Standard class typedefs. */
-  typedef CombinationImageToImageMetric                         Self;
-  typedef AdvancedImageToImageMetric<TFixedImage, TMovingImage> Superclass;
-  typedef SmartPointer<Self>                                    Pointer;
-  typedef SmartPointer<const Self>                              ConstPointer;
+  using Self = CombinationImageToImageMetric;
+  using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(CombinationImageToImageMetric, AdvancedImageToImageMetric);
@@ -85,8 +85,8 @@ public:
   // using typename Superclass::FixedImagePointer;
   using typename Superclass::FixedImageConstPointer;
   using typename Superclass::FixedImageRegionType;
-  typedef typename Superclass::AdvancedTransformType TransformType;
-  typedef typename TransformType::Pointer            TransformPointer;
+  using TransformType = typename Superclass::AdvancedTransformType;
+  using TransformPointer = typename TransformType::Pointer;
   using typename Superclass::InputPointType;
   using typename Superclass::OutputPointType;
   using typename Superclass::TransformParametersType;
@@ -126,35 +126,33 @@ public:
   */
 
   /** Typedefs for the metrics. */
-  typedef Superclass                                     ImageMetricType;
-  typedef typename ImageMetricType::Pointer              ImageMetricPointer;
-  typedef SingleValuedCostFunction                       SingleValuedCostFunctionType;
-  typedef typename SingleValuedCostFunctionType::Pointer SingleValuedCostFunctionPointer;
+  using ImageMetricType = Superclass;
+  using ImageMetricPointer = typename ImageMetricType::Pointer;
+  using SingleValuedCostFunctionType = SingleValuedCostFunction;
+  using SingleValuedCostFunctionPointer = typename SingleValuedCostFunctionType::Pointer;
 
-  typedef typename FixedImageType::PixelType             FixedImagePixelType;
-  typedef typename MovingImageType::RegionType           MovingImageRegionType;
-  typedef FixedArray<double, Self::MovingImageDimension> MovingImageDerivativeScalesType;
+  using FixedImagePixelType = typename FixedImageType::PixelType;
+  using MovingImageRegionType = typename MovingImageType::RegionType;
+  using MovingImageDerivativeScalesType = FixedArray<double, Self::MovingImageDimension>;
 
   /** Typedef for the PointSetMetric. */
-  typedef PointSet<CoordinateRepresentationType,
-                   TFixedImage::ImageDimension,
-                   DefaultStaticMeshTraits<CoordinateRepresentationType,
-                                           TFixedImage::ImageDimension,
-                                           TFixedImage::ImageDimension,
-                                           CoordinateRepresentationType,
-                                           CoordinateRepresentationType,
-                                           CoordinateRepresentationType>>
-    FixedPointSetType;
-  typedef PointSet<CoordinateRepresentationType,
-                   TMovingImage::ImageDimension,
-                   DefaultStaticMeshTraits<CoordinateRepresentationType,
-                                           TMovingImage::ImageDimension,
-                                           TMovingImage::ImageDimension,
-                                           CoordinateRepresentationType,
-                                           CoordinateRepresentationType,
-                                           CoordinateRepresentationType>>
-                                                                                      MovingPointSetType;
-  typedef SingleValuedPointSetToPointSetMetric<FixedPointSetType, MovingPointSetType> PointSetMetricType;
+  using FixedPointSetType = PointSet<CoordinateRepresentationType,
+                                     TFixedImage::ImageDimension,
+                                     DefaultStaticMeshTraits<CoordinateRepresentationType,
+                                                             TFixedImage::ImageDimension,
+                                                             TFixedImage::ImageDimension,
+                                                             CoordinateRepresentationType,
+                                                             CoordinateRepresentationType,
+                                                             CoordinateRepresentationType>>;
+  using MovingPointSetType = PointSet<CoordinateRepresentationType,
+                                      TMovingImage::ImageDimension,
+                                      DefaultStaticMeshTraits<CoordinateRepresentationType,
+                                                              TMovingImage::ImageDimension,
+                                                              TMovingImage::ImageDimension,
+                                                              CoordinateRepresentationType,
+                                                              CoordinateRepresentationType,
+                                                              CoordinateRepresentationType>>;
+  using PointSetMetricType = SingleValuedPointSetToPointSetMetric<FixedPointSetType, MovingPointSetType>;
 
   /** Typedefs for multi-threading. */
   using typename Superclass::ThreaderType;
@@ -212,7 +210,7 @@ public:
 
   /** Use all metrics. */
   void
-  SetUseAllMetrics(void);
+  SetUseAllMetrics();
 
   /** Get if this metric is used. */
   bool
@@ -263,7 +261,7 @@ public:
 
   /** Return Transform 0 */
   const TransformType *
-  GetTransform(void) const override
+  GetTransform() const override
   {
     return this->GetTransform(0);
   }
@@ -285,7 +283,7 @@ public:
 
   /** Return Interpolator 0 */
   const InterpolatorType *
-  GetInterpolator(void) const override
+  GetInterpolator() const override
   {
     return this->GetInterpolator(0);
   }
@@ -307,7 +305,7 @@ public:
 
   /** Return FixedImage 0 */
   const FixedImageType *
-  GetFixedImage(void) const override
+  GetFixedImage() const override
   {
     return this->GetFixedImage(0);
   }
@@ -329,7 +327,7 @@ public:
 
   /** Return FixedImageMask 0 */
   const FixedImageMaskType *
-  GetFixedImageMask(void) const override
+  GetFixedImageMask() const override
   {
     return this->GetFixedImageMask(0);
   }
@@ -351,7 +349,7 @@ public:
 
   /** Return FixedImageRegion 0 */
   const FixedImageRegionType &
-  GetFixedImageRegion(void) const override
+  GetFixedImageRegion() const override
   {
     return this->GetFixedImageRegion(0);
   }
@@ -373,7 +371,7 @@ public:
 
   /** Return MovingImage 0 */
   const MovingImageType *
-  GetMovingImage(void) const override
+  GetMovingImage() const override
   {
     return this->GetMovingImage(0);
   }
@@ -395,7 +393,7 @@ public:
 
   /** Return MovingImageMask 0 */
   const MovingImageMaskType *
-  GetMovingImageMask(void) const override
+  GetMovingImageMask() const override
   {
     return this->GetMovingImageMask(0);
   }
@@ -405,11 +403,11 @@ public:
    * of pixels counted by all metrics.
    */
   const SizeValueType &
-  GetNumberOfPixelsCounted(void) const override;
+  GetNumberOfPixelsCounted() const override;
 
   /** Pass initialization to all sub metrics. */
   void
-  Initialize(void) override;
+  Initialize() override;
 
   void
   InitPartialEvaluations(int ** sets, int * set_length, int length) override;
@@ -477,7 +475,7 @@ private:
    * here we use other parameters.
    */
   void
-  InitializeThreadingParameters(void) const override;
+  InitializeThreadingParameters() const override;
 
   /** Compute the current metric weight, given the user selected
    * strategy and derivative magnitude.

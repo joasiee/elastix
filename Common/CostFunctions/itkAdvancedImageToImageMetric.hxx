@@ -47,46 +47,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AdvancedImageToImageMetri
    */
   this->SetComputeGradient(false);
 
-  this->m_ImageSampler = nullptr;
-  this->m_UseImageSampler = false;
-  this->m_RequiredRatioOfValidSamples = 0.25;
-
-  this->m_LinearInterpolator = nullptr;
-  this->m_BSplineInterpolator = nullptr;
-  this->m_BSplineInterpolatorFloat = nullptr;
-  this->m_ReducedBSplineInterpolator = nullptr;
-  this->m_InterpolatorIsLinear = false;
-  this->m_InterpolatorIsBSpline = false;
-  this->m_InterpolatorIsBSplineFloat = false;
-  this->m_InterpolatorIsReducedBSpline = false;
-  this->m_CentralDifferenceGradientFilter = nullptr;
-
-  this->m_AdvancedTransform = nullptr;
-  this->m_TransformIsAdvanced = false;
-  this->m_TransformIsBSpline = false;
-  this->m_UseMovingImageDerivativeScales = false;
-  this->m_ScaleGradientWithRespectToMovingImageOrientation = false;
-  this->m_MovingImageDerivativeScales.Fill(1.0);
-
-  this->m_FixedImageLimiter = nullptr;
-  this->m_MovingImageLimiter = nullptr;
-  this->m_UseFixedImageLimiter = false;
-  this->m_UseMovingImageLimiter = false;
-  this->m_FixedLimitRangeRatio = 0.01;
-  this->m_MovingLimitRangeRatio = 0.01;
-  this->m_FixedImageTrueMin = NumericTraits<FixedImagePixelType>::Zero;
-  this->m_FixedImageTrueMax = NumericTraits<FixedImagePixelType>::One;
-  this->m_MovingImageTrueMin = NumericTraits<MovingImagePixelType>::Zero;
-  this->m_MovingImageTrueMax = NumericTraits<MovingImagePixelType>::One;
-  this->m_FixedImageMinLimit = NumericTraits<FixedImageLimiterOutputType>::Zero;
-  this->m_FixedImageMaxLimit = NumericTraits<FixedImageLimiterOutputType>::One;
-  this->m_MovingImageMinLimit = NumericTraits<MovingImageLimiterOutputType>::Zero;
-  this->m_MovingImageMaxLimit = NumericTraits<MovingImageLimiterOutputType>::One;
-
-  /** Threading related variables. */
-  this->m_UseMetricSingleThreaded = true;
-  this->m_UseMultiThread = false;
-
   /** OpenMP related. Switch to on when available */
 #ifdef ELASTIX_USE_OPENMP
   this->m_UseOpenMP = true;
@@ -100,25 +60,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AdvancedImageToImageMetri
   /** Initialize the m_ThreaderMetricParameters. */
   this->m_ThreaderMetricParameters.st_Metric = this;
 
-  // Multi-threading structs
-  this->m_GetValuePerThreadVariables = nullptr;
-  this->m_GetValuePerThreadVariablesSize = 0;
-  this->m_GetValueAndDerivativePerThreadVariables = nullptr;
-  this->m_GetValueAndDerivativePerThreadVariablesSize = 0;
-
 } // end Constructor
-
-
-/**
- * ********************* Destructor ****************************
- */
-
-template <class TFixedImage, class TMovingImage>
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::~AdvancedImageToImageMetric()
-{
-  delete[] this->m_GetValuePerThreadVariables;
-  delete[] this->m_GetValueAndDerivativePerThreadVariables;
-} // end Destructor
 
 
 /**
@@ -146,7 +88,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::SetNumberOfWorkUnits(Thre
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
 {
   /** Initialize transform, interpolator, etc. */
   Superclass::Initialize();
@@ -170,6 +112,15 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
   if (this->m_UseMultiThread)
   {
     this->InitializeThreadingParameters();
+
+    const auto setNumberOfWorkUnitsIfNotNull = [this](const auto bsplineInterpolator) {
+      if (!bsplineInterpolator.IsNull())
+      {
+        bsplineInterpolator->SetNumberOfWorkUnits(this->Superclass::GetNumberOfWorkUnits());
+      }
+    };
+    setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolator);
+    setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolatorFloat);
   }
 
 } // end Initialize()
@@ -181,7 +132,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters(void) const
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters() const
 {
   const ThreadIdType numberOfThreads = Self::GetNumberOfWorkUnits();
 
@@ -198,16 +149,15 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParame
   /** Only resize the array of structs when needed. */
   if (this->m_GetValuePerThreadVariablesSize != numberOfThreads)
   {
-    delete[] this->m_GetValuePerThreadVariables;
-    this->m_GetValuePerThreadVariables = new AlignedGetValuePerThreadStruct[numberOfThreads];
+    this->m_GetValuePerThreadVariables.reset(new AlignedGetValuePerThreadStruct[numberOfThreads]);
     this->m_GetValuePerThreadVariablesSize = numberOfThreads;
   }
 
   /** Only resize the array of structs when needed. */
   if (this->m_GetValueAndDerivativePerThreadVariablesSize != numberOfThreads)
   {
-    delete[] this->m_GetValueAndDerivativePerThreadVariables;
-    this->m_GetValueAndDerivativePerThreadVariables = new AlignedGetValueAndDerivativePerThreadStruct[numberOfThreads];
+    this->m_GetValueAndDerivativePerThreadVariables.reset(
+      new AlignedGetValueAndDerivativePerThreadStruct[numberOfThreads]);
     this->m_GetValueAndDerivativePerThreadVariablesSize = numberOfThreads;
   }
 
@@ -233,7 +183,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParame
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeLimiters(void)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeLimiters()
 {
   /** Set up fixed limiter. */
   if (this->GetUseFixedImageLimiter())
@@ -246,8 +196,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeLimiters(void)
     itk::TimeProbe timer;
     timer.Start();
 
-    typedef typename itk::ComputeImageExtremaFilter<FixedImageType> ComputeFixedImageExtremaFilterType;
-    typename ComputeFixedImageExtremaFilterType::Pointer            computeFixedImageExtrema =
+    using ComputeFixedImageExtremaFilterType = typename itk::ComputeImageExtremaFilter<FixedImageType>;
+    typename ComputeFixedImageExtremaFilterType::Pointer computeFixedImageExtrema =
       ComputeFixedImageExtremaFilterType::New();
     computeFixedImageExtrema->SetInput(this->GetFixedImage());
     computeFixedImageExtrema->SetImageRegion(this->GetFixedImageRegion());
@@ -301,8 +251,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeLimiters(void)
     itk::TimeProbe timer;
     timer.Start();
 
-    typedef typename itk::ComputeImageExtremaFilter<MovingImageType> ComputeMovingImageExtremaFilterType;
-    typename ComputeMovingImageExtremaFilterType::Pointer            computeMovingImageExtrema =
+    using ComputeMovingImageExtremaFilterType = typename itk::ComputeImageExtremaFilter<MovingImageType>;
+    typename ComputeMovingImageExtremaFilterType::Pointer computeMovingImageExtrema =
       ComputeMovingImageExtremaFilterType::New();
     computeMovingImageExtrema->SetInput(this->GetMovingImage());
     computeMovingImageExtrema->SetImageRegion(this->GetMovingImage()->GetBufferedRegion());
@@ -353,7 +303,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeLimiters(void)
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeImageSampler(void)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeImageSampler()
 {
   if (this->GetUseImageSampler())
   {
@@ -367,6 +317,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeImageSampler(vo
     this->m_ImageSampler->SetInput(this->m_FixedImage);
     this->m_ImageSampler->SetMask(this->m_FixedImageMask);
     this->m_ImageSampler->SetInputImageRegion(this->GetFixedImageRegion());
+    this->m_ImageSampler->Update();
+    this->SetNumberOfFixedImageSamples(this->m_ImageSampler->GetOutput()->Size());
   }
 
 } // end InitializeImageSampler()
@@ -378,7 +330,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeImageSampler(vo
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForBSplineInterpolator(void)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForBSplineInterpolator()
 {
   /** Check if the interpolator is of type BSplineInterpolateImageFunction,
    * or of type AdvancedLinearInterpolateImageFunction.
@@ -462,8 +414,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForBSplineInterpolat
      * For more details see the post about "2D/3D registration memory issue" in
      * elastix's mailing list (2 July 2012).
      */
-    typedef itk::AdvancedRayCastInterpolateImageFunction<MovingImageType, CoordinateRepresentationType>
-               RayCastInterpolatorType;
+    using RayCastInterpolatorType =
+      itk::AdvancedRayCastInterpolateImageFunction<MovingImageType, CoordinateRepresentationType>;
     const bool interpolatorIsRayCast =
       dynamic_cast<RayCastInterpolatorType *>(this->m_Interpolator.GetPointer()) != nullptr;
 
@@ -492,7 +444,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForBSplineInterpolat
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForAdvancedTransform(void)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForAdvancedTransform()
 {
   /** Check if the transform is of type AdvancedTransform. */
   this->m_TransformIsAdvanced = false;
@@ -519,7 +471,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForAdvancedTransform
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForBSplineTransform(void) const
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForBSplineTransform() const
 {
   /** Check if this transform is a combo transform. */
   CombinationTransformType * testPtr_combo =
@@ -560,15 +512,17 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckForBSplineTransform(
 
 
 /**
- * ******************* EvaluateMovingImageValueAndDerivative ******************
+ * ******************* EvaluateMovingImageValueAndDerivativeWithOptionalThreadId ******************
  */
 
 template <class TFixedImage, class TMovingImage>
+template <typename... TOptionalThreadId>
 bool
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueAndDerivative(
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueAndDerivativeWithOptionalThreadId(
   const MovingImagePointType & mappedPoint,
   RealType &                   movingImageValue,
-  MovingImageDerivativeType *  gradient) const
+  MovingImageDerivativeType *  gradient,
+  const TOptionalThreadId... optionalThreadId) const
 {
   /** Check if mapped point inside image buffer. */
   MovingImageContinuousIndexType cindex;
@@ -582,13 +536,14 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueA
       if (this->m_InterpolatorIsBSpline && !this->GetComputeGradient())
       {
         /** Compute moving image value and gradient using the B-spline kernel. */
-        this->m_BSplineInterpolator->EvaluateValueAndDerivativeAtContinuousIndex(cindex, movingImageValue, *gradient);
+        this->m_BSplineInterpolator->EvaluateValueAndDerivativeAtContinuousIndex(
+          cindex, movingImageValue, *gradient, optionalThreadId...);
       }
       else if (this->m_InterpolatorIsBSplineFloat && !this->GetComputeGradient())
       {
         /** Compute moving image value and gradient using the B-spline kernel. */
         this->m_BSplineInterpolatorFloat->EvaluateValueAndDerivativeAtContinuousIndex(
-          cindex, movingImageValue, *gradient);
+          cindex, movingImageValue, *gradient, optionalThreadId...);
       }
       else if (this->m_InterpolatorIsReducedBSpline && !this->GetComputeGradient())
       {
@@ -636,7 +591,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueA
            * and post rotation by the direction cosines of the moving image.
            * First the gradient is rotated backwards to a standardized axis.
            */
-          typedef typename MovingImageType::DirectionType::InternalMatrixType InternalMatrixType;
+          using InternalMatrixType = typename MovingImageType::DirectionType::InternalMatrixType;
           const InternalMatrixType M = this->GetMovingImage()->GetDirection().GetVnlMatrix();
           vnl_vector<double>       rotated_gradient_vnl = M.transpose() * gradient->GetVnlVector();
 
@@ -665,7 +620,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueA
 
   return sampleOk;
 
-} // end EvaluateMovingImageValueAndDerivative()
+} // end EvaluateMovingImageValueAndDerivativeWithOptionalThreadId()
 
 
 /**
@@ -679,8 +634,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateTransformJacobian
   const MovingImageDerivativeType & movingImageDerivative,
   DerivativeType &                  imageJacobian) const
 {
-  typedef typename TransformJacobianType::const_iterator JacobianIteratorType;
-  typedef typename DerivativeType::iterator              DerivativeIteratorType;
+  using JacobianIteratorType = typename TransformJacobianType::const_iterator;
 
   /** Multiple the 1-by-dim vector movingImageDerivative with the
    * dim-by-length matrix jacobian, to get a 1-by-length vector imageJacobian.
@@ -710,17 +664,14 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateTransformJacobian
     /** Otherwise perform a full multiplication. */
     JacobianIteratorType jac = jacobian.begin();
     imageJacobian.Fill(0.0);
-    const unsigned int sizeImageJacobian = imageJacobian.GetSize();
 
     for (unsigned int dim = 0; dim < FixedImageDimension; ++dim)
     {
-      const double           imDeriv = movingImageDerivative[dim];
-      DerivativeIteratorType imjac = imageJacobian.begin();
+      const double imDeriv = movingImageDerivative[dim];
 
-      for (unsigned int mu = 0; mu < sizeImageJacobian; ++mu)
+      for (auto & imageJacobianElement : imageJacobian)
       {
-        (*imjac) += (*jac) * imDeriv;
-        ++imjac;
+        imageJacobianElement += (*jac) * imDeriv;
         ++jac;
       }
     }
@@ -734,15 +685,11 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateTransformJacobian
  */
 
 template <class TFixedImage, class TMovingImage>
-bool
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::TransformPoint(const FixedImagePointType & fixedImagePoint,
-                                                                      MovingImagePointType &      mappedPoint) const
+auto
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::TransformPoint(const FixedImagePointType & fixedImagePoint) const
+  -> MovingImagePointType
 {
-  mappedPoint = this->m_Transform->TransformPoint(fixedImagePoint);
-
-  /** For future use: return whether the sample is valid */
-  const bool valid = true;
-  return valid;
+  return Superclass::m_Transform->TransformPoint(fixedImagePoint);
 
 } // end TransformPoint()
 
@@ -800,11 +747,13 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian(
 {
   itkDebugMacro("GetSelfHessian()");
 
+  const auto numberOfParameters = this->GetNumberOfParameters();
+
   /** Set identity matrix as default implementation. */
-  H.set_size(this->GetNumberOfParameters(), this->GetNumberOfParameters());
+  H.set_size(numberOfParameters, numberOfParameters);
   // H.Fill(0.0);
   // H.fill_diagonal(1.0);
-  for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+  for (unsigned int i = 0; i < numberOfParameters; ++i)
   {
     H(i, i) = 1.0;
   }
@@ -858,7 +807,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValueThreaderCallback(
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::LaunchGetValueThreaderCallback(void) const
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::LaunchGetValueThreaderCallback() const
 {
   /** Setup threader. */
   this->m_Threader->SetSingleMethod(this->GetValueThreaderCallback,
@@ -896,7 +845,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeThre
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::LaunchGetValueAndDerivativeThreaderCallback(void) const
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::LaunchGetValueAndDerivativeThreaderCallback() const
 {
   /** Setup threader. */
   this->m_Threader->SetSingleMethod(this->GetValueAndDerivativeThreaderCallback,

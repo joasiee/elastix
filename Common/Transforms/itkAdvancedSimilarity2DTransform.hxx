@@ -35,7 +35,7 @@
 #define _itkAdvancedSimilarity2DTransform_hxx
 
 #include "itkAdvancedSimilarity2DTransform.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -44,17 +44,6 @@ namespace itk
 template <class TScalarType>
 AdvancedSimilarity2DTransform<TScalarType>::AdvancedSimilarity2DTransform()
   : Superclass(OutputSpaceDimension, ParametersDimension)
-{
-  m_Scale = 1.0f;
-  this->PrecomputeJacobianOfSpatialJacobian();
-}
-
-
-// Constructor with arguments
-template <class TScalarType>
-AdvancedSimilarity2DTransform<TScalarType>::AdvancedSimilarity2DTransform(unsigned int spaceDimension,
-                                                                          unsigned int parametersDimension)
-  : Superclass(spaceDimension, parametersDimension)
 {
   m_Scale = 1.0f;
   this->PrecomputeJacobianOfSpatialJacobian();
@@ -95,8 +84,8 @@ AdvancedSimilarity2DTransform<TScalarType>::SetParameters(const ParametersType &
 
 // Get Parameters
 template <class TScalarType>
-const typename AdvancedSimilarity2DTransform<TScalarType>::ParametersType &
-AdvancedSimilarity2DTransform<TScalarType>::GetParameters(void) const
+auto
+AdvancedSimilarity2DTransform<TScalarType>::GetParameters() const -> const ParametersType &
 {
   itkDebugMacro(<< "Getting parameters ");
 
@@ -129,7 +118,7 @@ AdvancedSimilarity2DTransform<TScalarType>::SetScale(ScaleType scale)
 // Compute the matrix
 template <class TScalarType>
 void
-AdvancedSimilarity2DTransform<TScalarType>::ComputeMatrix(void)
+AdvancedSimilarity2DTransform<TScalarType>::ComputeMatrix()
 {
   const double angle = this->GetAngle();
 
@@ -154,7 +143,7 @@ AdvancedSimilarity2DTransform<TScalarType>::ComputeMatrix(void)
 /** Compute the Angle from the Rotation Matrix */
 template <class TScalarType>
 void
-AdvancedSimilarity2DTransform<TScalarType>::ComputeMatrixParameters(void)
+AdvancedSimilarity2DTransform<TScalarType>::ComputeMatrixParameters()
 {
   m_Scale = std::sqrt(vnl_math::sqr(this->GetMatrix()[0][0]) + vnl_math::sqr(this->GetMatrix()[0][1]));
 
@@ -219,7 +208,7 @@ AdvancedSimilarity2DTransform<TScalarType>::GetJacobian(const InputPointType &  
 // Set Identity
 template <class TScalarType>
 void
-AdvancedSimilarity2DTransform<TScalarType>::SetIdentity(void)
+AdvancedSimilarity2DTransform<TScalarType>::SetIdentity()
 {
   this->Superclass::SetIdentity();
   m_Scale = static_cast<TScalarType>(1.0f);
@@ -234,32 +223,6 @@ AdvancedSimilarity2DTransform<TScalarType>::PrintSelf(std::ostream & os, Indent 
 {
   Superclass::PrintSelf(os, indent);
   os << indent << "Scale =" << m_Scale << std::endl;
-}
-
-
-// Create and return an inverse transformation
-template <class TScalarType>
-void
-AdvancedSimilarity2DTransform<TScalarType>::CloneInverseTo(Pointer & result) const
-{
-  result = New();
-  result->SetCenter(this->GetCenter()); // inverse have the same center
-  result->SetScale(1.0 / this->GetScale());
-  result->SetAngle(-this->GetAngle());
-  result->SetTranslation(-(this->GetInverseMatrix() * this->GetTranslation()));
-}
-
-
-// Create and return a clone of the transformation
-template <class TScalarType>
-void
-AdvancedSimilarity2DTransform<TScalarType>::CloneTo(Pointer & result) const
-{
-  result = New();
-  result->SetCenter(this->GetCenter());
-  result->SetScale(this->GetScale());
-  result->SetAngle(this->GetAngle());
-  result->SetTranslation(this->GetTranslation());
 }
 
 
@@ -291,7 +254,7 @@ AdvancedSimilarity2DTransform<TScalarType>::SetMatrix(const MatrixType & matrix)
 // Precompute Jacobian of Spatial Jacobian
 template <class TScalarType>
 void
-AdvancedSimilarity2DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian(void)
+AdvancedSimilarity2DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian()
 {
   /** The Jacobian of spatial Jacobian remains constant, so is precomputed */
   const double                    angle = this->GetAngle();

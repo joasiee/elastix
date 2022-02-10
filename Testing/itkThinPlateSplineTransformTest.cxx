@@ -30,7 +30,7 @@ main(int argc, char * argv[])
 {
   /** Some basic type definitions. */
   const unsigned int Dimension = 3;
-  typedef double     ScalarType; // ScalarType double used in elastix
+  using ScalarType = double; // ScalarType double used in elastix
 
   /** Only perform the test with usedNumberOfLandmarks. */
   const unsigned long usedNumberOfLandmarks = 100;
@@ -39,30 +39,30 @@ main(int argc, char * argv[])
   /** Check. */
   if (argc != 2)
   {
-    std::cerr << "ERROR: You should specify a text file with the thin plate spline "
-              << "source (fixed image) landmarks." << std::endl;
+    std::cerr << "ERROR: You should specify a text file with the thin plate spline source (fixed image) landmarks."
+              << std::endl;
     return 1;
   }
 
   /** Other typedefs. */
-  typedef itk::ThinPlateSplineKernelTransform2<ScalarType, Dimension> TransformType;
-  typedef TransformType::JacobianType                                 JacobianType;
-  typedef TransformType::NonZeroJacobianIndicesType                   NonZeroJacobianIndicesType;
-  typedef TransformType::PointSetType                                 PointSetType;
-  typedef TransformType::InputPointType                               InputPointType;
+  using TransformType = itk::ThinPlateSplineKernelTransform2<ScalarType, Dimension>;
+  using JacobianType = TransformType::JacobianType;
+  using NonZeroJacobianIndicesType = TransformType::NonZeroJacobianIndicesType;
+  using PointSetType = TransformType::PointSetType;
+  using InputPointType = TransformType::InputPointType;
 
-  typedef itk::TransformixInputPointFileReader<PointSetType> IPPReaderType;
-  typedef PointSetType::PointsContainer                      PointsContainerType;
-  typedef PointsContainerType::Pointer                       PointsContainerPointer;
-  typedef PointSetType::PointType                            PointType;
+  using IPPReaderType = itk::TransformixInputPointFileReader<PointSetType>;
+  using PointsContainerType = PointSetType::PointsContainer;
+  using PointsContainerPointer = PointsContainerType::Pointer;
+  using PointType = PointSetType::PointType;
 
-  typedef itk::Statistics::MersenneTwisterRandomVariateGenerator MersenneTwisterType;
+  using MersenneTwisterType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
 
   /** Create the kernel transform. */
-  TransformType::Pointer kernelTransform = TransformType::New();
+  auto kernelTransform = TransformType::New();
 
   /** Read landmarks. */
-  IPPReaderType::Pointer landmarkReader = IPPReaderType::New();
+  auto landmarkReader = IPPReaderType::New();
   landmarkReader->SetFileName(argv[1]);
   try
   {
@@ -85,7 +85,7 @@ main(int argc, char * argv[])
 
   /** Get subset. */
   PointsContainerPointer usedLandmarkPoints = PointsContainerType::New();
-  PointSetType::Pointer  usedSourceLandmarks = PointSetType::New();
+  auto                   usedSourceLandmarks = PointSetType::New();
   for (unsigned long j = 0; j < usedNumberOfLandmarks; ++j)
   {
     PointType tmp = (*sourceLandmarks->GetPoints())[j];
@@ -104,9 +104,9 @@ main(int argc, char * argv[])
   kernelTransform->SetIdentity();                  // target landmarks = source landmarks
 
   /** Create new target landmarks by adding a random vector to it. */
-  PointSetType::ConstPointer   targetLandmarks = kernelTransform->GetTargetLandmarks();
-  PointsContainerPointer       newTargetLandmarkPoints = PointsContainerType::New();
-  MersenneTwisterType::Pointer mersenneTwister = MersenneTwisterType::New();
+  PointSetType::ConstPointer targetLandmarks = kernelTransform->GetTargetLandmarks();
+  PointsContainerPointer     newTargetLandmarkPoints = PointsContainerType::New();
+  auto                       mersenneTwister = MersenneTwisterType::New();
   mersenneTwister->Initialize(140377);
   for (unsigned long j = 0; j < targetLandmarks->GetNumberOfPoints(); ++j)
   {
@@ -118,7 +118,7 @@ main(int argc, char * argv[])
     }
     newTargetLandmarkPoints->push_back(randomPoint);
   }
-  PointSetType::Pointer newTargetLandmarks = PointSetType::New();
+  auto newTargetLandmarks = PointSetType::New();
   newTargetLandmarks->SetPoints(newTargetLandmarkPoints);
 
   /** Test 2: Time setting the target landmarks. */

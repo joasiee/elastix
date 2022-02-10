@@ -21,18 +21,10 @@
 #include "elxBSplineStackTransform.h"
 
 #include "itkImageRegionExclusionConstIteratorWithIndex.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace elastix
 {
-
-/**
- * ********************* Constructor ****************************
- */
-
-template <class TElastix>
-BSplineStackTransform<TElastix>::BSplineStackTransform() = default; // end Constructor()
-
 
 /**
  * ************ InitializeBSplineTransform ***************
@@ -44,34 +36,15 @@ BSplineStackTransform<TElastix>::InitializeBSplineTransform()
   /** Initialize the right BSplineTransform and GridScheduleComputer. */
   this->m_GridScheduleComputer = GridScheduleComputerType::New();
   this->m_GridScheduleComputer->SetBSplineOrder(m_SplineOrder);
-  if (this->m_SplineOrder == 1)
-  {
-    this->m_BSplineDummySubTransform = BSplineTransformLinearType::New();
-  }
-  else if (this->m_SplineOrder == 2)
-  {
-    this->m_BSplineDummySubTransform = BSplineTransformQuadraticType::New();
-  }
-  else if (this->m_SplineOrder == 3)
-  {
-    this->m_BSplineDummySubTransform = BSplineTransformCubicType::New();
-  }
-  else
-  {
-    itkExceptionMacro(<< "ERROR: The provided spline order is not supported.");
-    return 1;
-  }
+  m_DummySubTransform =
+    ReducedDimensionBSplineTransformBaseType::template Create<itk::AdvancedBSplineDeformableTransform>(m_SplineOrder);
+
+  m_StackTransform->SetSplineOrder(m_SplineOrder);
 
   /** Note: periodic B-splines are not supported here as they do not seem to
    * make sense as a subtransform and deliver problems when compiling elastix
    * for image dimension 2.
    */
-
-  /** Create stack transform. */
-  this->m_BSplineStackTransform = BSplineStackTransformType::New();
-
-  /** Set stack transform as current transform. */
-  this->SetCurrentTransform(this->m_BSplineStackTransform);
 
   /** Create grid upsampler. */
   this->m_GridUpsampler = GridUpsamplerType::New();
@@ -87,7 +60,7 @@ BSplineStackTransform<TElastix>::InitializeBSplineTransform()
 
 template <class TElastix>
 int
-BSplineStackTransform<TElastix>::BeforeAll(void)
+BSplineStackTransform<TElastix>::BeforeAll()
 {
   /** Read spline order from configuration file. */
   this->m_SplineOrder = 3;
@@ -105,7 +78,7 @@ BSplineStackTransform<TElastix>::BeforeAll(void)
 
 template <class TElastix>
 void
-BSplineStackTransform<TElastix>::BeforeRegistration(void)
+BSplineStackTransform<TElastix>::BeforeRegistration()
 {
   /** Set initial transform parameters to a 1x1x1 grid, with deformation (0,0,0).
    * In the method BeforeEachResolution() this will be replaced by the right grid size.
@@ -117,30 +90,16 @@ BSplineStackTransform<TElastix>::BeforeRegistration(void)
 
   /** Task 1 - Set the Grid. */
 
-  /** Declarations. */
-  ReducedDimensionRegionType  gridregion;
-  ReducedDimensionSizeType    gridsize;
-  ReducedDimensionIndexType   gridindex;
-  ReducedDimensionSpacingType gridspacing;
-  ReducedDimensionOriginType  gridorigin;
-
-  /** Fill everything with default values. */
-  gridsize.Fill(1);
-  gridindex.Fill(0);
-  gridspacing.Fill(1.0);
-  gridorigin.Fill(0.0);
-
   /** Set gridsize for large dimension to 4 to prevent errors when checking
    * on support region size.
    */
+  ReducedDimensionSizeType gridsize = ReducedDimensionSizeType::Filled(1);
   gridsize.SetElement(gridsize.GetSizeDimension() - 1, 4);
 
   /** Set it all. */
-  gridregion.SetIndex(gridindex);
-  gridregion.SetSize(gridsize);
-  this->m_BSplineDummySubTransform->SetGridRegion(gridregion);
-  this->m_BSplineDummySubTransform->SetGridSpacing(gridspacing);
-  this->m_BSplineDummySubTransform->SetGridOrigin(gridorigin);
+  this->m_DummySubTransform->SetGridRegion(ReducedDimensionRegionType(gridsize));
+  this->m_DummySubTransform->SetGridSpacing(ReducedDimensionSpacingType(1.0));
+  this->m_DummySubTransform->SetGridOrigin(ReducedDimensionOriginType());
 
   /** Task 2 - Set the stack transform parameters. */
 
@@ -151,19 +110,16 @@ BSplineStackTransform<TElastix>::BeforeRegistration(void)
   this->m_StackOrigin = this->GetElastix()->GetFixedImage()->GetOrigin()[SpaceDimension - 1];
 
   /** Set stack transform parameters. */
-  this->m_BSplineStackTransform->SetNumberOfSubTransforms(this->m_NumberOfSubTransforms);
-  this->m_BSplineStackTransform->SetStackOrigin(this->m_StackOrigin);
-  this->m_BSplineStackTransform->SetStackSpacing(this->m_StackSpacing);
+  this->m_StackTransform->SetNumberOfSubTransforms(this->m_NumberOfSubTransforms);
+  this->m_StackTransform->SetStackOrigin(this->m_StackOrigin);
+  this->m_StackTransform->SetStackSpacing(this->m_StackSpacing);
 
   /** Initialize stack sub transforms. */
-  this->m_BSplineStackTransform->SetAllSubTransforms(this->m_BSplineDummySubTransform);
+  this->m_StackTransform->SetAllSubTransforms(*m_DummySubTransform);
 
   /** Task 3 - Give the registration an initial parameter-array. */
-  ParametersType dummyInitialParameters(this->GetNumberOfParameters());
-  dummyInitialParameters.Fill(0.0);
-
-  /** Put parameters in the registration. */
-  this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(dummyInitialParameters);
+  this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(
+    ParametersType(this->GetNumberOfParameters(), 0.0));
 
   /** Precompute the B-spline grid regions. */
   this->PreComputeGridInformation();
@@ -177,7 +133,7 @@ BSplineStackTransform<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-BSplineStackTransform<TElastix>::BeforeEachResolution(void)
+BSplineStackTransform<TElastix>::BeforeEachResolution()
 {
   /** What is the current resolution level? */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -208,7 +164,7 @@ BSplineStackTransform<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-BSplineStackTransform<TElastix>::PreComputeGridInformation(void)
+BSplineStackTransform<TElastix>::PreComputeGridInformation()
 {
   /** Get the total number of resolution levels. */
   const unsigned int nrOfResolutions = this->m_Registration->GetAsITKBaseType()->GetNumberOfLevels();
@@ -359,9 +315,10 @@ BSplineStackTransform<TElastix>::PreComputeGridInformation(void)
   }
   else
   {
-    xl::xout["error"] << "ERROR: Invalid GridSpacingSchedule! The number of entries"
-                      << " behind the GridSpacingSchedule option should equal the"
-                      << " numberOfResolutions, or the numberOfResolutions * ( ImageDimension - 1 )." << std::endl;
+    xl::xout["error"]
+      << "ERROR: Invalid GridSpacingSchedule! The number of entries behind the GridSpacingSchedule option should equal "
+         "the numberOfResolutions, or the numberOfResolutions * ( ImageDimension - 1 )."
+      << std::endl;
     itkExceptionMacro(<< "ERROR: Invalid GridSpacingSchedule!");
   }
 
@@ -381,7 +338,7 @@ BSplineStackTransform<TElastix>::PreComputeGridInformation(void)
 
 template <class TElastix>
 void
-BSplineStackTransform<TElastix>::InitializeTransform(void)
+BSplineStackTransform<TElastix>::InitializeTransform()
 {
   /** Compute the B-spline grid region, origin, and spacing. */
   ReducedDimensionRegionType    gridRegion;
@@ -391,13 +348,13 @@ BSplineStackTransform<TElastix>::InitializeTransform(void)
   this->m_GridScheduleComputer->GetBSplineGrid(0, gridRegion, gridSpacing, gridOrigin, gridDirection);
 
   /** Set it in the BSplineTransform. */
-  this->m_BSplineDummySubTransform->SetGridRegion(gridRegion);
-  this->m_BSplineDummySubTransform->SetGridSpacing(gridSpacing);
-  this->m_BSplineDummySubTransform->SetGridOrigin(gridOrigin);
-  this->m_BSplineDummySubTransform->SetGridDirection(gridDirection);
+  this->m_DummySubTransform->SetGridRegion(gridRegion);
+  this->m_DummySubTransform->SetGridSpacing(gridSpacing);
+  this->m_DummySubTransform->SetGridOrigin(gridOrigin);
+  this->m_DummySubTransform->SetGridDirection(gridDirection);
 
   /** Set all subtransforms to a copy of the dummy B-spline sub transform. */
-  this->m_BSplineStackTransform->SetAllSubTransforms(this->m_BSplineDummySubTransform);
+  this->m_StackTransform->SetAllSubTransforms(*m_DummySubTransform);
 
   /** Set initial parameters for the first resolution to 0.0. */
   ParametersType initialParameters(this->GetNumberOfParameters());
@@ -413,15 +370,14 @@ BSplineStackTransform<TElastix>::InitializeTransform(void)
 
 template <class TElastix>
 void
-BSplineStackTransform<TElastix>::IncreaseScale(void)
+BSplineStackTransform<TElastix>::IncreaseScale()
 {
   /** What is the current resolution level? */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
 
   /** Get first sub transform. */
   ReducedDimensionBSplineTransformBasePointer firstsubtransform =
-    dynamic_cast<ReducedDimensionBSplineTransformBaseType *>(
-      this->m_BSplineStackTransform->GetSubTransform(0).GetPointer());
+    dynamic_cast<ReducedDimensionBSplineTransformBaseType *>(this->m_StackTransform->GetSubTransform(0).GetPointer());
 
   /** Get the current grid settings. */
   ReducedDimensionOriginType    currentGridOrigin = firstsubtransform->GetGridOrigin();
@@ -450,8 +406,8 @@ BSplineStackTransform<TElastix>::IncreaseScale(void)
   for (unsigned int t = 0; t < this->m_NumberOfSubTransforms; ++t)
   {
     /** Get sub transform pointer. */
-    ReducedDimensionBSplineTransformBasePointer subtransform = dynamic_cast<ReducedDimensionBSplineTransformBaseType *>(
-      this->m_BSplineStackTransform->GetSubTransform(t).GetPointer());
+    ReducedDimensionBSplineTransformBasePointer subtransform =
+      dynamic_cast<ReducedDimensionBSplineTransformBaseType *>(this->m_StackTransform->GetSubTransform(t).GetPointer());
 
     /** Get the lastest subtransform parameters. */
     ParametersType latestParameters = subtransform->GetParameters();
@@ -470,6 +426,8 @@ BSplineStackTransform<TElastix>::IncreaseScale(void)
     subtransform->SetParametersByValue(upsampledParameters);
   }
 
+  m_StackTransform->UpdateFixedParameters();
+
   /** Set the initial parameters for the next level. */
   this->m_Registration->GetAsITKBaseType()->SetInitialTransformParametersOfNextLevel(this->GetParameters());
 
@@ -482,74 +440,69 @@ BSplineStackTransform<TElastix>::IncreaseScale(void)
 
 template <class TElastix>
 void
-BSplineStackTransform<TElastix>::ReadFromFile(void)
+BSplineStackTransform<TElastix>::ReadFromFile()
 {
-  /** Read spline order settings and initialize BSplineTransform. */
-  this->m_SplineOrder = 3;
-  this->GetConfiguration()->ReadParameter(
-    this->m_SplineOrder, "BSplineTransformSplineOrder", this->GetComponentLabel(), 0, 0);
-
-  /** Read stack-spacing, stack-origin and number of sub-transforms. */
-  bool dummy = this->GetConfiguration()->ReadParameter(
-    this->m_NumberOfSubTransforms, "NumberOfSubTransforms", this->GetComponentLabel(), 0, 0);
-  dummy |= this->GetConfiguration()->ReadParameter(this->m_StackOrigin, "StackOrigin", this->GetComponentLabel(), 0, 0);
-  dummy |=
-    this->GetConfiguration()->ReadParameter(this->m_StackSpacing, "StackSpacing", this->GetComponentLabel(), 0, 0);
-
-  /** Initialize the right B-spline transform. */
-  this->InitializeBSplineTransform();
-
-  /** Set stack transform parameters. */
-  this->m_BSplineStackTransform->SetNumberOfSubTransforms(this->m_NumberOfSubTransforms);
-  this->m_BSplineStackTransform->SetStackOrigin(this->m_StackOrigin);
-  this->m_BSplineStackTransform->SetStackSpacing(this->m_StackSpacing);
-
-  /** Read and Set the Grid. */
-
-  /** Declarations. */
-  ReducedDimensionRegionType    gridregion;
-  ReducedDimensionSizeType      gridsize;
-  ReducedDimensionIndexType     gridindex;
-  ReducedDimensionSpacingType   gridspacing;
-  ReducedDimensionOriginType    gridorigin;
-  ReducedDimensionDirectionType griddirection;
-
-  /** Fill everything with default values. */
-  gridsize.Fill(1);
-  gridindex.Fill(0);
-  gridspacing.Fill(1.0);
-  gridorigin.Fill(0.0);
-  griddirection.SetIdentity();
-
-  /** Get GridSize, GridIndex, GridSpacing and GridOrigin. */
-  for (unsigned int i = 0; i < ReducedSpaceDimension; ++i)
+  if (!this->HasITKTransformParameters())
   {
-    dummy |= this->m_Configuration->ReadParameter(gridsize[i], "GridSize", i);
-    dummy |= this->m_Configuration->ReadParameter(gridindex[i], "GridIndex", i);
-    dummy |= this->m_Configuration->ReadParameter(gridspacing[i], "GridSpacing", i);
-    dummy |= this->m_Configuration->ReadParameter(gridorigin[i], "GridOrigin", i);
-    for (unsigned int j = 0; j < ReducedSpaceDimension; ++j)
+    /** Read spline order settings and initialize BSplineTransform. */
+    this->m_SplineOrder = 3;
+    this->GetConfiguration()->ReadParameter(
+      this->m_SplineOrder, "BSplineTransformSplineOrder", this->GetComponentLabel(), 0, 0);
+
+    /** Read stack-spacing, stack-origin and number of sub-transforms. */
+    bool dummy = this->GetConfiguration()->ReadParameter(
+      this->m_NumberOfSubTransforms, "NumberOfSubTransforms", this->GetComponentLabel(), 0, 0);
+    dummy |=
+      this->GetConfiguration()->ReadParameter(this->m_StackOrigin, "StackOrigin", this->GetComponentLabel(), 0, 0);
+    dummy |=
+      this->GetConfiguration()->ReadParameter(this->m_StackSpacing, "StackSpacing", this->GetComponentLabel(), 0, 0);
+
+    /** Initialize the right B-spline transform. */
+    this->InitializeBSplineTransform();
+
+    /** Set stack transform parameters. */
+    this->m_StackTransform->SetNumberOfSubTransforms(this->m_NumberOfSubTransforms);
+    this->m_StackTransform->SetStackOrigin(this->m_StackOrigin);
+    this->m_StackTransform->SetStackSpacing(this->m_StackSpacing);
+
+    /** Read and Set the Grid. */
+
+    /** Declarations. Everything filled with default values.*/
+    ReducedDimensionSizeType      gridsize = ReducedDimensionSizeType::Filled(1);
+    ReducedDimensionIndexType     gridindex = { { 0 } };
+    ReducedDimensionSpacingType   gridspacing(1.0);
+    ReducedDimensionOriginType    gridorigin{};
+    ReducedDimensionDirectionType griddirection = ReducedDimensionDirectionType::GetIdentity();
+
+    /** Get GridSize, GridIndex, GridSpacing and GridOrigin. */
+    for (unsigned int i = 0; i < ReducedSpaceDimension; ++i)
     {
-      this->m_Configuration->ReadParameter(griddirection(j, i), "GridDirection", i * ReducedSpaceDimension + j);
+      dummy |= this->m_Configuration->ReadParameter(gridsize[i], "GridSize", i);
+      dummy |= this->m_Configuration->ReadParameter(gridindex[i], "GridIndex", i);
+      dummy |= this->m_Configuration->ReadParameter(gridspacing[i], "GridSpacing", i);
+      dummy |= this->m_Configuration->ReadParameter(gridorigin[i], "GridOrigin", i);
+      for (unsigned int j = 0; j < ReducedSpaceDimension; ++j)
+      {
+        this->m_Configuration->ReadParameter(griddirection(j, i), "GridDirection", i * ReducedSpaceDimension + j);
+      }
     }
+
+    if (!dummy)
+    {
+      itkExceptionMacro("NumberOfSubTransforms, StackOrigin, StackSpacing, GridSize, GridIndex, GridSpacing and "
+                        "GridOrigin is required by "
+                        << this->GetNameOfClass() << ".")
+    }
+
+    /** Set it all. */
+    this->m_DummySubTransform->SetGridRegion(ReducedDimensionRegionType(gridindex, gridsize));
+    this->m_DummySubTransform->SetGridSpacing(gridspacing);
+    this->m_DummySubTransform->SetGridOrigin(gridorigin);
+    this->m_DummySubTransform->SetGridDirection(griddirection);
+
+    /** Set stack subtransforms. */
+    this->m_StackTransform->SetAllSubTransforms(*m_DummySubTransform);
   }
-
-  if (!dummy)
-  {
-    itkExceptionMacro("NumberOfSubTransforms, StackOrigin, StackSpacing, GridSize, "
-                      << "GridIndex, GridSpacing and GridOrigin is required by " << this->GetNameOfClass() << ".")
-  }
-
-  /** Set it all. */
-  gridregion.SetIndex(gridindex);
-  gridregion.SetSize(gridsize);
-  this->m_BSplineDummySubTransform->SetGridRegion(gridregion);
-  this->m_BSplineDummySubTransform->SetGridSpacing(gridspacing);
-  this->m_BSplineDummySubTransform->SetGridOrigin(gridorigin);
-  this->m_BSplineDummySubTransform->SetGridDirection(griddirection);
-
-  /** Set stack subtransforms. */
-  this->m_BSplineStackTransform->SetAllSubTransforms(this->m_BSplineDummySubTransform);
 
   /** Call the ReadFromFile from the TransformBase.
    * This must be done after setting the Grid, because later the
@@ -570,18 +523,17 @@ void
 BSplineStackTransform<TElastix>::SetOptimizerScales(const unsigned int edgeWidth)
 {
   /** Some typedefs. */
-  typedef itk::ImageRegionExclusionConstIteratorWithIndex<ImageType> IteratorType;
-  typedef typename RegistrationType::ITKBaseType                     ITKRegistrationType;
-  typedef typename ITKRegistrationType::OptimizerType                OptimizerType;
-  typedef typename OptimizerType::ScalesType                         ScalesType;
-  typedef typename ScalesType::ValueType                             ScalesValueType;
+  using IteratorType = itk::ImageRegionExclusionConstIteratorWithIndex<ImageType>;
+  using ITKRegistrationType = typename RegistrationType::ITKBaseType;
+  using OptimizerType = typename ITKRegistrationType::OptimizerType;
+  using ScalesType = typename OptimizerType::ScalesType;
+  using ScalesValueType = typename ScalesType::ValueType;
 
   /** Define new scales. */
-  const NumberOfParametersType numberOfParameters = this->m_BSplineDummySubTransform->GetNumberOfParameters();
+  const NumberOfParametersType numberOfParameters = this->m_DummySubTransform->GetNumberOfParameters();
   const unsigned long          offset = numberOfParameters / SpaceDimension;
-  ScalesType                   newScales(numberOfParameters);
-  newScales.Fill(itk::NumericTraits<ScalesValueType>::OneValue());
-  const ScalesValueType infScale = 10000.0;
+  ScalesType                   newScales(numberOfParameters, ScalesValueType{ 1.0 });
+  const ScalesValueType        infScale = 10000.0;
 
   if (edgeWidth == 0)
   {
@@ -592,7 +544,7 @@ BSplineStackTransform<TElastix>::SetOptimizerScales(const unsigned int edgeWidth
 
   /** Get the grid region information and create a fake coefficient image. */
   BSplineTransformBasePointer firstSubTransform =
-    dynamic_cast<BSplineTransformBaseType *>(this->m_BSplineStackTransform->GetSubTransform(0).GetPointer());
+    dynamic_cast<BSplineTransformBaseType *>(this->m_StackTransform->GetSubTransform(0).GetPointer());
   RegionType   gridregion = firstSubTransform->GetGridRegion();
   SizeType     gridsize = gridregion.GetSize();
   IndexType    gridindex = gridregion.GetIndex();
@@ -651,11 +603,10 @@ BSplineStackTransform<TElastix>::SetOptimizerScales(const unsigned int edgeWidth
 
 template <class TElastix>
 auto
-BSplineStackTransform<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+BSplineStackTransform<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   ReducedDimensionBSplineTransformBasePointer firstSubTransform =
-    dynamic_cast<ReducedDimensionBSplineTransformBaseType *>(
-      this->m_BSplineStackTransform->GetSubTransform(0).GetPointer());
+    dynamic_cast<ReducedDimensionBSplineTransformBaseType *>(this->m_StackTransform->GetSubTransform(0).GetPointer());
 
   const auto gridRegion = firstSubTransform->GetGridRegion();
 
@@ -665,9 +616,9 @@ BSplineStackTransform<TElastix>::CreateDerivedTransformParametersMap(void) const
            { "GridOrigin", Conversion::ToVectorOfStrings(firstSubTransform->GetGridOrigin()) },
            { "GridDirection", Conversion::ToVectorOfStrings(firstSubTransform->GetGridDirection()) },
            { "BSplineTransformSplineOrder", { Conversion::ToString(m_SplineOrder) } },
-           { "StackSpacing", { Conversion::ToString(m_BSplineStackTransform->GetStackSpacing()) } },
-           { "StackOrigin", { Conversion::ToString(m_BSplineStackTransform->GetStackOrigin()) } },
-           { "NumberOfSubTransforms", { Conversion::ToString(m_BSplineStackTransform->GetNumberOfSubTransforms()) } } };
+           { "StackSpacing", { Conversion::ToString(m_StackTransform->GetStackSpacing()) } },
+           { "StackOrigin", { Conversion::ToString(m_StackTransform->GetStackOrigin()) } },
+           { "NumberOfSubTransforms", { Conversion::ToString(m_StackTransform->GetNumberOfSubTransforms()) } } };
 
 } // end CreateDerivedTransformParametersMap()
 

@@ -64,18 +64,18 @@
 //------------------------------------------------------------------------------
 // GetHelpString
 std::string
-GetHelpString(void)
+GetHelpString()
 {
   std::stringstream ss;
 
-  ss << "Usage:" << std::endl
-     << "itkGPUResampleImageFilterTest" << std::endl
+  ss << "Usage:\n"
+     << "itkGPUResampleImageFilterTest\n"
      << "  -in           input file name\n"
      << "  -out          output file names.(outputCPU outputGPU)\n"
      << "  -rmse         acceptable rmse error\n"
      << "  [-i]          interpolator, one of {NearestNeighbor, Linear, BSpline}, default NearestNeighbor\n"
-     << "  [-t]          transforms, one of {Affine, Translation, BSpline, Euler, Similarity}"
-     << " or combinations with option \"-c\", default Affine\n"
+     << "  [-t]          transforms, one of {Affine, Translation, BSpline, Euler, Similarity} or combinations with "
+        "option \"-c\", default Affine\n"
      << "  [-c]          use combo transform, default false\n"
      << "  [-p]          parameter file for the B-spline transform\n"
      << "  [-threads]    number of threads, default maximum\n";
@@ -123,8 +123,8 @@ ComputeCenterOfTheImage(const typename InputImageType::ConstPointer & image)
   const typename InputImageType::SizeType  size = image->GetLargestPossibleRegion().GetSize();
   const typename InputImageType::IndexType index = image->GetLargestPossibleRegion().GetIndex();
 
-  typedef itk::ContinuousIndex<double, InputImageType::ImageDimension> ContinuousIndexType;
-  ContinuousIndexType                                                  centerAsContInd;
+  using ContinuousIndexType = itk::ContinuousIndex<double, InputImageType::ImageDimension>;
+  ContinuousIndexType centerAsContInd;
   for (std::size_t i = 0; i < Dimension; ++i)
   {
     centerAsContInd[i] = static_cast<double>(index[i]) + static_cast<double>(size[i] - 1) / 2.0;
@@ -144,28 +144,28 @@ DefineInterpolator(typename InterpolatorType::Pointer & interpolator,
                    const unsigned int                   splineOrderInterpolator)
 {
   // Interpolator typedefs
-  typedef typename InterpolatorType::InputImageType InputImageType;
-  typedef typename InterpolatorType::CoordRepType   CoordRepType;
-  typedef CoordRepType                              CoefficientType;
+  using InputImageType = typename InterpolatorType::InputImageType;
+  using CoordRepType = typename InterpolatorType::CoordRepType;
+  using CoefficientType = CoordRepType;
 
   // Typedefs for all interpolators
-  typedef itk::NearestNeighborInterpolateImageFunction<InputImageType, CoordRepType> NearestNeighborInterpolatorType;
-  typedef itk::LinearInterpolateImageFunction<InputImageType, CoordRepType>          LinearInterpolatorType;
-  typedef itk::BSplineInterpolateImageFunction<InputImageType, CoordRepType, CoefficientType> BSplineInterpolatorType;
+  using NearestNeighborInterpolatorType = itk::NearestNeighborInterpolateImageFunction<InputImageType, CoordRepType>;
+  using LinearInterpolatorType = itk::LinearInterpolateImageFunction<InputImageType, CoordRepType>;
+  using BSplineInterpolatorType = itk::BSplineInterpolateImageFunction<InputImageType, CoordRepType, CoefficientType>;
 
   if (interpolatorName == "NearestNeighbor")
   {
-    typename NearestNeighborInterpolatorType::Pointer tmpInterpolator = NearestNeighborInterpolatorType::New();
+    auto tmpInterpolator = NearestNeighborInterpolatorType::New();
     interpolator = tmpInterpolator;
   }
   else if (interpolatorName == "Linear")
   {
-    typename LinearInterpolatorType::Pointer tmpInterpolator = LinearInterpolatorType::New();
+    auto tmpInterpolator = LinearInterpolatorType::New();
     interpolator = tmpInterpolator;
   }
   else if (interpolatorName == "BSpline")
   {
-    typename BSplineInterpolatorType::Pointer tmpInterpolator = BSplineInterpolatorType::New();
+    auto tmpInterpolator = BSplineInterpolatorType::New();
     tmpInterpolator->SetSplineOrder(splineOrderInterpolator);
     interpolator = tmpInterpolator;
   }
@@ -383,7 +383,7 @@ SetTransform(const std::size_t                                            transf
     if (advancedTransform.IsNull())
     {
       // Create Affine transform
-      typename AffineTransformType::Pointer affineTransform = AffineTransformType::New();
+      auto affineTransform = AffineTransformType::New();
 
       // Define and set affine parameters
       typename AffineTransformType::ParametersType parameters;
@@ -395,7 +395,7 @@ SetTransform(const std::size_t                                            transf
     else
     {
       // Create Advanced Affine transform
-      typename AdvancedAffineTransformType::Pointer affineTransform = AdvancedAffineTransformType::New();
+      auto affineTransform = AdvancedAffineTransformType::New();
       advancedTransform->SetCurrentTransform(affineTransform);
 
       // Define and set advanced affine parameters
@@ -409,7 +409,7 @@ SetTransform(const std::size_t                                            transf
     if (advancedTransform.IsNull())
     {
       // Create Translation transform
-      typename TranslationTransformType::Pointer translationTransform = TranslationTransformType::New();
+      auto translationTransform = TranslationTransformType::New();
 
       // Define and set translation parameters
       typename TranslationTransformType::ParametersType parameters;
@@ -421,7 +421,7 @@ SetTransform(const std::size_t                                            transf
     else
     {
       // Create Advanced Translation transform
-      typename AdvancedTranslationTransformType::Pointer translationTransform = AdvancedTranslationTransformType::New();
+      auto translationTransform = AdvancedTranslationTransformType::New();
       advancedTransform->SetCurrentTransform(translationTransform);
 
       // Define and set advanced translation parameters
@@ -439,12 +439,12 @@ SetTransform(const std::size_t                                            transf
     const typename InputImageType::RegionType    inputRegion = image->GetBufferedRegion();
     const typename InputImageType::SizeType      inputSize = inputRegion.GetSize();
 
-    typedef typename BSplineTransformType::MeshSizeType MeshSizeType;
-    MeshSizeType                                        gridSize;
+    using MeshSizeType = typename BSplineTransformType::MeshSizeType;
+    MeshSizeType gridSize;
     gridSize.Fill(4);
 
-    typedef typename BSplineTransformType::PhysicalDimensionsType PhysicalDimensionsType;
-    PhysicalDimensionsType                                        gridSpacing;
+    using PhysicalDimensionsType = typename BSplineTransformType::PhysicalDimensionsType;
+    PhysicalDimensionsType gridSpacing;
     for (unsigned int d = 0; d < Dimension; ++d)
     {
       gridSpacing[d] = inputSpacing[d] * (inputSize[d] - 1.0);
@@ -453,7 +453,7 @@ SetTransform(const std::size_t                                            transf
     if (advancedTransform.IsNull())
     {
       // Create BSpline transform
-      typename BSplineTransformType::Pointer bsplineTransform = BSplineTransformType::New();
+      auto bsplineTransform = BSplineTransformType::New();
 
       // Set grid properties
       bsplineTransform->SetTransformDomainOrigin(inputOrigin);
@@ -478,7 +478,7 @@ SetTransform(const std::size_t                                            transf
     else
     {
       // Create Advanced BSpline transform
-      typename AdvancedBSplineTransformType::Pointer bsplineTransform = AdvancedBSplineTransformType::New();
+      auto bsplineTransform = AdvancedBSplineTransformType::New();
       advancedTransform->SetCurrentTransform(bsplineTransform);
 
       // Set grid properties
@@ -509,7 +509,7 @@ SetTransform(const std::size_t                                            transf
     if (advancedTransform.IsNull())
     {
       // Create Euler transform
-      typename EulerTransformType::Pointer eulerTransform = EulerTransformType::New();
+      auto eulerTransform = EulerTransformType::New();
 
       // Set center
       eulerTransform->SetCenter(center);
@@ -524,7 +524,7 @@ SetTransform(const std::size_t                                            transf
     else
     {
       // Create Advanced Euler transform
-      typename AdvancedEulerTransformType::Pointer eulerTransform = AdvancedEulerTransformType::New();
+      auto eulerTransform = AdvancedEulerTransformType::New();
       advancedTransform->SetCurrentTransform(eulerTransform);
 
       // Set center
@@ -544,7 +544,7 @@ SetTransform(const std::size_t                                            transf
     if (advancedTransform.IsNull())
     {
       // Create Similarity transform
-      typename SimilarityTransformType::Pointer similarityTransform = SimilarityTransformType::New();
+      auto similarityTransform = SimilarityTransformType::New();
 
       // Set center
       similarityTransform->SetCenter(center);
@@ -559,7 +559,7 @@ SetTransform(const std::size_t                                            transf
     else
     {
       // Create Advanced Similarity transform
-      typename AdvancedSimilarityTransformType::Pointer similarityTransform = AdvancedSimilarityTransformType::New();
+      auto similarityTransform = AdvancedSimilarityTransformType::New();
       advancedTransform->SetCurrentTransform(similarityTransform);
 
       // Set center
@@ -687,9 +687,9 @@ main(int argc, char * argv[])
     if (transformName != "Affine" && transformName != "Translation" && transformName != "BSpline" &&
         transformName != "Euler" && transformName != "Similarity")
     {
-      std::cerr << "ERROR: transforms \"-t\" should be one of "
-                << "{Affine, Translation, BSpline, Euler, Similarity}"
-                << " or combination of them." << std::endl;
+      std::cerr << "ERROR: transforms \"-t\" should be one of {Affine, Translation, BSpline, Euler, Similarity} or "
+                   "combination of them."
+                << std::endl;
       itk::ReleaseContext();
       return EXIT_FAILURE;
     }
@@ -725,57 +725,56 @@ main(int argc, char * argv[])
   std::cout << std::showpoint << std::setprecision(4);
 
   // Typedefs.
-  const unsigned int                              Dimension = 3;
-  typedef short                                   InputPixelType;
-  typedef short                                   OutputPixelType;
-  typedef itk::Image<InputPixelType, Dimension>   InputImageType;
-  typedef itk::Image<OutputPixelType, Dimension>  OutputImageType;
-  typedef InputImageType::SizeType::SizeValueType SizeValueType;
-  typedef typelist::MakeTypeList<short>::Type     OCLImageTypes;
+  const unsigned int Dimension = 3;
+  using InputPixelType = short;
+  using OutputPixelType = short;
+  using InputImageType = itk::Image<InputPixelType, Dimension>;
+  using OutputImageType = itk::Image<OutputPixelType, Dimension>;
+  using SizeValueType = InputImageType::SizeType::SizeValueType;
+  using OCLImageTypes = typelist::MakeTypeList<short>::Type;
 
   // CPU typedefs
-  typedef float InterpolatorPrecisionType;
-  typedef float ScalarType;
-  typedef itk::ResampleImageFilter<InputImageType, OutputImageType, InterpolatorPrecisionType> FilterType;
+  using InterpolatorPrecisionType = float;
+  using ScalarType = float;
+  using FilterType = itk::ResampleImageFilter<InputImageType, OutputImageType, InterpolatorPrecisionType>;
 
   // Transform typedefs
-  typedef itk::Transform<ScalarType, Dimension, Dimension> TransformType;
-  typedef itk::AffineTransform<ScalarType, Dimension>      AffineTransformType;
-  typedef itk::TranslationTransform<ScalarType, Dimension> TranslationTransformType;
-  typedef itk::BSplineTransform<ScalarType, Dimension, 3>  BSplineTransformType;
-  typedef itk::Euler3DTransform<ScalarType>                EulerTransformType;
-  typedef itk::Similarity3DTransform<ScalarType>           SimilarityTransformType;
+  using TransformType = itk::Transform<ScalarType, Dimension, Dimension>;
+  using AffineTransformType = itk::AffineTransform<ScalarType, Dimension>;
+  using TranslationTransformType = itk::TranslationTransform<ScalarType, Dimension>;
+  using BSplineTransformType = itk::BSplineTransform<ScalarType, Dimension, 3>;
+  using EulerTransformType = itk::Euler3DTransform<ScalarType>;
+  using SimilarityTransformType = itk::Similarity3DTransform<ScalarType>;
 
   // Advanced transform typedefs
-  typedef itk::AdvancedCombinationTransform<ScalarType, Dimension>                 AdvancedCombinationTransformType;
-  typedef itk::AdvancedTransform<ScalarType, Dimension, Dimension>                 AdvancedTransformType;
-  typedef itk::AdvancedMatrixOffsetTransformBase<ScalarType, Dimension, Dimension> AdvancedAffineTransformType;
-  typedef itk::AdvancedTranslationTransform<ScalarType, Dimension>                 AdvancedTranslationTransformType;
-  typedef itk::AdvancedBSplineDeformableTransform<ScalarType, Dimension, 3>        AdvancedBSplineTransformType;
-  typedef itk::AdvancedEuler3DTransform<ScalarType>                                AdvancedEulerTransformType;
-  typedef itk::AdvancedSimilarity3DTransform<ScalarType>                           AdvancedSimilarityTransformType;
+  using AdvancedCombinationTransformType = itk::AdvancedCombinationTransform<ScalarType, Dimension>;
+  using AdvancedTransformType = itk::AdvancedTransform<ScalarType, Dimension, Dimension>;
+  using AdvancedAffineTransformType = itk::AdvancedMatrixOffsetTransformBase<ScalarType, Dimension, Dimension>;
+  using AdvancedTranslationTransformType = itk::AdvancedTranslationTransform<ScalarType, Dimension>;
+  using AdvancedBSplineTransformType = itk::AdvancedBSplineDeformableTransform<ScalarType, Dimension, 3>;
+  using AdvancedEulerTransformType = itk::AdvancedEuler3DTransform<ScalarType>;
+  using AdvancedSimilarityTransformType = itk::AdvancedSimilarity3DTransform<ScalarType>;
 
   // Transform copiers
-  typedef itk::
-    GPUAdvancedCombinationTransformCopier<OCLImageTypes, OCLImageDims, AdvancedCombinationTransformType, ScalarType>
-                                                                                          AdvancedTransformCopierType;
-  typedef itk::GPUTransformCopier<OCLImageTypes, OCLImageDims, TransformType, ScalarType> TransformCopierType;
+  using AdvancedTransformCopierType = itk::
+    GPUAdvancedCombinationTransformCopier<OCLImageTypes, OCLImageDims, AdvancedCombinationTransformType, ScalarType>;
+  using TransformCopierType = itk::GPUTransformCopier<OCLImageTypes, OCLImageDims, TransformType, ScalarType>;
 
   // Interpolate typedefs
-  typedef itk::InterpolateImageFunction<InputImageType, InterpolatorPrecisionType> InterpolatorType;
-  //  typedef itk::NearestNeighborInterpolateImageFunction<
-  //    InputImageType, InterpolatorPrecisionType >             NearestNeighborInterpolatorType;
-  //  typedef itk::LinearInterpolateImageFunction<
-  //    InputImageType, InterpolatorPrecisionType >             LinearInterpolatorType;
-  //  typedef itk::BSplineInterpolateImageFunction<
-  //    InputImageType, ScalarType, InterpolatorPrecisionType > BSplineInterpolatorType;
+  using InterpolatorType = itk::InterpolateImageFunction<InputImageType, InterpolatorPrecisionType>;
+  //  using NearestNeighborInterpolatorType = itk::NearestNeighborInterpolateImageFunction<
+  //    InputImageType, InterpolatorPrecisionType >;
+  //  using LinearInterpolatorType = itk::LinearInterpolateImageFunction<
+  //    InputImageType, InterpolatorPrecisionType >;
+  //  using BSplineInterpolatorType = itk::BSplineInterpolateImageFunction<
+  //    InputImageType, ScalarType, InterpolatorPrecisionType >;
 
   // Interpolator copier
-  typedef itk::GPUInterpolatorCopier<OCLImageTypes, OCLImageDims, InterpolatorType, InterpolatorPrecisionType>
-    InterpolateCopierType;
+  using InterpolateCopierType =
+    itk::GPUInterpolatorCopier<OCLImageTypes, OCLImageDims, InterpolatorType, InterpolatorPrecisionType>;
 
-  typedef itk::ImageFileReader<InputImageType>  ReaderType;
-  typedef itk::ImageFileWriter<OutputImageType> WriterType;
+  using ReaderType = itk::ImageFileReader<InputImageType>;
+  using WriterType = itk::ImageFileWriter<OutputImageType>;
 
   // CPU part
   ReaderType::Pointer       cpuReader;
@@ -784,8 +783,8 @@ main(int argc, char * argv[])
   TransformType::Pointer    cpuTransform;
 
   // Keep BSpline transform parameters in memory
-  typedef BSplineTransformType::ParametersType BSplineParametersType;
-  std::vector<BSplineParametersType>           bsplineParameters;
+  using BSplineParametersType = BSplineTransformType::ParametersType;
+  std::vector<BSplineParametersType> bsplineParameters;
 
   // CPU Reader
   cpuReader = ReaderType::New();
@@ -804,8 +803,8 @@ main(int argc, char * argv[])
   // Construct and setup the resample filter
   cpuFilter = FilterType::New();
 
-  typedef itk::Statistics::MersenneTwisterRandomVariateGenerator RandomNumberGeneratorType;
-  RandomNumberGeneratorType::Pointer                             randomNum = RandomNumberGeneratorType::GetInstance();
+  using RandomNumberGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
+  RandomNumberGeneratorType::Pointer randomNum = RandomNumberGeneratorType::GetInstance();
 
   InputImageType::ConstPointer        inputImage = cpuReader->GetOutput();
   const InputImageType::SpacingType   inputSpacing = inputImage->GetSpacing();
@@ -878,7 +877,7 @@ main(int argc, char * argv[])
   {
     AdvancedTransformType::Pointer            currentTransform;
     AdvancedCombinationTransformType::Pointer initialTransform;
-    AdvancedCombinationTransformType::Pointer tmpTransform = AdvancedCombinationTransformType::New();
+    auto                                      tmpTransform = AdvancedCombinationTransformType::New();
     initialTransform = tmpTransform;
     cpuTransform = tmpTransform;
 
@@ -906,7 +905,7 @@ main(int argc, char * argv[])
       }
       else
       {
-        AdvancedCombinationTransformType::Pointer initialNext = AdvancedCombinationTransformType::New();
+        auto initialNext = AdvancedCombinationTransformType::New();
 
         SetTransform<
           // ITK Transforms
@@ -971,7 +970,7 @@ main(int argc, char * argv[])
             << cpuFilter->GetNumberOfWorkUnits() << " " << cputimer.GetMean() / runTimes << std::endl;
 
   /** Write the CPU result. */
-  WriterType::Pointer cpuWriter = WriterType::New();
+  auto cpuWriter = WriterType::New();
   cpuWriter->SetInput(cpuFilter->GetOutput());
   cpuWriter->SetFileName(outputFileNames[0].c_str());
   try
@@ -1062,7 +1061,7 @@ main(int argc, char * argv[])
   {
     if (!useComboTransform)
     {
-      TransformCopierType::Pointer copier = TransformCopierType::New();
+      auto copier = TransformCopierType::New();
       copier->SetInputTransform(cpuTransform);
       copier->SetExplicitMode(false);
       copier->Update();
@@ -1075,7 +1074,7 @@ main(int argc, char * argv[])
         dynamic_cast<const AdvancedCombinationTransformType *>(cpuTransform.GetPointer());
       if (CPUAdvancedCombinationTransform)
       {
-        AdvancedTransformCopierType::Pointer copier = AdvancedTransformCopierType::New();
+        auto copier = AdvancedTransformCopierType::New();
         copier->SetInputTransform(CPUAdvancedCombinationTransform);
         copier->SetExplicitMode(false);
         copier->Update();
@@ -1097,7 +1096,7 @@ main(int argc, char * argv[])
   }
 
   // Create GPU copy for interpolator here
-  InterpolateCopierType::Pointer interpolateCopier = InterpolateCopierType::New();
+  auto interpolateCopier = InterpolateCopierType::New();
   interpolateCopier->SetInputInterpolator(cpuInterpolator);
   interpolateCopier->SetExplicitMode(false);
   interpolateCopier->Update();
@@ -1143,7 +1142,7 @@ main(int argc, char * argv[])
             << gputimer.GetMean() / runTimes << " " << cputimer.GetMean() / gputimer.GetMean();
 
   /** Write the GPU result. */
-  WriterType::Pointer gpuWriter = WriterType::New();
+  auto gpuWriter = WriterType::New();
   gpuWriter->SetInput(gpuFilter->GetOutput());
   gpuWriter->SetFileName(outputFileNames[1].c_str());
   try

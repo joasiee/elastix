@@ -23,7 +23,7 @@
 #include "itkObjectFactoryBase.h"
 #include "itkImageIOFactory.h"
 #include "itkCommand.h"
-#include "vnl/vnl_vector.h"
+#include <vnl/vnl_vector.h>
 #include "itkVectorImage.h"
 #include "itkDefaultConvertPixelTraits.h"
 #include "itkMetaImageIO.h"
@@ -43,13 +43,13 @@ ImageFileCastWriter<TInputImage>::ImageFileCastWriter()
 //---------------------------------------------------------
 template <class TInputImage>
 std::string
-ImageFileCastWriter<TInputImage>::GetDefaultOutputComponentType(void) const
+ImageFileCastWriter<TInputImage>::GetDefaultOutputComponentType() const
 {
   /** Make a dummy imageIO object, which has some handy functions */
-  MetaImageIO::Pointer dummyImageIO = MetaImageIO::New();
+  auto dummyImageIO = MetaImageIO::New();
 
   /** Set the pixeltype. */
-  typedef typename InputImageType::InternalPixelType ScalarType;
+  using ScalarType = typename InputImageType::InternalPixelType;
   // dummyImageIO->SetPixelTypeInfo(typeid(ScalarType));
   dummyImageIO->SetPixelTypeInfo(static_cast<const ScalarType *>(nullptr));
 
@@ -69,7 +69,7 @@ ImageFileCastWriter<TInputImage>::~ImageFileCastWriter()
 //---------------------------------------------------------
 template <class TInputImage>
 void
-ImageFileCastWriter<TInputImage>::GenerateData(void)
+ImageFileCastWriter<TInputImage>::GenerateData()
 {
   const InputImageType * input = this->GetInput();
 
@@ -77,15 +77,15 @@ ImageFileCastWriter<TInputImage>::GenerateData(void)
 
   // Make sure that the image is the right type and no more than
   // four components.
-  typedef typename InputImageType::PixelType ScalarType;
+  using ScalarType = typename InputImageType::PixelType;
 
   if (strcmp(input->GetNameOfClass(), "VectorImage") == 0)
   {
-    typedef typename InputImageType::InternalPixelType VectorImageScalarType;
+    using VectorImageScalarType = typename InputImageType::InternalPixelType;
     // this->GetImageIO()->SetPixelTypeInfo( typeid(VectorImageScalarType) );
     this->GetModifiableImageIO()->SetPixelTypeInfo(static_cast<const VectorImageScalarType *>(nullptr));
 
-    typedef typename InputImageType::AccessorFunctorType AccessorFunctorType;
+    using AccessorFunctorType = typename InputImageType::AccessorFunctorType;
     this->GetModifiableImageIO()->SetNumberOfComponents(AccessorFunctorType::GetVectorLength(input));
   }
   else

@@ -20,7 +20,7 @@
 #include "itkOpenCLKernelToImageBridge.h"
 
 int
-main(void)
+main()
 {
   try
   {
@@ -44,8 +44,8 @@ main(void)
     }
 
     // Create ITK Image
-    typedef itk::Image<float, 2> ImageType;
-    ImageType::Pointer           image = ImageType::New();
+    using ImageType = itk::Image<float, 2>;
+    auto image = ImageType::New();
 
     ImageType::SizeType size;
     size[0] = 64;

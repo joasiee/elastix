@@ -21,7 +21,7 @@
 #include "elxIncludes.h" // include first to avoid MSVS warning
 #include "itkAdvancedCombinationTransform.h"
 #include "itkAdvancedTranslationTransform.h"
-#include "itkStackTransform.h"
+#include "itkTranslationStackTransform.h"
 
 
 /**
@@ -61,13 +61,12 @@ class ITK_TEMPLATE_EXPORT TranslationStackTransform
 {
 public:
   /** Standard ITK-stuff. */
-  typedef TranslationStackTransform Self;
-  typedef itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                            elx::TransformBase<TElastix>::FixedImageDimension>
-                                        Superclass1;
-  typedef elx::TransformBase<TElastix>  Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = TranslationStackTransform;
+  using Superclass1 = itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                        elx::TransformBase<TElastix>::FixedImageDimension>;
+  using Superclass2 = elx::TransformBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -88,21 +87,14 @@ public:
   /** The ITK-class that provides most of the functionality, and
    * that is set as the "CurrentTransform" in the CombinationTransform.
    */
-  typedef itk::AdvancedTranslationTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::SpaceDimension>
-                                                     TranslationTransformType;
-  typedef typename TranslationTransformType::Pointer TranslationTransformPointer;
+  using TranslationTransformType =
+    itk::AdvancedTranslationTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::SpaceDimension>;
+  using TranslationTransformPointer = typename TranslationTransformType::Pointer;
 
   /** The ITK-class for the sub transforms, which have a reduced dimension. */
-  typedef itk::AdvancedTranslationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                            Self::ReducedSpaceDimension>
-                                                                     ReducedDimensionTranslationTransformType;
-  typedef typename ReducedDimensionTranslationTransformType::Pointer ReducedDimensionTranslationTransformPointer;
-
-  /** Typedef for stack transform. */
-  typedef itk::
-    StackTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::SpaceDimension, Self::SpaceDimension>
-                                                          TranslationStackTransformType;
-  typedef typename TranslationStackTransformType::Pointer TranslationStackTransformPointer;
+  using ReducedDimensionTranslationTransformType =
+    itk::AdvancedTranslationTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::ReducedSpaceDimension>;
+  using ReducedDimensionTranslationTransformPointer = typename ReducedDimensionTranslationTransformType::Pointer;
 
   /** Typedefs inherited from the superclass. */
   using typename Superclass1::ParametersType;
@@ -119,11 +111,11 @@ public:
   using typename Superclass2::CoordRepType;
   using typename Superclass2::FixedImageType;
   using typename Superclass2::MovingImageType;
-  typedef typename Superclass2::ITKBaseType              ITKBaseType;
-  typedef typename Superclass2::CombinationTransformType CombinationTransformType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
+  using CombinationTransformType = typename Superclass2::CombinationTransformType;
 
   /** Typedef SizeType. */
-  typedef typename FixedImageType::SizeType SizeType;
+  using SizeType = typename FixedImageType::SizeType;
 
   /** Execute stuff before the actual registration:
    * \li Set the stack transform parameters.
@@ -131,21 +123,18 @@ public:
    * \li Create initial registration parameters.
    */
   int
-  BeforeAll(void) override;
+  BeforeAll() override;
 
   void
-  BeforeRegistration(void) override;
-
-  virtual void
-  InitializeTransform(void);
+  BeforeRegistration() override;
 
   /** Function to read transform-parameters from a file. */
   void
-  ReadFromFile(void) override;
+  ReadFromFile() override;
 
 protected:
   /** The constructor. */
-  TranslationStackTransform();
+  TranslationStackTransform() { this->Superclass1::SetCurrentTransform(m_StackTransform); }
 
   /** The destructor. */
   ~TranslationStackTransform() override = default;
@@ -153,20 +142,26 @@ protected:
 private:
   elxOverrideGetSelfMacro;
 
+  void
+  InitializeTransform();
+
   /** Creates a map of the parameters specific for this (derived) transform type. */
   ParameterMapType
-  CreateDerivedTransformParametersMap(void) const override;
+  CreateDerivedTransformParametersMap() const override;
 
   /** The deleted copy constructor and assignment operator. */
   TranslationStackTransform(const Self &) = delete;
   void
   operator=(const Self &) = delete;
 
+  /** Typedef for stack transform. */
+  using StackTransformType = itk::TranslationStackTransform<SpaceDimension>;
+
   /** The Translation stack transform. */
-  TranslationStackTransformPointer m_TranslationStackTransform;
+  const typename StackTransformType::Pointer m_StackTransform{ StackTransformType::New() };
 
   /** Dummy sub transform to be used to set sub transforms of stack transform. */
-  ReducedDimensionTranslationTransformPointer m_TranslationDummySubTransform;
+  ReducedDimensionTranslationTransformPointer m_DummySubTransform;
 
   /** Stack variables. */
   unsigned int m_NumberOfSubTransforms;

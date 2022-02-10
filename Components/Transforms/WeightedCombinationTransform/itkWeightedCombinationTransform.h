@@ -44,10 +44,10 @@ class ITK_TEMPLATE_EXPORT WeightedCombinationTransform
 {
 public:
   /** Standard class typedefs. */
-  typedef WeightedCombinationTransform                                        Self;
-  typedef AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions> Superclass;
-  typedef SmartPointer<Self>                                                  Pointer;
-  typedef SmartPointer<const Self>                                            ConstPointer;
+  using Self = WeightedCombinationTransform;
+  using Superclass = AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New method for creating an object using a factory. */
   itkNewMacro(Self);
@@ -79,10 +79,10 @@ public:
   using typename Superclass::JacobianOfSpatialHessianType;
 
   /** New typedefs in this class: */
-  typedef Transform<TScalarType, NInputDimensions, NOutputDimensions> TransformType;
+  using TransformType = Transform<TScalarType, NInputDimensions, NOutputDimensions>;
   /** \todo: shouldn't these be ConstPointers? */
-  typedef typename TransformType::Pointer TransformPointer;
-  typedef std::vector<TransformPointer>   TransformContainerType;
+  using TransformPointer = typename TransformType::Pointer;
+  using TransformContainerType = std::vector<TransformPointer>;
 
   /**  Method to transform a point. */
   OutputPointType
@@ -92,24 +92,24 @@ public:
   OutputVectorType
   TransformVector(const InputVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformVector(const InputVectorType &) is not implemented "
-                      << "for WeightedCombinationTransform");
+    itkExceptionMacro(
+      << "TransformVector(const InputVectorType &) is not implemented for WeightedCombinationTransform");
   }
 
 
   OutputVnlVectorType
   TransformVector(const InputVnlVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformVector(const InputVnlVectorType &) is not implemented "
-                      << "for WeightedCombinationTransform");
+    itkExceptionMacro(
+      << "TransformVector(const InputVnlVectorType &) is not implemented for WeightedCombinationTransform");
   }
 
 
   OutputCovariantVectorType
   TransformCovariantVector(const InputCovariantVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformCovariantVector(const InputCovariantVectorType &) is not implemented "
-                      << "for WeightedCombinationTransform");
+    itkExceptionMacro(<< "TransformCovariantVector(const InputCovariantVectorType &) is not implemented for "
+                         "WeightedCombinationTransform");
   }
 
 
@@ -137,7 +137,7 @@ public:
 
   /** Get the Fixed Parameters. */
   const ParametersType &
-  GetFixedParameters(void) const override
+  GetFixedParameters() const override
   {
     // \todo: to be implemented by Stefan: check this:
     return this->m_FixedParameters;
@@ -146,7 +146,7 @@ public:
 
   /** Return the number of sub-transforms that have been set. */
   NumberOfParametersType
-  GetNumberOfParameters(void) const override
+  GetNumberOfParameters() const override
   {
     return this->m_TransformContainer.size();
   }
@@ -176,7 +176,7 @@ public:
    * this->Modified() is called when the transform container is updated.
    **/
   const TransformContainerType &
-  GetTransformContainer(void) const
+  GetTransformContainer() const
   {
     return this->m_TransformContainer;
   }

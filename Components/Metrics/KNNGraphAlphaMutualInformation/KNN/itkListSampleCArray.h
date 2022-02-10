@@ -46,10 +46,10 @@ class ITK_TEMPLATE_EXPORT ListSampleCArray : public Sample<TMeasurementVector>
 {
 public:
   /** Standard itk. */
-  typedef ListSampleCArray           Self;
-  typedef Sample<TMeasurementVector> Superclass;
-  typedef SmartPointer<Self>         Pointer;
-  typedef SmartPointer<const Self>   ConstPointer;
+  using Self = ListSampleCArray;
+  using Superclass = Sample<TMeasurementVector>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New method for creating an object using a factory.*/
   itkNewMacro(Self);
@@ -66,9 +66,9 @@ public:
   using typename Superclass::InstanceIdentifier;
 
   /** Typedef's for the internal data container. */
-  typedef TInternalValue      InternalValueType;
-  typedef InternalValueType * InternalDataType;
-  typedef InternalDataType *  InternalDataContainerType;
+  using InternalValueType = TInternalValue;
+  using InternalDataType = InternalValueType *;
+  using InternalDataContainerType = InternalDataType *;
 
   /** Macro to get the internal data container. */
   itkGetConstMacro(InternalContainer, InternalDataContainerType);
@@ -83,15 +83,15 @@ public:
 
   /** Function to get the actual (not the allocated) size of the data container. */
   unsigned long
-  GetActualSize(void);
+  GetActualSize();
 
   /** Function to clear the data container. */
   void
-  Clear(void);
+  Clear();
 
   /** Function to get the size of the data container. */
   InstanceIdentifier
-  Size(void) const override
+  Size() const override
   {
     return this->m_InternalContainerSize;
   }
@@ -124,7 +124,7 @@ public:
 
   /** Function to get the total frequency. */
   TotalAbsoluteFrequencyType
-  GetTotalFrequency(void) const override
+  GetTotalFrequency() const override
   {
     return static_cast<TotalAbsoluteFrequencyType>(this->m_InternalContainerSize);
   }
@@ -155,7 +155,7 @@ private:
 
   /** Function to deallocate the memory of the data container. */
   void
-  DeallocateInternalContainer(void);
+  DeallocateInternalContainer();
 };
 
 } // end namespace Statistics

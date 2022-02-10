@@ -58,11 +58,11 @@ class ITK_TEMPLATE_EXPORT ElasticBodySplineKernelTransform2 : public KernelTrans
 {
 public:
   /** Standard class typedefs. */
-  typedef ElasticBodySplineKernelTransform2          Self;
-  typedef KernelTransform2<TScalarType, NDimensions> Superclass;
+  using Self = ElasticBodySplineKernelTransform2;
+  using Superclass = KernelTransform2<TScalarType, NDimensions>;
 
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(ElasticBodySplineKernelTransform2, KernelTransform2);
@@ -111,7 +111,7 @@ public:
 
 
   const TScalarType
-  GetPoissonRatio(void) const override
+  GetPoissonRatio() const override
   {
     return 1.0 - (this->m_Alpha + 1.0) / 12.0;
   }

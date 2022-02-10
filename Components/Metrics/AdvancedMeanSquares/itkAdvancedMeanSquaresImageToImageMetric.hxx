@@ -19,7 +19,7 @@
 #define _itkAdvancedMeanSquaresImageToImageMetric_hxx
 
 #include "itkAdvancedMeanSquaresImageToImageMetric.h"
-#include "vnl/algo/vnl_matrix_update.h"
+#include <vnl/algo/vnl_matrix_update.h>
 #include "itkMersenneTwisterRandomVariateGenerator.h"
 #include "itkComputeImageExtremaFilter.h"
 
@@ -60,7 +60,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSq
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
 {
   /** Initialize transform, interpolator, etc. */
   Superclass::Initialize();
@@ -68,8 +68,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize(voi
   if (this->GetUseNormalization())
   {
     /** Try to guess a normalization factor. */
-    typedef typename itk::ComputeImageExtremaFilter<FixedImageType> ComputeFixedImageExtremaFilterType;
-    typename ComputeFixedImageExtremaFilterType::Pointer            computeFixedImageExtrema =
+    using ComputeFixedImageExtremaFilterType = typename itk::ComputeImageExtremaFilter<FixedImageType>;
+    typename ComputeFixedImageExtremaFilterType::Pointer computeFixedImageExtrema =
       ComputeFixedImageExtremaFilterType::New();
     computeFixedImageExtrema->SetInput(this->GetFixedImage());
     computeFixedImageExtrema->SetImageRegion(this->GetFixedImageRegion());
@@ -100,8 +100,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize(voi
       this->m_FixedImageTrueMax +
       this->m_FixedLimitRangeRatio * (this->m_FixedImageTrueMax - this->m_FixedImageTrueMin));
 
-    typedef typename itk::ComputeImageExtremaFilter<MovingImageType> ComputeMovingImageExtremaFilterType;
-    typename ComputeMovingImageExtremaFilterType::Pointer            computeMovingImageExtrema =
+    using ComputeMovingImageExtremaFilterType = typename itk::ComputeImageExtremaFilter<MovingImageType>;
+    typename ComputeMovingImageExtremaFilterType::Pointer computeMovingImageExtrema =
       ComputeMovingImageExtremaFilterType::New();
     computeMovingImageExtrema->SetInput(this->GetMovingImage());
     computeMovingImageExtrema->SetImageRegion(this->GetMovingImage()->GetBufferedRegion());
@@ -178,9 +178,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::PrintSelf(std:
  */
 
 template <class TFixedImage, class TMovingImage>
-typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueSingleThreaded(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   /** Initialize some variables. */
   this->m_NumberOfPixelsCounted = 0;
@@ -215,23 +215,19 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueSingle
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
-    MovingImagePointType        mappedPoint;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value and check if the point is
      * inside the moving image buffer.
      */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+      sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
     }
 
     if (sampleOk)
@@ -271,9 +267,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueSingle
  */
 
 template <class TFixedImage, class TMovingImage>
-typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   /** Option for now to still use the single threaded code. */
   if (!this->m_UseMultiThread)
@@ -368,12 +364,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
-    RealType                    movingImageValue = NumericTraits<RealType>::Zero;
-    MovingImagePointType        mappedPoint;
-    this->TransformPoint(fixedPoint, mappedPoint);
+    RealType                    movingImageValue;
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
     const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
 
-    if (!(this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr)))
+    if (!(this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, threadId)))
     {
       const typename MovingImageType::Superclass &   imageBase = *(this->GetMovingImage());
       MovingImageIndexType                           index = imageBase.TransformPhysicalPointToIndex(mappedPoint);
@@ -438,12 +433,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*threader_fiter).Value().get().m_ImageCoordinates;
-    RealType                    movingImageValue = NumericTraits<RealType>::Zero;
-    MovingImagePointType        mappedPoint;
-    this->TransformPoint(fixedPoint, mappedPoint);
+    RealType                    movingImageValue;
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
     const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().get().m_ImageValue);
 
-    if (!(this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr)))
+    if (!(this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, threadId)))
     {
       const typename MovingImageType::Superclass &   imageBase = *(this->GetMovingImage());
       MovingImageIndexType                           index = imageBase.TransformPhysicalPointToIndex(mappedPoint);
@@ -587,24 +581,21 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDer
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
-    MovingImagePointType        mappedPoint;
     MovingImageDerivativeType   movingImageDerivative;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value M(T(x)) and derivative dM/dx and check if
      * the point is inside the moving image buffer.
      */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      sampleOk =
+        this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
     }
 
     if (sampleOk)
@@ -744,24 +735,21 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
-    MovingImagePointType        mappedPoint;
     MovingImageDerivativeType   movingImageDerivative;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint); // thread-safe?
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value M(T(x)) and derivative dM/dx and check if
      * the point is inside the moving image buffer.
      */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      sampleOk = this->FastEvaluateMovingImageValueAndDerivative(
+        mappedPoint, movingImageValue, &movingImageDerivative, threadId);
     }
 
     if (sampleOk)
@@ -902,12 +890,15 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateValueAnd
 
   /** Calculate the contributions to the derivatives with respect to each parameter. */
   const RealType diff_2 = diff * 2.0;
-  if (nzji.size() == this->GetNumberOfParameters())
+
+  const auto numberOfParameters = this->GetNumberOfParameters();
+
+  if (nzji.size() == numberOfParameters)
   {
     /** Loop over all Jacobians. */
     typename DerivativeType::const_iterator imjacit = imageJacobian.begin();
     typename DerivativeType::iterator       derivit = deriv.begin();
-    for (unsigned int mu = 0; mu < this->GetNumberOfParameters(); ++mu)
+    for (unsigned int mu = 0; mu < numberOfParameters; ++mu)
     {
       (*derivit) += diff_2 * (*imjacit);
       ++imjacit;
@@ -937,7 +928,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   HessianType &                   H) const
 {
   itkDebugMacro("GetSelfHessian()");
-  typedef Statistics::MersenneTwisterRandomVariateGenerator RandomGeneratorType;
+  using RandomGeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
 
   /** Initialize some variables. */
   this->m_NumberOfPixelsCounted = 0;
@@ -952,18 +943,20 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   /** Make sure the transform parameters are up to date. */
   this->SetTransformParameters(parameters);
 
+  const auto numberOfParameters = this->GetNumberOfParameters();
+
   /** Prepare Hessian */
-  H.set_size(this->GetNumberOfParameters(), this->GetNumberOfParameters());
+  H.set_size(numberOfParameters, numberOfParameters);
   // H.Fill(0.0); // done by set_size if sparse matrix
 
   /** Smooth fixed image */
-  typename SmootherType::Pointer smoother = SmootherType::New();
+  auto smoother = SmootherType::New();
   smoother->SetInput(this->GetFixedImage());
   smoother->SetSigma(this->GetSelfHessianSmoothingSigma());
   smoother->Update();
 
   /** Set up interpolator for fixed image */
-  typename FixedImageInterpolatorType::Pointer fixedInterpolator = FixedImageInterpolatorType::New();
+  auto fixedInterpolator = FixedImageInterpolatorType::New();
   if (this->m_BSplineInterpolator.IsNotNull())
   {
     fixedInterpolator->SetSplineOrder(this->m_BSplineInterpolator->GetSplineOrder());
@@ -977,7 +970,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   /** Set up random coordinate sampler
    * Actually we could do without a sampler, but it's easy like this.
    */
-  typename SelfHessianSamplerType::Pointer sampler = SelfHessianSamplerType::New();
+  auto sampler = SelfHessianSamplerType::New();
   // typename DummyFixedImageInterpolatorType::Pointer dummyInterpolator =
   //  DummyFixedImageInterpolatorType::New();
   sampler->SetInputImageRegion(this->GetImageSampler()->GetInputImageRegion());
@@ -1000,19 +993,13 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-    MovingImagePointType        mappedPoint;
     MovingImageDerivativeType   movingImageDerivative;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. NB: we assume here that the
-     * initial transformation is approximately ok.
-     */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Check if point is inside moving image. NB: we assume here that the
      * initial transformation is approximately ok.
@@ -1058,7 +1045,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   if (this->m_NumberOfPixelsCounted > 0)
   {
     const double normal_sum = 2.0 * this->m_NormalizationFactor / static_cast<double>(this->m_NumberOfPixelsCounted);
-    for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       H.scale_row(i, normal_sum);
     }
@@ -1066,7 +1053,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   else
   {
     // H.fill_diagonal(1.0);
-    for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       H(i, i) = 1.0;
     }
@@ -1086,9 +1073,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateSelfHess
   const NonZeroJacobianIndicesType & nzji,
   HessianType &                      H) const
 {
-  typedef typename HessianType::row    RowType;
-  typedef typename RowType::iterator   RowIteratorType;
-  typedef typename HessianType::pair_t ElementType;
+  using RowType = typename HessianType::row;
+  using RowIteratorType = typename RowType::iterator;
+  using ElementType = typename HessianType::pair_t;
 
   // does not work for sparse matrix. \todo: distinguish between sparse and nonsparse
   ///** Do rank-1 update of H */

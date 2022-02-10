@@ -65,14 +65,14 @@ ELASTIX::~ELASTIX()
  */
 
 ELASTIX::ConstImagePointer
-ELASTIX::GetResultImage(void) const
+ELASTIX::GetResultImage() const
 {
   return this->m_ResultImage;
 } // end GetResultImage()
 
 
 ELASTIX::ImagePointer
-ELASTIX::GetResultImage(void)
+ELASTIX::GetResultImage()
 {
   return this->m_ResultImage;
 } // end GetResultImage()
@@ -83,7 +83,7 @@ ELASTIX::GetResultImage(void)
  */
 
 ELASTIX::ParameterMapType
-ELASTIX::GetTransformParameterMap(void) const
+ELASTIX::GetTransformParameterMap() const
 {
   return this->m_TransformParametersList.back();
 } // end GetTransformParameterMap()
@@ -94,7 +94,7 @@ ELASTIX::GetTransformParameterMap(void) const
  */
 
 ELASTIX::ParameterMapListType
-ELASTIX::GetTransformParameterMapList(void) const
+ELASTIX::GetTransformParameterMapList() const
 {
   return this->m_TransformParametersList;
 } // end GetTransformParameterMapList()
@@ -138,13 +138,13 @@ ELASTIX::RegisterImages(ImagePointer                          fixedImage,
                         ObjectPointer                         transform)
 {
   /** Some typedef's. */
-  typedef elx::ElastixMain                            ElastixMainType;
-  typedef ElastixMainType::DataObjectContainerType    DataObjectContainerType;
-  typedef ElastixMainType::DataObjectContainerPointer DataObjectContainerPointer;
-  typedef ElastixMainType::FlatDirectionCosinesType   FlatDirectionCosinesType;
+  using ElastixMainType = elx::ElastixMain;
+  using DataObjectContainerType = ElastixMainType::DataObjectContainerType;
+  using DataObjectContainerPointer = ElastixMainType::DataObjectContainerPointer;
+  using FlatDirectionCosinesType = ElastixMainType::FlatDirectionCosinesType;
 
-  typedef ElastixMainType::ArgumentMapType ArgumentMapType;
-  typedef ArgumentMapType::value_type      ArgumentMapEntryType;
+  using ArgumentMapType = ElastixMainType::ArgumentMapType;
+  using ArgumentMapEntryType = ArgumentMapType::value_type;
 
   // Clear output transform parameters
   this->m_TransformParametersList.clear();
@@ -270,9 +270,7 @@ ELASTIX::RegisterImages(ImagePointer                          fixedImage,
     elastixMain->SetTotalNumberOfElastixLevels(nrOfParameterFiles);
 
     /** Print a start message. */
-    elxout << "-------------------------------------------------------------------------"
-           << "\n"
-           << std::endl;
+    elxout << "-------------------------------------------------------------------------\n" << std::endl;
     elxout << "Running elastix with parameter map " << i << std::endl;
 
     /** Declare a timer, start it and print the start time. */
@@ -320,9 +318,7 @@ ELASTIX::RegisterImages(ImagePointer                          fixedImage,
     }
   } // end loop over registrations
 
-  elxout << "-------------------------------------------------------------------------"
-         << "\n"
-         << std::endl;
+  elxout << "-------------------------------------------------------------------------\n" << std::endl;
 
   /** Stop totaltimer and print it. */
   totaltimer.Stop();

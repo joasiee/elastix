@@ -36,13 +36,6 @@ BinaryTreeSearchBase<TBinaryTree>::BinaryTreeSearchBase()
 
 
 /**
- * ************************ Destructor *************************
- */
-
-template <class TBinaryTree>
-BinaryTreeSearchBase<TBinaryTree>::~BinaryTreeSearchBase() = default; // end Destructor
-
-/**
  * ************************ SetBinaryTree *************************
  */
 
@@ -67,8 +60,8 @@ BinaryTreeSearchBase<TBinaryTree>::SetBinaryTree(BinaryTreeType * tree)
  */
 
 template <class TBinaryTree>
-const typename BinaryTreeSearchBase<TBinaryTree>::BinaryTreeType *
-BinaryTreeSearchBase<TBinaryTree>::GetBinaryTree(void) const
+auto
+BinaryTreeSearchBase<TBinaryTree>::GetBinaryTree() const -> const BinaryTreeType *
 {
   return this->m_BinaryTree.GetPointer();
 } // end GetBinaryTree

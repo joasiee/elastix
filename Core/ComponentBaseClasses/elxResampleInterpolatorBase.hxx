@@ -20,6 +20,7 @@
 #define elxResampleInterpolatorBase_hxx
 
 #include "elxResampleInterpolatorBase.h"
+#include "elxConversion.h"
 
 namespace elastix
 {
@@ -30,7 +31,7 @@ namespace elastix
 
 template <class TElastix>
 void
-ResampleInterpolatorBase<TElastix>::ReadFromFile(void)
+ResampleInterpolatorBase<TElastix>::ReadFromFile()
 {
   // nothing, but must be here
 

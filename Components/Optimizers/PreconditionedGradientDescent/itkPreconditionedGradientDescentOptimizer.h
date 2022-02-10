@@ -20,7 +20,7 @@
 
 #include "itkScaledSingleValuedNonLinearOptimizer.h"
 #include "itkArray2D.h"
-#include "vnl/vnl_sparse_matrix.h"
+#include <vnl/vnl_sparse_matrix.h>
 #include "cholmod.h"
 
 namespace itk
@@ -56,10 +56,10 @@ class PreconditionedGradientDescentOptimizer : public ScaledSingleValuedNonLinea
 {
 public:
   /** Standard class typedefs. */
-  typedef PreconditionedGradientDescentOptimizer Self;
-  typedef ScaledSingleValuedNonLinearOptimizer   Superclass;
-  typedef SmartPointer<Self>                     Pointer;
-  typedef SmartPointer<const Self>               ConstPointer;
+  using Self = PreconditionedGradientDescentOptimizer;
+  using Superclass = ScaledSingleValuedNonLinearOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -77,36 +77,36 @@ public:
   using Superclass::ScaledCostFunctionPointer;
 
   /** Some typedefs for computing the SelfHessian */
-  typedef DerivativeType::ValueType PreconditionValueType;
+  using PreconditionValueType = DerivativeType::ValueType;
   // typedef Array2D<PreconditionValueType>                  PreconditionType;
   // typedef vnl_symmetric_eigensystem<
   //  PreconditionValueType >                               EigenSystemType;
-  typedef vnl_sparse_matrix<PreconditionValueType> PreconditionType;
+  using PreconditionType = vnl_sparse_matrix<PreconditionValueType>;
 
   /** Codes of stopping conditions
    * The MinimumStepSize stopcondition never occurs, but may
    * be implemented in inheriting classes.
    */
-  typedef enum
+  enum StopConditionType
   {
     MaximumNumberOfIterations,
     MetricError,
     MinimumStepSize
-  } StopConditionType;
+  };
 
   /** Advance one step following the gradient direction. */
   virtual void
-  AdvanceOneStep(void);
+  AdvanceOneStep();
 
   /** Start optimization. */
   virtual void
-  StartOptimization(void);
+  StartOptimization();
 
   /** Resume previously stopped optimization with current parameters
    * \sa StopOptimization.
    */
   virtual void
-  ResumeOptimization(void);
+  ResumeOptimization();
 
   /** Stop optimization and pass on exception. */
   virtual void
@@ -115,7 +115,7 @@ public:
   /** Stop optimization.
    * \sa ResumeOptimization */
   virtual void
-  StopOptimization(void);
+  StopOptimization();
 
   /** Set the learning rate. */
   itkSetMacro(LearningRate, double);
@@ -155,14 +155,14 @@ public:
 
   /** Temporary functions, for debugging */
   const cholmod_common *
-  GetCholmodCommon(void) const
+  GetCholmodCommon() const
   {
     return this->m_CholmodCommon;
   }
 
 
   const cholmod_factor *
-  GetCholmodFactor(void) const
+  GetCholmodFactor() const
   {
     return this->m_CholmodFactor;
   }
@@ -197,7 +197,7 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const;
 
   /** Cholmod index type: define at central place */
-  typedef int CInt; // change to UF_long if using cholmod_l;
+  using cholmod_l = int CInt; // change to UF_long if using;
 
   // made protected so subclass can access
   DerivativeType    m_Gradient;

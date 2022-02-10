@@ -95,7 +95,7 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::TransformRigidityPenalty
 
 template <class TFixedImage, class TScalarType>
 void
-TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::CheckUseAndCalculationBooleans(void)
+TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::CheckUseAndCalculationBooleans()
 {
   if (this->m_UseLinearityCondition)
   {
@@ -119,7 +119,7 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::CheckUseAndCalculationBo
 
 template <class TFixedImage, class TScalarType>
 void
-TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::Initialize(void)
+TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::Initialize()
 {
   /** Call the initialize of the superclass. */
   this->Superclass::Initialize();
@@ -173,7 +173,7 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::Initialize(void)
 
 template <class TFixedImage, class TScalarType>
 void
-TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::DilateRigidityImages(void)
+TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::DilateRigidityImages()
 {
   /** Dilate m_FixedRigidityImage and m_MovingRigidityImage. */
   if (this->m_DilateRigidityImages)
@@ -460,8 +460,8 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::FillRigidityCoefficientI
  */
 
 template <class TFixedImage, class TScalarType>
-typename TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::MeasureType
-TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const
+auto
+TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const -> MeasureType
 {
   /** Fill the rigidity image based on the current transform parameters. */
   this->FillRigidityCoefficientImage(parameters);
@@ -1959,7 +1959,7 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::Create1DOperator(
 {
   /** Create an operator size and set it in the operator. */
   NeighborhoodSizeType r;
-  r.Fill(NumericTraits<unsigned int>::ZeroValue());
+  r.Fill(0U);
   r[WhichDimension - 1] = 1;
   F.SetRadius(r);
 
@@ -2162,10 +2162,10 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::Create1DOperator(
  */
 
 template <class TFixedImage, class TScalarType>
-typename TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::CoefficientImagePointer
+auto
 TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::FilterSeparable(
   const CoefficientImageType *          image,
-  const std::vector<NeighborhoodType> & Operators) const
+  const std::vector<NeighborhoodType> & Operators) const -> CoefficientImagePointer
 {
   /** Create filters, supply them with boundary conditions and operators. */
   std::vector<typename NOIFType::Pointer> filters(ImageDimension);

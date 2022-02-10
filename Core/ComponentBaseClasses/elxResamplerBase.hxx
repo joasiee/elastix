@@ -46,7 +46,7 @@ ResamplerBase<TElastix>::ResamplerBase()
 
 template <class TElastix>
 void
-ResamplerBase<TElastix>::BeforeRegistrationBase(void)
+ResamplerBase<TElastix>::BeforeRegistrationBase()
 {
   /** Connect the components. */
   this->SetComponents();
@@ -56,8 +56,8 @@ ResamplerBase<TElastix>::BeforeRegistrationBase(void)
   /** Get a pointer to the fixedImage.
    * \todo make it a cast to the fixed image type
    */
-  typedef typename ElastixType::FixedImageType FixedImageType;
-  FixedImageType *                             fixedImage = this->m_Elastix->GetFixedImage();
+  using FixedImageType = typename ElastixType::FixedImageType;
+  FixedImageType * fixedImage = this->m_Elastix->GetFixedImage();
 
   /** Set the region info to the same values as in the fixedImage. */
   this->GetAsITKBaseType()->SetSize(fixedImage->GetLargestPossibleRegion().GetSize());
@@ -84,7 +84,7 @@ ResamplerBase<TElastix>::BeforeRegistrationBase(void)
 
 template <class TElastix>
 void
-ResamplerBase<TElastix>::AfterEachResolutionBase(void)
+ResamplerBase<TElastix>::AfterEachResolutionBase()
 {
   /** Set the final transform parameters. */
   this->GetElastix()->GetElxTransformBase()->SetFinalParameters();
@@ -138,7 +138,7 @@ ResamplerBase<TElastix>::AfterEachResolutionBase(void)
 
 template <class TElastix>
 void
-ResamplerBase<TElastix>::AfterEachIterationBase(void)
+ResamplerBase<TElastix>::AfterEachIterationBase()
 {
   /** What is the current resolution level? */
   const unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -187,7 +187,7 @@ ResamplerBase<TElastix>::AfterEachIterationBase(void)
 
 template <class TElastix>
 void
-ResamplerBase<TElastix>::AfterRegistrationBase(void)
+ResamplerBase<TElastix>::AfterRegistrationBase()
 {
   /** Set the final transform parameters. */
   this->GetElastix()->GetElxTransformBase()->SetFinalParameters();
@@ -260,7 +260,7 @@ ResamplerBase<TElastix>::AfterRegistrationBase(void)
     else
     {
       /** Do not apply the final transform. */
-      elxout << std::endl << "Skipping applying final transform, no resulting output image generated." << std::endl;
+      elxout << '\n' << "Skipping applying final transform, no resulting output image generated." << std::endl;
     } // end if
   }
 
@@ -273,7 +273,7 @@ ResamplerBase<TElastix>::AfterRegistrationBase(void)
 
 template <class TElastix>
 void
-ResamplerBase<TElastix>::SetComponents(void)
+ResamplerBase<TElastix>::SetComponents()
 {
   /** Set the transform, the interpolator and the inputImage
    * (which is the moving image).
@@ -372,17 +372,17 @@ ResamplerBase<TElastix>::WriteResultImage(OutputImageType * image, const char * 
   this->m_Configuration->ReadParameter(doCompression, "CompressResultImage", 0, false);
 
   /** Typedef's for writing the output image. */
-  typedef itk::ImageFileCastWriter<OutputImageType>          WriterType;
-  typedef typename WriterType::Pointer                       WriterPointer;
-  typedef itk::ChangeInformationImageFilter<OutputImageType> ChangeInfoFilterType;
+  using WriterType = itk::ImageFileCastWriter<OutputImageType>;
+  using WriterPointer = typename WriterType::Pointer;
+  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<OutputImageType>;
 
   /** Possibly change direction cosines to their original value, as specified
    * in the tp-file, or by the fixed image. This is only necessary when
    * the UseDirectionCosines flag was set to false.
    */
-  typename ChangeInfoFilterType::Pointer infoChanger = ChangeInfoFilterType::New();
-  DirectionType                          originalDirection;
-  bool                                   retdc = this->GetElastix()->GetOriginalFixedImageDirection(originalDirection);
+  auto          infoChanger = ChangeInfoFilterType::New();
+  DirectionType originalDirection;
+  bool          retdc = this->GetElastix()->GetOriginalFixedImageDirection(originalDirection);
   infoChanger->SetOutputDirection(originalDirection);
   infoChanger->SetChangeDirection(retdc & !this->GetElastix()->GetUseDirectionCosines());
   infoChanger->SetInput(image);
@@ -426,7 +426,7 @@ ResamplerBase<TElastix>::WriteResultImage(OutputImageType * image, const char * 
 
 template <class TElastix>
 void
-ResamplerBase<TElastix>::CreateItkResultImage(void)
+ResamplerBase<TElastix>::CreateItkResultImage()
 {
   itk::DataObject::Pointer resultImage;
 
@@ -470,51 +470,51 @@ ResamplerBase<TElastix>::CreateItkResultImage(void)
   this->m_Configuration->ReadParameter(resultImagePixelType, "ResultImagePixelType", 0, false);
 
   /** Typedef's for writing the output image. */
-  typedef itk::ChangeInformationImageFilter<OutputImageType> ChangeInfoFilterType;
+  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<OutputImageType>;
 
   /** Possibly change direction cosines to their original value, as specified
    * in the tp-file, or by the fixed image. This is only necessary when
    * the UseDirectionCosines flag was set to false.
    */
-  typename ChangeInfoFilterType::Pointer infoChanger = ChangeInfoFilterType::New();
-  DirectionType                          originalDirection;
-  bool                                   retdc = this->GetElastix()->GetOriginalFixedImageDirection(originalDirection);
+  auto          infoChanger = ChangeInfoFilterType::New();
+  DirectionType originalDirection;
+  bool          retdc = this->GetElastix()->GetOriginalFixedImageDirection(originalDirection);
   infoChanger->SetOutputDirection(originalDirection);
   infoChanger->SetChangeDirection(retdc & !this->GetElastix()->GetUseDirectionCosines());
   infoChanger->SetInput(this->GetAsITKBaseType()->GetOutput());
 
-  typedef itk::CastImageFilter<InputImageType, itk::Image<char, InputImageType::ImageDimension>> CastFilterChar;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<unsigned char, InputImageType::ImageDimension>>
-                                                                                                  CastFilterUChar;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<short, InputImageType::ImageDimension>> CastFilterShort;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<unsigned short, InputImageType::ImageDimension>>
-                                                                                                         CastFilterUShort;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<int, InputImageType::ImageDimension>>          CastFilterInt;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<unsigned int, InputImageType::ImageDimension>> CastFilterUInt;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<long, InputImageType::ImageDimension>>         CastFilterLong;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<unsigned long, InputImageType::ImageDimension>>
-                                                                                                   CastFilterULong;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<float, InputImageType::ImageDimension>>  CastFilterFloat;
-  typedef itk::CastImageFilter<InputImageType, itk::Image<double, InputImageType::ImageDimension>> CastFilterDouble;
+  using CastFilterChar = itk::CastImageFilter<InputImageType, itk::Image<char, InputImageType::ImageDimension>>;
+  using CastFilterUChar =
+    itk::CastImageFilter<InputImageType, itk::Image<unsigned char, InputImageType::ImageDimension>>;
+  using CastFilterShort = itk::CastImageFilter<InputImageType, itk::Image<short, InputImageType::ImageDimension>>;
+  using CastFilterUShort =
+    itk::CastImageFilter<InputImageType, itk::Image<unsigned short, InputImageType::ImageDimension>>;
+  using CastFilterInt = itk::CastImageFilter<InputImageType, itk::Image<int, InputImageType::ImageDimension>>;
+  using CastFilterUInt = itk::CastImageFilter<InputImageType, itk::Image<unsigned int, InputImageType::ImageDimension>>;
+  using CastFilterLong = itk::CastImageFilter<InputImageType, itk::Image<long, InputImageType::ImageDimension>>;
+  using CastFilterULong =
+    itk::CastImageFilter<InputImageType, itk::Image<unsigned long, InputImageType::ImageDimension>>;
+  using CastFilterFloat = itk::CastImageFilter<InputImageType, itk::Image<float, InputImageType::ImageDimension>>;
+  using CastFilterDouble = itk::CastImageFilter<InputImageType, itk::Image<double, InputImageType::ImageDimension>>;
 
   /** cast the image to the correct output image Type */
   if (resultImagePixelType == "char")
   {
-    typename CastFilterChar::Pointer castFilter = CastFilterChar::New();
+    auto castFilter = CastFilterChar::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
   }
   if (resultImagePixelType == "unsigned char")
   {
-    typename CastFilterUChar::Pointer castFilter = CastFilterUChar::New();
+    auto castFilter = CastFilterUChar::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
   }
   else if (resultImagePixelType == "short")
   {
-    typename CastFilterShort::Pointer castFilter = CastFilterShort::New();
+    auto castFilter = CastFilterShort::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
@@ -522,49 +522,49 @@ ResamplerBase<TElastix>::CreateItkResultImage(void)
   else if (resultImagePixelType == "ushort" ||
            resultImagePixelType == "unsigned short") // <-- ushort for backwards compatibility
   {
-    typename CastFilterUShort::Pointer castFilter = CastFilterUShort::New();
+    auto castFilter = CastFilterUShort::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
   }
   else if (resultImagePixelType == "int")
   {
-    typename CastFilterInt::Pointer castFilter = CastFilterInt::New();
+    auto castFilter = CastFilterInt::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
   }
   else if (resultImagePixelType == "unsigned int")
   {
-    typename CastFilterUInt::Pointer castFilter = CastFilterUInt::New();
+    auto castFilter = CastFilterUInt::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
   }
   else if (resultImagePixelType == "long")
   {
-    typename CastFilterLong::Pointer castFilter = CastFilterLong::New();
+    auto castFilter = CastFilterLong::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
   }
   else if (resultImagePixelType == "unsigned long")
   {
-    typename CastFilterULong::Pointer castFilter = CastFilterULong::New();
+    auto castFilter = CastFilterULong::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
   }
   else if (resultImagePixelType == "float")
   {
-    typename CastFilterFloat::Pointer castFilter = CastFilterFloat::New();
+    auto castFilter = CastFilterFloat::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
   }
   else if (resultImagePixelType == "double")
   {
-    typename CastFilterDouble::Pointer castFilter = CastFilterDouble::New();
+    auto castFilter = CastFilterDouble::New();
     castFilter->SetInput(infoChanger->GetOutput());
     castFilter->Update();
     resultImage = castFilter->GetOutput();
@@ -595,7 +595,7 @@ ResamplerBase<TElastix>::CreateItkResultImage(void)
 
 template <class TElastix>
 void
-ResamplerBase<TElastix>::ReadFromFile(void)
+ResamplerBase<TElastix>::ReadFromFile()
 {
   /** Connect the components. */
   this->SetComponents();
@@ -665,7 +665,7 @@ ResamplerBase<TElastix>::ReadFromFile(void)
   /** Set the DefaultPixelValue (for pixels in the resampled image
    * that come from outside the original (moving) image.
    */
-  double defaultPixelValue = itk::NumericTraits<double>::Zero;
+  double defaultPixelValue = 0.0;
   bool   found = this->m_Configuration->ReadParameter(defaultPixelValue, "DefaultPixelValue", 0, false);
 
   if (found)
@@ -739,7 +739,7 @@ ResamplerBase<TElastix>::CreateTransformParametersMap(ParameterMapType & paramet
 
 template <class TElastix>
 void
-ResamplerBase<TElastix>::ReleaseMemory(void)
+ResamplerBase<TElastix>::ReleaseMemory()
 {
   /** Release some memory. Sometimes it is not possible to
    * resample and write an image, because too much memory is consumed by

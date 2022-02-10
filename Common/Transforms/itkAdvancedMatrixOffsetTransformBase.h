@@ -98,10 +98,10 @@ class ITK_TEMPLATE_EXPORT AdvancedMatrixOffsetTransformBase
 {
 public:
   /** Standard typedefs   */
-  typedef AdvancedMatrixOffsetTransformBase                                   Self;
-  typedef AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions> Superclass;
-  typedef SmartPointer<Self>                                                  Pointer;
-  typedef SmartPointer<const Self>                                            ConstPointer;
+  using Self = AdvancedMatrixOffsetTransformBase;
+  using Superclass = AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(AdvancedMatrixOffsetTransformBase, AdvancedTransform);
@@ -139,21 +139,21 @@ public:
   using typename Superclass::InternalMatrixType;
 
   /** Standard matrix type for this class. */
-  typedef Matrix<TScalarType, Self::OutputSpaceDimension, Self::InputSpaceDimension> MatrixType;
+  using MatrixType = Matrix<TScalarType, Self::OutputSpaceDimension, Self::InputSpaceDimension>;
 
   /** Standard inverse matrix type for this class. */
-  typedef Matrix<TScalarType, Self::InputSpaceDimension, Self::OutputSpaceDimension> InverseMatrixType;
+  using InverseMatrixType = Matrix<TScalarType, Self::InputSpaceDimension, Self::OutputSpaceDimension>;
 
   /** Typedefs. */
-  typedef InputPointType   CenterType;
-  typedef OutputVectorType OffsetType;
-  typedef OutputVectorType TranslationType;
+  using CenterType = InputPointType;
+  using OffsetType = OutputVectorType;
+  using TranslationType = OutputVectorType;
 
   /** Set the transformation to an Identity
    * This sets the matrix to identity and the Offset to null.
    */
   virtual void
-  SetIdentity(void);
+  SetIdentity();
 
   /** Set matrix of an AdvancedMatrixOffsetTransformBase
    *
@@ -186,40 +186,9 @@ public:
    * center, and translation OR the matrix and offset.
    */
   const MatrixType &
-  GetMatrix(void) const
+  GetMatrix() const
   {
     return this->m_Matrix;
-  }
-
-
-  /** Set offset (origin) of an MatrixOffset TransformBase.
-   *
-   * This method sets the offset of an AdvancedMatrixOffsetTransformBase to a
-   * value specified by the user.
-   * This updates Translation wrt current center.  See the warning regarding
-   * offset-versus-translation in the documentation for SetCenter.
-   * To define an affine transform, you must set the matrix,
-   * center, and translation OR the matrix and offset.
-   */
-  void
-  SetOffset(const OutputVectorType & offset)
-  {
-    this->m_Offset = offset;
-    this->ComputeTranslation();
-    this->Modified();
-  }
-
-
-  /** Get offset of an AdvancedMatrixOffsetTransformBase
-   *
-   * This method returns the offset value of the AdvancedMatrixOffsetTransformBase.
-   * To define an affine transform, you must set the matrix,
-   * center, and translation OR the matrix and offset.
-   */
-  const OutputVectorType &
-  GetOffset(void) const
-  {
-    return this->m_Offset;
   }
 
 
@@ -263,7 +232,7 @@ public:
    * center, and translation OR the matrix and offset.
    */
   const InputPointType &
-  GetCenter(void) const
+  GetCenter() const
   {
     return this->m_Center;
   }
@@ -293,7 +262,7 @@ public:
    * center, and translation OR the matrix and offset.
    */
   const OutputVectorType &
-  GetTranslation(void) const
+  GetTranslation() const
   {
     return this->m_Translation;
   }
@@ -309,7 +278,7 @@ public:
 
   /** Get the Transformation Parameters. */
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** Set the fixed parameters and update internal transformation. */
   void
@@ -317,22 +286,7 @@ public:
 
   /** Get the Fixed Parameters. */
   const FixedParametersType &
-  GetFixedParameters(void) const override;
-
-  /** Compose with another AdvancedMatrixOffsetTransformBase
-   *
-   * This method composes self with another AdvancedMatrixOffsetTransformBase of the
-   * same dimension, modifying self to be the composition of self
-   * and other.  If the argument pre is true, then other is
-   * precomposed with self; that is, the resulting transformation
-   * consists of first applying other to the source, followed by
-   * self.  If pre is false or omitted, then other is post-composed
-   * with self; that is the resulting transformation consists of
-   * first applying self to the source, followed by other.
-   * This updates the Translation based on current center.
-   */
-  void
-  Compose(const Self * other, bool pre = false);
+  GetFixedParameters() const override;
 
   /** Transform by an affine transformation
    *
@@ -354,39 +308,13 @@ public:
   OutputCovariantVectorType
   TransformCovariantVector(const InputCovariantVectorType & vector) const override;
 
-  /** Create inverse of an affine transformation
-   *
-   * This populates the parameters an affine transform such that
-   * the transform is the inverse of self. If self is not invertible,
-   * an exception is thrown.
-   * Note that by default the inverese transform is centered at
-   * the origin. If you need to compute the inverse centered at a point, p,
-   *
-   * \code
-   * transform2->SetCenter( p );
-   * transform1->GetInverse( transform2 );
-   * \endcode
-   *
-   * transform2 will now contain the inverse of transform1 and will
-   * with its center set to p. Flipping the two statements will produce an
-   * incorrect transform.
-   */
-  bool
-  GetInverse(Self * inverse) const;
-
-  /** \deprecated Use GetInverse instead.
-   *
-   * Method will eventually be made a protected member function. */
-  const InverseMatrixType &
-  GetInverseMatrix(void) const;
-
   /** Indicates that this transform is linear. That is, given two
    * points P and Q, and scalar coefficients a and b, then
    *
    *           T( a*P + b*Q ) = a * T(P) + b * T(Q)
    */
   bool
-  IsLinear(void) const override
+  IsLinear() const override
   {
     return true;
   }
@@ -450,13 +378,7 @@ protected:
    * omitted, then the AdvancedMatrixOffsetTransformBase is initialized to an identity
    * transformation in the appropriate number of dimensions.
    */
-  AdvancedMatrixOffsetTransformBase(const MatrixType & matrix, const OutputVectorType & offset);
-  explicit AdvancedMatrixOffsetTransformBase(unsigned int paramDims);
-  AdvancedMatrixOffsetTransformBase();
-
-  /** Called by constructors: */
-  virtual void
-  PrecomputeJacobians(unsigned int paramDims);
+  explicit AdvancedMatrixOffsetTransformBase(const unsigned int paramDims = ParametersDimension);
 
   /** Destroy an AdvancedMatrixOffsetTransformBase object. */
   ~AdvancedMatrixOffsetTransformBase() override = default;
@@ -465,40 +387,11 @@ protected:
   void
   PrintSelf(std::ostream & s, Indent indent) const override;
 
-  const InverseMatrixType &
-  GetVarInverseMatrix(void) const
-  {
-    return this->m_InverseMatrix;
-  }
-
-
-  void
-  SetVarInverseMatrix(const InverseMatrixType & matrix) const
-  {
-    this->m_InverseMatrix = matrix;
-    this->m_InverseMatrixMTime.Modified();
-  }
-
-
-  bool
-  InverseMatrixIsOld(void) const
-  {
-    if (this->m_MatrixMTime != this->m_InverseMatrixMTime)
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }
-  }
-
+  virtual void
+  ComputeMatrixParameters();
 
   virtual void
-  ComputeMatrixParameters(void);
-
-  virtual void
-  ComputeMatrix(void);
+  ComputeMatrix();
 
   void
   SetVarMatrix(const MatrixType & matrix)
@@ -507,9 +400,8 @@ protected:
     this->m_MatrixMTime.Modified();
   }
 
-
-  virtual void
-  ComputeTranslation(void);
+  void
+  ComputeTranslation();
 
   void
   SetVarTranslation(const OutputVectorType & translation)
@@ -517,23 +409,8 @@ protected:
     this->m_Translation = translation;
   }
 
-
   virtual void
-  ComputeOffset(void);
-
-  void
-  SetVarOffset(const OutputVectorType & offset)
-  {
-    this->m_Offset = offset;
-  }
-
-
-  void
-  SetVarCenter(const InputPointType & center)
-  {
-    this->m_Center = center;
-  }
-
+  ComputeOffset();
 
   /** (spatial) Jacobians and Hessians can mostly be precomputed by this transform.
    * Store them in these member variables.
@@ -548,22 +425,26 @@ private:
   const Self &
   operator=(const Self &);
 
-  /** Member variables. */
-  MatrixType                m_Matrix;        // Matrix of the transformation
-  OutputVectorType          m_Offset;        // Offset of the transformation
-  mutable InverseMatrixType m_InverseMatrix; // Inverse of the matrix
-  mutable bool              m_Singular;      // Is m_Inverse singular?
+  /** Called by constructors: */
+  void
+  PrecomputeJacobians(unsigned int paramDims);
 
-  InputPointType   m_Center;
-  OutputVectorType m_Translation;
+  const InverseMatrixType &
+  GetInverseMatrix() const;
+
+
+  /** Member variables. */
+  MatrixType                m_Matrix{ MatrixType::GetIdentity() };               // Matrix of the transformation
+  OutputVectorType          m_Offset{};                                          // Offset of the transformation
+  mutable InverseMatrixType m_InverseMatrix{ InverseMatrixType::GetIdentity() }; // Inverse of the matrix
+  mutable bool              m_Singular{ false };                                 // Is m_Inverse singular?
+
+  InputPointType   m_Center{};
+  OutputVectorType m_Translation{};
 
   /** To avoid recomputation of the inverse if not needed. */
   TimeStamp         m_MatrixMTime;
   mutable TimeStamp m_InverseMatrixMTime;
-
-  /** Used by the GetJacobian() function which returns the
-   * Jacobian as an output variable. */
-  mutable NonZeroJacobianIndicesType m_NonZeroJacobianIndicesTemp;
 };
 
 } // namespace itk

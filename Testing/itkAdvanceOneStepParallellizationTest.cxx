@@ -59,23 +59,23 @@ class OptimizerTEMP : public itk::Object
 {
 public:
   /** Standard class typedefs. */
-  typedef OptimizerTEMP           Self;
-  typedef itk::SmartPointer<Self> Pointer;
+  using Self = OptimizerTEMP;
+  using Pointer = itk::SmartPointer<Self>;
   itkNewMacro(Self);
 
-  typedef itk::Array<InternalScalarType> ParametersType;
+  using ParametersType = itk::Array<InternalScalarType>;
 
   unsigned long      m_NumberOfParameters;
   ParametersType     m_CurrentPosition;
   ParametersType     m_Gradient;
   InternalScalarType m_LearningRate;
 
-  typedef itk::PlatformMultiThreader ThreaderType;
-  typedef ThreaderType::WorkUnitInfo ThreadInfoType;
-  ThreaderType::Pointer              m_Threader;
-  bool                               m_UseOpenMP;
-  bool                               m_UseEigen;
-  bool                               m_UseMultiThreaded;
+  using ThreaderType = itk::PlatformMultiThreader;
+  using ThreadInfoType = ThreaderType::WorkUnitInfo;
+  ThreaderType::Pointer m_Threader;
+  bool                  m_UseOpenMP;
+  bool                  m_UseEigen;
+  bool                  m_UseMultiThreaded;
 
   struct MultiThreaderParameterType
   {
@@ -96,7 +96,7 @@ public:
 
 
   void
-  AdvanceOneStep(void)
+  AdvanceOneStep()
   {
     const unsigned int spaceDimension = m_NumberOfParameters;
     ParametersType &   newPosition = this->m_CurrentPosition;
@@ -241,17 +241,17 @@ public:
 //-------------------------------------------------------------------------------------
 
 int
-main(void)
+main()
 {
   // Declare and setup
   std::cout << std::fixed << std::showpoint << std::setprecision(8);
   std::cout << "RESULTS FOR InternalScalarType = " << typeid(InternalScalarType).name() << "\n\n" << std::endl;
 
   /** Typedefs. */
-  typedef OptimizerTEMP                  OptimizerClass;
-  typedef OptimizerClass::ParametersType ParametersType;
+  using OptimizerClass = OptimizerTEMP;
+  using ParametersType = OptimizerClass::ParametersType;
 
-  OptimizerClass::Pointer optimizer = OptimizerClass::New();
+  auto optimizer = OptimizerClass::New();
 
   // test parameters
   std::vector<unsigned int> arraySizes;

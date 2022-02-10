@@ -36,7 +36,7 @@
 
 #include <iostream>
 #include "itkAdvancedRigid3DTransform.h"
-#include "vnl/vnl_quaternion.h"
+#include <vnl/vnl_quaternion.h>
 #include "itkVersor.h"
 
 namespace itk
@@ -69,10 +69,10 @@ class ITK_TEMPLATE_EXPORT AdvancedVersorTransform : public AdvancedRigid3DTransf
 {
 public:
   /** Standard Self Typedef */
-  typedef AdvancedVersorTransform               Self;
-  typedef AdvancedRigid3DTransform<TScalarType> Superclass;
-  typedef SmartPointer<Self>                    Pointer;
-  typedef SmartPointer<const Self>              ConstPointer;
+  using Self = AdvancedVersorTransform;
+  using Superclass = AdvancedRigid3DTransform<TScalarType>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Run-time type information (and related methods).  */
   itkTypeMacro(AdvancedVersorTransform, AdvancedRigid3DTransform);
@@ -112,12 +112,12 @@ public:
   using typename Superclass::InternalMatrixType;
 
   /** VnlQuaternion Type */
-  typedef vnl_quaternion<TScalarType> VnlQuaternionType;
+  using VnlQuaternionType = vnl_quaternion<TScalarType>;
 
   /** Versor Type */
-  typedef Versor<TScalarType>             VersorType;
-  typedef typename VersorType::VectorType AxisType;
-  typedef typename VersorType::ValueType  AngleType;
+  using VersorType = Versor<TScalarType>;
+  using AxisType = typename VersorType::VectorType;
+  using AngleType = typename VersorType::ValueType;
 
   /**
    * Set the transformation from a container of parameters
@@ -132,7 +132,7 @@ public:
 
   /** Get the Transformation Parameters. */
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** Set the rotational part of the transform */
   void
@@ -145,7 +145,7 @@ public:
 
   /** Set the parameters to the IdentityTransform */
   void
-  SetIdentity(void) override;
+  SetIdentity() override;
 
   /** This method computes the Jacobian matrix of the transformation. */
   void
@@ -160,14 +160,6 @@ protected:
   /** Destroy an AdvancedVersorTransform object */
   ~AdvancedVersorTransform() override = default;
 
-  /** This method must be made protected here because it is not a safe way of
-   * initializing the Versor */
-  void
-  SetRotationMatrix(const MatrixType & matrix) override
-  {
-    this->Superclass::SetRotationMatrix(matrix);
-  }
-
   void
   SetVarVersor(const VersorType & newVersor)
   {
@@ -181,10 +173,10 @@ protected:
   /** Compute Matrix
    *  Compute the components of the rotation matrix in the superclass */
   void
-  ComputeMatrix(void) override;
+  ComputeMatrix() override;
 
   void
-  ComputeMatrixParameters(void) override;
+  ComputeMatrixParameters() override;
 
 private:
   /** Copy a AdvancedVersorTransform object */

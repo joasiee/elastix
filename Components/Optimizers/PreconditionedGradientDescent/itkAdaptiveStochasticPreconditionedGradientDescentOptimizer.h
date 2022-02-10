@@ -20,7 +20,7 @@
 
 #include "itkStochasticPreconditionedGradientDescentOptimizer.h"
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 #include "itkSigmoidImageFilter.h"
 
 namespace itk
@@ -79,11 +79,11 @@ class AdaptiveStochasticPreconditionedGradientDescentOptimizer : public Stochast
 {
 public:
   /** Standard ITK.*/
-  typedef AdaptiveStochasticPreconditionedGradientDescentOptimizer Self;
-  typedef StochasticPreconditionedGradientDescentOptimizer         Superclass;
+  using Self = AdaptiveStochasticPreconditionedGradientDescentOptimizer;
+  using Superclass = StochasticPreconditionedGradientDescentOptimizer;
 
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -138,7 +138,7 @@ protected:
    * In that case, also the m_PreviousSearchDirection is updated.
    */
   virtual void
-  UpdateCurrentTime(void);
+  UpdateCurrentTime();
 
   /** The Previous search direction = P g, necessary for the CruzAcceleration */
   DerivativeType m_PreviousSearchDirection;

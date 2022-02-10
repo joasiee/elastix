@@ -56,8 +56,7 @@ GPUBSplineDecompositionImageFilter<TInputImage, TOutputImage>::GPUBSplineDecompo
   this->m_DeviceLocalMemorySize = (localMemSize / sizeof(float)) - 3 * sizeof(float);
 
   defines << "#define BUFFSIZE " << this->m_DeviceLocalMemorySize << "\n";
-  defines << "#define BUFFPIXELTYPE float"
-          << "\n";
+  defines << "#define BUFFPIXELTYPE float\n";
   defines << "#define INPIXELTYPE ";
   GetTypenameInString(typeid(typename TInputImage::PixelType), defines);
   defines << "#define OUTPIXELTYPE ";
@@ -84,12 +83,12 @@ GPUBSplineDecompositionImageFilter<TInputImage, TOutputImage>::GPUBSplineDecompo
 
 template <typename TInputImage, typename TOutputImage>
 void
-GPUBSplineDecompositionImageFilter<TInputImage, TOutputImage>::GPUGenerateData(void)
+GPUBSplineDecompositionImageFilter<TInputImage, TOutputImage>::GPUGenerateData()
 {
   itkDebugMacro(<< "Calling GPUBSplineDecompositionImageFilter::GPUGenerateData()");
 
-  typedef typename GPUTraits<TInputImage>::Type  GPUInputImage;
-  typedef typename GPUTraits<TOutputImage>::Type GPUOutputImage;
+  using GPUInputImage = typename GPUTraits<TInputImage>::Type;
+  using GPUOutputImage = typename GPUTraits<TOutputImage>::Type;
 
   const typename GPUInputImage::Pointer inPtr = dynamic_cast<GPUInputImage *>(this->ProcessObject::GetInput(0));
   typename GPUOutputImage::Pointer      otPtr = dynamic_cast<GPUOutputImage *>(this->ProcessObject::GetOutput(0));
@@ -127,8 +126,8 @@ GPUBSplineDecompositionImageFilter<TInputImage, TOutputImage>::GPUGenerateData(v
 
   // Cast here, see the same call in this->CopyImageToImage() of
   // BSplineDecompositionImageFilter::DataToCoefficientsND()
-  typedef GPUCastImageFilter<GPUInputImage, GPUOutputImage> CasterType;
-  typename CasterType::Pointer                              caster = CasterType::New();
+  using CasterType = GPUCastImageFilter<GPUInputImage, GPUOutputImage>;
+  auto caster = CasterType::New();
   caster->SetInput(inPtr);
   caster->GraftOutput(otPtr);
   caster->Update();

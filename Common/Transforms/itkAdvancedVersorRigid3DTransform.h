@@ -66,10 +66,10 @@ class ITK_TEMPLATE_EXPORT AdvancedVersorRigid3DTransform : public AdvancedVersor
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedVersorRigid3DTransform       Self;
-  typedef AdvancedVersorTransform<TScalarType> Superclass;
-  typedef SmartPointer<Self>                   Pointer;
-  typedef SmartPointer<const Self>             ConstPointer;
+  using Self = AdvancedVersorRigid3DTransform;
+  using Superclass = AdvancedVersorTransform<TScalarType>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New macro for creation of through a Smart Pointer. */
   itkNewMacro(Self);
@@ -122,7 +122,7 @@ public:
   SetParameters(const ParametersType & parameters) override;
 
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** This method computes the Jacobian matrix of the transformation. */
   void
@@ -136,14 +136,6 @@ protected:
 
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
-
-  /** This method must be made protected here because it is not a safe way of
-   * initializing the Versor */
-  void
-  SetRotationMatrix(const MatrixType & matrix) override
-  {
-    this->Superclass::SetRotationMatrix(matrix);
-  }
 
 private:
   AdvancedVersorRigid3DTransform(const Self &) = delete;

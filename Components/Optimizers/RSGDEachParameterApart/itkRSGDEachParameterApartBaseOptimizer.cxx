@@ -19,7 +19,7 @@
 #include "itkRSGDEachParameterApartBaseOptimizer.h"
 #include "itkCommand.h"
 #include "itkEventObject.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -37,7 +37,7 @@ RSGDEachParameterApartBaseOptimizer ::RSGDEachParameterApartBaseOptimizer()
  * Start the optimization
  */
 void
-RSGDEachParameterApartBaseOptimizer::StartOptimization(void)
+RSGDEachParameterApartBaseOptimizer::StartOptimization()
 {
 
   itkDebugMacro("StartOptimization");
@@ -63,7 +63,7 @@ RSGDEachParameterApartBaseOptimizer::StartOptimization(void)
  * Resume the optimization
  */
 void
-RSGDEachParameterApartBaseOptimizer::ResumeOptimization(void)
+RSGDEachParameterApartBaseOptimizer::ResumeOptimization()
 {
 
   itkDebugMacro("ResumeOptimization");
@@ -125,7 +125,7 @@ RSGDEachParameterApartBaseOptimizer::ResumeOptimization(void)
  * Stop optimization
  */
 void
-RSGDEachParameterApartBaseOptimizer::StopOptimization(void)
+RSGDEachParameterApartBaseOptimizer::StopOptimization()
 {
 
   itkDebugMacro("StopOptimization");
@@ -139,7 +139,7 @@ RSGDEachParameterApartBaseOptimizer::StopOptimization(void)
  * Advance one Step following the gradient direction
  */
 void
-RSGDEachParameterApartBaseOptimizer::AdvanceOneStep(void)
+RSGDEachParameterApartBaseOptimizer::AdvanceOneStep()
 {
 
   itkDebugMacro("AdvanceOneStep");
@@ -254,8 +254,7 @@ RSGDEachParameterApartBaseOptimizer::PrintSelf(std::ostream & os, Indent indent)
   }
   else
   {
-    os << indent << "CostFunction: "
-       << "(None)" << std::endl;
+    os << indent << "CostFunction: (None)" << std::endl;
   }
   os << indent << "CurrentStepLength: " << m_CurrentStepLength << std::endl;
   os << indent << "StopCondition: " << m_StopCondition << std::endl;

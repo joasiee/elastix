@@ -44,10 +44,10 @@ ImageRandomSamplerBase<TInputImage>::ImageRandomSamplerBase()
 
 template <class TInputImage>
 void
-ImageRandomSamplerBase<TInputImage>::BeforeThreadedGenerateData(void)
+ImageRandomSamplerBase<TInputImage>::BeforeThreadedGenerateData()
 {
   /** Create a random number generator. Also used in the ImageRandomConstIteratorWithIndex. */
-  typedef typename Statistics::MersenneTwisterRandomVariateGenerator::Pointer GeneratorPointer;
+  using GeneratorPointer = typename Statistics::MersenneTwisterRandomVariateGenerator::Pointer;
   GeneratorPointer localGenerator = Statistics::MersenneTwisterRandomVariateGenerator::GetInstance();
   // \todo: should probably be global?
 

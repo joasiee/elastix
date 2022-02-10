@@ -41,11 +41,11 @@ class ITK_TEMPLATE_EXPORT GPUEuler2DTransform
 {
 public:
   /** Standard class typedefs. */
-  typedef GPUEuler2DTransform                             Self;
-  typedef TParentTransform                                CPUSuperclass;
-  typedef GPUMatrixOffsetTransformBase<TScalarType, 2, 2> GPUSuperclass;
-  typedef SmartPointer<Self>                              Pointer;
-  typedef SmartPointer<const Self>                        ConstPointer;
+  using Self = GPUEuler2DTransform;
+  using CPUSuperclass = TParentTransform;
+  using GPUSuperclass = GPUMatrixOffsetTransformBase<TScalarType, 2, 2>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -54,27 +54,27 @@ public:
   itkTypeMacro(GPUEuler2DTransform, CPUSuperclass);
 
   /** Typedefs from GPUSuperclass. */
-  typedef typename GPUSuperclass::CPUMatrixType        CPUMatrixType;
-  typedef typename GPUSuperclass::CPUInverseMatrixType CPUInverseMatrixType;
-  typedef typename GPUSuperclass::CPUOutputVectorType  CPUOutputVectorType;
+  using CPUMatrixType = typename GPUSuperclass::CPUMatrixType;
+  using CPUInverseMatrixType = typename GPUSuperclass::CPUInverseMatrixType;
+  using CPUOutputVectorType = typename GPUSuperclass::CPUOutputVectorType;
 
   /** Get CPU matrix of an MatrixOffsetTransformBase. */
   virtual const CPUMatrixType &
-  GetCPUMatrix(void) const
+  GetCPUMatrix() const
   {
     return this->GetMatrix();
   }
 
   /** Get CPU inverse matrix of an MatrixOffsetTransformBase. */
   virtual const CPUInverseMatrixType &
-  GetCPUInverseMatrix(void) const
+  GetCPUInverseMatrix() const
   {
     return this->GetInverseMatrix();
   }
 
   /** Get CPU offset of an MatrixOffsetTransformBase. */
   virtual const CPUOutputVectorType &
-  GetCPUOffset(void) const
+  GetCPUOffset() const
   {
     return this->GetOffset();
   }

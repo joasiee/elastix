@@ -22,7 +22,7 @@
 #include "elxSimultaneousPerturbation.h"
 #include <iomanip>
 #include <string>
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace elastix
 {
@@ -44,7 +44,7 @@ SimultaneousPerturbation<TElastix>::SimultaneousPerturbation()
 
 template <class TElastix>
 void
-SimultaneousPerturbation<TElastix>::BeforeRegistration(void)
+SimultaneousPerturbation<TElastix>::BeforeRegistration()
 {
   std::string showMetricValues("false");
   this->GetConfiguration()->ReadParameter(showMetricValues, "ShowMetricValues", 0);
@@ -76,7 +76,7 @@ SimultaneousPerturbation<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-SimultaneousPerturbation<TElastix>::BeforeEachResolution(void)
+SimultaneousPerturbation<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level.*/
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
@@ -124,7 +124,7 @@ SimultaneousPerturbation<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-SimultaneousPerturbation<TElastix>::AfterEachIteration(void)
+SimultaneousPerturbation<TElastix>::AfterEachIteration()
 {
   /** Print some information */
 
@@ -158,7 +158,7 @@ SimultaneousPerturbation<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-SimultaneousPerturbation<TElastix>::AfterEachResolution(void)
+SimultaneousPerturbation<TElastix>::AfterEachResolution()
 {
 
   /**
@@ -195,13 +195,13 @@ SimultaneousPerturbation<TElastix>::AfterEachResolution(void)
 
 template <class TElastix>
 void
-SimultaneousPerturbation<TElastix>::AfterRegistration(void)
+SimultaneousPerturbation<TElastix>::AfterRegistration()
 {
   /** Print the best metric value */
   double bestValue;
 
   bestValue = this->GetValue();
-  elxout << std::endl << "Final metric value  = " << bestValue << std::endl;
+  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
 
 } // end AfterRegistration
 

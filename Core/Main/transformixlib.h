@@ -37,14 +37,14 @@ class ELASTIXLIB_API TRANSFORMIX
 {
 public:
   // typedefs for images
-  typedef itk::DataObject     Image;
-  typedef Image::Pointer      ImagePointer;
-  typedef Image::ConstPointer ConstImagePointer;
+  using Image = itk::DataObject;
+  using ImagePointer = Image::Pointer;
+  using ConstImagePointer = Image::ConstPointer;
 
   // typedefs for parameter map
-  typedef itk::ParameterFileParser::ParameterValuesType           ParameterValuesType;
-  typedef itk::ParameterFileParser::ParameterMapType              ParameterMapType;
-  typedef std::vector<itk::ParameterFileParser::ParameterMapType> ParameterMapListType;
+  using ParameterValuesType = itk::ParameterFileParser::ParameterValuesType;
+  using ParameterMapType = itk::ParameterFileParser::ParameterMapType;
+  using ParameterMapListType = std::vector<itk::ParameterFileParser::ParameterMapType>;
 
   /** Constructor and destructor. */
   TRANSFORMIX();
@@ -76,11 +76,11 @@ public:
 
   /** Getter for result image. */
   ConstImagePointer
-  GetResultImage(void) const;
+  GetResultImage() const;
 
   /** Getter for result image. Non-const overload */
   ImagePointer
-  GetResultImage(void);
+  GetResultImage();
 
 private:
   ImagePointer m_ResultImage;

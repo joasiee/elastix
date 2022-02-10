@@ -15,12 +15,20 @@
  *  limitations under the License.
  *
  *=========================================================================*/
+
+// Avoid creation of instances of `itk::ImageIOFactoryRegisterManager`, `itk::MeshIOFactoryRegisterManager`, and
+// `itk::TransformIOFactoryRegisterManager` at this point.
+#undef ITK_IO_FACTORY_REGISTER_MANAGER
+
 #include "elxTransformIO.h"
 
 #include "elxBaseComponent.h"
 #include "elxConfiguration.h"
+#include "elxSupportedImageDimensions.h"
 
 #include "xoutmain.h"
+
+#include "itkAdvancedBSplineDeformableTransformBase.h"
 
 #include <itkTransformBase.h>
 #include <itkTransformFactoryBase.h>
@@ -28,6 +36,41 @@
 #include <itkTransformFileWriter.h>
 
 #include <string>
+
+
+namespace
+{
+
+// Returns the spline order of the transform. Returns zero if the transform has no spline order, of if its spline order
+// has a "default value" of 3.
+template <std::size_t NDimension>
+unsigned
+GetSplineOrderFromBSplineDeformableTransform(const itk::TransformBase & elxTransform)
+{
+  const auto bSplineDeformableTransform =
+    dynamic_cast<const itk::AdvancedBSplineDeformableTransformBase<double, NDimension> *>(&elxTransform);
+
+  if (bSplineDeformableTransform == nullptr)
+  {
+    return 0;
+  }
+  const auto     splineOrder = bSplineDeformableTransform->GetSplineOrder();
+  constexpr auto defaultSplineOrder = 3;
+
+  return (splineOrder == defaultSplineOrder) ? 0 : bSplineDeformableTransform->GetSplineOrder();
+}
+
+
+template <std::size_t... NDimension>
+unsigned
+GetOptionalSplineOrderByImageDimensionSequence(const itk::TransformBase & elxTransform,
+                                               const std::index_sequence<NDimension...>)
+{
+  const unsigned splineOrders[] = { GetSplineOrderFromBSplineDeformableTransform<NDimension>(elxTransform)... };
+  return *std::max_element(std::cbegin(splineOrders), std::cend(splineOrders));
+}
+
+} // namespace
 
 
 std::string
@@ -38,6 +81,12 @@ elastix::TransformIO::ConvertITKNameOfClassToElastixClassName(const std::string 
   // "AffineTransform" ==> "AffineTransform"
   // "Euler2DTransform" ==> "EulerTransform"
   // "Similarity3DTransform" ==> "SimilarityTransform"
+
+  if (itkNameOfClass == "BSplineTransform")
+  {
+    // The elastix "RecursiveBSplineTransform" is faster than the elastix "BSplineTransform".
+    return "RecursiveBSplineTransform";
+  }
 
   auto name = itkNameOfClass;
 
@@ -53,36 +102,84 @@ elastix::TransformIO::ConvertITKNameOfClassToElastixClassName(const std::string 
 
 
 itk::TransformBase::Pointer
-elastix::TransformIO::CreateCorrespondingItkTransform(const elx::BaseComponent & elxTransform,
-                                                      const unsigned             fixedImageDimension,
-                                                      const unsigned             movingImageDimension)
+elastix::TransformIO::ConvertItkTransformBaseToSingleItkTransform(const itk::TransformBase & elxTransform)
 {
-  // Initialize the factory.
-  itk::TransformFactoryBase::GetFactory();
+  const std::string className = [&elxTransform]() -> std::string {
+    // itk::TransformBase::GetNameOfClass() may yield a string like the following, for an elastix ITK transform:
+    // - "AdvancedMatrixOffsetTransformBase"
+    // - "AdvancedTranslationTransform"
+    // - "SimilarityTransform"
+    // - "EulerTransform"
+    // - "AdvancedBSplineDeformableTransform"
+    const std::string name = elxTransform.GetNameOfClass();
 
-  // The string returned by elxGetClassName() corresponds to ITK's GetNameOfClass(),
-  // for AffineTransform, BSplineTransform, and TranslationTransform.
-  // Note that for EulerTransform and SimilarityTransform, ITK has "2D"
-  // or "3D" inserted in the class name.
-  // For other transforms, the correspondence between elastix and ITK class names
-  // appears less obvious.
+    if (name == "AdvancedMatrixOffsetTransformBase")
+    {
+      return "AffineTransform";
+    }
+    if (name == "AdvancedBSplineDeformableTransform" || name == "RecursiveBSplineTransform")
+    {
+      return "BSplineTransform";
+    }
 
-  const std::string elxClassName = elxTransform.elxGetClassName();
-  const std::string transformSubstring = "Transform";
-  const auto        transformSubstringPosition = elxClassName.find(transformSubstring);
+    const std::string transformSubstring = "Transform";
 
-  if (transformSubstringPosition == std::string::npos)
+    if (name.size() > transformSubstring.size())
+    {
+      const auto transformSubstringPosition = name.size() - transformSubstring.size();
+
+      if (std::equal(name.cbegin() + transformSubstringPosition, name.cend(), transformSubstring.cbegin()))
+      {
+        const std::string advancedSubstring = "Advanced";
+
+        if (std::equal(name.cbegin(),
+                       name.cbegin() + advancedSubstring.size(),
+                       advancedSubstring.cbegin(),
+                       advancedSubstring.cend()))
+        {
+          // Just chop off the "Advanced" substring.
+          return std::string(name.c_str() + advancedSubstring.size());
+        }
+
+        const auto substr = name.substr(0, transformSubstringPosition);
+
+        if ((substr == "Euler") || (substr == "Similarity"))
+        {
+          // For EulerTransform and SimilarityTransform, ITK has "2D" or "3D" inserted in the class name.
+          return substr + std::to_string(elxTransform.GetInputSpaceDimension()) + 'D' + transformSubstring;
+        }
+      }
+    }
+
+    return "";
+  }();
+
+  if (className.empty())
   {
     return nullptr;
   }
-  const auto substr = elxClassName.substr(0, transformSubstringPosition);
-  const auto instanceName = (((substr == "Euler") || (substr == "Similarity"))
-                               ? (substr + std::to_string(fixedImageDimension) + 'D' + transformSubstring)
-                               : elxClassName) +
-                            "_double_" + std::to_string(fixedImageDimension) + '_' +
-                            std::to_string(movingImageDimension);
+
+  // When the transform has a non-zero non-default SplineOrder, it must be appended to the instance name. Specifically
+  // relevant for b-spline transform types (having instance names like "BSplineTransform_double_2_2_2" and .
+  const auto optionalSplineOrder =
+    GetOptionalSplineOrderByImageDimensionSequence(elxTransform, SupportedFixedImageDimensionSequence);
+  const auto optionalSplineOrderPostfix =
+    (optionalSplineOrder == 0) ? std::string() : ('_' + std::to_string(optionalSplineOrder));
+
+  // Initialize the factory.
+  itk::TransformFactoryBase::GetFactory();
+
+  const auto instanceName = className + "_double_" + std::to_string(elxTransform.GetInputSpaceDimension()) + '_' +
+                            std::to_string(elxTransform.GetOutputSpaceDimension()) + optionalSplineOrderPostfix;
   const auto instance = itk::ObjectFactoryBase::CreateInstance(instanceName.c_str());
-  return dynamic_cast<itk::TransformBase *>(instance.GetPointer());
+  const auto itkTransform = dynamic_cast<itk::TransformBase *>(instance.GetPointer());
+  if (itkTransform == nullptr)
+  {
+    return nullptr;
+  }
+  itkTransform->SetFixedParameters(elxTransform.GetFixedParameters());
+  itkTransform->SetParameters(elxTransform.GetParameters());
+  return itkTransform;
 }
 
 

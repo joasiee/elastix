@@ -7,8 +7,8 @@
 // ********** Components
 
 (Registration "MultiMetricMultiResolutionRegistration")
-(FixedImagePyramid "FixedSmoothingImagePyramid" "FixedSmoothingImagePyramid")
-(MovingImagePyramid "MovingSmoothingImagePyramid" "MovingSmoothingImagePyramid")
+(FixedImagePyramid "FixedRecursiveImagePyramid" "FixedRecursiveImagePyramid")
+(MovingImagePyramid "MovingRecursiveImagePyramid" "MovingRecursiveImagePyramid")
 (Interpolator "LinearInterpolator" "LinearInterpolator")
 (Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
 (Metric0Weight 1.0)
@@ -33,19 +33,15 @@
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 3)
+(MaximumNumberOfIterations 10)
 (PartialEvaluations "true")
 (FosElementSize -6)
 (BasePopulationSize 30)
 
 // ********** Several
 
-(WriteTransformParametersEachIteration "false")
-(WriteTransformParametersEachResolution "false")
-(WriteResultImageAfterEachResolution "false")
 (WriteResultImage "true")
 (ShowExactMetricValue "false")
-(ErodeMask "false")
 
 
 // ********** ImageSampler

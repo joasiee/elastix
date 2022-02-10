@@ -44,11 +44,11 @@ class ITK_TEMPLATE_EXPORT ImageSamplerBase
 {
 public:
   /** Standard ITK-stuff. */
-  typedef ImageSamplerBase Self;
-  typedef ImageToVectorContainerFilter<TInputImage, VectorDataContainer<std::size_t, ImageSample<TInputImage>>>
-                                   Superclass;
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Self = ImageSamplerBase;
+  using Superclass =
+    ImageToVectorContainerFilter<TInputImage, VectorDataContainer<std::size_t, ImageSample<TInputImage>>>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -70,19 +70,19 @@ public:
   itkStaticConstMacro(InputImageDimension, unsigned int, InputImageType::ImageDimension);
 
   /** Other typdefs. */
-  typedef ImageSample<InputImageType>                       ImageSampleType;
-  typedef VectorDataContainer<std::size_t, ImageSampleType> ImageSampleContainerType;
-  typedef typename ImageSampleContainerType::Pointer        ImageSampleContainerPointer;
-  typedef typename InputImageType::SizeType                 InputImageSizeType;
-  typedef typename InputImageType::IndexType                InputImageIndexType;
-  typedef typename InputImageType::PointType                InputImagePointType;
-  typedef typename InputImagePointType::ValueType           InputImagePointValueType;
-  typedef typename ImageSampleType::RealType                ImageSampleValueType;
-  typedef SpatialObject<Self::InputImageDimension>          MaskType;
-  typedef typename MaskType::Pointer                        MaskPointer;
-  typedef typename MaskType::ConstPointer                   MaskConstPointer;
-  typedef std::vector<MaskConstPointer>                     MaskVectorType;
-  typedef std::vector<InputImageRegionType>                 InputImageRegionVectorType;
+  using ImageSampleType = ImageSample<InputImageType>;
+  using ImageSampleContainerType = VectorDataContainer<std::size_t, ImageSampleType>;
+  using ImageSampleContainerPointer = typename ImageSampleContainerType::Pointer;
+  using InputImageSizeType = typename InputImageType::SizeType;
+  using InputImageIndexType = typename InputImageType::IndexType;
+  using InputImagePointType = typename InputImageType::PointType;
+  using InputImagePointValueType = typename InputImagePointType::ValueType;
+  using ImageSampleValueType = typename ImageSampleType::RealType;
+  using MaskType = SpatialObject<Self::InputImageDimension>;
+  using MaskPointer = typename MaskType::Pointer;
+  using MaskConstPointer = typename MaskType::ConstPointer;
+  using MaskVectorType = std::vector<MaskConstPointer>;
+  using InputImageRegionVectorType = std::vector<InputImageRegionType>;
 
   /** ******************** Masks ******************** */
 
@@ -106,7 +106,7 @@ public:
 
   /** Get the first mask. */
   virtual const MaskType *
-  GetMask(void) const
+  GetMask() const
   {
     return this->GetMask(0);
   }
@@ -139,7 +139,7 @@ public:
 
   /** Get the first input image region. */
   virtual const InputImageRegionType &
-  GetInputImageRegion(void) const
+  GetInputImageRegion() const
   {
     return this->GetInputImageRegion(0);
   }
@@ -159,11 +159,11 @@ public:
    * is false when this feature is not supported by the sampler.
    */
   virtual bool
-  SelectNewSamplesOnUpdate(void);
+  SelectNewSamplesOnUpdate();
 
   /** Returns whether the sampler supports SelectNewSamplesOnUpdate() */
   virtual bool
-  SelectingNewSamplesOnUpdateSupported(void) const
+  SelectingNewSamplesOnUpdateSupported() const
   {
     return true;
   }
@@ -192,7 +192,7 @@ protected:
 
   /** GenerateInputRequestedRegion. */
   void
-  GenerateInputRequestedRegion(void) override;
+  GenerateInputRequestedRegion() override;
 
   /** IsInsideAllMasks. */
   virtual bool
@@ -200,24 +200,24 @@ protected:
 
   /** UpdateAllMasks. */
   virtual void
-  UpdateAllMasks(void);
+  UpdateAllMasks();
 
   /** Checks if the InputImageRegions are a subregion of the
    * LargestPossibleRegions.
    */
   virtual bool
-  CheckInputImageRegions(void);
+  CheckInputImageRegions();
 
   /** Compute the intersection of the InputImageRegion and the bounding box of the mask. */
   void
-  CropInputImageRegion(void);
+  CropInputImageRegion();
 
   /** Multi-threaded function that does the work. */
   void
-  BeforeThreadedGenerateData(void) override;
+  BeforeThreadedGenerateData() override;
 
   void
-  AfterThreadedGenerateData(void) override;
+  AfterThreadedGenerateData() override;
 
   /***/
   unsigned long                            m_NumberOfSamples;

@@ -41,13 +41,13 @@ PURPOSE.  See the above copyright notices for more information.
 #include "itkPointSet.h"
 #include <deque>
 #include <math.h>
-#include "vnl/vnl_matrix_fixed.h"
-#include "vnl/vnl_matrix.h"
-#include "vnl/vnl_vector.h"
-#include "vnl/vnl_vector_fixed.h"
-#include "vnl/vnl_sample.h"
-#include "vnl/algo/vnl_svd.h"
-#include "vnl/algo/vnl_qr.h"
+#include <vnl/vnl_matrix_fixed.h>
+#include <vnl/vnl_matrix.h>
+#include <vnl/vnl_vector.h>
+#include <vnl/vnl_vector_fixed.h>
+#include <vnl/vnl_sample.h>
+#include <vnl/algo/vnl_svd.h>
+#include <vnl/algo/vnl_qr.h>
 
 namespace itk
 {
@@ -98,10 +98,10 @@ class ITK_TEMPLATE_EXPORT KernelTransform2 : public AdvancedTransform<TScalarTyp
 {
 public:
   /** Standard class typedefs. */
-  typedef KernelTransform2                                         Self;
-  typedef AdvancedTransform<TScalarType, NDimensions, NDimensions> Superclass;
-  typedef SmartPointer<Self>                                       Pointer;
-  typedef SmartPointer<const Self>                                 ConstPointer;
+  using Self = KernelTransform2;
+  using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(KernelTransform2, AdvancedTransform);
@@ -137,23 +137,23 @@ public:
   /** PointList typedef. This type is used for maintaining lists of points,
    * specifically, the source and target landmark lists.
    */
-  typedef DefaultStaticMeshTraits<TScalarType, NDimensions, NDimensions, TScalarType, TScalarType> PointSetTraitsType;
-  typedef PointSet<InputPointType, NDimensions, PointSetTraitsType>                                PointSetType;
-  typedef typename PointSetType::Pointer                                                           PointSetPointer;
-  typedef typename PointSetType::PointsContainer                                                   PointsContainer;
-  typedef typename PointSetType::PointsContainerIterator                                           PointsIterator;
-  typedef typename PointSetType::PointsContainerConstIterator                                      PointsConstIterator;
+  using PointSetTraitsType = DefaultStaticMeshTraits<TScalarType, NDimensions, NDimensions, TScalarType, TScalarType>;
+  using PointSetType = PointSet<InputPointType, NDimensions, PointSetTraitsType>;
+  using PointSetPointer = typename PointSetType::Pointer;
+  using PointsContainer = typename PointSetType::PointsContainer;
+  using PointsIterator = typename PointSetType::PointsContainerIterator;
+  using PointsConstIterator = typename PointSetType::PointsContainerConstIterator;
 
   /** VectorSet typedef. */
-  typedef VectorContainer<unsigned long, InputVectorType> VectorSetType;
-  typedef typename VectorSetType::Pointer                 VectorSetPointer;
+  using VectorSetType = VectorContainer<unsigned long, InputVectorType>;
+  using VectorSetPointer = typename VectorSetType::Pointer;
 
   /** 'I' (identity) matrix typedef. */
-  typedef vnl_matrix_fixed<TScalarType, NDimensions, NDimensions> IMatrixType;
+  using IMatrixType = vnl_matrix_fixed<TScalarType, NDimensions, NDimensions>;
 
   /** Return the number of parameters that completely define the Transform. */
   NumberOfParametersType
-  GetNumberOfParameters(void) const override
+  GetNumberOfParameters() const override
   {
     return (this->m_SourceLandmarks->GetNumberOfPoints() * SpaceDimension);
   }
@@ -180,11 +180,11 @@ public:
 
   /** Compute W matrix. */
   void
-  ComputeWMatrix(void);
+  ComputeWMatrix();
 
   /** Compute L matrix inverse. */
   void
-  ComputeLInverse(void);
+  ComputeLInverse();
 
   /** Compute the position of point in the new space */
   OutputPointType
@@ -194,24 +194,22 @@ public:
   OutputVectorType
   TransformVector(const InputVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformVector(const InputVectorType &) is not implemented "
-                      << "for KernelTransform");
+    itkExceptionMacro(<< "TransformVector(const InputVectorType &) is not implemented for KernelTransform");
   }
 
 
   OutputVnlVectorType
   TransformVector(const InputVnlVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformVector(const InputVnlVectorType &) is not implemented "
-                      << "for KernelTransform");
+    itkExceptionMacro(<< "TransformVector(const InputVnlVectorType &) is not implemented for KernelTransform");
   }
 
 
   OutputCovariantVectorType
   TransformCovariantVector(const InputCovariantVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformCovariantVector(const InputCovariantVectorType &) is not implemented "
-                      << "for KernelTransform");
+    itkExceptionMacro(
+      << "TransformCovariantVector(const InputCovariantVectorType &) is not implemented for KernelTransform");
   }
 
 
@@ -221,7 +219,7 @@ public:
 
   /** Set the Transformation Parameters to be an identity transform. */
   virtual void
-  SetIdentity(void);
+  SetIdentity();
 
   /** Set the Transformation Parameters and update the internal transformation.
    * The parameters represent the source landmarks. Each landmark point is represented
@@ -241,15 +239,15 @@ public:
 
   /** Update the Parameters array from the landmarks coordinates. */
   virtual void
-  UpdateParameters(void);
+  UpdateParameters();
 
   /** Get the Transformation Parameters - Gets the source landmarks. */
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** Get Transform Fixed Parameters - Gets the target landmarks. */
   const ParametersType &
-  GetFixedParameters(void) const override;
+  GetFixedParameters() const override;
 
   /** Stiffness of the spline.  A stiffness of zero results in the
    * standard interpolating spline.  A non-zero stiffness allows the
@@ -291,7 +289,7 @@ public:
    */
   itkSetMacro(PoissonRatio, TScalarType);
   virtual const TScalarType
-  GetPoissonRatio(void) const
+  GetPoissonRatio() const
   {
     return this->m_PoissonRatio;
   }
@@ -362,37 +360,37 @@ protected:
 
 public:
   /** 'G' matrix typedef. */
-  typedef vnl_matrix_fixed<TScalarType, NDimensions, NDimensions> GMatrixType;
+  using GMatrixType = vnl_matrix_fixed<TScalarType, NDimensions, NDimensions>;
 
   /** 'L' matrix typedef. */
-  typedef vnl_matrix<TScalarType> LMatrixType;
+  using LMatrixType = vnl_matrix<TScalarType>;
 
   /** 'K' matrix typedef. */
-  typedef vnl_matrix<TScalarType> KMatrixType;
+  using KMatrixType = vnl_matrix<TScalarType>;
 
   /** 'P' matrix typedef. */
-  typedef vnl_matrix<TScalarType> PMatrixType;
+  using PMatrixType = vnl_matrix<TScalarType>;
 
   /** 'Y' matrix typedef. */
-  typedef vnl_matrix<TScalarType> YMatrixType;
+  using YMatrixType = vnl_matrix<TScalarType>;
 
   /** 'W' matrix typedef. */
-  typedef vnl_matrix<TScalarType> WMatrixType;
+  using WMatrixType = vnl_matrix<TScalarType>;
 
   /** 'D' matrix typedef. Deformation component */
-  typedef vnl_matrix<TScalarType> DMatrixType;
+  using DMatrixType = vnl_matrix<TScalarType>;
 
   /** 'A' matrix typedef. Rotational part of the Affine component */
-  typedef vnl_matrix_fixed<TScalarType, NDimensions, NDimensions> AMatrixType;
+  using AMatrixType = vnl_matrix_fixed<TScalarType, NDimensions, NDimensions>;
 
   /** 'B' matrix typedef. Translational part of the Affine component */
-  typedef vnl_vector_fixed<TScalarType, NDimensions> BMatrixType;
+  using BMatrixType = vnl_vector_fixed<TScalarType, NDimensions>;
 
   /** Row matrix typedef. */
-  typedef vnl_matrix_fixed<TScalarType, 1, NDimensions> RowMatrixType;
+  using RowMatrixType = vnl_matrix_fixed<TScalarType, 1, NDimensions>;
 
   /** Column matrix typedef. */
-  typedef vnl_matrix_fixed<TScalarType, NDimensions, 1> ColumnMatrixType;
+  using ColumnMatrixType = vnl_matrix_fixed<TScalarType, NDimensions, 1>;
 
   /** The list of source landmarks, denoted 'p'. */
   PointSetPointer m_SourceLandmarks;
@@ -429,30 +427,30 @@ protected:
 
   /** Compute K matrix. */
   void
-  ComputeK(void);
+  ComputeK();
 
   /** Compute L matrix. */
   void
-  ComputeL(void);
+  ComputeL();
 
   /** Compute P matrix. */
   void
-  ComputeP(void);
+  ComputeP();
 
   /** Compute Y matrix. */
   void
-  ComputeY(void);
+  ComputeY();
 
   /** Compute displacements \f$ q_i - p_i \f$. */
   void
-  ComputeD(void);
+  ComputeD();
 
   /** Reorganize the components of W into D (deformable), A (rotation part
    * of affine) and B (translational part of affine ) components.
    * \warning This method release the memory of the W Matrix.
    */
   void
-  ReorganizeW(void);
+  ReorganizeW();
 
   /** Stiffness parameter. */
   double m_Stiffness;
@@ -515,8 +513,8 @@ protected:
    * turn calls ComputeWMatrix(). The L matrix is not changed however, and therefore
    * it is not needed to redo the decomposition.
    */
-  typedef vnl_svd<ScalarType> SVDDecompositionType;
-  typedef vnl_qr<ScalarType>  QRDecompositionType;
+  using SVDDecompositionType = vnl_svd<ScalarType>;
+  using QRDecompositionType = vnl_qr<ScalarType>;
 
   SVDDecompositionType * m_LMatrixDecompositionSVD;
   QRDecompositionType *  m_LMatrixDecompositionQR;
@@ -526,9 +524,6 @@ protected:
 
   /** Precomputed nonzero Jacobian indices (simply all params) */
   NonZeroJacobianIndicesType m_NonZeroJacobianIndices;
-
-  /** for old GetJacobian() method: */
-  mutable NonZeroJacobianIndicesType m_NonZeroJacobianIndicesTemp;
 
   /** The Jacobian can be computed much faster for some of the
    * derived kerbel transforms, most notably the TPS.

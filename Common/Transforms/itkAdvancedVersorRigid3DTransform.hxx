@@ -120,8 +120,8 @@ AdvancedVersorRigid3DTransform<TScalarType>::SetParameters(const ParametersType 
 //
 
 template <class TScalarType>
-const typename AdvancedVersorRigid3DTransform<TScalarType>::ParametersType &
-AdvancedVersorRigid3DTransform<TScalarType>::GetParameters(void) const
+auto
+AdvancedVersorRigid3DTransform<TScalarType>::GetParameters() const -> const ParametersType &
 {
   itkDebugMacro(<< "Getting parameters ");
 
@@ -146,7 +146,7 @@ AdvancedVersorRigid3DTransform<TScalarType>::GetJacobian(const InputPointType & 
                                                          JacobianType &               j,
                                                          NonZeroJacobianIndicesType & nzji) const
 {
-  typedef typename VersorType::ValueType ValueType;
+  using ValueType = typename VersorType::ValueType;
 
   // Initialize the Jacobian. Resizing is only performed when needed.
   // Filling with zeros is needed because the lower loops only visit

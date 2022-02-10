@@ -47,10 +47,10 @@ class ITK_TEMPLATE_EXPORT TransformixInputPointFileReader : public MeshFileReade
 {
 public:
   /** Standard class typedefs. */
-  typedef TransformixInputPointFileReader Self;
-  typedef MeshFileReaderBase<TOutputMesh> Superclass;
-  typedef SmartPointer<Self>              Pointer;
-  typedef SmartPointer<const Self>        ConstPointer;
+  using Self = TransformixInputPointFileReader;
+  using Superclass = MeshFileReaderBase<TOutputMesh>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -85,7 +85,7 @@ public:
    * propagation of the pipeline. Updates the PointsAreIndices and NumberOfPoints.
    */
   void
-  GenerateOutputInformation(void) override;
+  GenerateOutputInformation() override;
 
 protected:
   TransformixInputPointFileReader();
@@ -93,7 +93,7 @@ protected:
 
   /** Fill the point container of the output. */
   void
-  GenerateData(void) override;
+  GenerateData() override;
 
   unsigned long m_NumberOfPoints;
   bool          m_PointsAreIndices;

@@ -38,8 +38,8 @@ class xoutcell : public xoutbase
 {
 public:
   /** Typdef's. */
-  typedef xoutcell Self;
-  typedef xoutbase Superclass;
+  using Self = xoutcell;
+  using Superclass = xoutbase;
 
   /** Constructors */
   xoutcell();
@@ -49,10 +49,10 @@ public:
 
   /** Write the buffered cell data to the outputs. */
   void
-  WriteBufferedData(void) override;
+  WriteBufferedData() override;
 
 private:
-  typedef std::ostringstream InternalBufferType;
+  using InternalBufferType = std::ostringstream;
 
   InternalBufferType m_InternalBuffer;
 };

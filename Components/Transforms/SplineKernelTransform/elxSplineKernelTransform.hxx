@@ -20,7 +20,7 @@
 
 #include "elxSplineKernelTransform.h"
 #include "itkTransformixInputPointFileReader.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 #include "itkTimeProbe.h"
 
 namespace elastix
@@ -101,7 +101,7 @@ SplineKernelTransform<TElastix>::SetKernelType(const std::string & kernelType)
 
 template <class TElastix>
 int
-SplineKernelTransform<TElastix>::BeforeAll(void)
+SplineKernelTransform<TElastix>::BeforeAll()
 {
   /** Check if -fp is given */
   /** If the optional command "-fp" is given in the command
@@ -138,8 +138,7 @@ SplineKernelTransform<TElastix>::BeforeAll(void)
   /** Is the moving landmark file specified? */
   if (mp.empty())
   {
-    elxout << "-mp       "
-           << "unspecified, assumed equal to -fp" << std::endl;
+    elxout << "-mp       unspecified, assumed equal to -fp" << std::endl;
   }
   else
   {
@@ -157,7 +156,7 @@ SplineKernelTransform<TElastix>::BeforeAll(void)
 
 template <class TElastix>
 void
-SplineKernelTransform<TElastix>::BeforeRegistration(void)
+SplineKernelTransform<TElastix>::BeforeRegistration()
 {
   /** Determine type of spline. */
   std::string kernelType = "ThinPlateSpline";
@@ -214,7 +213,7 @@ SplineKernelTransform<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-SplineKernelTransform<TElastix>::DetermineSourceLandmarks(void)
+SplineKernelTransform<TElastix>::DetermineSourceLandmarks()
 {
   /** Load the fixed image landmarks. */
   elxout << "Loading fixed image landmarks for " << this->GetComponentLabel() << ":" << this->elxGetClassName() << "."
@@ -247,7 +246,7 @@ SplineKernelTransform<TElastix>::DetermineSourceLandmarks(void)
 
 template <class TElastix>
 bool
-SplineKernelTransform<TElastix>::DetermineTargetLandmarks(void)
+SplineKernelTransform<TElastix>::DetermineTargetLandmarks()
 {
   /** The moving landmark file name. */
   std::string mp = this->GetConfiguration()->GetCommandLineArgument("-mp");
@@ -287,12 +286,12 @@ SplineKernelTransform<TElastix>::ReadLandmarkFile(const std::string & filename,
                                                   const bool &        landmarksInFixedImage)
 {
   /** Typedef's. */
-  typedef typename FixedImageType::IndexType                 IndexType;
-  typedef typename IndexType::IndexValueType                 IndexValueType;
-  typedef itk::TransformixInputPointFileReader<PointSetType> LandmarkReaderType;
+  using IndexType = typename FixedImageType::IndexType;
+  using IndexValueType = typename IndexType::IndexValueType;
+  using LandmarkReaderType = itk::TransformixInputPointFileReader<PointSetType>;
 
   /** Construct a landmark file reader and read the points. */
-  typename LandmarkReaderType::Pointer landmarkReader = LandmarkReaderType::New();
+  auto landmarkReader = LandmarkReaderType::New();
   landmarkReader->SetFileName(filename.c_str());
   try
   {
@@ -377,7 +376,7 @@ SplineKernelTransform<TElastix>::ReadLandmarkFile(const std::string & filename,
 
 template <class TElastix>
 void
-SplineKernelTransform<TElastix>::ReadFromFile(void)
+SplineKernelTransform<TElastix>::ReadFromFile()
 {
   /** Read kernel type. */
   std::string kernelType = "unknown";
@@ -388,8 +387,7 @@ SplineKernelTransform<TElastix>::ReadFromFile(void)
   }
   else
   {
-    xl::xout["error"] << "ERROR: the SplineKernelType is not given in the "
-                      << "transform parameter file." << std::endl;
+    xl::xout["error"] << "ERROR: the SplineKernelType is not given in the transform parameter file." << std::endl;
     itkExceptionMacro(<< "ERROR: unable to configure transform.");
   }
 
@@ -414,8 +412,7 @@ SplineKernelTransform<TElastix>::ReadFromFile(void)
     fixedImageLandmarks, "FixedImageLandmarks", 0, numberOfParameters - 1, true);
   if (!retfil)
   {
-    xl::xout["error"] << "ERROR: the FixedImageLandmarks are not given in "
-                      << "the transform parameter file." << std::endl;
+    xl::xout["error"] << "ERROR: the FixedImageLandmarks are not given in the transform parameter file." << std::endl;
     itkExceptionMacro(<< "ERROR: unable to configure transform.");
   }
 
@@ -443,7 +440,7 @@ SplineKernelTransform<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 auto
-SplineKernelTransform<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+SplineKernelTransform<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   auto & itkTransform = *m_KernelTransform;
 

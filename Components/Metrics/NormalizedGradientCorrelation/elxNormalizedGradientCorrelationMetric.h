@@ -41,13 +41,13 @@ class ITK_TEMPLATE_EXPORT NormalizedGradientCorrelationMetric
 {
 public:
   /** Standard ITK-stuff. */
-  typedef NormalizedGradientCorrelationMetric Self;
-  typedef itk::NormalizedGradientCorrelationImageToImageMetric<typename MetricBase<TElastix>::FixedImageType,
-                                                               typename MetricBase<TElastix>::MovingImageType>
-                                        Superclass1;
-  typedef MetricBase<TElastix>          Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = NormalizedGradientCorrelationMetric;
+  using Superclass1 =
+    itk::NormalizedGradientCorrelationImageToImageMetric<typename MetricBase<TElastix>::FixedImageType,
+                                                         typename MetricBase<TElastix>::MovingImageType>;
+  using Superclass2 = MetricBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -115,13 +115,13 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Sets up a timer to measure the initialization time and
    * calls the Superclass' implementation.
    */
   void
-  Initialize(void) override;
+  Initialize() override;
 
   /**
    * Do some things before each resolution:
@@ -129,10 +129,10 @@ public:
    * \li Set UseNormalization setting
    */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
 protected:
   /** The constructor. */

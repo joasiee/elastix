@@ -37,30 +37,10 @@
 
 #include "itkNumericTraits.h"
 #include "itkAdvancedMatrixOffsetTransformBase.h"
-#include "vnl/algo/vnl_matrix_inverse.h"
+#include <vnl/algo/vnl_matrix_inverse.h>
 
 namespace itk
 {
-
-// Constructor with default arguments
-template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::AdvancedMatrixOffsetTransformBase()
-  : Superclass(ParametersDimension)
-{
-  this->m_Matrix.SetIdentity();
-  this->m_MatrixMTime.Modified();
-  this->m_Offset.Fill(0);
-  this->m_Center.Fill(0);
-  this->m_Translation.Fill(0);
-  this->m_Singular = false;
-  this->m_InverseMatrix.SetIdentity();
-  this->m_InverseMatrixMTime = this->m_MatrixMTime;
-  this->m_FixedParameters.SetSize(NInputDimensions);
-  this->m_FixedParameters.Fill(0.0);
-
-  this->PrecomputeJacobians(ParametersDimension);
-}
-
 
 // Constructor with default arguments
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
@@ -68,37 +48,12 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
   unsigned int paramDims)
   : Superclass(paramDims)
 {
-  this->m_Matrix.SetIdentity();
-  this->m_MatrixMTime.Modified();
-  this->m_Offset.Fill(0);
-  this->m_Center.Fill(0);
-  this->m_Translation.Fill(0);
-  this->m_Singular = false;
-  this->m_InverseMatrix.SetIdentity();
-  this->m_InverseMatrixMTime = this->m_MatrixMTime;
+  m_MatrixMTime.Modified();
+  m_InverseMatrixMTime = m_MatrixMTime;
+  this->m_FixedParameters.SetSize(NInputDimensions);
+  this->m_FixedParameters.Fill(0.0);
 
   this->PrecomputeJacobians(paramDims);
-}
-
-
-// Constructor with explicit arguments
-template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::AdvancedMatrixOffsetTransformBase(
-  const MatrixType &       matrix,
-  const OutputVectorType & offset)
-{
-  this->m_Matrix = matrix;
-  this->m_MatrixMTime.Modified();
-  this->m_Offset = offset;
-  this->m_Center.Fill(0);
-  this->m_Translation.Fill(0);
-  for (unsigned int i = 0; i < NOutputDimensions; ++i)
-  {
-    this->m_Translation[i] = offset[i];
-  }
-  this->ComputeMatrixParameters();
-
-  this->PrecomputeJacobians(ParametersDimension);
 }
 
 
@@ -201,7 +156,7 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 // Constructor with explicit arguments
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 void
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::SetIdentity(void)
+AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::SetIdentity()
 {
   m_Matrix.SetIdentity();
   m_MatrixMTime.Modified();
@@ -215,38 +170,11 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 }
 
 
-// Compose with another affine transformation
-template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-void
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::Compose(const Self * other,
-                                                                                             bool         pre)
-{
-  if (pre)
-  {
-    m_Offset = m_Matrix * other->m_Offset + m_Offset;
-    m_Matrix = m_Matrix * other->m_Matrix;
-  }
-  else
-  {
-    m_Offset = other->m_Matrix * m_Offset + other->m_Offset;
-    m_Matrix = other->m_Matrix * m_Matrix;
-  }
-
-  this->ComputeTranslation();
-  this->ComputeMatrixParameters();
-
-  m_MatrixMTime.Modified();
-  this->Modified();
-
-  return;
-}
-
-
 // Transform a point
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-typename AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::OutputPointType
+auto
 AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::TransformPoint(
-  const InputPointType & point) const
+  const InputPointType & point) const -> OutputPointType
 {
   return m_Matrix * point + m_Offset;
 }
@@ -254,9 +182,9 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 
 // Transform a vector
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-typename AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::OutputVectorType
+auto
 AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::TransformVector(
-  const InputVectorType & vect) const
+  const InputVectorType & vect) const -> OutputVectorType
 {
   return m_Matrix * vect;
 }
@@ -264,9 +192,9 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 
 // Transform a vnl_vector_fixed
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-typename AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::OutputVnlVectorType
+auto
 AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::TransformVector(
-  const InputVnlVectorType & vect) const
+  const InputVnlVectorType & vect) const -> OutputVnlVectorType
 {
   return m_Matrix * vect;
 }
@@ -274,9 +202,9 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 
 // Transform a CovariantVector
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-typename AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::OutputCovariantVectorType
+auto
 AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::TransformCovariantVector(
-  const InputCovariantVectorType & vec) const
+  const InputCovariantVectorType & vec) const -> OutputCovariantVectorType
 {
   OutputCovariantVectorType result; // Converted vector
 
@@ -294,8 +222,9 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 
 // Recompute the inverse matrix (internal)
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-const typename AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::InverseMatrixType &
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::GetInverseMatrix(void) const
+auto
+AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::GetInverseMatrix() const
+  -> const InverseMatrixType &
 {
   // If the transform has been modified we recompute the inverse
   if (m_InverseMatrixMTime != m_MatrixMTime)
@@ -313,31 +242,6 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
   }
 
   return m_InverseMatrix;
-}
-
-// return an inverse transformation
-template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-bool
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::GetInverse(Self * inverse) const
-{
-  if (!inverse)
-  {
-    return false;
-  }
-
-  this->GetInverseMatrix();
-  if (m_Singular)
-  {
-    return false;
-  }
-
-  inverse->m_Matrix = this->GetInverseMatrix();
-  inverse->m_InverseMatrix = m_Matrix;
-  inverse->m_Offset = -(this->GetInverseMatrix() * m_Offset);
-  inverse->ComputeTranslation();
-  inverse->ComputeMatrixParameters();
-
-  return true;
 }
 
 
@@ -361,7 +265,7 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 const typename AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::
   FixedParametersType &
-  AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::GetFixedParameters(void) const
+  AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::GetFixedParameters() const
 {
   this->m_FixedParameters.SetSize(NInputDimensions);
   for (unsigned int i = 0; i < NInputDimensions; ++i)
@@ -373,8 +277,9 @@ const typename AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, 
 
 // Get parameters
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-const typename AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ParametersType &
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::GetParameters(void) const
+auto
+AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::GetParameters() const
+  -> const ParametersType &
 {
   // Transfer the linear part
   unsigned int par = 0;
@@ -407,9 +312,8 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
   if (parameters.Size() < (NOutputDimensions * NInputDimensions + NOutputDimensions))
   {
     itkExceptionMacro(<< "Error setting parameters: parameters array size (" << parameters.Size()
-                      << ") is less than expected "
-                      << " (NInputDimensions * NOutputDimensions + NOutputDimensions) "
-                      << " (" << NInputDimensions << " * " << NOutputDimensions << " + " << NOutputDimensions << " = "
+                      << ") is less than expected  (NInputDimensions * NOutputDimensions + NOutputDimensions)  ("
+                      << NInputDimensions << " * " << NOutputDimensions << " + " << NOutputDimensions << " = "
                       << NInputDimensions * NOutputDimensions + NOutputDimensions << ")");
   }
 
@@ -448,7 +352,7 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 // Computes offset based on center, matrix, and translation variables
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 void
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ComputeOffset(void)
+AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ComputeOffset()
 {
   const MatrixType & matrix = this->GetMatrix();
 
@@ -469,7 +373,7 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 // Computes translation based on offset, matrix, and center
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 void
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ComputeTranslation(void)
+AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ComputeTranslation()
 {
   const MatrixType & matrix = this->GetMatrix();
 
@@ -491,7 +395,7 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 //    used to convert, for example, versor into a matrix
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 void
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ComputeMatrix(void)
+AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ComputeMatrix()
 {
   // Since parameters explicitly define the matrix in this base class, this
   // function does nothing.  Normally used to compute a matrix when
@@ -503,7 +407,7 @@ AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensio
 //    used to convert, for example, matrix into a versor
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 void
-AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ComputeMatrixParameters(void)
+AdvancedMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::ComputeMatrixParameters()
 {
   // Since parameters explicitly define the matrix in this base class, this
   // function does nothing.  Normally used to update the parameterization

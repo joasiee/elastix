@@ -55,15 +55,11 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 }
 
 
-// Destructor
-template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
-MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::
-  ~MultiBSplineDeformableTransformWithNormal() = default;
-
 // Get the number of parameters
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
-typename MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::NumberOfParametersType
-MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::GetNumberOfParameters(void) const
+auto
+MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::GetNumberOfParameters() const
+  -> NumberOfParametersType
 {
   if (m_NbLabels > 0)
   {
@@ -79,9 +75,9 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 // Get the number of parameters per dimension
 // FIXME :  Do we need to declare this function ?
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
-typename MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::NumberOfParametersType
-MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::GetNumberOfParametersPerDimension(
-  void) const
+auto
+MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::GetNumberOfParametersPerDimension()
+  const -> NumberOfParametersType
 {
   // FIXME : Depends on which dimension we are speaking here. should check it
   if (m_NbLabels > 0)
@@ -114,8 +110,7 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
 #define GET_FIRST_LABEL(FUNC, TYPE)                                                                                    \
   template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>                                    \
-  typename MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::TYPE                     \
-    MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::Get##FUNC() const               \
+  auto MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::Get##FUNC() const->TYPE      \
   {                                                                                                                    \
     return m_Trans[0]->Get##FUNC();                                                                                    \
   }
@@ -151,13 +146,13 @@ template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder
 void
 MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::SetLabels(ImageLabelType * labels)
 {
-  typedef StatisticsImageFilter<ImageLabelType> StatisticsType;
+  using StatisticsType = StatisticsImageFilter<ImageLabelType>;
   if (labels != this->m_Labels)
   {
     // Save current settings
     this->m_Labels = labels;
-    ParametersType                   para = this->GetFixedParameters();
-    typename StatisticsType::Pointer stat = StatisticsType::New();
+    ParametersType para = this->GetFixedParameters();
+    auto           stat = StatisticsType::New();
     stat->SetInput(this->m_Labels);
     stat->Update();
     this->m_NbLabels = stat->GetMaximum() + 1;
@@ -178,12 +173,12 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 template <class TScalarType, unsigned int NDimensions>
 struct UpdateLocalBases_impl
 {
-  typedef itk::Vector<TScalarType, NDimensions> VectorType;
-  typedef itk::Vector<VectorType, NDimensions>  BaseType;
-  typedef itk::Image<VectorType, NDimensions>   ImageVectorType;
-  typedef typename ImageVectorType::Pointer     ImageVectorPointer;
-  typedef itk::Image<BaseType, NDimensions>     ImageBaseType;
-  typedef typename ImageBaseType::Pointer       ImageBasePointer;
+  using VectorType = itk::Vector<TScalarType, NDimensions>;
+  using BaseType = itk::Vector<VectorType, NDimensions>;
+  using ImageVectorType = itk::Image<VectorType, NDimensions>;
+  using ImageVectorPointer = typename ImageVectorType::Pointer;
+  using ImageBaseType = itk::Image<BaseType, NDimensions>;
+  using ImageBasePointer = typename ImageBaseType::Pointer;
 
   static void
   Do(ImageBaseType *, ImageVectorType *)
@@ -195,13 +190,13 @@ struct UpdateLocalBases_impl
 template <class TScalarType>
 struct UpdateLocalBases_impl<TScalarType, 2>
 {
-  static const unsigned                         NDimensions = 2;
-  typedef itk::Vector<TScalarType, NDimensions> VectorType;
-  typedef itk::Vector<VectorType, NDimensions>  BaseType;
-  typedef itk::Image<VectorType, NDimensions>   ImageVectorType;
-  typedef typename ImageVectorType::Pointer     ImageVectorPointer;
-  typedef itk::Image<BaseType, NDimensions>     ImageBaseType;
-  typedef typename ImageBaseType::Pointer       ImageBasePointer;
+  static const unsigned NDimensions = 2;
+  using VectorType = itk::Vector<TScalarType, NDimensions>;
+  using BaseType = itk::Vector<VectorType, NDimensions>;
+  using ImageVectorType = itk::Image<VectorType, NDimensions>;
+  using ImageVectorPointer = typename ImageVectorType::Pointer;
+  using ImageBaseType = itk::Image<BaseType, NDimensions>;
+  using ImageBasePointer = typename ImageBaseType::Pointer;
 
   static void
   Do(ImageBaseType * bases, ImageVectorType * normals)
@@ -209,13 +204,13 @@ struct UpdateLocalBases_impl<TScalarType, 2>
     const TScalarType base_x[] = { 1, 0 };
     const TScalarType base_y[] = { 0, 1 };
 
-    typedef itk::NearestNeighborInterpolateImageFunction<ImageVectorType, TScalarType> ImageVectorInterpolator;
-    typedef typename ImageVectorInterpolator::Pointer                                  ImageVectorInterpolatorPointer;
+    using ImageVectorInterpolator = itk::NearestNeighborInterpolateImageFunction<ImageVectorType, TScalarType>;
+    using ImageVectorInterpolatorPointer = typename ImageVectorInterpolator::Pointer;
     ImageVectorInterpolatorPointer vinterp = ImageVectorInterpolator::New();
     vinterp->SetInputImage(normals);
 
-    typedef ImageRegionIterator<ImageBaseType> IteratorType;
-    IteratorType                               it(bases, bases->GetLargestPossibleRegion());
+    using IteratorType = ImageRegionIterator<ImageBaseType>;
+    IteratorType it(bases, bases->GetLargestPossibleRegion());
     for (it.GoToBegin(); !it.IsAtEnd(); ++it)
     {
       BaseType                          b;
@@ -255,13 +250,13 @@ struct UpdateLocalBases_impl<TScalarType, 2>
 template <class TScalarType>
 struct UpdateLocalBases_impl<TScalarType, 3>
 {
-  static const unsigned                         NDimensions = 3;
-  typedef itk::Vector<TScalarType, NDimensions> VectorType;
-  typedef itk::Vector<VectorType, NDimensions>  BaseType;
-  typedef itk::Image<VectorType, NDimensions>   ImageVectorType;
-  typedef typename ImageVectorType::Pointer     ImageVectorPointer;
-  typedef itk::Image<BaseType, NDimensions>     ImageBaseType;
-  typedef typename ImageBaseType::Pointer       ImageBasePointer;
+  static const unsigned NDimensions = 3;
+  using VectorType = itk::Vector<TScalarType, NDimensions>;
+  using BaseType = itk::Vector<VectorType, NDimensions>;
+  using ImageVectorType = itk::Image<VectorType, NDimensions>;
+  using ImageVectorPointer = typename ImageVectorType::Pointer;
+  using ImageBaseType = itk::Image<BaseType, NDimensions>;
+  using ImageBasePointer = typename ImageBaseType::Pointer;
 
   static void
   Do(ImageBaseType * bases, ImageVectorType * normals)
@@ -270,13 +265,13 @@ struct UpdateLocalBases_impl<TScalarType, 3>
     const TScalarType base_y[] = { 0, 1, 0 };
     const TScalarType base_z[] = { 0, 0, 1 };
 
-    typedef itk::NearestNeighborInterpolateImageFunction<ImageVectorType, TScalarType> ImageVectorInterpolator;
-    typedef typename ImageVectorInterpolator::Pointer                                  ImageVectorInterpolatorPointer;
+    using ImageVectorInterpolator = itk::NearestNeighborInterpolateImageFunction<ImageVectorType, TScalarType>;
+    using ImageVectorInterpolatorPointer = typename ImageVectorInterpolator::Pointer;
     ImageVectorInterpolatorPointer vinterp = ImageVectorInterpolator::New();
     vinterp->SetInputImage(normals);
 
-    typedef ImageRegionIterator<ImageBaseType> IteratorType;
-    IteratorType                               it(bases, bases->GetLargestPossibleRegion());
+    using IteratorType = ImageRegionIterator<ImageBaseType>;
+    IteratorType it(bases, bases->GetLargestPossibleRegion());
     for (it.GoToBegin(); !it.IsAtEnd(); ++it)
     {
       BaseType                          b;
@@ -350,17 +345,17 @@ template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder
 void
 MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::UpdateLocalBases()
 {
-  typedef itk::Image<double, Self::SpaceDimension>                                      ImageDoubleType;
-  typedef itk::ConstantPadImageFilter<ImageLabelType, ImageLabelType>                   PadFilterType;
-  typedef itk::ApproximateSignedDistanceMapImageFilter<ImageLabelType, ImageDoubleType> DistFilterType;
-  typedef itk::SmoothingRecursiveGaussianImageFilter<ImageDoubleType, ImageDoubleType>  SmoothFilterType;
-  typedef itk::GradientImageFilter<ImageDoubleType, double, double>                     GradFilterType;
-  typedef itk::BinaryThresholdImageFilter<ImageLabelType, ImageLabelType>               LabelExtractorType;
-  typedef itk::AddImageFilter<ImageVectorType, ImageVectorType, ImageVectorType>        AddVectorImageType;
-  typedef itk::MaskImageFilter<ImageVectorType, ImageLabelType, ImageVectorType>        MaskVectorImageType;
-  typedef typename ImageLabelType::PointType                                            PointType;
-  typedef typename ImageLabelType::RegionType                                           RegionType;
-  typedef typename ImageLabelType::SpacingType                                          SpacingType;
+  using ImageDoubleType = itk::Image<double, Self::SpaceDimension>;
+  using PadFilterType = itk::ConstantPadImageFilter<ImageLabelType, ImageLabelType>;
+  using DistFilterType = itk::ApproximateSignedDistanceMapImageFilter<ImageLabelType, ImageDoubleType>;
+  using SmoothFilterType = itk::SmoothingRecursiveGaussianImageFilter<ImageDoubleType, ImageDoubleType>;
+  using GradFilterType = itk::GradientImageFilter<ImageDoubleType, double, double>;
+  using LabelExtractorType = itk::BinaryThresholdImageFilter<ImageLabelType, ImageLabelType>;
+  using AddVectorImageType = itk::AddImageFilter<ImageVectorType, ImageVectorType, ImageVectorType>;
+  using MaskVectorImageType = itk::MaskImageFilter<ImageVectorType, ImageLabelType, ImageVectorType>;
+  using PointType = typename ImageLabelType::PointType;
+  using RegionType = typename ImageLabelType::RegionType;
+  using SpacingType = typename ImageLabelType::SpacingType;
 
   PointType transOrig = GetGridOrigin();
   PointType transEnd;
@@ -390,7 +385,7 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
     upperExtend[i] = std::ceil((transEnd[i] - labelEnd[i])) / labelSpac[i];
   }
 
-  typename PadFilterType::Pointer padFilter = PadFilterType::New();
+  auto padFilter = PadFilterType::New();
   padFilter->SetInput(this->m_Labels);
   padFilter->SetPadLowerBound(lowerExtend);
   padFilter->SetPadUpperBound(upperExtend);
@@ -398,30 +393,30 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
   for (int l = 0; l < this->m_NbLabels; ++l)
   {
-    typename LabelExtractorType::Pointer labelExtractor = LabelExtractorType::New();
+    auto labelExtractor = LabelExtractorType::New();
     labelExtractor->SetInput(padFilter->GetOutput());
     labelExtractor->SetLowerThreshold(l);
     labelExtractor->SetUpperThreshold(l);
     labelExtractor->SetInsideValue(1);
     labelExtractor->SetOutsideValue(0);
 
-    typename DistFilterType::Pointer distFilter = DistFilterType::New();
+    auto distFilter = DistFilterType::New();
     distFilter->SetInsideValue(1);
     distFilter->SetOutsideValue(0);
     distFilter->SetInput(labelExtractor->GetOutput());
 
-    typename SmoothFilterType::Pointer smoothFilter = SmoothFilterType::New();
+    auto smoothFilter = SmoothFilterType::New();
     smoothFilter->SetInput(distFilter->GetOutput());
     smoothFilter->SetSigma(4.);
 
-    typename GradFilterType::Pointer gradFilter = GradFilterType::New();
+    auto gradFilter = GradFilterType::New();
     gradFilter->SetInput(smoothFilter->GetOutput());
 
     const auto castFilter = itk::CastImageFilter<typename GradFilterType::OutputImageType, ImageVectorType>::New();
 
     castFilter->SetInput(gradFilter->GetOutput());
 
-    typename MaskVectorImageType::Pointer maskFilter = MaskVectorImageType::New();
+    auto maskFilter = MaskVectorImageType::New();
     maskFilter->SetInput(castFilter->GetOutput());
     maskFilter->SetMaskImage(labelExtractor->GetOutput());
     maskFilter->SetOutsideValue(itk::NumericTraits<VectorType>::ZeroValue());
@@ -433,7 +428,7 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
     }
     else
     {
-      typename AddVectorImageType::Pointer addFilter = AddVectorImageType::New();
+      auto addFilter = AddVectorImageType::New();
       addFilter->SetInput1(this->m_LabelsNormals);
       addFilter->SetInput2(maskFilter->GetOutput());
       addFilter->Update();
@@ -465,8 +460,8 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
   }
   else
   {
-    itkExceptionMacro(<< "Input parameters for the spline haven't been set ! "
-                      << "Set them using the SetParameters or SetCoefficientImage method first.");
+    itkExceptionMacro(<< "Input parameters for the spline haven't been set ! Set them using the SetParameters or "
+                         "SetCoefficientImage method first.");
   }
 }
 
@@ -481,9 +476,9 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
     m_Para[i].SetSize(m_Trans[i]->GetNumberOfParameters());
   }
 
-  typedef typename ImageBaseType::PixelContainer BaseContainer;
-  const BaseContainer &                          bases = *m_LocalBases->GetPixelContainer();
-  unsigned ParametersPerDimension = m_Trans[0]->GetNumberOfParametersPerDimension();
+  using BaseContainer = typename ImageBaseType::PixelContainer;
+  const BaseContainer & bases = *m_LocalBases->GetPixelContainer();
+  unsigned              ParametersPerDimension = m_Trans[0]->GetNumberOfParametersPerDimension();
   for (unsigned i = 0; i < ParametersPerDimension; ++i)
   {
     VectorType tmp = bases[i][0] * parameters.GetElement(i);
@@ -585,8 +580,9 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
 // Get the parameters
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
-const typename MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::ParametersType &
-MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::GetParameters(void) const
+auto
+MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::GetParameters() const
+  -> const ParametersType &
 {
   /** NOTE: For efficiency, this class does not keep a copy of the parameters -
    * it just keeps pointer to input parameters.
@@ -602,8 +598,9 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
 // Get the parameters
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
-const typename MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::ParametersType &
-MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::GetFixedParameters(void) const
+auto
+MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::GetFixedParameters() const
+  -> const ParametersType &
 {
   return (m_Trans[0]->GetFixedParameters());
 }
@@ -649,9 +646,9 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
 
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
-typename MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::OutputPointType
+auto
 MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::TransformPoint(
-  const InputPointType & point) const
+  const InputPointType & point) const -> OutputPointType
 {
   int lidx = 0;
   this->PointToLabel(point, lidx);
@@ -666,9 +663,9 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
 
 // template<class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
-// const typename MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>::JacobianType&
+// auto
 // MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder>
-//::GetJacobian( const InputPointType & point ) const
+//::GetJacobian( const InputPointType & point ) const -> const JacobianType&
 //{
 //  this->m_Jacobian.set_size(SpaceDimension, this->GetNumberOfParameters());
 //  this->m_Jacobian.Fill(0.0);
@@ -739,8 +736,7 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
   // Convert the physical point to a continuous index, which
   // is needed for the 'Evaluate()' functions below.
-  typename TransformType::ContinuousIndexType cindex;
-  m_Trans[lidx]->TransformPointToContinuousGridIndex(ipp, cindex);
+  const typename TransformType::ContinuousIndexType cindex = m_Trans[lidx]->TransformPointToContinuousGridIndex(ipp);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and zero Jacobian
@@ -755,8 +751,8 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
     return;
   }
 
-  typedef typename ImageBaseType::PixelContainer BaseContainer;
-  const BaseContainer &                          bases = *m_LocalBases->GetPixelContainer();
+  using BaseContainer = typename ImageBaseType::PixelContainer;
+  const BaseContainer & bases = *m_LocalBases->GetPixelContainer();
 
   const unsigned nweights = this->GetNumberOfWeights();
   for (unsigned i = 0; i < nweights; ++i)
@@ -881,8 +877,8 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
   JacobianOfSpatialJacobianType & jsj,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
 {
-  itkExceptionMacro(<< "ERROR: GetJacobianOfSpatialJacobian() not yet implemented "
-                    << "in the MultiBSplineDeformableTransformWithNormal class.");
+  itkExceptionMacro(<< "ERROR: GetJacobianOfSpatialJacobian() not yet implemented in the "
+                       "MultiBSplineDeformableTransformWithNormal class.");
 } // end GetJacobianOfSpatialJacobian()
 
 
@@ -918,8 +914,7 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
   // Convert the physical point to a continuous index, which
   // is needed for the 'Evaluate()' functions below.
-  typename TransformType::ContinuousIndexType cindex;
-  m_Trans[lidx]->TransformPointToContinuousGridIndex(ipp, cindex);
+  const typename TransformType::ContinuousIndexType cindex = m_Trans[lidx]->TransformPointToContinuousGridIndex(ipp);
 
   if (lidx == 0 || !m_Trans[lidx]->InsideValidRegion(cindex))
   {
@@ -943,8 +938,8 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
   m_Trans[0]->GetJacobianOfSpatialJacobian(ipp, nsj, njsj, nonZeroJacobianIndices);
   m_Trans[lidx]->GetJacobianOfSpatialJacobian(ipp, lsj, ljsj, nonZeroJacobianIndices);
 
-  typedef typename ImageBaseType::PixelContainer BaseContainer;
-  const BaseContainer &                          bases = *m_LocalBases->GetPixelContainer();
+  using BaseContainer = typename ImageBaseType::PixelContainer;
+  const BaseContainer & bases = *m_LocalBases->GetPixelContainer();
 
   const unsigned nweights = this->GetNumberOfWeights();
   for (unsigned i = 0; i < nweights; ++i)
@@ -1019,8 +1014,7 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
 
   // Convert the physical point to a continuous index, which
   // is needed for the 'Evaluate()' functions below.
-  typename TransformType::ContinuousIndexType cindex;
-  m_Trans[lidx]->TransformPointToContinuousGridIndex(ipp, cindex);
+  const typename TransformType::ContinuousIndexType cindex = m_Trans[lidx]->TransformPointToContinuousGridIndex(ipp);
 
   if (lidx == 0 || !m_Trans[lidx]->InsideValidRegion(cindex))
   {
@@ -1051,8 +1045,8 @@ MultiBSplineDeformableTransformWithNormal<TScalarType, NDimensions, VSplineOrder
   m_Trans[0]->GetJacobianOfSpatialHessian(ipp, nsh, njsh, nonZeroJacobianIndices);
   m_Trans[lidx]->GetJacobianOfSpatialHessian(ipp, lsh, ljsh, nonZeroJacobianIndices);
 
-  typedef typename ImageBaseType::PixelContainer BaseContainer;
-  const BaseContainer &                          bases = *m_LocalBases->GetPixelContainer();
+  using BaseContainer = typename ImageBaseType::PixelContainer;
+  const BaseContainer & bases = *m_LocalBases->GetPixelContainer();
 
   const unsigned nweights = this->GetNumberOfWeights();
   for (unsigned i = 0; i < nweights; ++i)

@@ -84,7 +84,7 @@ class ITK_TEMPLATE_EXPORT MultiBSplineDeformableTransformWithNormal;
  * The following illustrates the typical usage of this class:
  * \verbatim
  * typedef AdvancedBSplineDeformableTransform<double,2,3> TransformType;
- * TransformType::Pointer transform = TransformType::New();
+ * auto transform = TransformType::New();
  *
  * transform->SetGridRegion( region );
  * transform->SetGridSpacing( spacing );
@@ -135,10 +135,10 @@ class ITK_TEMPLATE_EXPORT AdvancedBSplineDeformableTransform
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedBSplineDeformableTransform                               Self;
-  typedef AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions> Superclass;
-  typedef SmartPointer<Self>                                               Pointer;
-  typedef SmartPointer<const Self>                                         ConstPointer;
+  using Self = AdvancedBSplineDeformableTransform;
+  using Superclass = AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New macro for creation of through the object factory. */
   itkNewMacro(Self);
@@ -201,47 +201,34 @@ public:
   TransformPoint(const InputPointType & point) const override;
 
   /** Interpolation weights function type. */
-  typedef BSplineInterpolationWeightFunction2<ScalarType, Self::SpaceDimension, Self::SplineOrder> WeightsFunctionType;
-  typedef typename WeightsFunctionType::Pointer             WeightsFunctionPointer;
-  typedef typename WeightsFunctionType::WeightsType         WeightsType;
-  typedef typename WeightsFunctionType::ContinuousIndexType ContinuousIndexType;
-  typedef BSplineInterpolationDerivativeWeightFunction<ScalarType, Self::SpaceDimension, Self::SplineOrder>
-                                                          DerivativeWeightsFunctionType;
-  typedef typename DerivativeWeightsFunctionType::Pointer DerivativeWeightsFunctionPointer;
-  typedef BSplineInterpolationSecondOrderDerivativeWeightFunction<ScalarType, Self::SpaceDimension, Self::SplineOrder>
-                                                            SODerivativeWeightsFunctionType;
-  typedef typename SODerivativeWeightsFunctionType::Pointer SODerivativeWeightsFunctionPointer;
+  using WeightsFunctionType = BSplineInterpolationWeightFunction2<ScalarType, Self::SpaceDimension, VSplineOrder>;
+  using WeightsFunctionPointer = typename WeightsFunctionType::Pointer;
+  using WeightsType = typename WeightsFunctionType::WeightsType;
+  using ContinuousIndexType = typename WeightsFunctionType::ContinuousIndexType;
+  using DerivativeWeightsFunctionType =
+    BSplineInterpolationDerivativeWeightFunction<ScalarType, Self::SpaceDimension, VSplineOrder>;
+  using DerivativeWeightsFunctionPointer = typename DerivativeWeightsFunctionType::Pointer;
+  using SODerivativeWeightsFunctionType =
+    BSplineInterpolationSecondOrderDerivativeWeightFunction<ScalarType, Self::SpaceDimension, VSplineOrder>;
+  using SODerivativeWeightsFunctionPointer = typename SODerivativeWeightsFunctionType::Pointer;
 
   /** Parameter index array type. */
   using typename Superclass::ParameterIndexArrayType;
 
-  /** Transform points by a B-spline deformable transformation.
-   * On return, weights contains the interpolation weights used to compute the
-   * deformation and indices of the x (zeroth) dimension coefficient parameters
-   * in the support region used to compute the deformation.
-   * Parameter indices for the i-th dimension can be obtained by adding
-   * ( i * this->GetNumberOfParametersPerDimension() ) to the indices array.
-   */
-  virtual void
-  TransformPoint(const InputPointType &    inputPoint,
-                 OutputPointType &         outputPoint,
-                 WeightsType &             weights,
-                 ParameterIndexArrayType & indices,
-                 bool &                    inside) const;
 
   /** Get number of weights. */
   unsigned long
-  GetNumberOfWeights(void) const
+  GetNumberOfWeights() const
   {
     return this->m_WeightsFunction->GetNumberOfWeights();
   }
 
 
   unsigned int
-  GetNumberOfAffectedWeights(void) const override;
+  GetNumberOfAffectedWeights() const override;
 
   NumberOfParametersType
-  GetNumberOfNonZeroJacobianIndices(void) const override;
+  GetNumberOfNonZeroJacobianIndices() const override;
 
   /** Compute the Jacobian of the transformation. */
   void
@@ -300,7 +287,7 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   AdvancedBSplineDeformableTransform();
-  ~AdvancedBSplineDeformableTransform() override;
+  ~AdvancedBSplineDeformableTransform() override = default;
 
   /** Allow subclasses to access and manipulate the weights function. */
   // Why??
@@ -309,7 +296,7 @@ protected:
 
   /** Wrap flat array into images of coefficients. */
   void
-  WrapAsImages(void);
+  WrapAsImages();
 
   void
   ComputeNonZeroJacobianIndices(NonZeroJacobianIndicesType & nonZeroJacobianIndices,
@@ -331,7 +318,7 @@ private:
   void
   operator=(const Self &) = delete;
 
-  friend class MultiBSplineDeformableTransformWithNormal<ScalarType, Self::SpaceDimension, Self::SplineOrder>;
+  friend class MultiBSplineDeformableTransformWithNormal<ScalarType, Self::SpaceDimension, VSplineOrder>;
 };
 
 } // namespace itk

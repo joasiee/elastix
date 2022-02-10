@@ -64,24 +64,24 @@ main(int argc, char * argv[])
   std::cout << std::showpoint << std::setprecision(4);
 
   // Typedefs.
-  const unsigned int                             Dimension = 3;
-  typedef short                                  InputPixelType;
-  typedef float                                  OutputPixelType;
-  typedef itk::Image<InputPixelType, Dimension>  InputImageType;
-  typedef itk::Image<OutputPixelType, Dimension> OutputImageType;
+  const unsigned int Dimension = 3;
+  using InputPixelType = short;
+  using OutputPixelType = float;
+  using InputImageType = itk::Image<InputPixelType, Dimension>;
+  using OutputImageType = itk::Image<OutputPixelType, Dimension>;
 
   // CPU Typedefs
-  typedef itk::CastImageFilter<InputImageType, OutputImageType> FilterType;
-  typedef itk::ImageFileReader<InputImageType>                  ReaderType;
-  typedef itk::ImageFileWriter<OutputImageType>                 WriterType;
+  using FilterType = itk::CastImageFilter<InputImageType, OutputImageType>;
+  using ReaderType = itk::ImageFileReader<InputImageType>;
+  using WriterType = itk::ImageFileWriter<OutputImageType>;
 
   // Reader
-  ReaderType::Pointer reader = ReaderType::New();
+  auto reader = ReaderType::New();
   reader->SetFileName(inputFileName);
   reader->Update();
 
   // Construct the filter
-  FilterType::Pointer cpuFilter = FilterType::New();
+  auto cpuFilter = FilterType::New();
 
   std::cout << "Testing the CastImageFilter, CPU vs GPU:\n";
   std::cout << "CPU/GPU splineOrder #threads time speedup RMSE\n";
@@ -114,7 +114,7 @@ main(int argc, char * argv[])
   std::cout << "CPU " << cpuFilter->GetNumberOfWorkUnits() << " " << cputimer.GetMean() / runTimes << std::endl;
 
   /** Write the CPU result. */
-  WriterType::Pointer writer = WriterType::New();
+  auto writer = WriterType::New();
   writer->SetInput(cpuFilter->GetOutput());
   writer->SetFileName(outputFileNameCPU.c_str());
   try
@@ -131,7 +131,7 @@ main(int argc, char * argv[])
   // Register object factory for GPU image and filter
   // All these filters that are constructed after this point are
   // turned into a GPU filter.
-  typedef typelist::MakeTypeList<short, float>::Type OCLImageTypes;
+  using OCLImageTypes = typelist::MakeTypeList<short, float>::Type;
   itk::GPUImageFactory2<OCLImageTypes, OCLImageDims>::RegisterOneFactory();
   itk::GPUCastImageFilterFactory2<OCLImageTypes, OCLImageTypes, OCLImageDims>::RegisterOneFactory();
 
@@ -155,7 +155,7 @@ main(int argc, char * argv[])
   // reads a GPUImage instead of a normal image.
   // Otherwise, you will get an exception when running the GPU filter:
   // "ERROR: The GPU InputImage is NULL. Filter unable to perform."
-  ReaderType::Pointer gpuReader = ReaderType::New();
+  auto gpuReader = ReaderType::New();
   gpuReader->SetFileName(inputFileName);
 
   // Time the filter, run on the GPU
@@ -185,7 +185,7 @@ main(int argc, char * argv[])
   std::cout << "GPU x " << gputimer.GetMean() / runTimes << " " << cputimer.GetMean() / gputimer.GetMean();
 
   /** Write the GPU result. */
-  WriterType::Pointer gpuWriter = WriterType::New();
+  auto gpuWriter = WriterType::New();
   gpuWriter->SetInput(gpuFilter->GetOutput());
   gpuWriter->SetFileName(outputFileNameGPU.c_str());
   try

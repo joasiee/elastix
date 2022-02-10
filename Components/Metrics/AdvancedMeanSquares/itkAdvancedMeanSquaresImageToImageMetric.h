@@ -64,10 +64,10 @@ class ITK_TEMPLATE_EXPORT AdvancedMeanSquaresImageToImageMetric
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedMeanSquaresImageToImageMetric                 Self;
-  typedef AdvancedImageToImageMetric<TFixedImage, TMovingImage> Superclass;
-  typedef SmartPointer<Self>                                    Pointer;
-  typedef SmartPointer<const Self>                              ConstPointer;
+  using Self = AdvancedMeanSquaresImageToImageMetric;
+  using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -181,7 +181,7 @@ public:
    * \li Call the superclass' implementation
    * \li Estimate the normalization factor, if asked for.  */
   void
-  Initialize(void) override;
+  Initialize() override;
 
   /** Set/Get whether to normalize the mean squares measure.
    * This divides the MeanSquares by a factor (range/10)^2,
@@ -222,11 +222,11 @@ protected:
   using typename Superclass::NonZeroJacobianIndicesType;
 
   /** Protected typedefs for SelfHessian */
-  typedef SmoothingRecursiveGaussianImageFilter<FixedImageType, FixedImageType>         SmootherType;
-  typedef BSplineInterpolateImageFunction<FixedImageType, CoordinateRepresentationType> FixedImageInterpolatorType;
-  typedef NearestNeighborInterpolateImageFunction<FixedImageType, CoordinateRepresentationType>
-                                           DummyFixedImageInterpolatorType;
-  typedef ImageGridSampler<FixedImageType> SelfHessianSamplerType;
+  using SmootherType = SmoothingRecursiveGaussianImageFilter<FixedImageType, FixedImageType>;
+  using FixedImageInterpolatorType = BSplineInterpolateImageFunction<FixedImageType, CoordinateRepresentationType>;
+  using DummyFixedImageInterpolatorType =
+    NearestNeighborInterpolateImageFunction<FixedImageType, CoordinateRepresentationType>;
+  using SelfHessianSamplerType = ImageGridSampler<FixedImageType>;
 
   double m_NormalizationFactor;
 

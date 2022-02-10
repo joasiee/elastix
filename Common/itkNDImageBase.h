@@ -59,10 +59,10 @@ class ITK_TEMPLATE_EXPORT NDImageBase : public Object
 {
 public:
   /** Standard class typedefs.*/
-  typedef NDImageBase              Self;
-  typedef Object                   Superclass;
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Self = NDImageBase;
+  using Superclass = Object;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   // itkNewMacro( Self );
@@ -72,37 +72,37 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(NDImageBase, Object);
 
-  typedef DataObject              DataObjectType;
-  typedef DataObjectType::Pointer DataObjectPointer;
+  using DataObjectType = DataObject;
+  using DataObjectPointer = DataObjectType::Pointer;
 
   /** Type definitions like normal itkImages, independent of the dimension */
-  typedef typename Image<TPixel, 2>::PixelType                  PixelType;
-  typedef typename Image<TPixel, 2>::ValueType                  ValueType;
-  typedef typename Image<TPixel, 2>::InternalPixelType          InternalPixelType;
-  typedef typename Image<TPixel, 2>::AccessorType               AccessorType;
-  typedef typename Image<TPixel, 2>::PixelContainer             PixelContainer;
-  typedef typename Image<TPixel, 2>::PixelContainerPointer      PixelContainerPointer;
-  typedef typename Image<TPixel, 2>::PixelContainerConstPointer PixelContainerConstPointer;
+  using PixelType = typename Image<TPixel, 2>::PixelType;
+  using ValueType = typename Image<TPixel, 2>::ValueType;
+  using InternalPixelType = typename Image<TPixel, 2>::InternalPixelType;
+  using AccessorType = typename Image<TPixel, 2>::AccessorType;
+  using PixelContainer = typename Image<TPixel, 2>::PixelContainer;
+  using PixelContainerPointer = typename Image<TPixel, 2>::PixelContainerPointer;
+  using PixelContainerConstPointer = typename Image<TPixel, 2>::PixelContainerConstPointer;
 
-  typedef typename ImageBase<2>::SpacingType Spacing2DType;
-  typedef typename ImageBase<2>::PointType   Point2DType;
+  using Spacing2DType = typename ImageBase<2>::SpacingType;
+  using Point2DType = typename ImageBase<2>::PointType;
 
-  typedef typename Spacing2DType::ValueType      SpacingValueType;
-  typedef typename Point2DType::ValueType        PointValueType;
-  typedef typename ImageBase<2>::IndexValueType  IndexValueType;
-  typedef typename ImageBase<2>::SizeValueType   SizeValueType;
-  typedef typename ImageBase<2>::OffsetValueType OffsetValueType;
+  using SpacingValueType = typename Spacing2DType::ValueType;
+  using PointValueType = typename Point2DType::ValueType;
+  using IndexValueType = typename ImageBase<2>::IndexValueType;
+  using SizeValueType = typename ImageBase<2>::SizeValueType;
+  using OffsetValueType = typename ImageBase<2>::OffsetValueType;
 
   /** ND versions of the index and sizetypes. Unlike in
    * their counterparts in the itk::Image, their size
    * can be defined at runtime. The elx::NDImageTemplate
    * takes care of converting from/to these types to
    * to/from the corresponding types in itk::Image.*/
-  typedef Array<IndexValueType>   IndexType;
-  typedef Array<SizeValueType>    SizeType;
-  typedef Array<SpacingValueType> SpacingType;
-  typedef Array<PointValueType>   PointType;
-  typedef Array<OffsetValueType>  OffsetType;
+  using IndexType = Array<IndexValueType>;
+  using SizeType = Array<SizeValueType>;
+  using SpacingType = Array<SpacingValueType>;
+  using PointType = Array<PointValueType>;
+  using OffsetType = Array<OffsetValueType>;
   /** \todo: extend to direction cosines; but not needed for now in elastix */
 
   /** Region typedef support. A region is used to specify a subset of an image. */
@@ -125,10 +125,10 @@ public:
   SetRequestedRegion(DataObject * data) = 0;
 
   virtual void
-  Allocate(void) = 0;
+  Allocate() = 0;
 
   virtual void
-  Initialize(void) = 0;
+  Initialize() = 0;
 
   virtual void
   FillBuffer(const TPixel & value) = 0;
@@ -161,10 +161,10 @@ public:
   SetPixelContainer(PixelContainer * container) = 0;
 
   virtual AccessorType
-  GetPixelAccessor(void) = 0;
+  GetPixelAccessor() = 0;
 
   virtual const AccessorType
-  GetPixelAccessor(void) const = 0;
+  GetPixelAccessor() const = 0;
 
   virtual void
   SetSpacing(const SpacingType & spacing) = 0;
@@ -175,10 +175,10 @@ public:
   /* Get Spacing/Origin return copies; not a const &, like
    * itkImage; necessary because of the conversion to arrays */
   virtual SpacingType
-  GetSpacing(void) = 0;
+  GetSpacing() = 0;
 
   virtual PointType
-  GetOrigin(void) = 0;
+  GetOrigin() = 0;
 
   /** \todo Transform IndexToPoint methods. */
 
@@ -198,34 +198,34 @@ public:
 
   /** Get the Dimension.*/
   virtual unsigned int
-  ImageDimension(void) = 0;
+  ImageDimension() = 0;
 
   virtual unsigned int
-  GetImageDimension(void) = 0;
+  GetImageDimension() = 0;
 
   virtual void
   SetImageIOWriter(ImageIOBase * _arg) = 0;
 
   virtual ImageIOBase *
-  GetImageIOWriter(void) = 0;
+  GetImageIOWriter() = 0;
 
   virtual void
   SetImageIOReader(ImageIOBase * _arg) = 0;
 
   virtual ImageIOBase *
-  GetImageIOReader(void) = 0;
+  GetImageIOReader() = 0;
 
   /** Write the actual image to file. */
   virtual void
-  Write(void) = 0;
+  Write() = 0;
 
   /** Read image data from file into the actual image */
   virtual void
-  Read(void) = 0;
+  Read() = 0;
 
   /** Use New method to create a new actual image */
   virtual void
-  CreateNewImage(void) = 0;
+  CreateNewImage() = 0;
 
   /** Set/Get the Input/OutputFileName */
   virtual void
@@ -235,10 +235,10 @@ public:
   SetInputFileName(const char *) = 0;
 
   virtual const char *
-  GetOutputFileName(void) = 0;
+  GetOutputFileName() = 0;
 
   virtual const char *
-  GetInputFileName(void) = 0;
+  GetInputFileName() = 0;
 
   static Pointer
   NewNDImage(unsigned int dim);
@@ -263,8 +263,8 @@ namespace itk
 {
 
 template <class TPixel>
-typename NDImageBase<TPixel>::Pointer
-NDImageBase<TPixel>::NewNDImage(unsigned int dim)
+auto
+NDImageBase<TPixel>::NewNDImage(unsigned int dim) -> Pointer
 {
   switch (dim)
   {

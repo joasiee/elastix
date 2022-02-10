@@ -19,7 +19,7 @@
 #define itkExponentialLimiterFunction_hxx
 
 #include "itkExponentialLimiterFunction.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -41,7 +41,7 @@ ExponentialLimiterFunction<TInput, NDimension>::ExponentialLimiterFunction()
 
 template <class TInput, unsigned int NDimension>
 void
-ExponentialLimiterFunction<TInput, NDimension>::Initialize(void)
+ExponentialLimiterFunction<TInput, NDimension>::Initialize()
 {
   this->ComputeLimiterSettings();
 } // end Initialize()
@@ -52,8 +52,8 @@ ExponentialLimiterFunction<TInput, NDimension>::Initialize(void)
  */
 
 template <class TInput, unsigned int NDimension>
-typename ExponentialLimiterFunction<TInput, NDimension>::OutputType
-ExponentialLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input) const
+auto
+ExponentialLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input) const -> OutputType
 {
   /** Apply a soft limit if the input is larger than the UpperThreshold */
   const double diffU = static_cast<double>(input - this->m_UpperThreshold);
@@ -79,8 +79,9 @@ ExponentialLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input
  */
 
 template <class TInput, unsigned int NDimension>
-typename ExponentialLimiterFunction<TInput, NDimension>::OutputType
+auto
 ExponentialLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input, DerivativeType & derivative) const
+  -> OutputType
 {
   /** Apply a soft limit if the input is larger than the UpperThreshold */
   const double diffU = static_cast<double>(input - this->m_UpperThreshold);
@@ -119,7 +120,7 @@ ExponentialLimiterFunction<TInput, NDimension>::Evaluate(const InputType & input
 
 template <class TInput, unsigned int NDimension>
 void
-ExponentialLimiterFunction<TInput, NDimension>::ComputeLimiterSettings(void)
+ExponentialLimiterFunction<TInput, NDimension>::ComputeLimiterSettings()
 {
   this->m_UTminUB = static_cast<double>(this->m_UpperThreshold) - this->m_UpperBound;
   this->m_LTminLB = static_cast<double>(this->m_LowerThreshold) - this->m_LowerBound;

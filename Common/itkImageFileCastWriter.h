@@ -41,10 +41,10 @@ class ITK_TEMPLATE_EXPORT ImageFileCastWriter : public ImageFileWriter<TInputIma
 {
 public:
   /** Standard class typedefs. */
-  typedef ImageFileCastWriter          Self;
-  typedef ImageFileWriter<TInputImage> Superclass;
-  typedef SmartPointer<Self>           Pointer;
-  typedef SmartPointer<const Self>     ConstPointer;
+  using Self = ImageFileCastWriter;
+  using Superclass = ImageFileWriter<TInputImage>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -68,7 +68,7 @@ public:
 
   /** Determine the default outputcomponentType */
   std::string
-  GetDefaultOutputComponentType(void) const;
+  GetDefaultOutputComponentType() const;
 
 protected:
   ImageFileCastWriter();
@@ -76,7 +76,7 @@ protected:
 
   /** Does the real work. */
   void
-  GenerateData(void) override;
+  GenerateData() override;
 
 private:
   /** Templated function that casts the input image and returns a
@@ -87,19 +87,19 @@ private:
   void *
   ConvertScalarImage(const DataObject * inputImage)
   {
-    typedef Image<OutputComponentType, InputImageDimension>      DiskImageType;
-    typedef typename PixelTraits<InputImagePixelType>::ValueType InputImageComponentType;
-    typedef Image<InputImageComponentType, InputImageDimension>  ScalarInputImageType;
-    typedef CastImageFilter<ScalarInputImageType, DiskImageType> CasterType;
+    using DiskImageType = Image<OutputComponentType, InputImageDimension>;
+    using InputImageComponentType = typename PixelTraits<InputImagePixelType>::ValueType;
+    using ScalarInputImageType = Image<InputImageComponentType, InputImageDimension>;
+    using CasterType = CastImageFilter<ScalarInputImageType, DiskImageType>;
 
     /** Reconfigure the imageIO */
     // this->GetImageIO()->SetPixelTypeInfo( typeid(OutputComponentType) );
     this->GetModifiableImageIO()->SetPixelTypeInfo(static_cast<const OutputComponentType *>(nullptr));
 
     /** cast the input image */
-    typename CasterType::Pointer caster = CasterType::New();
+    auto caster = CasterType::New();
     this->m_Caster = caster;
-    typename ScalarInputImageType::Pointer localInputImage = ScalarInputImageType::New();
+    auto localInputImage = ScalarInputImageType::New();
 
     localInputImage->Graft(static_cast<const ScalarInputImageType *>(inputImage));
 
