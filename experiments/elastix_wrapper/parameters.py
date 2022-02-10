@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 from math import ceil
 import os
+import time
 from PIL import Image
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List
-from datetime import datetime
 
 BASE_PARAMS_PATH = Path("resources", "base_params.json")
 INSTANCE_CONFIG_PATH = Path("resources", "instances.json")
@@ -27,8 +27,8 @@ class Parameters:
     def __init__(
         self,
         metric: str = "AdvancedMeanSquares",
-        sampler: str = "Random",
-        sampling_p: float = 0.05,
+        sampler: str = "RandomCoordinate",
+        sampling_p: float = 0.1,
         mesh_size: List[int] | int = 20,
     ) -> None:
         with BASE_PARAMS_PATH.open() as f:
@@ -85,10 +85,12 @@ class Parameters:
             self,
             iterations: List[int] | int = None,
             evals: List[int] | int = None,
-            max_time_s: int = 0):
+            max_time_s: int = 0,
+            fitness_var: float = 1e-9):
         self["MaximumNumberOfIterations"] = iterations
         self["MaxNumberOfEvaluations"] = evals
         self["MaxTimeSeconds"] = max_time_s
+        self["FitnessVarianceTolerance"] = fitness_var
         return self
 
     def gomea(
@@ -156,7 +158,7 @@ class Parameters:
         self.params[key] = value
 
     def __str__(self) -> str:
-        return f"{datetime.now()} - {self['Collection']}: {self['Instance']} - {self['Optimizer']}"
+        return f"{int(time.time())}_{self['Collection']}_{self['Instance']}_{self['Optimizer']}".lower()
 
     def n_param(self, param: str, n: int = 2) -> List[str]:
         self[param] = [self[param] for i in range(n)]
@@ -201,8 +203,3 @@ class Parameters:
             except ValueError:
                 return res
         return res
-
-
-if __name__ == "__main__":
-    params = Parameters().gomea().instance(Collection.EXAMPLES, 2).multi_metric()
-    params.write(Path())

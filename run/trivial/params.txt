@@ -27,7 +27,5 @@
 (Instance 2)
 (FinalGridSpacingInVoxels 10)
 (NumberOfSpatialSamples 125)
-(MaximumNumberOfIterations 1)
-(PartialEvaluations "true")
-(FosElementSize -6)
+(MaximumNumberOfIterations 3)
 (BasePopulationSize 20)
