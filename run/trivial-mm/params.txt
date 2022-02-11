@@ -16,7 +16,7 @@
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
-(Transform "BSplineTransform")
+(Transform "RecursiveBSplineTransform")
 
 
 // ********** Pyramid

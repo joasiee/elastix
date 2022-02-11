@@ -6,7 +6,7 @@
 (Interpolator "BSplineInterpolator")
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
-(Transform "BSplineTransform")
+(Transform "RecursiveBSplineTransform")
 (NumberOfResolutions 1)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
