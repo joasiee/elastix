@@ -29,6 +29,7 @@ class Parameters:
         metric: str = "AdvancedMeanSquares",
         sampler: str = "RandomCoordinate",
         sampling_p: float = 0.1,
+        downsampling_f: int = 3,
         mesh_size: List[int] | int = 12,
         seed: int = None
     ) -> None:
@@ -39,6 +40,7 @@ class Parameters:
         self["SamplingPercentage"] = sampling_p
         self["MeshSize"] = mesh_size
         self["RandomSeed"] = seed
+        self.downsampling_f = downsampling_f
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
         folder = INSTANCES_CONFIG[collection.value]["folder"]
@@ -113,8 +115,19 @@ class Parameters:
     def prune(self):
         self.params = {k: v for k, v in self.params.items() if v is not None}
 
+    def downsample(self):
+        dim = len(self.get_voxel_dimensions())
+        n_res = self["NumberOfResolutions"] - 1
+        if "ImagePyramidSchedule" not in self.params:
+            self["ImagePyramidSchedule"] = [2**n for n in range(n_res, -1, -1) for _ in range(dim)]
+        
+        self["ImagePyramidSchedule"] = [int(f * self.downsampling_f) for f in self["ImagePyramidSchedule"]]
+        self["NumberOfSpatialSamples"] = [int(n / self.downsampling_f**dim) for n in self["NumberOfSpatialSamples"]]
+        self["FinalGridSpacingInVoxels"] = [ceil(s / self.downsampling_f) for s in self["FinalGridSpacingInVoxels"]]
+
     def write(self, dir: Path) -> None:
         self.prune()
+        self.downsample()
         out_file = dir.joinpath(Path("params.txt"))
         with open(str(out_file), "w+") as f:
             for key, value in self.params.items():
@@ -205,3 +218,7 @@ class Parameters:
             except ValueError:
                 return res
         return res
+
+if __name__ == "__main__":
+    params = Parameters().gomea().multi_resolution().instance(Collection.EMPIRE, 16)
+    params.write(Path())

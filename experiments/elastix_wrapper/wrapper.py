@@ -11,14 +11,15 @@ from elastix_wrapper.watchdog import Watchdog
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
 
-def run(params: Parameters, run_dir: Path) -> Dict[str, Any]:
+def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]:
     run_dir.mkdir(parents=True, exist_ok=True)
     params_file = params.write(run_dir)
     out_dir = run_dir.joinpath(Path("out"))
     os.mkdir(out_dir)
 
     wd = Watchdog(out_dir, params["NumberOfResolutions"])
-    wd.start()
+    if watch:
+        wd.start()
 
     logger.info(f"Starting elastix for: {str(params)}.")
     try:
@@ -55,9 +56,9 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 if __name__ == "__main__":
     params = (
-        Parameters(mesh_size=8, sampler="Full")
+        Parameters(mesh_size=20, sampler="Full")
         .gomea()
         .instance(Collection.EXAMPLES, 1)
         .stopping_criteria(iterations=100)
     )
-    run(params, Path("output/" + str(params)))
+    run(params, Path("output/" + str(params)), False)
