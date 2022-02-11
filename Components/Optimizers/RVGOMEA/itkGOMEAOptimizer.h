@@ -76,8 +76,8 @@ public:
   void
   StopOptimization();
 
-  itkGetConstMacro(CurrentIteration, int);
-  itkGetConstMacro(NumberOfEvaluations, int);
+  itkGetConstMacro(CurrentIteration, unsigned long);
+  itkGetConstMacro(NumberOfEvaluations, unsigned long);
   itkGetConstMacro(CurrentValue, MeasureType);
   itkGetConstReferenceMacro(StopCondition, StopConditionType);
 
@@ -141,8 +141,8 @@ protected:
     GOMEA::random_seed = static_cast<int64_t>(seed);
   }
 
-  int               m_NumberOfEvaluations{ 0 };
-  int               m_CurrentIteration{ 0 };
+  unsigned long               m_NumberOfEvaluations{ 0L };
+  unsigned long               m_CurrentIteration{ 0L };
   StopConditionType m_StopCondition{ Unknown };
   MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
   unsigned int      m_NrOfParameters;
@@ -288,8 +288,8 @@ private:
 
   int m_MaxNumberOfPopulations{ 1 };
   int m_BasePopulationSize{ 0 };
-  int m_MaximumNumberOfIterations{ 100 };
-  int m_MaxNumberOfEvaluations{ 0 };
+  unsigned long m_MaximumNumberOfIterations{ 100L };
+  unsigned long m_MaxNumberOfEvaluations{ 0L };
   int m_MaxNoImprovementStretch{ 0 };
   int m_FosElementSize{ -1 };
   int number_of_subgenerations_per_population_factor{ 8 };
