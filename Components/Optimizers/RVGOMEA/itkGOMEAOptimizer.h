@@ -136,8 +136,10 @@ protected:
   GOMEAOptimizer();
   ~GOMEAOptimizer() override = default;
 
-  void
-  ezilaitini(void);
+  void SetRandomSeed(int seed)
+  {
+    GOMEA::random_seed = static_cast<int64_t>(seed);
+  }
 
   int               m_NumberOfEvaluations{ 0 };
   int               m_CurrentIteration{ 0 };
@@ -271,6 +273,8 @@ private:
   runAllPopulations();
   void
   IterationWriteOutput();
+  void
+  ezilaitini(void);
 
   mutable std::ostringstream m_StopConditionDescription;
 

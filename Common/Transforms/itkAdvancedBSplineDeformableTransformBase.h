@@ -209,6 +209,13 @@ public:
     return this->m_CoefficientImages;
   }
 
+  /** Get the array of wrapped images. */
+  virtual const ImagePointer *
+  GetWrappedImages() const
+  {
+    return this->m_WrappedImage;
+  }
+
   /** Set the array of coefficient images.
    *
    * This is an alternative API for setting the B-spline coefficients
@@ -321,10 +328,6 @@ public:
     return TransformCategoryEnum::BSpline;
   }
 
-  /** Wrap flat array into images of coefficients. */
-  void
-  WrapAsImages();
-
   virtual unsigned int
   GetNumberOfAffectedWeights() const = 0;
 
@@ -344,6 +347,10 @@ protected:
   AdvancedBSplineDeformableTransformBase() = delete;
   explicit AdvancedBSplineDeformableTransformBase(const unsigned splineOrder);
   ~AdvancedBSplineDeformableTransformBase() override = default;
+
+  /** Wrap flat array into images of coefficients. */
+  void
+  WrapAsImages();
 
   /** Convert an input point to a continuous index inside the B-spline grid. */
   ContinuousIndexType

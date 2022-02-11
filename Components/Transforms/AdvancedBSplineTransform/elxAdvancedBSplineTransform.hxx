@@ -322,7 +322,6 @@ AdvancedBSplineTransform<TElastix>::InitializeTransform()
   this->m_BSplineTransform->SetGridSpacing(gridSpacing);
   this->m_BSplineTransform->SetGridOrigin(gridOrigin);
   this->m_BSplineTransform->SetGridDirection(gridDirection);
-  this->m_BSplineTransform->WrapAsImages();
 
   /** Set initial parameters for the first resolution to 0.0. */
   ParametersType initialParameters(this->GetNumberOfParameters());
@@ -381,7 +380,6 @@ AdvancedBSplineTransform<TElastix>::IncreaseScale()
   this->m_BSplineTransform->SetGridSpacing(requiredGridSpacing);
   this->m_BSplineTransform->SetGridRegion(requiredGridRegion);
   this->m_BSplineTransform->SetGridDirection(requiredGridDirection);
-  this->m_BSplineTransform->WrapAsImages();
 
   /** Set the initial parameters for the next level. */
   this->m_Registration->GetAsITKBaseType()->SetInitialTransformParametersOfNextLevel(upsampledParameters);
