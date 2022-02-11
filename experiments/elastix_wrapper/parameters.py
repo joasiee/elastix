@@ -30,6 +30,7 @@ class Parameters:
         sampler: str = "RandomCoordinate",
         sampling_p: float = 0.1,
         mesh_size: List[int] | int = 12,
+        seed: int = None
     ) -> None:
         with BASE_PARAMS_PATH.open() as f:
             self.params: Dict[str, Any] = json.loads(f.read())
@@ -37,6 +38,7 @@ class Parameters:
         self["ImageSampler"] = sampler
         self["SamplingPercentage"] = sampling_p
         self["MeshSize"] = mesh_size
+        self["RandomSeed"] = seed
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
         folder = INSTANCES_CONFIG[collection.value]["folder"]
