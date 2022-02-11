@@ -8,7 +8,6 @@
 (Resampler "DefaultResampler")
 (Transform "RecursiveBSplineTransform")
 (NumberOfResolutions 1)
-(ImagePyramidSchedule 3 3)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 (BSplineInterpolationOrder 1)
