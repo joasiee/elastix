@@ -925,16 +925,14 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   int i;
 
   this->GetRegionsForFOS(sets, set_length, length);
-  this->m_FOSImageSamples.clear();
-  this->m_FOSImageSamples.reserve(length + 1);
   this->m_ThreadedGetValueFn = &AdvancedImageToImageMetric::ThreadedGetValuePartial;
 
-  // init fos region samplers
-  this->m_FOSImageSamples.push_back(ImageSampleContainerReferenceType::New());
-  ImageSampleContainerReferenceType & a = *(this->m_FOSImageSamples[0]);
-  int                                 n_cpoints = this->m_BSplineFOSRegions.size();
+  int           n_cpoints = this->m_BSplineFOSRegions.size();
+  unsigned long totalSamples = 0L;
+
   this->m_SubfunctionSamplers.clear();
   this->m_SubfunctionSamplers.reserve(n_cpoints);
+
   for (i = 0; i < n_cpoints; ++i)
   {
     ImageSamplerPointer              subfunctionSampler = this->m_ImageSampler->Clone();
@@ -944,24 +942,10 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
     subfunctionSampler->Update();
     this->m_SubfunctionSamplers.push_back(subfunctionSampler);
-
-    ImageSampleContainerType & b = *(subfunctionSampler->GetOutput());
-    a.insert(a.end(), b.begin(), b.end());
+    totalSamples += subfunctionSampler->GetOutput()->Size();
   }
-  this->SetNumberOfFixedImageSamples(a.Size());
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
-
-  // init per fos set container of samples
-  for (i = 0; i < length; ++i)
-  {
-    this->m_FOSImageSamples.push_back(ImageSampleContainerReferenceType::New());
-    ImageSampleContainerReferenceType & a = *(this->m_FOSImageSamples[i + 1]);
-    for (const int & cpoint : this->m_BSplinePointsRegions[i])
-    {
-      ImageSampleContainerType & b = *(this->m_SubfunctionSamplers[cpoint]->GetOutput());
-      a.insert(a.end(), b.begin(), b.end());
-    }
-  }
+  this->SetNumberOfFixedImageSamples(totalSamples);
+  this->m_CurrentFOSSet = 0;
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -975,12 +959,12 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   const BSplineOrder3TransformType * bsplinePtr =
     dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
 
-  ImagePointer     wrappedImage = bsplinePtr->GetWrappedImages()[0];
+  ImagePointer           wrappedImage = bsplinePtr->GetWrappedImages()[0];
   const FixedImageType * fixedImage = this->GetFixedImage();
-  const int        num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
-  RegionType       coeffRegionCropped = wrappedImage->GetLargestPossibleRegion();
-  IndexType        coeffRegionCroppedIndex;
-  std::vector<int> cpointOffsetMap(coeffRegionCropped.GetNumberOfPixels());
+  const int              num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
+  RegionType             coeffRegionCropped = wrappedImage->GetLargestPossibleRegion();
+  IndexType              coeffRegionCroppedIndex;
+  std::vector<int>       cpointOffsetMap(coeffRegionCropped.GetNumberOfPixels());
 
   // crop control points grid to only contain those at lower left corners of fixed image pixel areas.
   for (d = 0; d < FixedImageDimension; ++d)
@@ -993,7 +977,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   this->m_BSplineFOSRegions.clear();
   this->m_BSplinePointsRegions.clear();
   this->m_BSplineFOSRegions.resize(coeffRegionCropped.GetNumberOfPixels());
-  this->m_BSplinePointsRegions.resize(length);
+  this->m_BSplinePointsRegions.resize(length + 1);
 
   // iterate over these control points and calculate fixed image pixel region
   ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(wrappedImage, coeffRegionCropped);
@@ -1014,6 +998,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
     }
     this->m_BSplineFOSRegions[i].SetIndex(imageIndex);
     cpointOffsetMap[offset] = i;
+    this->m_BSplinePointsRegions[0].push_back(i);
     ++coeffImageIterator;
     ++i;
   }
@@ -1047,7 +1032,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
         offset = cpointOffsetMap[offset];
         if (!pointAdded[offset])
         {
-          this->m_BSplinePointsRegions[j].push_back(offset);
+          this->m_BSplinePointsRegions[j + 1].push_back(offset);
           pointAdded[offset] = true;
         }
         ++imageIterator;

@@ -147,9 +147,6 @@ public:
 
   typedef typename ImageSamplerType::InputImageRegionType ImageSamplerInputImageRegionType;
   typedef typename ImageSampleContainerType::Element      ImageSampleContainerElementType;
-  typedef VectorDataContainer<std::size_t, std::reference_wrapper<ImageSampleContainerElementType>>
-                                                              ImageSampleContainerReferenceType;
-  typedef typename ImageSampleContainerReferenceType::Pointer ImageSampleContainerReferencePointer;
 
   /** Typedefs for Limiter support. */
   using FixedImageLimiterType = LimiterFunctionBase<RealType, FixedImageDimension>;
@@ -365,10 +362,9 @@ protected:
    * because it is changed in the GetValue(), etc, which are const functions.
    */
   typedef typename ImageSampleContainerType::Element ImageSampleType;
-  mutable ImageSamplerPointer m_ImageSampler{ nullptr };
+  mutable ImageSamplerPointer                        m_ImageSampler{ nullptr };
+  mutable int                                        m_CurrentFOSSet{0};
   std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
-  mutable ImageSampleContainerReferencePointer       m_CurrentSampleContainer;
-  std::vector<ImageSampleContainerReferencePointer>  m_FOSImageSamples;
   double                                             m_SamplingPercentage{ 0.05 };
   typedef void (AdvancedImageToImageMetric::*ThreadedFn)(ThreadIdType threadId);
   ThreadedFn m_ThreadedGetValueFn = &AdvancedImageToImageMetric::ThreadedGetValue;

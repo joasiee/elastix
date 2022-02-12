@@ -98,8 +98,6 @@ public:
   using typename Superclass::FixedImagePixelType;
   using typename Superclass::ImageSampleContainerType;
   using typename Superclass::ImageSampleContainerPointer;
-  using typename Superclass::ImageSampleContainerReferencePointer;
-  using typename Superclass::ImageSampleContainerReferenceType;
   using typename Superclass::ScalarType;
   using typename Superclass::ThreaderType;
   using typename Superclass::ThreadInfoType;

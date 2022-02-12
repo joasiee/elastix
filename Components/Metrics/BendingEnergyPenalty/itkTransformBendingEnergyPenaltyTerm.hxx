@@ -76,14 +76,11 @@ typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureTyp
 TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
                                                                       const int              fosIndex) const
 {
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex + 1];
   this->BeforeThreadedGetValueAndDerivative(parameters);
   this->LaunchGetValueThreaderCallback();
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
-
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
 
   return value;
 } // end GetValuePartial()
@@ -182,81 +179,81 @@ template <class TFixedImage, class TScalarType>
 void
 TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValuePartial(ThreadIdType threadId)
 {
-  /** Create and initialize some variables. */
-  SpatialHessianType           spatialHessian;
-  JacobianOfSpatialHessianType jacobianOfSpatialHessian;
-  NonZeroJacobianIndicesType   nonZeroJacobianIndices;
-  const NumberOfParametersType numberOfNonZeroJacobianIndices =
-    this->m_AdvancedTransform->GetNumberOfNonZeroJacobianIndices();
-  jacobianOfSpatialHessian.resize(numberOfNonZeroJacobianIndices);
-  nonZeroJacobianIndices.resize(numberOfNonZeroJacobianIndices);
+  // /** Create and initialize some variables. */
+  // SpatialHessianType           spatialHessian;
+  // JacobianOfSpatialHessianType jacobianOfSpatialHessian;
+  // NonZeroJacobianIndicesType   nonZeroJacobianIndices;
+  // const NumberOfParametersType numberOfNonZeroJacobianIndices =
+  //   this->m_AdvancedTransform->GetNumberOfNonZeroJacobianIndices();
+  // jacobianOfSpatialHessian.resize(numberOfNonZeroJacobianIndices);
+  // nonZeroJacobianIndices.resize(numberOfNonZeroJacobianIndices);
 
-  /** Check if the SpatialHessian is nonzero. */
-  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian() &&
-      !this->m_AdvancedTransform->GetHasNonZeroJacobianOfSpatialHessian())
-  {
-    return;
-  }
-  // TODO: This is only required once! and not every iteration.
+  // /** Check if the SpatialHessian is nonzero. */
+  // if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian() &&
+  //     !this->m_AdvancedTransform->GetHasNonZeroJacobianOfSpatialHessian())
+  // {
+  //   return;
+  // }
+  // // TODO: This is only required once! and not every iteration.
 
-  /** Check if this transform is a B-spline transform. */
-  typename BSplineOrder3TransformType::Pointer dummy; // default-constructed (null)
-  bool                                         transformIsBSpline = this->CheckForBSplineTransform2(dummy);
+  // /** Check if this transform is a B-spline transform. */
+  // typename BSplineOrder3TransformType::Pointer dummy; // default-constructed (null)
+  // bool                                         transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
-  /** Get a handle to the sample container. */
-  ImageSampleContainerReferencePointer sampleContainer = this->m_CurrentSampleContainer;
-  const unsigned long                  sampleContainerSize = sampleContainer->Size();
+  // /** Get a handle to the sample container. */
+  // ImageSampleContainerReferencePointer sampleContainer = this->m_CurrentSampleContainer;
+  // const unsigned long                  sampleContainerSize = sampleContainer->Size();
 
-  /** Get the samples for this thread. */
-  const unsigned long nrOfSamplesPerThreads = static_cast<unsigned long>(
-    std::ceil(static_cast<double>(sampleContainerSize) / static_cast<double>(Self::GetNumberOfWorkUnits())));
+  // /** Get the samples for this thread. */
+  // const unsigned long nrOfSamplesPerThreads = static_cast<unsigned long>(
+  //   std::ceil(static_cast<double>(sampleContainerSize) / static_cast<double>(Self::GetNumberOfWorkUnits())));
 
-  unsigned long pos_begin = nrOfSamplesPerThreads * threadId;
-  unsigned long pos_end = nrOfSamplesPerThreads * (threadId + 1);
-  pos_begin = (pos_begin > sampleContainerSize) ? sampleContainerSize : pos_begin;
-  pos_end = (pos_end > sampleContainerSize) ? sampleContainerSize : pos_end;
+  // unsigned long pos_begin = nrOfSamplesPerThreads * threadId;
+  // unsigned long pos_end = nrOfSamplesPerThreads * (threadId + 1);
+  // pos_begin = (pos_begin > sampleContainerSize) ? sampleContainerSize : pos_begin;
+  // pos_end = (pos_end > sampleContainerSize) ? sampleContainerSize : pos_end;
 
-  /** Create iterator over the sample container. */
-  typename ImageSampleContainerReferenceType::ConstIterator fiter;
-  typename ImageSampleContainerReferenceType::ConstIterator fbegin = sampleContainer->Begin();
-  typename ImageSampleContainerReferenceType::ConstIterator fend = sampleContainer->Begin();
-  fbegin += (int)pos_begin;
-  fend += (int)pos_end;
+  // /** Create iterator over the sample container. */
+  // typename ImageSampleContainerReferenceType::ConstIterator fiter;
+  // typename ImageSampleContainerReferenceType::ConstIterator fbegin = sampleContainer->Begin();
+  // typename ImageSampleContainerReferenceType::ConstIterator fend = sampleContainer->Begin();
+  // fbegin += (int)pos_begin;
+  // fend += (int)pos_end;
 
-  /** Create variables to store intermediate results. circumvent false sharing */
-  unsigned long numberOfPixelsCounted = 0;
-  MeasureType   measure = NumericTraits<MeasureType>::Zero;
+  // /** Create variables to store intermediate results. circumvent false sharing */
+  // unsigned long numberOfPixelsCounted = 0;
+  // MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
-  /** Loop over the fixed image to calculate the penalty term and its derivative. */
-  for (fiter = fbegin; fiter != fend; ++fiter)
-  {
-    /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().get().m_ImageCoordinates;
-    numberOfPixelsCounted++;
+  // /** Loop over the fixed image to calculate the penalty term and its derivative. */
+  // for (fiter = fbegin; fiter != fend; ++fiter)
+  // {
+  //   /** Read fixed coordinates and initialize some variables. */
+  //   const FixedImagePointType & fixedPoint = (*fiter).Value().get().m_ImageCoordinates;
+  //   numberOfPixelsCounted++;
 
-    /** Get the spatial Hessian of the transformation at the current point.
-     * This is needed to compute the bending energy.
-     */
-    this->m_AdvancedTransform->GetJacobianOfSpatialHessian(
-      fixedPoint, spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices);
+  //   /** Get the spatial Hessian of the transformation at the current point.
+  //    * This is needed to compute the bending energy.
+  //    */
+  //   this->m_AdvancedTransform->GetJacobianOfSpatialHessian(
+  //     fixedPoint, spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices);
 
-    /** Prepare some stuff for the computation of the metric (derivative). */
-    FixedArray<InternalMatrixType, FixedImageDimension> A;
-    for (unsigned int k = 0; k < FixedImageDimension; ++k)
-    {
-      A[k] = spatialHessian[k].GetVnlMatrix();
-    }
+  //   /** Prepare some stuff for the computation of the metric (derivative). */
+  //   FixedArray<InternalMatrixType, FixedImageDimension> A;
+  //   for (unsigned int k = 0; k < FixedImageDimension; ++k)
+  //   {
+  //     A[k] = spatialHessian[k].GetVnlMatrix();
+  //   }
 
-    /** Compute the contribution to the metric value of this point. */
-    for (unsigned int k = 0; k < FixedImageDimension; ++k)
-    {
-      measure += vnl_math::sqr(A[k].frobenius_norm());
-    }
-  } // end for loop over the image sample container
+  //   /** Compute the contribution to the metric value of this point. */
+  //   for (unsigned int k = 0; k < FixedImageDimension; ++k)
+  //   {
+  //     measure += vnl_math::sqr(A[k].frobenius_norm());
+  //   }
+  // } // end for loop over the image sample container
 
-  /** Only update these variables at the end to prevent unnecessary "false sharing". */
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value = measure;
+  // /** Only update these variables at the end to prevent unnecessary "false sharing". */
+  // this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
+  // this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value = measure;
 
 } // end ThreadedGetValuePartial()
 

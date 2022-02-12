@@ -312,14 +312,13 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
                                                                            const int fosIndex) const
 {
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex + 1];
+  this->m_CurrentFOSSet = fosIndex + 1;
   this->BeforeThreadedGetValueAndDerivative(parameters);
   this->LaunchGetValueThreaderCallback();
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
-
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
+  this->m_CurrentFOSSet = 0;
 
   return value;
 } // end GetValuePartial()
@@ -365,8 +364,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
-    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
-    const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
+    const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
+    const RealType &            fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
 
     if (!(this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, threadId)))
     {
@@ -402,62 +401,67 @@ template <class TFixedImage, class TMovingImage>
 void
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValuePartial(ThreadIdType threadId)
 {
-  /** Get a handle to the sample container. */
-  ImageSampleContainerReferencePointer sampleContainer = this->m_CurrentSampleContainer;
-  const unsigned long                  sampleContainerSize = sampleContainer->Size();
+  int i;
+  std::vector<int> & fosPoints = this->m_BSplinePointsRegions[this->m_CurrentFOSSet];
 
-  /** Get the samples for this thread. */
-  const unsigned long nrOfSamplesPerThreads = static_cast<unsigned long>(
-    std::ceil(static_cast<double>(sampleContainerSize) / static_cast<double>(Self::GetNumberOfWorkUnits())));
-
-  unsigned long pos_begin = nrOfSamplesPerThreads * threadId;
-  unsigned long pos_end = nrOfSamplesPerThreads * (threadId + 1);
-  pos_begin = (pos_begin > sampleContainerSize) ? sampleContainerSize : pos_begin;
-  pos_end = (pos_end > sampleContainerSize) ? sampleContainerSize : pos_end;
-
-  /** Create iterator over the sample container. */
-  typename ImageSampleContainerReferenceType::ConstIterator threader_fiter;
-  typename ImageSampleContainerReferenceType::ConstIterator threader_fbegin = sampleContainer->Begin();
-  typename ImageSampleContainerReferenceType::ConstIterator threader_fend = sampleContainer->Begin();
-
-  threader_fbegin += (int)pos_begin;
-  threader_fend += (int)pos_end;
+  // calc which subfunction samplers this thread needs to process:
+  const int tasks = fosPoints.size();
+  const int remainder = tasks % Self::GetNumberOfWorkUnits();
+  const int num_tasks_default = floor(static_cast<double>(tasks) / static_cast<double>(Self::GetNumberOfWorkUnits()));
+  const int num_tasks = threadId < remainder ? num_tasks_default + 1 : num_tasks_default;
+  const int threads_default = std::max(static_cast<int>(threadId) - remainder, 0);
+  const int threads_default_plus = threadId - threads_default;
+  const int start = threads_default * num_tasks_default + threads_default_plus * (num_tasks_default + 1);
+  const int end = start + num_tasks;
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixelsCounted = 0;
   unsigned long numberOfPixelsMissed = 0;
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
-  /** Loop over the fixed image samples to calculate the mean squares. */
-  for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
+  // iterate over these subfunction samplers and calculate mean squared diffs
+  for (i = start; i < end; ++i)
   {
-    /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*threader_fiter).Value().get().m_ImageCoordinates;
-    RealType                    movingImageValue;
-    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
-    const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().get().m_ImageValue);
+    ImageSampleContainerPointer sampleContainer = this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput();
+    const unsigned long         sampleContainerSize = sampleContainer->Size();
 
-    if (!(this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, threadId)))
+
+    /** Create iterator over the sample container. */
+    typename ImageSampleContainerType::ConstIterator threader_fiter;
+    typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer->Begin();
+    typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer->End();
+
+    /** Loop over the fixed image samples to calculate the mean squares. */
+    for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
     {
-      const typename MovingImageType::Superclass &   imageBase = *(this->GetMovingImage());
-      MovingImageIndexType                           index = imageBase.TransformPhysicalPointToIndex(mappedPoint);
-      const typename MovingImageRegionType::SizeType regionSize = imageBase.GetLargestPossibleRegion().GetSize();
-      for (int d = 0; d < MovingImageDimension; ++d)
-      {
-        const long lo = 0L;
-        const long hi = static_cast<long>(regionSize[d] - 1);
-        index[d] = std::clamp(static_cast<long>(index[d]), lo, hi);
-      }
-      movingImageValue = this->GetMovingImage()->GetPixel(index);
-      ++numberOfPixelsMissed;
-    }
-    ++numberOfPixelsCounted;
+      /** Read fixed coordinates and initialize some variables. */
+      const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+      RealType                    movingImageValue;
+      const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
+      const RealType &            fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
 
-    const RealType diff = movingImageValue - fixedImageValue;
-    measure += diff * diff;
+      if (!(this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, threadId)))
+      {
+        const typename MovingImageType::Superclass &   imageBase = *(this->GetMovingImage());
+        MovingImageIndexType                           index = imageBase.TransformPhysicalPointToIndex(mappedPoint);
+        const typename MovingImageRegionType::SizeType regionSize = imageBase.GetLargestPossibleRegion().GetSize();
+        for (int d = 0; d < MovingImageDimension; ++d)
+        {
+          const long lo = 0L;
+          const long hi = static_cast<long>(regionSize[d] - 1);
+          index[d] = std::clamp(static_cast<long>(index[d]), lo, hi);
+        }
+        movingImageValue = this->GetMovingImage()->GetPixel(index);
+        ++numberOfPixelsMissed;
+      }
+      ++numberOfPixelsCounted;
+
+      const RealType diff = movingImageValue - fixedImageValue;
+      measure += diff * diff;
+    }
   }
 
-  /** Only update these variables at the end to prevent unnecessary "false sharing". */
+  /** accumulate the results in thread vars */
   this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
   this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsMissed = numberOfPixelsMissed;
   this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value = measure;

@@ -112,8 +112,6 @@ public:
   using typename Superclass::ImageSamplerPointer;
   using typename Superclass::ImageSampleContainerType;
   using typename Superclass::ImageSampleContainerPointer;
-  using typename Superclass::ImageSampleContainerReferenceType;
-  using typename Superclass::ImageSampleContainerReferencePointer;
   using typename Superclass::FixedImageLimiterType;
   using typename Superclass::MovingImageLimiterType;
   using typename Superclass::FixedImageLimiterOutputType;
