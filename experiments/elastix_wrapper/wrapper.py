@@ -56,9 +56,9 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 if __name__ == "__main__":
     params = (
-        Parameters(mesh_size=20, sampler="Full")
-        .gomea()
-        .instance(Collection.EXAMPLES, 1)
-        .stopping_criteria(iterations=100)
+        Parameters(mesh_size=5, sampler="Full", downsampling_f=8)
+        .gomea(fos=-6, partial_evals=True)
+        .instance(Collection.EMPIRE, 16)
+        .stopping_criteria(iterations=10)
     )
     run(params, Path("output/" + str(params)), False)

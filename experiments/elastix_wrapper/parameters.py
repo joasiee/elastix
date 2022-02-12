@@ -123,7 +123,6 @@ class Parameters:
         
         self["ImagePyramidSchedule"] = [int(f * self.downsampling_f) for f in self["ImagePyramidSchedule"]]
         self["NumberOfSpatialSamples"] = [int(n / self.downsampling_f**dim) for n in self["NumberOfSpatialSamples"]]
-        self["FinalGridSpacingInVoxels"] = [ceil(s / self.downsampling_f) for s in self["FinalGridSpacingInVoxels"]]
 
     def write(self, dir: Path) -> None:
         self.prune()
@@ -135,16 +134,13 @@ class Parameters:
         return out_file
 
     def calc_voxel_params(self) -> Parameters:
-        if not isinstance(self["MeshSize"], List):
-            self["MeshSize"] = [self["MeshSize"]]
         voxel_dims = self.get_voxel_dimensions()
+        if not isinstance(self["MeshSize"], List):
+            self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
-            voxel_spacings.append(
-                ceil(voxel_dim / self["MeshSize"]
-                     [min(i, len(self["MeshSize"]) - 1)])
-            )
+            voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             div = 2**(len(total_samples)-1)
             for n in range(len(total_samples)):
                 total_samples[n] *= int(voxel_dim / div)
@@ -220,5 +216,5 @@ class Parameters:
         return res
 
 if __name__ == "__main__":
-    params = Parameters().gomea().multi_resolution().instance(Collection.EMPIRE, 16)
+    params = Parameters(downsampling_f=2, mesh_size=5).gomea().multi_resolution().instance(Collection.EMPIRE, 16)
     params.write(Path())
