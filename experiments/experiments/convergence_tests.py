@@ -7,8 +7,10 @@ import wandb
 import elastix_wrapper.wrapper as wrapper
 from elastix_wrapper.parameters import Collection, Parameters
 
-for instance in range(1,31):
-    params = Parameters().gomea(fos=-6, partial_evals=True).stopping_criteria(iterations=50).instance(Collection.EMPIRE, instance)
+instances = [16, 23, 17, 13, 6, 26, 5]
+
+for instance in instances:
+    params = Parameters(mesh_size=8).gomea(fos=-6, partial_evals=True).stopping_criteria(iterations=50).instance(Collection.EMPIRE, instance)
     run = wandb.init(project="convergence_tests", name=str(params), reinit=True)
     wandb.config.instance = instance
     wrapper.run(params, Path("output") / wandb.run.project / wandb.run.name)
