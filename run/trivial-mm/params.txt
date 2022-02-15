@@ -12,7 +12,7 @@
 (Interpolator "LinearInterpolator" "LinearInterpolator")
 (Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
 (Metric0Weight 1.0)
-(Metric1Weight 1000.0)
+(Metric1Weight 100.0)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
@@ -47,8 +47,8 @@
 // ********** ImageSampler
 
 //Number of spatial samples used to compute the mutual information in each resolution level:
-(ImageSampler "Full" "Full")
-(SamplingPercentage 0.02)
+(ImageSampler "RandomCoordinate" "RandomCoordinate")
+(SamplingPercentage 0.5)
 
 
 // ********** Interpolator and Resampler

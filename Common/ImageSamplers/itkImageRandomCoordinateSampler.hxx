@@ -37,7 +37,7 @@ ImageRandomCoordinateSampler<TInputImage>::ImageRandomCoordinateSampler()
   this->m_Interpolator = bsplineInterpolator;
 
   /** Setup random generator. */
-  this->m_RandomGenerator = RandomGeneratorType::GetInstance();
+  this->m_RandomGenerator = RandomGeneratorType::New();
 
   this->m_UseRandomSampleRegion = false;
   this->m_SampleRegionSize.Fill(1.0);
@@ -326,6 +326,22 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateSampleRegion(
   largestContIndex += sampleRegionSize;
 
 } // end GenerateSampleRegion()
+
+/**
+ * ******************* SetGeneratorSeed *******************
+ */
+
+template <class TInputImage>
+void
+ImageRandomCoordinateSampler<TInputImage>::SetGeneratorSeed(int seed)
+{
+  if (this->m_NextSeed != seed)
+  {
+    this->m_NextSeed = seed;
+    this->m_RandomGenerator->SetSeed(seed);
+    this->Modified();
+  }
+} // end SetGeneratorSeed()
 
 
 /**

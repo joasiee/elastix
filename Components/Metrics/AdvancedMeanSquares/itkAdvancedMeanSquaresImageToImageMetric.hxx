@@ -401,18 +401,9 @@ template <class TFixedImage, class TMovingImage>
 void
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetValuePartial(ThreadIdType threadId)
 {
-  int i;
-  std::vector<int> & fosPoints = this->m_BSplinePointsRegions[this->m_CurrentFOSSet];
-
-  // calc which subfunction samplers this thread needs to process:
-  const int tasks = fosPoints.size();
-  const int remainder = tasks % Self::GetNumberOfWorkUnits();
-  const int num_tasks_default = floor(static_cast<double>(tasks) / static_cast<double>(Self::GetNumberOfWorkUnits()));
-  const int num_tasks = threadId < remainder ? num_tasks_default + 1 : num_tasks_default;
-  const int threads_default = std::max(static_cast<int>(threadId) - remainder, 0);
-  const int threads_default_plus = threadId - threads_default;
-  const int start = threads_default * num_tasks_default + threads_default_plus * (num_tasks_default + 1);
-  const int end = start + num_tasks;
+  int                      i, start, end;
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[this->m_CurrentFOSSet];
+  this->GetTasksForThread(threadId, start, end);
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixelsCounted = 0;
@@ -422,6 +413,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
   // iterate over these subfunction samplers and calculate mean squared diffs
   for (i = start; i < end; ++i)
   {
+    this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
+    this->m_SubfunctionSamplers[fosPoints[i]]->Update();
     ImageSampleContainerPointer sampleContainer = this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput();
     const unsigned long         sampleContainerSize = sampleContainer->Size();
 
@@ -731,6 +724,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixelsCounted = 0;
+  unsigned long numberOfPixelsMissed = 0;
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
   /** Loop over the fixed image to calculate the mean squares. */
@@ -780,11 +774,16 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
       this->UpdateValueAndDerivativeTerms(fixedImageValue, movingImageValue, imageJacobian, nzji, measure, derivative);
 
     } // end if sampleOk
+    else
+    {
+      numberOfPixelsMissed++;
+    }
 
   } // end for loop over the image sample container
 
   /** Only update these variables at the end to prevent unnecessary "false sharing". */
   this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
+  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsMissed = numberOfPixelsMissed;
   this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value = measure;
 
 } // end ThreadedGetValueAndDerivative()
@@ -804,13 +803,17 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
 
   /** Accumulate the number of pixels. */
   this->m_NumberOfPixelsCounted = this->m_GetValueAndDerivativePerThreadVariables[0].st_NumberOfPixelsCounted;
+  this->m_NumberOfPixelsMissed = this->m_GetValueAndDerivativePerThreadVariables[0].st_NumberOfPixelsMissed;
   for (ThreadIdType i = 1; i < numberOfThreads; ++i)
   {
     this->m_NumberOfPixelsCounted += this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted;
+    this->m_NumberOfPixelsMissed += this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsMissed;
 
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted = 0;
+    this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsMissed = 0;
   }
+  this->m_MissedPixelsMean(this->m_NumberOfPixelsMissed);
 
   /** Check if enough samples were valid. */
   ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();

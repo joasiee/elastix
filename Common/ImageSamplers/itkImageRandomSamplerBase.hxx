@@ -50,6 +50,11 @@ ImageRandomSamplerBase<TInputImage>::BeforeThreadedGenerateData()
   using GeneratorPointer = typename Statistics::MersenneTwisterRandomVariateGenerator::Pointer;
   GeneratorPointer localGenerator = Statistics::MersenneTwisterRandomVariateGenerator::GetInstance();
   // \todo: should probably be global?
+  if (this->m_ReinitSeed)
+  {
+    localGenerator->SetSeed(this->m_NextSeed);
+    this->m_ReinitSeed = false;
+  }
 
   /** Clear the random number list. */
   this->m_RandomNumberList.resize(0);

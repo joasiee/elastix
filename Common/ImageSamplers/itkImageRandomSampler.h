@@ -74,6 +74,9 @@ public:
   using InputImageIndexType = typename InputImageType::IndexType;
   using InputImagePointType = typename InputImageType::PointType;
 
+  void
+  SetGeneratorSeed(int seed) override;
+
 protected:
   /** The constructor. */
   ImageRandomSampler() = default;

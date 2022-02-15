@@ -937,8 +937,13 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   {
     ImageSamplerPointer              subfunctionSampler = this->m_ImageSampler->Clone();
     ImageSamplerInputImageRegionType region = this->m_BSplineFOSRegions[i];
-    subfunctionSampler->SetInput(this->m_ImageSampler->GetInput());
-    subfunctionSampler->SetInputImageRegion(region);
+
+    using ExtractFilterType = itk::RegionOfInterestImageFilter<TFixedImage, TFixedImage>;
+    typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
+    extractFilter->SetInput(this->m_ImageSampler->GetInput());
+    extractFilter->SetRegionOfInterest(region);
+
+    subfunctionSampler->SetInput(extractFilter->GetOutput());
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
     subfunctionSampler->Update();
     this->m_SubfunctionSamplers.push_back(subfunctionSampler);
@@ -953,6 +958,10 @@ void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** sets, int * set_length, int length)
 {
   unsigned int i, j, d;
+
+  this->m_FOS.length = length;
+  this->m_FOS.sets = sets;
+  this->m_FOS.set_length = set_length;
 
   CombinationTransformType * comboPtr =
     dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
@@ -976,7 +985,10 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
 
   this->m_BSplineFOSRegions.clear();
   this->m_BSplinePointsRegions.clear();
+  this->m_BSplineRegionsToFosSets.clear();
+
   this->m_BSplineFOSRegions.resize(coeffRegionCropped.GetNumberOfPixels());
+  this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplinePointsRegions.resize(length + 1);
 
   // iterate over these control points and calculate fixed image pixel region
@@ -1003,16 +1015,23 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
     ++i;
   }
 
-  // assign fixed image regions to control points which affect them.
+  // assign fixed image regions to control points which affect them and vice versa.
   std::vector<bool> pointAdded(this->m_BSplineFOSRegions.size(), false);
+  std::vector<bool> pointAddedRegion(length, false);
+
+  // for each fos set j:
   for (j = 0; j < (unsigned)length; ++j)
   {
     std::fill(pointAdded.begin(), pointAdded.end(), false);
+
+    // for each index i in fos set:
     for (i = 0; i < (unsigned)set_length[j]; ++i)
     {
+      // calc control point number and its corresponding index
       int            cpoint = (sets[j][i] % num_points);
       ImageIndexType p = wrappedImage->ComputeIndex(cpoint);
 
+      // calculate the region of influence for this control point
       ImageIndexType lower, upper;
       RegionType     hypercube;
       for (d = 0; d < FixedImageDimension; ++d)
@@ -1025,20 +1044,64 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
       hypercube.SetIndex(lower);
       ImageRegionConstIteratorWithIndex<ImageType> imageIterator(wrappedImage, hypercube);
 
+      // precompute per control point the regions it influences, and per region the points it is influenced by.
       while (!imageIterator.IsAtEnd())
       {
         // offset needs to be adjusted to cropped coefficient grid.
         unsigned int offset = wrappedImage->ComputeOffset(imageIterator.GetIndex());
         offset = cpointOffsetMap[offset];
+
+        // add region to mapping from fos sets to regions if not added yet.
         if (!pointAdded[offset])
         {
           this->m_BSplinePointsRegions[j + 1].push_back(offset);
           pointAdded[offset] = true;
         }
+
+        // add fos set to mapping from regions to fos sets if not added yet.
+        if (!pointAddedRegion[j])
+        {
+          this->m_BSplineRegionsToFosSets[offset].push_back(j);
+          pointAddedRegion[j] = true;
+        }
         ++imageIterator;
       }
     }
   }
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetTasksForThread(ThreadIdType threadId,
+                                                                         int &        start,
+                                                                         int &        end) const
+{
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[this->m_CurrentFOSSet];
+  const int                tasks = fosPoints.size();
+  const int                remainder = tasks % Self::GetNumberOfWorkUnits();
+  const int num_tasks_default = floor(static_cast<double>(tasks) / static_cast<double>(Self::GetNumberOfWorkUnits()));
+  const int num_tasks = threadId < remainder ? num_tasks_default + 1 : num_tasks_default;
+  const int threads_default = std::max(static_cast<int>(threadId) - remainder, 0);
+  const int threads_default_plus = threadId - threads_default;
+
+  start = threads_default * num_tasks_default + threads_default_plus * (num_tasks_default + 1);
+  end = start + num_tasks;
+}
+
+template <class TFixedImage, class TMovingImage>
+int
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(int region) const
+{
+  double                          sum{ 0 };
+  const TransformParametersType & params = this->m_Transform->GetParameters();
+
+  for (int set : this->m_BSplineRegionsToFosSets[region])
+  {
+    for (int i = 0; i < this->m_FOS.set_length[set]; ++i)
+      sum += params[this->m_FOS.sets[set][i]];
+  }
+
+  return static_cast<int>(sum * 1000);
 }
 
 

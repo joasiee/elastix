@@ -168,6 +168,9 @@ public:
     return true;
   }
 
+  virtual void
+  SetGeneratorSeed(int seed)
+  {}
 
   /** Get a handle to the cropped InputImageregion. */
   itkGetConstReferenceMacro(CroppedInputImageRegion, InputImageRegionType);
@@ -225,6 +228,9 @@ protected:
 
   // tmp?
   bool m_UseMultiThread;
+
+  bool m_ReinitSeed{ false };
+  int  m_NextSeed{ 0 };
 
 private:
   /** The deleted copy constructor. */

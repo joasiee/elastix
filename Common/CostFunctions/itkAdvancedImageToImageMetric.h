@@ -27,6 +27,7 @@
 #include "itkBSplineInterpolateImageFunction.h"
 #include "itkReducedDimensionBSplineInterpolateImageFunction.h"
 #include "itkAdvancedLinearInterpolateImageFunction.h"
+#include "itkRegionOfInterestImageFilter.h"
 #include "itkLimiterFunctionBase.h"
 #include "itkFixedArray.h"
 #include "itkAdvancedTransform.h"
@@ -44,6 +45,14 @@
 
 namespace itk
 {
+
+// TODO: should include this from gomea/util
+typedef struct FOS
+{
+  int    length;
+  int ** sets;
+  int *  set_length;
+} FOS;
 
 /** \class AdvancedImageToImageMetric
  *
@@ -313,9 +322,6 @@ public:
   void
   InitPartialEvaluations(int ** sets, int * set_length, int length) override;
 
-  void
-  GetRegionsForFOS(int ** sets, int * set_length, int length);
-
 protected:
   /** Constructor. */
   AdvancedImageToImageMetric();
@@ -363,9 +369,11 @@ protected:
    */
   typedef typename ImageSampleContainerType::Element ImageSampleType;
   mutable ImageSamplerPointer                        m_ImageSampler{ nullptr };
-  mutable int                                        m_CurrentFOSSet{0};
+  mutable int                                        m_CurrentFOSSet{ 0 };
   std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
+  std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   double                                             m_SamplingPercentage{ 0.05 };
+  FOS                                                m_FOS{ 0 };
   typedef void (AdvancedImageToImageMetric::*ThreadedFn)(ThreadIdType threadId);
   ThreadedFn m_ThreadedGetValueFn = &AdvancedImageToImageMetric::ThreadedGetValue;
 
@@ -432,6 +440,12 @@ protected:
   virtual inline void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const
   {}
+
+  void
+  GetTasksForThread(ThreadIdType threadId, int & start, int & end) const;
+
+  int
+  GetSeedForBSplineRegion(int region) const;
 
   /** GetValueAndDerivative threader callback function. */
   static ITK_THREAD_RETURN_FUNCTION_CALL_CONVENTION
@@ -625,6 +639,9 @@ private:
                                                             RealType &                   movingImageValue,
                                                             MovingImageDerivativeType *  gradient,
                                                             const TOptionalThreadId... optionalThreadId) const;
+
+  void
+  GetRegionsForFOS(int ** sets, int * set_length, int length);
 
   /** Private member variables. */
   bool   m_UseImageSampler{ false };

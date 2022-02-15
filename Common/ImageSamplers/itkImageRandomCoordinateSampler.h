@@ -100,6 +100,9 @@ public:
   itkGetConstMacro(UseRandomSampleRegion, bool);
   itkSetMacro(UseRandomSampleRegion, bool);
 
+  void
+  SetGeneratorSeed(int seed) override;
+
 protected:
   using InputImageContinuousIndexType = typename InterpolatorType::ContinuousIndexType;
 
