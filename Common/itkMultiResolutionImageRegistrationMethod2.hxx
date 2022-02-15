@@ -42,7 +42,7 @@
 #include "itkMultiResolutionImageRegistrationMethod2.h"
 #include "itkRecursiveMultiResolutionPyramidImageFilter.h"
 #include "itkContinuousIndex.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -92,7 +92,7 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::MultiResolut
  */
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::Initialize(void)
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::Initialize()
 {
 
   // Sanity checks
@@ -143,7 +143,7 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::Initialize(v
  */
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::StopRegistration(void)
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::StopRegistration()
 {
   this->m_Stop = true;
 }
@@ -154,7 +154,7 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::StopRegistra
  */
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::PreparePyramids(void)
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::PreparePyramids()
 {
   if (!this->m_Transform)
   {
@@ -201,9 +201,9 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::PreparePyram
   this->m_MovingImagePyramid->SetInput(this->m_MovingImage);
   this->m_MovingImagePyramid->UpdateLargestPossibleRegion();
 
-  typedef typename FixedImageRegionType::SizeType      SizeType;
-  typedef typename FixedImageRegionType::IndexType     IndexType;
-  typedef typename FixedImagePyramidType::ScheduleType ScheduleType;
+  using SizeType = typename FixedImageRegionType::SizeType;
+  using IndexType = typename FixedImageRegionType::IndexType;
+  using ScheduleType = typename FixedImagePyramidType::ScheduleType;
 
   ScheduleType schedule = this->m_FixedImagePyramid->GetSchedule();
 
@@ -226,11 +226,11 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::PreparePyram
   // Multiresolution pyramid, which does not use the same shrinking pattern.
   // Instead of copying the shrinking code, we compute image regions from
   // the result of the fixed image pyramid.
-  typedef typename FixedImageType::PointType                         PointType;
-  typedef typename PointType::CoordRepType                           CoordRepType;
-  typedef typename IndexType::IndexValueType                         IndexValueType;
-  typedef typename SizeType::SizeValueType                           SizeValueType;
-  typedef ContinuousIndex<CoordRepType, TFixedImage::ImageDimension> CIndexType;
+  using PointType = typename FixedImageType::PointType;
+  using CoordRepType = typename PointType::CoordRepType;
+  using IndexValueType = typename IndexType::IndexValueType;
+  using SizeValueType = typename SizeType::SizeValueType;
+  using CIndexType = ContinuousIndex<CoordRepType, TFixedImage::ImageDimension>;
 
   PointType inputStartPoint;
   PointType inputEndPoint;
@@ -270,7 +270,7 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::PreparePyram
  */
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::StartRegistration(void)
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::StartRegistration()
 {
 
   // StartRegistration is an old API from before
@@ -392,7 +392,7 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::PrintSelf(st
  */
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GenerateData(void)
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GenerateData()
 {
   this->StartRegistration();
 }
@@ -400,7 +400,7 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GenerateData
 
 template <typename TFixedImage, typename TMovingImage>
 ModifiedTimeType
-MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GetMTime(void) const
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GetMTime() const
 {
   ModifiedTimeType mtime = Superclass::GetMTime();
   ModifiedTimeType m;
@@ -453,8 +453,8 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GetMTime(voi
  *  Get Output
  */
 template <typename TFixedImage, typename TMovingImage>
-const typename MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::TransformOutputType *
-MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GetOutput() const
+auto
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GetOutput() const -> const TransformOutputType *
 {
   return static_cast<const TransformOutputType *>(this->ProcessObject::GetOutput(0));
 }

@@ -56,7 +56,7 @@ DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::DistancePreserv
  */
 template <class TFixedImage, class TScalarType>
 void
-DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::Initialize(void)
+DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::Initialize()
 {
   /** Call the initialize of the superclass. */
   this->Superclass::Initialize();
@@ -123,15 +123,15 @@ DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::Initialize(void
   /** compute number of knots in rigid regions */
   this->m_NumberOfRigidGrids = 0;
 
-  typedef itk::ImageRegionIterator<PenaltyGridImageType> PenaltyGridIteratorType;
+  using PenaltyGridIteratorType = itk::ImageRegionIterator<PenaltyGridImageType>;
   PenaltyGridIteratorType ki(this->m_PenaltyGridImage, this->m_PenaltyGridImage->GetBufferedRegion());
 
   typename PenaltyGridImageType::IndexType penaltyGridIndex;
   typename PenaltyGridImageType::PointType penaltyGridPoint;
 
   // typedef itk::LinearInterpolateImageFunction< SegmentedImageType, double > SegmentedImageInterpolatorType;
-  typedef itk::NearestNeighborInterpolateImageFunction<SegmentedImageType, double> SegmentedImageInterpolatorType;
-  typename SegmentedImageInterpolatorType::Pointer segmentedImageInterpolator = SegmentedImageInterpolatorType::New();
+  using SegmentedImageInterpolatorType = itk::NearestNeighborInterpolateImageFunction<SegmentedImageType, double>;
+  auto segmentedImageInterpolator = SegmentedImageInterpolatorType::New();
 
   segmentedImageInterpolator->SetInputImage(this->m_SampledSegmentedImage);
 
@@ -161,8 +161,9 @@ DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::Initialize(void
  */
 
 template <class TFixedImage, class TScalarType>
-typename DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::MeasureType
+auto
 DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const
+  -> MeasureType
 {
   /** Set output values to zero. */
   this->m_RigidityPenaltyTermValue = NumericTraits<MeasureType>::Zero;
@@ -177,7 +178,7 @@ DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValue(const 
   MeasureType dx = 0.0;
   MeasureType dX = 0.0;
 
-  typedef itk::ImageRegionConstIteratorWithIndex<PenaltyGridImageType> PenaltyGridIteratorType;
+  using PenaltyGridIteratorType = itk::ImageRegionConstIteratorWithIndex<PenaltyGridImageType>;
   PenaltyGridImageRegionType penaltyGridImageRegion = this->m_PenaltyGridImage->GetBufferedRegion();
 
   PenaltyGridIteratorType pgi(this->m_PenaltyGridImage, penaltyGridImageRegion);
@@ -185,8 +186,8 @@ DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValue(const 
   typename PenaltyGridImageType::IndexType penaltyGridIndex, neighborPenaltyGridIndex;
   typename PenaltyGridImageType::PointType penaltyGridPoint, neighborPenaltyGridPoint, xn, xf;
 
-  typedef itk::ConstNeighborhoodIterator<PenaltyGridImageType> NeighborhoodIteratorType;
-  typename NeighborhoodIteratorType::RadiusType                radius;
+  using NeighborhoodIteratorType = itk::ConstNeighborhoodIterator<PenaltyGridImageType>;
+  typename NeighborhoodIteratorType::RadiusType radius;
   radius.Fill(1);
   NeighborhoodIteratorType ni(radius, this->m_PenaltyGridImage, penaltyGridImageRegion);
   unsigned int             numberOfNeighborhood = ni.Size();
@@ -194,8 +195,8 @@ DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValue(const 
   unsigned int numberOfRigidGridsNeighbor;
 
   // interpolation of segmented image
-  typedef itk::NearestNeighborInterpolateImageFunction<SegmentedImageType, double> SegmentedImageInterpolatorType;
-  typename SegmentedImageInterpolatorType::Pointer segmentedImageInterpolator = SegmentedImageInterpolatorType::New();
+  using SegmentedImageInterpolatorType = itk::NearestNeighborInterpolateImageFunction<SegmentedImageType, double>;
+  auto segmentedImageInterpolator = SegmentedImageInterpolatorType::New();
 
   segmentedImageInterpolator->SetInputImage(this->m_SampledSegmentedImage);
 
@@ -322,25 +323,25 @@ DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValueAndDeri
   typename PenaltyGridImageType::IndexType penaltyGridIndex, neighborPenaltyGridIndex;
   typename PenaltyGridImageType::PointType penaltyGridPoint, neighborPenaltyGridPoint, xn, xf;
 
-  typedef itk::BSplineKernelFunction<3> BSplineKernelFunctionType;
-  BSplineKernelFunctionType::Pointer    bSplineKernel = BSplineKernelFunctionType::New();
+  using BSplineKernelFunctionType = itk::BSplineKernelFunction<3>;
+  auto bSplineKernel = BSplineKernelFunctionType::New();
 
-  typedef itk::BSplineInterpolationWeightFunction<double, ImageDimension, 3> WeightsFunctionType;
-  typedef typename WeightsFunctionType::ContinuousIndexType                  ContinuousIndexType;
-  typedef double                                                             ContinuousIndexValueType;
+  using WeightsFunctionType = itk::BSplineInterpolationWeightFunction<double, ImageDimension, 3>;
+  using ContinuousIndexType = typename WeightsFunctionType::ContinuousIndexType;
+  using ContinuousIndexValueType = double;
 
   ContinuousIndexType      tindex;
   ContinuousIndexValueType tx, ty, tz;
 
   ContinuousIndexValueType m, n, p, neighbor_m, neighbor_n, neighbor_p;
 
-  typedef itk::ImageRegionConstIteratorWithIndex<PenaltyGridImageType> PenaltyGridIteratorType;
+  using PenaltyGridIteratorType = itk::ImageRegionConstIteratorWithIndex<PenaltyGridImageType>;
   PenaltyGridImageRegionType penaltyGridImageRegion = this->m_PenaltyGridImage->GetBufferedRegion();
   PenaltyGridIteratorType    pgi(this->m_PenaltyGridImage, penaltyGridImageRegion);
 
   // neighborhood iterator
-  typedef itk::ConstNeighborhoodIterator<PenaltyGridImageType> NeighborhoodIteratorType;
-  typename NeighborhoodIteratorType::RadiusType                radius;
+  using NeighborhoodIteratorType = itk::ConstNeighborhoodIterator<PenaltyGridImageType>;
+  typename NeighborhoodIteratorType::RadiusType radius;
   radius.Fill(1);
   NeighborhoodIteratorType ni(radius, this->m_PenaltyGridImage, penaltyGridImageRegion);
   unsigned int             numberOfNeighborhood = ni.Size();
@@ -359,8 +360,8 @@ DistancePreservingRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValueAndDeri
   unsigned int       numberOfParametersPerDimension = parametersDimension / ImageDimension;
 
   // interpolation of segmented image
-  typedef itk::NearestNeighborInterpolateImageFunction<SegmentedImageType, double> SegmentedImageInterpolatorType;
-  typename SegmentedImageInterpolatorType::Pointer segmentedImageInterpolator = SegmentedImageInterpolatorType::New();
+  using SegmentedImageInterpolatorType = itk::NearestNeighborInterpolateImageFunction<SegmentedImageType, double>;
+  auto segmentedImageInterpolator = SegmentedImageInterpolatorType::New();
 
   segmentedImageInterpolator->SetInputImage(this->m_SampledSegmentedImage);
 

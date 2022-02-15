@@ -45,21 +45,21 @@ class ITK_EXPORT GPUMatrixOffsetTransformBase : public GPUTransformBase
 {
 public:
   /** Standard typedefs   */
-  typedef GPUMatrixOffsetTransformBase Self;
-  typedef GPUTransformBase             GPUSuperclass;
+  using Self = GPUMatrixOffsetTransformBase;
+  using GPUSuperclass = GPUTransformBase;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(GPUMatrixOffsetTransformBase, GPUSuperclass);
 
   /**  */
   bool
-  IsMatrixOffsetTransform(void) const override
+  IsMatrixOffsetTransform() const override
   {
     return true;
   }
 
   /** Type of the scalar representing coordinate and vector elements. */
-  typedef TScalarType ScalarType;
+  using ScalarType = TScalarType;
 
   /** Dimension of the domain space. */
   itkStaticConstMacro(InputSpaceDimension, unsigned int, NInputDimensions);
@@ -67,21 +67,21 @@ public:
   itkStaticConstMacro(ParametersDimension, unsigned int, NOutputDimensions *(NInputDimensions + 1));
 
   /** Standard matrix type for this class */
-  typedef Matrix<TScalarType, Self::OutputSpaceDimension, Self::InputSpaceDimension> CPUMatrixType;
-  typedef Matrix<TScalarType, Self::InputSpaceDimension, Self::OutputSpaceDimension> CPUInverseMatrixType;
-  typedef Vector<TScalarType, Self::OutputSpaceDimension>                            CPUOutputVectorType;
+  using CPUMatrixType = Matrix<TScalarType, Self::OutputSpaceDimension, Self::InputSpaceDimension>;
+  using CPUInverseMatrixType = Matrix<TScalarType, Self::InputSpaceDimension, Self::OutputSpaceDimension>;
+  using CPUOutputVectorType = Vector<TScalarType, Self::OutputSpaceDimension>;
 
   /** Get CPU matrix of an MatrixOffsetTransformBase. */
   virtual const CPUMatrixType &
-  GetCPUMatrix(void) const = 0;
+  GetCPUMatrix() const = 0;
 
   /** Get CPU inverse matrix of an MatrixOffsetTransformBase. */
   virtual const CPUInverseMatrixType &
-  GetCPUInverseMatrix(void) const = 0;
+  GetCPUInverseMatrix() const = 0;
 
   /** Get CPU offset of an MatrixOffsetTransformBase. */
   virtual const CPUOutputVectorType &
-  GetCPUOffset(void) const = 0;
+  GetCPUOffset() const = 0;
 
 protected:
   GPUMatrixOffsetTransformBase();
@@ -94,7 +94,7 @@ protected:
 
   /** Returns data manager that stores all settings for the transform. */
   GPUDataManager::Pointer
-  GetParametersDataManager(void) const override;
+  GetParametersDataManager() const override;
 
 private:
   GPUMatrixOffsetTransformBase(const Self & other) = delete;

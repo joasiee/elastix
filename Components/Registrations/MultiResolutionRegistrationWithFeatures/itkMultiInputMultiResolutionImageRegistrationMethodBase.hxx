@@ -21,7 +21,7 @@
 #include "itkMultiInputMultiResolutionImageRegistrationMethodBase.h"
 
 #include "itkContinuousIndex.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 /** macro that implements the Set methods */
 #define itkImplementationSetMacro(_name, _type)                                                                        \
@@ -71,20 +71,15 @@ itkImplementationSetMacro(MovingImagePyramid, MovingImagePyramidType *);
 itkImplementationSetMacro(Interpolator, InterpolatorType *);
 itkImplementationSetMacro2(FixedImageInterpolator, FixedImageInterpolatorType *);
 
-/**
- * ****************** Constructor ******************
- */
-template <typename TFixedImage, typename TMovingImage>
-MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::
-  MultiInputMultiResolutionImageRegistrationMethodBase() = default; // end Constructor()
 
 /**
  * **************** GetFixedImage **********************************
  */
 
 template <typename TFixedImage, typename TMovingImage>
-const typename MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::FixedImageType *
+auto
 MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::GetFixedImage(unsigned int pos) const
+  -> const FixedImageType *
 {
   if (pos >= this->GetNumberOfFixedImages())
   {
@@ -102,8 +97,9 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
  */
 
 template <typename TFixedImage, typename TMovingImage>
-const typename MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::MovingImageType *
+auto
 MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::GetMovingImage(unsigned int pos) const
+  -> const MovingImageType *
 {
   if (pos >= this->GetNumberOfMovingImages())
   {
@@ -121,8 +117,9 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
  */
 
 template <typename TFixedImage, typename TMovingImage>
-typename MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::InterpolatorType *
+auto
 MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::GetInterpolator(unsigned int pos) const
+  -> InterpolatorType *
 {
   if (pos >= this->GetNumberOfInterpolators())
   {
@@ -140,9 +137,9 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
  */
 
 template <typename TFixedImage, typename TMovingImage>
-typename MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::FixedImageInterpolatorType *
+auto
 MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::GetFixedImageInterpolator(
-  unsigned int pos) const
+  unsigned int pos) const -> FixedImageInterpolatorType *
 {
   if (pos >= this->GetNumberOfFixedImageInterpolators())
   {
@@ -160,9 +157,9 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
  */
 
 template <typename TFixedImage, typename TMovingImage>
-typename MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::FixedImagePyramidType *
+auto
 MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::GetFixedImagePyramid(
-  unsigned int pos) const
+  unsigned int pos) const -> FixedImagePyramidType *
 {
   if (pos >= this->GetNumberOfFixedImagePyramids())
   {
@@ -180,9 +177,9 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
  */
 
 template <typename TFixedImage, typename TMovingImage>
-typename MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::MovingImagePyramidType *
+auto
 MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::GetMovingImagePyramid(
-  unsigned int pos) const
+  unsigned int pos) const -> MovingImagePyramidType *
 {
   if (pos >= this->GetNumberOfMovingImagePyramids())
   {
@@ -200,9 +197,9 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
  */
 
 template <typename TFixedImage, typename TMovingImage>
-const typename MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::FixedImageRegionType &
+auto
 MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::GetFixedImageRegion(
-  unsigned int pos) const
+  unsigned int pos) const -> const FixedImageRegionType &
 {
   if (pos >= this->GetNumberOfFixedImageRegions())
   {
@@ -308,7 +305,7 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::PreparePyramids(void)
+MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::PreparePyramids()
 {
   /** Check some assumptions. */
   this->CheckPyramids();
@@ -333,9 +330,9 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
   }
 
   /** Setup the fixed image pyramids and the fixed image region pyramids. */
-  typedef typename FixedImageRegionType::SizeType      SizeType;
-  typedef typename FixedImageRegionType::IndexType     IndexType;
-  typedef typename FixedImagePyramidType::ScheduleType ScheduleType;
+  using SizeType = typename FixedImageRegionType::SizeType;
+  using IndexType = typename FixedImageRegionType::IndexType;
+  using ScheduleType = typename FixedImagePyramidType::ScheduleType;
 
   this->m_FixedImageRegionPyramids.resize(this->GetNumberOfFixedImagePyramids());
 
@@ -387,11 +384,11 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
       // Multiresolution pyramid, which does not use the same shrinking pattern.
       // Instead of copying the shrinking code, we compute image regions from
       // the result of the fixed image pyramid.
-      typedef typename FixedImageType::PointType                         PointType;
-      typedef typename PointType::CoordRepType                           CoordRepType;
-      typedef typename IndexType::IndexValueType                         IndexValueType;
-      typedef typename SizeType::SizeValueType                           SizeValueType;
-      typedef ContinuousIndex<CoordRepType, TFixedImage::ImageDimension> CIndexType;
+      using PointType = typename FixedImageType::PointType;
+      using CoordRepType = typename PointType::CoordRepType;
+      using IndexValueType = typename IndexType::IndexValueType;
+      using SizeValueType = typename SizeType::SizeValueType;
+      using CIndexType = ContinuousIndex<CoordRepType, TFixedImage::ImageDimension>;
 
       PointType inputStartPoint;
       PointType inputEndPoint;
@@ -591,7 +588,7 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::CheckPyramids(void)
+MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::CheckPyramids()
 {
   /** Check if at least one of the following are provided. */
   if (this->GetFixedImage() == nullptr)
@@ -636,7 +633,7 @@ MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>:
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::CheckOnInitialize(void)
+MultiInputMultiResolutionImageRegistrationMethodBase<TFixedImage, TMovingImage>::CheckOnInitialize()
 {
   /** check if at least one of the following is present. */
   if (this->GetMetric() == nullptr)

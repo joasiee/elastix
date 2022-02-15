@@ -36,8 +36,8 @@ class xoutsimple : public xoutbase
 {
 public:
   /** Typedef's.*/
-  typedef xoutsimple Self;
-  typedef xoutbase   Superclass;
+  using Self = xoutsimple;
+  using Superclass = xoutbase;
 
   /** Constructors */
   xoutsimple() = default;
@@ -63,10 +63,10 @@ public:
 
   /** Get the output maps. */
   const CStreamMapType &
-  GetCOutputs(void) override;
+  GetCOutputs() override;
 
   const XStreamMapType &
-  GetXOutputs(void) override;
+  GetXOutputs() override;
 };
 
 } // end namespace xoutlibrary

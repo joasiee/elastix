@@ -32,7 +32,7 @@ namespace itk
 
 template <class TInputImage>
 void
-ImageRandomSampler<TInputImage>::GenerateData(void)
+ImageRandomSampler<TInputImage>::GenerateData()
 {
   /** Get a handle to the mask. If there was no mask supplied we exercise a multi-threaded version. */
   typename MaskType::ConstPointer mask = this->GetMask();
@@ -50,8 +50,16 @@ ImageRandomSampler<TInputImage>::GenerateData(void)
   sampleContainer->Reserve(this->GetNumberOfSamples());
 
   /** Setup a random iterator over the input image. */
-  typedef ImageRandomConstIteratorWithIndex<InputImageType> RandomIteratorType;
-  RandomIteratorType                                        randIter(inputImage, this->GetCroppedInputImageRegion());
+  using RandomIteratorType = ImageRandomConstIteratorWithIndex<InputImageType>;
+  RandomIteratorType randIter(inputImage, this->GetCroppedInputImageRegion());
+
+  // reinit seed if requested
+  if (this->m_ReinitSeed)
+  {
+    randIter.ReinitializeSeed(this->m_NextSeed);
+    this->m_ReinitSeed = false;
+  }
+
   randIter.GoToBegin();
 
   /** Setup an iterator over the output, which is of ImageSampleContainerType. */
@@ -105,8 +113,8 @@ ImageRandomSampler<TInputImage>::GenerateData(void)
           typename ImageSampleContainerType::iterator stlend = sampleContainer->end();
           stlnow += iter.Index();
           sampleContainer->erase(stlnow, stlend);
-          itkExceptionMacro(<< "Could not find enough image samples within "
-                            << "reasonable time. Probably the mask is too small");
+          itkExceptionMacro(
+            << "Could not find enough image samples within reasonable time. Probably the mask is too small");
         }
         /** Get the index, and transform it to the physical coordinates. */
         InputImageIndexType index = randIter.GetIndex();
@@ -193,6 +201,22 @@ ImageRandomSampler<TInputImage>::ThreadedGenerateData(const InputImageRegionType
   } // end for loop
 
 } // end ThreadedGenerateData()
+
+/**
+ * ******************* SetGeneratorSeed *******************
+ */
+
+template <class TInputImage>
+void
+ImageRandomSampler<TInputImage>::SetGeneratorSeed(int seed)
+{
+  if (seed != this->m_NextSeed)
+  {
+    this->m_ReinitSeed = true;
+    this->m_NextSeed = seed;
+    this->Modified();
+  }
+} // end SetGeneratorSeed()
 
 
 } // end namespace itk

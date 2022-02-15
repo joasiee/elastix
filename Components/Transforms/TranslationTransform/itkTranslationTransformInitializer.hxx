@@ -43,7 +43,7 @@ TranslationTransformInitializer<TTransform, TFixedImage, TMovingImage>::Translat
 
 template <class TTransform, class TFixedImage, class TMovingImage>
 void
-TranslationTransformInitializer<TTransform, TFixedImage, TMovingImage>::InitializeTransform(void) const
+TranslationTransformInitializer<TTransform, TFixedImage, TMovingImage>::InitializeTransform() const
 {
   // Sanity check
   if (!this->m_FixedImage)
@@ -74,8 +74,8 @@ TranslationTransformInitializer<TTransform, TFixedImage, TMovingImage>::Initiali
 
   OutputVectorType translationVector;
 
-  typedef ImageMaskSpatialObject<InputSpaceDimension>  FixedMaskSpatialObjectType;
-  typedef ImageMaskSpatialObject<OutputSpaceDimension> MovingMaskSpatialObjectType;
+  using FixedMaskSpatialObjectType = ImageMaskSpatialObject<InputSpaceDimension>;
+  using MovingMaskSpatialObjectType = ImageMaskSpatialObject<OutputSpaceDimension>;
 
   if (this->m_UseMoments)
   {
@@ -123,11 +123,11 @@ TranslationTransformInitializer<TTransform, TFixedImage, TMovingImage>::Initiali
     // of the masks are used.
 
     // Get fixed image (mask) information
-    typedef typename FixedImageType::RegionType FixedRegionType;
-    FixedRegionType                             fixedRegion = this->m_FixedImage->GetLargestPossibleRegion();
+    using FixedRegionType = typename FixedImageType::RegionType;
+    FixedRegionType fixedRegion = this->m_FixedImage->GetLargestPossibleRegion();
     if (this->m_FixedMask)
     {
-      typename FixedMaskSpatialObjectType::Pointer fixedMaskAsSpatialObject = FixedMaskSpatialObjectType::New();
+      auto fixedMaskAsSpatialObject = FixedMaskSpatialObjectType::New();
       fixedMaskAsSpatialObject->SetImage(this->m_FixedMask);
       fixedRegion = fixedMaskAsSpatialObject->ComputeMyBoundingBoxInIndexSpace();
     }
@@ -142,11 +142,11 @@ TranslationTransformInitializer<TTransform, TFixedImage, TMovingImage>::Initiali
     this->m_FixedImage->TransformContinuousIndexToPhysicalPoint(fixedCenterCI, centerFixed);
 
     // Get moving image (mask) information
-    typedef typename MovingImageType::RegionType MovingRegionType;
-    MovingRegionType                             movingRegion = this->m_MovingImage->GetLargestPossibleRegion();
+    using MovingRegionType = typename MovingImageType::RegionType;
+    MovingRegionType movingRegion = this->m_MovingImage->GetLargestPossibleRegion();
     if (this->m_MovingMask)
     {
-      typename MovingMaskSpatialObjectType::Pointer movingMaskAsSpatialObject = MovingMaskSpatialObjectType::New();
+      auto movingMaskAsSpatialObject = MovingMaskSpatialObjectType::New();
       movingMaskAsSpatialObject->SetImage(this->m_MovingMask);
       movingRegion = movingMaskAsSpatialObject->ComputeMyBoundingBoxInIndexSpace();
     }

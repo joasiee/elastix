@@ -73,11 +73,11 @@ class AdaptiveStochasticGradientDescentOptimizer : public StandardGradientDescen
 {
 public:
   /** Standard ITK.*/
-  typedef AdaptiveStochasticGradientDescentOptimizer Self;
-  typedef StandardGradientDescentOptimizer           Superclass;
+  using Self = AdaptiveStochasticGradientDescentOptimizer;
+  using Superclass = StandardGradientDescentOptimizer;
 
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -126,7 +126,7 @@ protected:
    * In that case, also the m_PreviousGradient is updated.
    */
   void
-  UpdateCurrentTime(void) override;
+  UpdateCurrentTime() override;
 
   /** The PreviousGradient, necessary for the CruzAcceleration */
   DerivativeType m_PreviousGradient;

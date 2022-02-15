@@ -68,10 +68,10 @@ class ITK_TEMPLATE_EXPORT AdvancedRigid3DTransform : public AdvancedMatrixOffset
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedRigid3DTransform                             Self;
-  typedef AdvancedMatrixOffsetTransformBase<TScalarType, 3, 3> Superclass;
-  typedef SmartPointer<Self>                                   Pointer;
-  typedef SmartPointer<const Self>                             ConstPointer;
+  using Self = AdvancedRigid3DTransform;
+  using Superclass = AdvancedMatrixOffsetTransformBase<TScalarType, 3, 3>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(AdvancedRigid3DTransform, AdvancedMatrixOffsetTransformBase);
@@ -132,69 +132,6 @@ public:
   SetMatrix(const MatrixType & matrix) override;
 
   /**
-   * Get rotation Matrix from an AdvancedRigid3DTransform
-   *
-   * This method returns the value of the rotation of the
-   * AdvancedRigid3DTransform.
-   *
-   * \deprecated Use GetMatrix instead
-   **/
-  const MatrixType &
-  GetRotationMatrix()
-  {
-    return this->GetMatrix();
-  }
-
-  /**
-   * Set the rotation Matrix of a Rigid3D Transform
-   *
-   * This method sets the 3x3 matrix representing a rotation
-   * in the transform.  The Matrix is expected to be orthogonal
-   * with a certain tolerance.
-   *
-   * \deprecated Use SetMatrix instead
-   *
-   **/
-  virtual void
-  SetRotationMatrix(const MatrixType & matrix)
-  {
-    this->SetMatrix(matrix);
-  }
-
-  /**
-   * Compose the transformation with a translation
-   *
-   * This method modifies self to include a translation of the
-   * origin.  The translation is precomposed with self if pre is
-   * true, and postcomposed otherwise.
-   **/
-  void
-  Translate(const OffsetType & offset, bool pre = false);
-
-  /**
-   * Back transform by an affine transformation
-   *
-   * This method finds the point or vector that maps to a given
-   * point or vector under the affine transformation defined by
-   * self.  If no such point exists, an exception is thrown.
-   *
-   * \deprecated Please use GetInverseTransform and then call the forward
-   *   transform using the result.
-   *
-   **/
-  InputPointType
-  BackTransform(const OutputPointType & point) const;
-
-  InputVectorType
-  BackTransform(const OutputVectorType & vector) const;
-
-  InputVnlVectorType
-  BackTransform(const OutputVnlVectorType & vector) const;
-
-  InputCovariantVectorType
-  BackTransform(const OutputCovariantVectorType & vector) const;
-
-  /**
    * Utility function to test if a matrix is orthogonal within a specified
    * tolerance
    */
@@ -203,9 +140,8 @@ public:
 
 protected:
   explicit AdvancedRigid3DTransform(unsigned int paramDim);
-  AdvancedRigid3DTransform(const MatrixType & matrix, const OutputVectorType & offset);
   AdvancedRigid3DTransform();
-  ~AdvancedRigid3DTransform() override;
+  ~AdvancedRigid3DTransform() override = default;
 
   /**
    * Print contents of an AdvancedRigid3DTransform

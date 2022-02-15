@@ -25,12 +25,12 @@
 #include <fstream>
 #include <iomanip>
 
-#include "vnl/algo/vnl_qr.h"
-//#include "vnl/algo/vnl_sparse_lu.h"
-//#include "vnl/algo/vnl_cholesky.h"
-#include "vnl/vnl_matlab_filewrite.h"
-#include "vnl/vnl_matrix_fixed.h"
-#include "vnl/vnl_sparse_matrix.h"
+#include <vnl/algo/vnl_qr.h>
+//#include <vnl/algo/vnl_sparse_lu.h>
+//#include <vnl/algo/vnl_cholesky.h>
+#include <vnl/vnl_matlab_filewrite.h>
+#include <vnl/vnl_matrix_fixed.h>
+#include <vnl/vnl_sparse_matrix.h>
 
 //-------------------------------------------------------------------------------------
 // Helper class to be able to access protected functions and variables.
@@ -42,10 +42,10 @@ template <class TScalarType, unsigned int NDimensions>
 class KernelTransformPublic : public ThinPlateSplineKernelTransform2<TScalarType, NDimensions>
 {
 public:
-  typedef KernelTransformPublic                                     Self;
-  typedef ThinPlateSplineKernelTransform2<TScalarType, NDimensions> Superclass;
-  typedef SmartPointer<Self>                                        Pointer;
-  typedef SmartPointer<const Self>                                  ConstPointer;
+  using Self = KernelTransformPublic;
+  using Superclass = ThinPlateSplineKernelTransform2<TScalarType, NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
   itkTypeMacro(KernelTransformPublic, ThinPlateSplineKernelTransform2);
   itkNewMacro(Self);
 
@@ -65,14 +65,14 @@ public:
 
 
   void
-  ComputeLPublic(void)
+  ComputeLPublic()
   {
     this->ComputeL();
   }
 
 
   LMatrixType
-  GetLMatrix(void) const
+  GetLMatrix() const
   {
     return this->m_LMatrix;
   }
@@ -98,38 +98,38 @@ main(int argc, char * argv[])
   /** Some basic type definitions. */
   const unsigned int Dimension = 3;
   // ScalarType double needed for Cholesky. Double is used in elastix.
-  typedef double      ScalarType;
+  using ScalarType = double;
   const unsigned long maxTestedLandmarksForSVD = 401;
   const ScalarType    tolerance = 1e-8; // for double
 
   /** Check. */
   if (argc != 3)
   {
-    std::cerr << "ERROR: You should specify a text file with the thin plate spline "
-              << "source (fixed image) landmarks." << std::endl;
+    std::cerr << "ERROR: You should specify a text file with the thin plate spline source (fixed image) landmarks."
+              << std::endl;
     return 1;
   }
 
   /** Other typedefs. */
-  typedef itk::KernelTransformPublic<ScalarType, Dimension>  TransformType;
-  typedef TransformType::JacobianType                        JacobianType;
-  typedef TransformType::NonZeroJacobianIndicesType          NonZeroJacobianIndicesType;
-  typedef TransformType::PointSetType                        PointSetType;
-  typedef itk::TransformixInputPointFileReader<PointSetType> IPPReaderType;
+  using TransformType = itk::KernelTransformPublic<ScalarType, Dimension>;
+  using JacobianType = TransformType::JacobianType;
+  using NonZeroJacobianIndicesType = TransformType::NonZeroJacobianIndicesType;
+  using PointSetType = TransformType::PointSetType;
+  using IPPReaderType = itk::TransformixInputPointFileReader<PointSetType>;
 
-  typedef PointSetType::PointsContainer PointsContainerType;
-  typedef PointsContainerType::Pointer  PointsContainerPointer;
-  typedef PointSetType::PointType       PointType;
-  typedef TransformType::LMatrixType    LMatrixType;
+  using PointsContainerType = PointSetType::PointsContainer;
+  using PointsContainerPointer = PointsContainerType::Pointer;
+  using PointType = PointSetType::PointType;
+  using LMatrixType = TransformType::LMatrixType;
 
-  PointSetType::Pointer dummyLandmarks = PointSetType::New();
+  auto dummyLandmarks = PointSetType::New();
 
   /** Create the kernel transform. */
-  TransformType::Pointer kernelTransform = TransformType::New();
+  auto kernelTransform = TransformType::New();
   kernelTransform->SetStiffness(0.0); // interpolating
 
   /** Read landmarks. */
-  IPPReaderType::Pointer ippReader = IPPReaderType::New();
+  auto ippReader = IPPReaderType::New();
   ippReader->SetFileName(argv[1]);
   try
   {
@@ -173,7 +173,7 @@ main(int argc, char * argv[])
 
     /** Get subset. */
     PointsContainerPointer usedLandmarkPoints = PointsContainerType::New();
-    PointSetType::Pointer  usedLandmarks = PointSetType::New();
+    auto                   usedLandmarks = PointSetType::New();
     for (unsigned long j = 0; j < numberOfLandmarks; ++j)
     {
       PointType tmp = (*sourceLandmarks->GetPoints())[j];
@@ -288,9 +288,9 @@ main(int argc, char * argv[])
     //
     // Test Jacobian computation performance
 
-    typedef vnl_matrix_fixed<ScalarType, Dimension, Dimension> GMatrixType;
-    GMatrixType                                                Gmatrix; // dim x dim
-    typedef PointSetType::PointsContainerIterator              PointsIterator;
+    using GMatrixType = vnl_matrix_fixed<ScalarType, Dimension, Dimension>;
+    GMatrixType Gmatrix; // dim x dim
+    using PointsIterator = PointSetType::PointsContainerIterator;
 
     // OLD way:
     PointType p;

@@ -41,10 +41,10 @@ class ITK_TEMPLATE_EXPORT MultiResolutionShrinkPyramidImageFilter
 {
 public:
   /** Standard class typedefs. */
-  typedef MultiResolutionShrinkPyramidImageFilter                      Self;
-  typedef MultiResolutionPyramidImageFilter<TInputImage, TOutputImage> Superclass;
-  typedef SmartPointer<Self>                                           Pointer;
-  typedef SmartPointer<const Self>                                     ConstPointer;
+  using Self = MultiResolutionShrinkPyramidImageFilter;
+  using Superclass = MultiResolutionPyramidImageFilter<TInputImage, TOutputImage>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -66,7 +66,7 @@ public:
 
   /** Overwrite the Superclass implementation: no padding required. */
   void
-  GenerateInputRequestedRegion(void) override;
+  GenerateInputRequestedRegion() override;
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
@@ -81,7 +81,7 @@ protected:
 
   /** Generate the output data. */
   void
-  GenerateData(void) override;
+  GenerateData() override;
 
 private:
   MultiResolutionShrinkPyramidImageFilter(const Self &) = delete;

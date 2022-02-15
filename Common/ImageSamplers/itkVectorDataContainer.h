@@ -76,21 +76,21 @@ class ITK_TEMPLATE_EXPORT VectorDataContainer
 {
 public:
   /** Standard class typedefs. */
-  typedef VectorDataContainer      Self;
-  typedef DataObject               Superclass;
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Self = VectorDataContainer;
+  using Superclass = DataObject;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Save the template parameters. */
-  typedef TElementIdentifier ElementIdentifier;
-  typedef TElement           Element;
+  using ElementIdentifier = TElementIdentifier;
+  using Element = TElement;
 
 private:
   /** Quick access to the STL vector type that was inherited. */
-  typedef std::vector<Element>                VectorType;
-  typedef typename VectorType::size_type      size_type;
-  typedef typename VectorType::iterator       VectorIterator;
-  typedef typename VectorType::const_iterator VectorConstIterator;
+  using VectorType = std::vector<Element>;
+  using size_type = typename VectorType::size_type;
+  using VectorIterator = typename VectorType::iterator;
+  using VectorConstIterator = typename VectorType::const_iterator;
 
 protected:
   /** Provide pass-through constructors corresponding to all the STL
@@ -120,7 +120,7 @@ protected:
 
 public:
   /** This type is provided to Adapt this container as an STL container */
-  typedef VectorType STLContainerType;
+  using STLContainerType = VectorType;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -233,14 +233,14 @@ public:
 
     /** Get the index into the VectorDataContainer associated with this iterator.   */
     ElementIdentifier
-    Index(void) const
+    Index() const
     {
       return static_cast<ElementIdentifier>(m_Pos);
     }
 
     /** Get the value at this iterator's location in the VectorDataContainer.   */
     Element &
-    Value(void) const
+    Value() const
     {
       return *m_Iter;
     }
@@ -345,14 +345,14 @@ public:
 
     /** Get the index into the VectorDataContainer associated with this iterator.   */
     ElementIdentifier
-    Index(void) const
+    Index() const
     {
       return static_cast<ElementIdentifier>(m_Pos);
     }
 
     /** Get the value at this iterator's location in the VectorDataContainer.   */
     const Element &
-    Value(void) const
+    Value() const
     {
       return *m_Iter;
     }
@@ -444,31 +444,31 @@ public:
    * Get a begin const iterator for the vector.
    */
   ConstIterator
-  Begin(void) const;
+  Begin() const;
 
   /**
    * Get an end const iterator for the vector.
    */
   ConstIterator
-  End(void) const;
+  End() const;
 
   /**
    * Get a begin iterator for the vector.
    */
   Iterator
-  Begin(void);
+  Begin();
 
   /**
    * Get an end iterator for the vector.
    */
   Iterator
-  End(void);
+  End();
 
   /**
    * Get the number of elements currently stored in the vector.
    */
   unsigned long
-  Size(void) const;
+  Size() const;
 
   /**
    * Tell the container to allocate enough memory to allow at least as many
@@ -488,13 +488,13 @@ public:
    * with other containers in the toolkit.
    */
   void
-  Squeeze(void);
+  Squeeze();
 
   /**
    * Clear the elements. The final size will be zero.
    */
   void
-  Initialize(void) override;
+  Initialize() override;
 };
 
 } // end namespace itk

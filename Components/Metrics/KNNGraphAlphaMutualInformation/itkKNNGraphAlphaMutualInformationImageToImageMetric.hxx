@@ -73,9 +73,9 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Set
   std::string  splittingRuleMoving,
   std::string  splittingRuleJoint)
 {
-  typename ANNkDTreeType::Pointer tmpPtrF = ANNkDTreeType::New();
-  typename ANNkDTreeType::Pointer tmpPtrM = ANNkDTreeType::New();
-  typename ANNkDTreeType::Pointer tmpPtrJ = ANNkDTreeType::New();
+  auto tmpPtrF = ANNkDTreeType::New();
+  auto tmpPtrM = ANNkDTreeType::New();
+  auto tmpPtrJ = ANNkDTreeType::New();
 
   tmpPtrF->SetBucketSize(bucketSize);
   tmpPtrM->SetBucketSize(bucketSize);
@@ -123,9 +123,9 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Set
   std::string  shrinkingRuleMoving,
   std::string  shrinkingRuleJoint)
 {
-  typename ANNbdTreeType::Pointer tmpPtrF = ANNbdTreeType::New();
-  typename ANNbdTreeType::Pointer tmpPtrM = ANNbdTreeType::New();
-  typename ANNbdTreeType::Pointer tmpPtrJ = ANNbdTreeType::New();
+  auto tmpPtrF = ANNbdTreeType::New();
+  auto tmpPtrM = ANNbdTreeType::New();
+  auto tmpPtrJ = ANNbdTreeType::New();
 
   tmpPtrF->SetBucketSize(bucketSize);
   tmpPtrM->SetBucketSize(bucketSize);
@@ -152,7 +152,7 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Set
 
 template <class TFixedImage, class TMovingImage>
 void
-KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::SetANNBruteForceTree(void)
+KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::SetANNBruteForceTree()
 {
   this->m_BinaryKNNTreeFixed = ANNBruteForceTreeType::New();
   this->m_BinaryKNNTreeMoving = ANNBruteForceTreeType::New();
@@ -171,9 +171,9 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Set
   unsigned int kNearestNeighbors,
   double       errorBound)
 {
-  typename ANNStandardTreeSearchType::Pointer tmpPtrF = ANNStandardTreeSearchType::New();
-  typename ANNStandardTreeSearchType::Pointer tmpPtrM = ANNStandardTreeSearchType::New();
-  typename ANNStandardTreeSearchType::Pointer tmpPtrJ = ANNStandardTreeSearchType::New();
+  auto tmpPtrF = ANNStandardTreeSearchType::New();
+  auto tmpPtrM = ANNStandardTreeSearchType::New();
+  auto tmpPtrJ = ANNStandardTreeSearchType::New();
 
   tmpPtrF->SetKNearestNeighbors(kNearestNeighbors);
   tmpPtrM->SetKNearestNeighbors(kNearestNeighbors);
@@ -201,9 +201,9 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Set
   double       errorBound,
   double       squaredRadius)
 {
-  typename ANNFixedRadiusTreeSearchType::Pointer tmpPtrF = ANNFixedRadiusTreeSearchType::New();
-  typename ANNFixedRadiusTreeSearchType::Pointer tmpPtrM = ANNFixedRadiusTreeSearchType::New();
-  typename ANNFixedRadiusTreeSearchType::Pointer tmpPtrJ = ANNFixedRadiusTreeSearchType::New();
+  auto tmpPtrF = ANNFixedRadiusTreeSearchType::New();
+  auto tmpPtrM = ANNFixedRadiusTreeSearchType::New();
+  auto tmpPtrJ = ANNFixedRadiusTreeSearchType::New();
 
   tmpPtrF->SetKNearestNeighbors(kNearestNeighbors);
   tmpPtrM->SetKNearestNeighbors(kNearestNeighbors);
@@ -234,9 +234,9 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Set
   unsigned int kNearestNeighbors,
   double       errorBound)
 {
-  typename ANNPriorityTreeSearchType::Pointer tmpPtrF = ANNPriorityTreeSearchType::New();
-  typename ANNPriorityTreeSearchType::Pointer tmpPtrM = ANNPriorityTreeSearchType::New();
-  typename ANNPriorityTreeSearchType::Pointer tmpPtrJ = ANNPriorityTreeSearchType::New();
+  auto tmpPtrF = ANNPriorityTreeSearchType::New();
+  auto tmpPtrM = ANNPriorityTreeSearchType::New();
+  auto tmpPtrJ = ANNPriorityTreeSearchType::New();
 
   tmpPtrF->SetKNearestNeighbors(kNearestNeighbors);
   tmpPtrM->SetKNearestNeighbors(kNearestNeighbors);
@@ -259,7 +259,7 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Set
 
 template <class TFixedImage, class TMovingImage>
 void
-KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
+KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
 {
   /** Call the superclass. */
   this->Superclass::Initialize();
@@ -284,9 +284,9 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Ini
  */
 
 template <class TFixedImage, class TMovingImage>
-typename KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   /** Initialize some variables. */
   MeasureType measure = NumericTraits<MeasureType>::Zero;
@@ -376,10 +376,10 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Get
    */
 
   /** Temporary variables. */
-  typedef typename NumericTraits<MeasureType>::AccumulateType AccumulateType;
-  MeasurementVectorType                                       z_F, z_M, z_J;
-  IndexArrayType                                              indices_F, indices_M, indices_J;
-  DistanceArrayType                                           distances_F, distances_M, distances_J;
+  using AccumulateType = typename NumericTraits<MeasureType>::AccumulateType;
+  MeasurementVectorType z_F, z_M, z_J;
+  IndexArrayType        indices_F, indices_M, indices_J;
+  DistanceArrayType     distances_F, distances_M, distances_J;
 
   MeasureType    H, G;
   AccumulateType sumG = NumericTraits<AccumulateType>::Zero;
@@ -600,11 +600,11 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Get
    */
 
   /** Temporary variables. */
-  typedef typename NumericTraits<MeasureType>::AccumulateType AccumulateType;
-  MeasurementVectorType                                       z_F, z_M, z_J, z_M_ip, z_J_ip, diff_M, diff_J;
-  IndexArrayType                                              indices_F, indices_M, indices_J;
-  DistanceArrayType                                           distances_F, distances_M, distances_J;
-  MeasureType                                                 distance_F, distance_M, distance_J;
+  using AccumulateType = typename NumericTraits<MeasureType>::AccumulateType;
+  MeasurementVectorType z_F, z_M, z_J, z_M_ip, z_J_ip, diff_M, diff_J;
+  IndexArrayType        indices_F, indices_M, indices_J;
+  DistanceArrayType     distances_F, distances_M, distances_J;
+  MeasureType           distance_F, distance_M, distance_J;
 
   MeasureType    H, G, Gpow;
   AccumulateType sumG = NumericTraits<AccumulateType>::Zero;
@@ -776,7 +776,6 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::
 
   /** Create variables to store intermediate results. */
   RealType                   movingImageValue;
-  MovingImagePointType       mappedPoint;
   double                     fixedFeatureValue = 0.0;
   double                     movingFeatureValue = 0.0;
   NonZeroJacobianIndicesType nzji(this->m_AdvancedTransform->GetNumberOfNonZeroJacobianIndices());
@@ -789,14 +788,11 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
     /** Check if point is inside all moving masks. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value M(T(x)) and possibly the
      * derivative dM/dx and check if the point is inside all
@@ -807,11 +803,12 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::
     {
       if (doDerivative)
       {
-        sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+        sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(
+          mappedPoint, movingImageValue, &movingImageDerivative);
       }
       else
       {
-        sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+        sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
       }
     }
 

@@ -34,7 +34,7 @@ namespace elastix
 
 template <class TElastix>
 void
-NormalizedMutualInformationMetric<TElastix>::Initialize(void)
+NormalizedMutualInformationMetric<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -52,7 +52,7 @@ NormalizedMutualInformationMetric<TElastix>::Initialize(void)
 
 template <class TElastix>
 void
-NormalizedMutualInformationMetric<TElastix>::BeforeEachResolution(void)
+NormalizedMutualInformationMetric<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = (this->m_Registration->GetAsITKBaseType())->GetCurrentLevel();
@@ -74,8 +74,8 @@ NormalizedMutualInformationMetric<TElastix>::BeforeEachResolution(void)
   this->SetNumberOfMovingHistogramBins(numberOfMovingHistogramBins);
 
   /** Set limiters */
-  typedef itk::HardLimiterFunction<RealType, FixedImageDimension>         FixedLimiterType;
-  typedef itk::ExponentialLimiterFunction<RealType, MovingImageDimension> MovingLimiterType;
+  using FixedLimiterType = itk::HardLimiterFunction<RealType, FixedImageDimension>;
+  using MovingLimiterType = itk::ExponentialLimiterFunction<RealType, MovingImageDimension>;
   this->SetFixedImageLimiter(FixedLimiterType::New());
   this->SetMovingImageLimiter(MovingLimiterType::New());
 

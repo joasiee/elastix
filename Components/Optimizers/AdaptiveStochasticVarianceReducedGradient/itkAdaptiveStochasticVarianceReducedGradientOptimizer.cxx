@@ -18,7 +18,7 @@
 
 #include "itkAdaptiveStochasticVarianceReducedGradientOptimizer.h"
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 #include "itkSigmoidImageFilter.h"
 
 namespace itk
@@ -36,9 +36,9 @@ AdaptiveStochasticVarianceReducedGradientOptimizer::AdaptiveStochasticVarianceRe
  */
 
 void
-AdaptiveStochasticVarianceReducedGradientOptimizer::UpdateCurrentTime(void)
+AdaptiveStochasticVarianceReducedGradientOptimizer::UpdateCurrentTime()
 {
-  typedef itk::Functor::Sigmoid<double, double> SigmoidType;
+  using SigmoidType = itk::Functor::Sigmoid<double, double>;
 
   if (this->m_UseAdaptiveStepSizes)
   {

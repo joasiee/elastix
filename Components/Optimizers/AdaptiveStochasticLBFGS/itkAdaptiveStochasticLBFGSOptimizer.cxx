@@ -18,7 +18,7 @@
 
 #include "itkAdaptiveStochasticLBFGSOptimizer.h"
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 #include "itkSigmoidImageFilter.h"
 
 namespace itk
@@ -36,9 +36,9 @@ AdaptiveStochasticLBFGSOptimizer::AdaptiveStochasticLBFGSOptimizer() = default;
  */
 
 void
-AdaptiveStochasticLBFGSOptimizer::UpdateCurrentTime(void)
+AdaptiveStochasticLBFGSOptimizer::UpdateCurrentTime()
 {
-  typedef itk::Functor::Sigmoid<double, double> SigmoidType;
+  using SigmoidType = itk::Functor::Sigmoid<double, double>;
 
   /** Create a sigmoid function. */
   SigmoidType sigmoid;

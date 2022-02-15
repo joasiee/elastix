@@ -16,6 +16,8 @@ endif()
 # Define lists of files in the subdirectories.
 
 set( CommonFiles
+  elxDefaultConstructibleSubclass.h
+  elxSupportedImageDimensions.h
   itkAdvancedLinearInterpolateImageFunction.h
   itkAdvancedLinearInterpolateImageFunction.hxx
   itkAdvancedRayCastInterpolateImageFunction.h
@@ -85,6 +87,8 @@ set( CostFunctionFiles
 )
 
 set( TransformFiles
+  Transforms/elxTransformFactoryRegistration.h
+  Transforms/elxTransformFactoryRegistration.cxx
   Transforms/elxTransformIO.h
   Transforms/elxTransformIO.cxx
   Transforms/itkAdvancedBSplineDeformableTransformBase.h

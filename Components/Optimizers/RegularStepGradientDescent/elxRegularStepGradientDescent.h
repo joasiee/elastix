@@ -68,11 +68,11 @@ class ITK_TEMPLATE_EXPORT RegularStepGradientDescent
 {
 public:
   /** Standard ITK.*/
-  typedef RegularStepGradientDescent          Self;
-  typedef RegularStepGradientDescentOptimizer Superclass1;
-  typedef OptimizerBase<TElastix>             Superclass2;
-  typedef itk::SmartPointer<Self>             Pointer;
-  typedef itk::SmartPointer<const Self>       ConstPointer;
+  using Self = RegularStepGradientDescent;
+  using Superclass1 = RegularStepGradientDescentOptimizer;
+  using Superclass2 = OptimizerBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -97,7 +97,7 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Typedef for the ParametersType. */
   using typename Superclass1::ParametersType;
@@ -105,19 +105,19 @@ public:
   /** Methods invoked by elastix, in which parameters can be set and
    * progress information can be printed. */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
   void
-  AfterEachResolution(void) override;
+  AfterEachResolution() override;
 
   void
-  AfterEachIteration(void) override;
+  AfterEachIteration() override;
 
   void
-  AfterRegistration(void) override;
+  AfterRegistration() override;
 
   /** Override the SetInitialPosition.
    * Override the implementation in itkOptimizer.h, to

@@ -40,7 +40,7 @@ PolydataDummyPenalty<TElastix>::PolydataDummyPenalty()
 
 template <class TElastix>
 void
-PolydataDummyPenalty<TElastix>::Initialize(void)
+PolydataDummyPenalty<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -58,7 +58,7 @@ PolydataDummyPenalty<TElastix>::Initialize(void)
 
 template <class TElastix>
 int
-PolydataDummyPenalty<TElastix>::BeforeAllBase(void)
+PolydataDummyPenalty<TElastix>::BeforeAllBase()
 {
   this->Superclass2::BeforeAllBase();
 
@@ -115,7 +115,7 @@ PolydataDummyPenalty<TElastix>::BeforeAllBase(void)
 
 template <class TElastix>
 void
-PolydataDummyPenalty<TElastix>::BeforeRegistration(void)
+PolydataDummyPenalty<TElastix>::BeforeRegistration()
 {
   std::string componentLabel(this->GetComponentLabel());
   std::string metricNumber = componentLabel.substr(6, 2); // strip "Metric" keep number
@@ -146,7 +146,7 @@ PolydataDummyPenalty<TElastix>::BeforeRegistration(void)
 
   this->SetFixedMeshContainer(meshPointerContainer);
 
-  typename PointSetType::Pointer dummyPointSet = PointSetType::New();
+  auto dummyPointSet = PointSetType::New();
   this->SetFixedPointSet(dummyPointSet);  // FB: TODO solve hack
   this->SetMovingPointSet(dummyPointSet); // FB: TODO solve hack
   // itkCombinationImageToImageMetric.hxx checks if metric base class is ImageMetricType or PointSetMetricType.
@@ -164,7 +164,7 @@ PolydataDummyPenalty<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-PolydataDummyPenalty<TElastix>::AfterEachIteration(void)
+PolydataDummyPenalty<TElastix>::AfterEachIteration()
 {
   /** What is the current resolution level? */
   const unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -216,7 +216,7 @@ PolydataDummyPenalty<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-PolydataDummyPenalty<TElastix>::AfterEachResolution(void)
+PolydataDummyPenalty<TElastix>::AfterEachResolution()
 {
   /** What is the current resolution level? */
   const unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -267,10 +267,10 @@ unsigned int
 PolydataDummyPenalty<TElastix>::ReadMesh(const std::string & meshFileName, typename FixedMeshType::Pointer & mesh)
 {
 
-  typedef itk::MeshFileReader<MeshType> MeshReaderType;
+  using MeshReaderType = itk::MeshFileReader<MeshType>;
 
   /** Read the input mesh. */
-  typename MeshReaderType::Pointer meshReader = MeshReaderType::New();
+  auto meshReader = MeshReaderType::New();
   meshReader->SetFileName(meshFileName.c_str());
 
   elxout << "  Reading input mesh file: " << meshFileName << std::endl;
@@ -303,9 +303,9 @@ void
 PolydataDummyPenalty<TElastix>::WriteResultMesh(const char * filename, MeshIdType meshId)
 {
   /** Typedef's for writing the output mesh. */
-  typedef itk::MeshFileWriter<MeshType> MeshWriterType;
+  using MeshWriterType = itk::MeshFileWriter<MeshType>;
   /** Create writer. */
-  typename MeshWriterType::Pointer meshWriter = MeshWriterType::New();
+  auto meshWriter = MeshWriterType::New();
 
   /** Set the points of the latest transformation. */
   const MappedMeshContainerPointer mappedMeshContainer = this->GetModifiableMappedMeshContainer();
@@ -385,24 +385,24 @@ PolydataDummyPenalty<TElastix>::ReadTransformixPoints(const std::string &       
   Floris: Mainly copied from elxTransformBase.hxx
   */
   /** Typedef's. */
-  typedef typename FixedImageType::RegionType               FixedImageRegionType;
-  typedef typename FixedImageType::PointType                FixedImageOriginType;
-  typedef typename FixedImageType::SpacingType              FixedImageSpacingType;
-  typedef typename FixedImageType::IndexType                FixedImageIndexType;
-  typedef typename FixedImageIndexType::IndexValueType      FixedImageIndexValueType;
-  typedef typename MovingImageType::IndexType               MovingImageIndexType;
-  typedef itk::ContinuousIndex<double, FixedImageDimension> FixedImageContinuousIndexType;
-  typedef typename FixedImageType::DirectionType            FixedImageDirectionType;
+  using FixedImageRegionType = typename FixedImageType::RegionType;
+  using FixedImageOriginType = typename FixedImageType::PointType;
+  using FixedImageSpacingType = typename FixedImageType::SpacingType;
+  using FixedImageIndexType = typename FixedImageType::IndexType;
+  using FixedImageIndexValueType = typename FixedImageIndexType::IndexValueType;
+  using MovingImageIndexType = typename MovingImageType::IndexType;
+  using FixedImageContinuousIndexType = itk::ContinuousIndex<double, FixedImageDimension>;
+  using FixedImageDirectionType = typename FixedImageType::DirectionType;
 
-  typedef unsigned char DummyIPPPixelType;
-  typedef itk::DefaultStaticMeshTraits<DummyIPPPixelType, FixedImageDimension, FixedImageDimension, CoordRepType>
-                                                                                MeshTraitsType;
-  typedef itk::PointSet<DummyIPPPixelType, FixedImageDimension, MeshTraitsType> PointSetType;
-  typedef itk::TransformixInputPointFileReader<PointSetType>                    IPPReaderType;
-  typedef itk::Vector<float, FixedImageDimension>                               DeformationVectorType;
+  using DummyIPPPixelType = unsigned char;
+  using MeshTraitsType =
+    itk::DefaultStaticMeshTraits<DummyIPPPixelType, FixedImageDimension, FixedImageDimension, CoordRepType>;
+  using PointSetType = itk::PointSet<DummyIPPPixelType, FixedImageDimension, MeshTraitsType>;
+  using IPPReaderType = itk::TransformixInputPointFileReader<PointSetType>;
+  using DeformationVectorType = itk::Vector<float, FixedImageDimension>;
 
   /** Construct an ipp-file reader. */
-  typename IPPReaderType::Pointer ippReader = IPPReaderType::New();
+  auto ippReader = IPPReaderType::New();
   ippReader->SetFileName(filename.c_str());
 
   /** Read the input points. */
@@ -451,7 +451,7 @@ PolydataDummyPenalty<TElastix>::ReadTransformixPoints(const std::string &       
   region.SetIndex(this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetOutputStartIndex());
   region.SetSize(this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetSize());
 
-  typename FixedImageType::Pointer dummyImage = FixedImageType::New();
+  auto dummyImage = FixedImageType::New();
   dummyImage->SetRegions(region);
   dummyImage->SetOrigin(origin);
   dummyImage->SetSpacing(spacing);
@@ -502,8 +502,8 @@ PolydataDummyPenalty<TElastix>::ReadTransformixPoints(const std::string &       
   /** Floris: make connected mesh (polygon) if data is 2d by assuming the sequence of points being connected**/
   if (FixedImageDimension == 2)
   {
-    typedef typename MeshType::CellType::CellAutoPointer CellAutoPointer;
-    typedef itk::LineCell<typename MeshType::CellType>   LineType;
+    using CellAutoPointer = typename MeshType::CellType::CellAutoPointer;
+    using LineType = itk::LineCell<typename MeshType::CellType>;
 
     for (unsigned int i = 0; i < nrofpoints; ++i)
     {
@@ -529,9 +529,9 @@ PolydataDummyPenalty<TElastix>::ReadTransformixPoints(const std::string &       
     std::cout << "point " << pointsBegin->Index() << ": " << pointsBegin->Value().GetVnlVector() << std::endl;
   }
 
-  typedef typename MeshType::CellsContainer::Iterator CellIterator;
-  CellIterator                                        cellIterator = mesh->GetCells()->Begin();
-  CellIterator                                        CellsEnd = mesh->GetCells()->End();
+  using CellIterator = typename MeshType::CellsContainer::Iterator;
+  CellIterator cellIterator = mesh->GetCells()->Begin();
+  CellIterator CellsEnd = mesh->GetCells()->End();
 
   typename CellInterfaceType::PointIdIterator beginpointer;
   typename CellInterfaceType::PointIdIterator endpointer;

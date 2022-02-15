@@ -39,7 +39,7 @@ namespace elastix
 
 template <class TElastix>
 void
-StatisticalShapePenalty<TElastix>::Initialize(void)
+StatisticalShapePenalty<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -57,7 +57,7 @@ StatisticalShapePenalty<TElastix>::Initialize(void)
 
 template <class TElastix>
 void
-StatisticalShapePenalty<TElastix>::BeforeRegistration(void)
+StatisticalShapePenalty<TElastix>::BeforeRegistration()
 {
   /** Get and set NormalizedShapeModel. Default TRUE. */
   bool normalizedShapeModel = true;
@@ -186,7 +186,7 @@ StatisticalShapePenalty<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-StatisticalShapePenalty<TElastix>::BeforeEachResolution(void)
+StatisticalShapePenalty<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -276,15 +276,15 @@ StatisticalShapePenalty<TElastix>::ReadLandmarks(const std::string &            
                                                  const typename ImageType::ConstPointer image)
 {
   /** Typedefs. */
-  typedef typename ImageType::IndexType                      IndexType;
-  typedef typename ImageType::IndexValueType                 IndexValueType;
-  typedef typename ImageType::PointType                      PointType;
-  typedef itk::TransformixInputPointFileReader<PointSetType> PointSetReaderType;
+  using IndexType = typename ImageType::IndexType;
+  using IndexValueType = typename ImageType::IndexValueType;
+  using PointType = typename ImageType::PointType;
+  using PointSetReaderType = itk::TransformixInputPointFileReader<PointSetType>;
 
   elxout << "Loading landmarks for " << this->GetComponentLabel() << ":" << this->elxGetClassName() << "." << std::endl;
 
   /** Read the landmarks. */
-  typename PointSetReaderType::Pointer reader = PointSetReaderType::New();
+  auto reader = PointSetReaderType::New();
   reader->SetFileName(landmarkFileName.c_str());
   elxout << "  Reading landmark file: " << landmarkFileName << std::endl;
   try
@@ -354,14 +354,14 @@ StatisticalShapePenalty<TElastix>::ReadShape(const std::string &                
                                              const typename ImageType::ConstPointer image)
 {
   /** Typedef's. \todo test DummyIPPPixelType=bool. */
-  typedef double DummyIPPPixelType;
-  typedef DefaultStaticMeshTraits<DummyIPPPixelType, FixedImageDimension, FixedImageDimension, CoordRepType>
-                                                                       MeshTraitsType;
-  typedef Mesh<DummyIPPPixelType, FixedImageDimension, MeshTraitsType> MeshType;
-  typedef VTKPolyDataReader<MeshType>                                  MeshReaderType;
+  using DummyIPPPixelType = double;
+  using MeshTraitsType =
+    DefaultStaticMeshTraits<DummyIPPPixelType, FixedImageDimension, FixedImageDimension, CoordRepType>;
+  using MeshType = Mesh<DummyIPPPixelType, FixedImageDimension, MeshTraitsType>;
+  using MeshReaderType = VTKPolyDataReader<MeshType>;
 
   /** Read the input points. */
-  typename MeshReaderType::Pointer meshReader = MeshReaderType::New();
+  auto meshReader = MeshReaderType::New();
   meshReader->SetFileName(ShapeFileName.c_str());
   elxout << "  Reading input point file: " << ShapeFileName << std::endl;
   try

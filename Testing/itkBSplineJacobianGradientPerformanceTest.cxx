@@ -37,7 +37,7 @@ main(int argc, char * argv[])
    */
   const unsigned int Dimension = 3;
   const unsigned int SplineOrder = 3;
-  typedef double     CoordinateRepresentationType;
+  using CoordinateRepresentationType = double;
 
   /** The number of calls to Evaluate(). Distinguish between
    * Debug and Release mode.
@@ -52,34 +52,33 @@ main(int argc, char * argv[])
   /** Check. */
   if (argc != 2)
   {
-    std::cerr << "ERROR: You should specify a text file with the B-spline "
-              << "transformation parameters." << std::endl;
+    std::cerr << "ERROR: You should specify a text file with the B-spline transformation parameters." << std::endl;
     return 1;
   }
 
   /** Typedefs. */
-  typedef itk::AdvancedBSplineDeformableTransform<CoordinateRepresentationType, Dimension, SplineOrder> TransformType;
-  typedef itk::RecursiveBSplineTransform<CoordinateRepresentationType, Dimension, SplineOrder> RecursiveTransformType;
+  using TransformType = itk::AdvancedBSplineDeformableTransform<CoordinateRepresentationType, Dimension, SplineOrder>;
+  using RecursiveTransformType = itk::RecursiveBSplineTransform<CoordinateRepresentationType, Dimension, SplineOrder>;
 
-  typedef TransformType::NumberOfParametersType     NumberOfParametersType;
-  typedef TransformType::InputPointType             InputPointType;
-  typedef TransformType::ParametersType             ParametersType;
-  typedef TransformType::NonZeroJacobianIndicesType NonZeroJacobianIndicesType;
-  typedef TransformType::DerivativeType             DerivativeType;
-  typedef TransformType::JacobianType               JacobianType;
-  typedef TransformType::MovingImageGradientType    MovingImageGradientType;
+  using NumberOfParametersType = TransformType::NumberOfParametersType;
+  using InputPointType = TransformType::InputPointType;
+  using ParametersType = TransformType::ParametersType;
+  using NonZeroJacobianIndicesType = TransformType::NonZeroJacobianIndicesType;
+  using DerivativeType = TransformType::DerivativeType;
+  using JacobianType = TransformType::JacobianType;
+  using MovingImageGradientType = TransformType::MovingImageGradientType;
 
-  typedef itk::Image<CoordinateRepresentationType, Dimension> InputImageType;
-  typedef InputImageType::RegionType                          RegionType;
-  typedef InputImageType::SizeType                            SizeType;
-  typedef InputImageType::IndexType                           IndexType;
-  typedef InputImageType::SpacingType                         SpacingType;
-  typedef InputImageType::PointType                           OriginType;
-  typedef InputImageType::DirectionType                       DirectionType;
+  using InputImageType = itk::Image<CoordinateRepresentationType, Dimension>;
+  using RegionType = InputImageType::RegionType;
+  using SizeType = InputImageType::SizeType;
+  using IndexType = InputImageType::IndexType;
+  using SpacingType = InputImageType::SpacingType;
+  using OriginType = InputImageType::PointType;
+  using DirectionType = InputImageType::DirectionType;
 
   /** Create the transform. */
-  TransformType::Pointer          transform = TransformType::New();
-  RecursiveTransformType::Pointer recursiveTransform = RecursiveTransformType::New();
+  auto transform = TransformType::New();
+  auto recursiveTransform = RecursiveTransformType::New();
 
   /** Setup the B-spline transform:
    * (GridSize 44 43 35)
@@ -129,8 +128,7 @@ main(int argc, char * argv[])
   }
   else
   {
-    std::cerr << "ERROR: could not open the text file containing the "
-              << "parameter values." << std::endl;
+    std::cerr << "ERROR: could not open the text file containing the parameter values." << std::endl;
     return 1;
   }
   transform->SetParameters(parameters);

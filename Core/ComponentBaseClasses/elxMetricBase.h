@@ -73,8 +73,8 @@ class ITK_TEMPLATE_EXPORT MetricBase : public BaseComponentSE<TElastix>
 {
 public:
   /** Standard ITK stuff. */
-  typedef MetricBase                Self;
-  typedef BaseComponentSE<TElastix> Superclass;
+  using Self = MetricBase;
+  using Superclass = BaseComponentSE<TElastix>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(MetricBase, BaseComponentSE);
@@ -88,17 +88,17 @@ public:
   using typename Superclass::RegistrationPointer;
 
   /** Other typedef's. */
-  typedef typename ElastixType::FixedImageType  FixedImageType;
-  typedef typename FixedImageType::PointType    FixedPointType;
-  typedef typename FixedPointType::ValueType    FixedPointValueType;
-  typedef typename ElastixType::MovingImageType MovingImageType;
-  typedef typename MovingImageType::PointType   MovingPointType;
-  typedef typename MovingPointType::ValueType   MovingPointValueType;
+  using FixedImageType = typename ElastixType::FixedImageType;
+  using FixedPointType = typename FixedImageType::PointType;
+  using FixedPointValueType = typename FixedPointType::ValueType;
+  using MovingImageType = typename ElastixType::MovingImageType;
+  using MovingPointType = typename MovingImageType::PointType;
+  using MovingPointValueType = typename MovingPointType::ValueType;
 
   /** ITKBaseType. */
-  typedef itk::SingleValuedCostFunction                                    ITKBaseType;
-  typedef itk::AdvancedImageToImageMetric<FixedImageType, MovingImageType> AdvancedMetricType;
-  typedef typename AdvancedMetricType::MovingImageDerivativeScalesType     MovingImageDerivativeScalesType;
+  using ITKBaseType = itk::SingleValuedCostFunction;
+  using AdvancedMetricType = itk::AdvancedImageToImageMetric<FixedImageType, MovingImageType>;
+  using MovingImageDerivativeScalesType = typename AdvancedMetricType::MovingImageDerivativeScalesType;
 
   /** Get the dimension of the fixed image. */
   itkStaticConstMacro(FixedImageDimension, unsigned int, FixedImageType::ImageDimension);
@@ -106,35 +106,33 @@ public:
   itkStaticConstMacro(MovingImageDimension, unsigned int, MovingImageType::ImageDimension);
 
   /** Typedefs for point sets. */
-  typedef typename ITKBaseType::ParametersValueType CoordinateRepresentationType;
-  typedef itk::PointSet<CoordinateRepresentationType,
-                        FixedImageDimension,
-                        itk::DefaultStaticMeshTraits<CoordinateRepresentationType,
-                                                     FixedImageDimension,
-                                                     FixedImageDimension,
-                                                     CoordinateRepresentationType,
-                                                     CoordinateRepresentationType,
-                                                     CoordinateRepresentationType>>
-    FixedPointSetType;
-  typedef itk::PointSet<CoordinateRepresentationType,
-                        MovingImageDimension,
-                        itk::DefaultStaticMeshTraits<CoordinateRepresentationType,
-                                                     MovingImageDimension,
-                                                     MovingImageDimension,
-                                                     CoordinateRepresentationType,
-                                                     CoordinateRepresentationType,
-                                                     CoordinateRepresentationType>>
-    MovingPointSetType;
+  using CoordinateRepresentationType = typename ITKBaseType::ParametersValueType;
+  using FixedPointSetType = itk::PointSet<CoordinateRepresentationType,
+                                          FixedImageDimension,
+                                          itk::DefaultStaticMeshTraits<CoordinateRepresentationType,
+                                                                       FixedImageDimension,
+                                                                       FixedImageDimension,
+                                                                       CoordinateRepresentationType,
+                                                                       CoordinateRepresentationType,
+                                                                       CoordinateRepresentationType>>;
+  using MovingPointSetType = itk::PointSet<CoordinateRepresentationType,
+                                           MovingImageDimension,
+                                           itk::DefaultStaticMeshTraits<CoordinateRepresentationType,
+                                                                        MovingImageDimension,
+                                                                        MovingImageDimension,
+                                                                        CoordinateRepresentationType,
+                                                                        CoordinateRepresentationType,
+                                                                        CoordinateRepresentationType>>;
 
   /** Typedefs for sampler support. */
-  typedef typename AdvancedMetricType::ImageSamplerType ImageSamplerBaseType;
+  using ImageSamplerBaseType = typename AdvancedMetricType::ImageSamplerType;
 
   /** Return type of GetValue */
-  typedef typename ITKBaseType::MeasureType MeasureType;
+  using MeasureType = typename ITKBaseType::MeasureType;
 
   /** Retrieves this object as ITKBaseType. */
   ITKBaseType *
-  GetAsITKBaseType(void)
+  GetAsITKBaseType()
   {
     return &(this->GetSelf());
   }
@@ -142,7 +140,7 @@ public:
 
   /** Retrieves this object as ITKBaseType, to use in const functions. */
   const ITKBaseType *
-  GetAsITKBaseType(void) const
+  GetAsITKBaseType() const
   {
     return &(this->GetSelf());
   }
@@ -153,25 +151,25 @@ public:
    * (to monitor the progress of the registration).
    */
   void
-  BeforeEachResolutionBase(void) override;
+  BeforeEachResolutionBase() override;
 
   /** Execute stuff after each iteration:
    * \li Optionally compute the exact metric value and plot it to screen.
    */
   void
-  AfterEachIterationBase(void) override;
+  AfterEachIterationBase() override;
 
   /** Force the metric to base its computation on a new subset of image samples.
    * Not every metric may have implemented this.
    */
   virtual void
-  SelectNewSamples(void);
+  SelectNewSamples();
 
   /** Returns whether the metric uses a sampler. When the metric is not of
    * AdvancedMetricType, the function returns false immediately.
    */
   virtual bool
-  GetAdvancedMetricUseImageSampler(void) const;
+  GetAdvancedMetricUseImageSampler() const;
 
   /** Method to set the image sampler. The image sampler is only used when
    * the metric is of type AdvancedMetricType, and has UseImageSampler set
@@ -185,30 +183,30 @@ public:
    * to true. In other cases, the function returns 0.
    */
   virtual ImageSamplerBaseType *
-  GetAdvancedMetricImageSampler(void) const;
+  GetAdvancedMetricImageSampler() const;
 
   /** Get if the exact metric value is computed */
   virtual bool
-  GetShowExactMetricValue(void) const
+  GetShowExactMetricValue() const
   {
     return this->m_ShowExactMetricValue;
   }
 
   /** Get the last computed exact metric value */
   virtual MeasureType
-  GetCurrentExactMetricValue(void) const
+  GetCurrentExactMetricValue() const
   {
     return this->m_CurrentExactMetricValue;
   }
 
 protected:
   /** The parameters type. */
-  typedef typename ITKBaseType::ParametersType ParametersType;
+  using ParametersType = typename ITKBaseType::ParametersType;
 
   /** The full sampler used by the GetExactValue method. */
-  typedef itk::ImageGridSampler<FixedImageType>                       ExactMetricImageSamplerType;
-  typedef typename ExactMetricImageSamplerType::Pointer               ExactMetricImageSamplerPointer;
-  typedef typename ExactMetricImageSamplerType::SampleGridSpacingType ExactMetricSampleGridSpacingType;
+  using ExactMetricImageSamplerType = itk::ImageGridSampler<FixedImageType>;
+  using ExactMetricImageSamplerPointer = typename ExactMetricImageSamplerType::Pointer;
+  using ExactMetricSampleGridSpacingType = typename ExactMetricImageSamplerType::SampleGridSpacingType;
 
   /** The constructor. */
   MetricBase();

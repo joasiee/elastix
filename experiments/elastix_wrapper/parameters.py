@@ -29,7 +29,9 @@ class Parameters:
         metric: str = "AdvancedMeanSquares",
         sampler: str = "RandomCoordinate",
         sampling_p: float = 0.1,
+        downsampling_f: int = 3,
         mesh_size: List[int] | int = 12,
+        seed: int = None
     ) -> None:
         with BASE_PARAMS_PATH.open() as f:
             self.params: Dict[str, Any] = json.loads(f.read())
@@ -37,6 +39,8 @@ class Parameters:
         self["ImageSampler"] = sampler
         self["SamplingPercentage"] = sampling_p
         self["MeshSize"] = mesh_size
+        self["RandomSeed"] = seed
+        self.downsampling_f = downsampling_f
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
         folder = INSTANCES_CONFIG[collection.value]["folder"]
@@ -111,8 +115,18 @@ class Parameters:
     def prune(self):
         self.params = {k: v for k, v in self.params.items() if v is not None}
 
+    def downsample(self):
+        dim = len(self.get_voxel_dimensions())
+        n_res = self["NumberOfResolutions"] - 1
+        if "ImagePyramidSchedule" not in self.params:
+            self["ImagePyramidSchedule"] = [2**n for n in range(n_res, -1, -1) for _ in range(dim)]
+        
+        self["ImagePyramidSchedule"] = [int(f * self.downsampling_f) for f in self["ImagePyramidSchedule"]]
+        self["NumberOfSpatialSamples"] = [int(n / self.downsampling_f**dim) for n in self["NumberOfSpatialSamples"]]
+
     def write(self, dir: Path) -> None:
         self.prune()
+        self.downsample()
         out_file = dir.joinpath(Path("params.txt"))
         with open(str(out_file), "w+") as f:
             for key, value in self.params.items():
@@ -120,16 +134,13 @@ class Parameters:
         return out_file
 
     def calc_voxel_params(self) -> Parameters:
-        if not isinstance(self["MeshSize"], List):
-            self["MeshSize"] = [self["MeshSize"]]
         voxel_dims = self.get_voxel_dimensions()
+        if not isinstance(self["MeshSize"], List):
+            self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
-            voxel_spacings.append(
-                ceil(voxel_dim / self["MeshSize"]
-                     [min(i, len(self["MeshSize"]) - 1)])
-            )
+            voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             div = 2**(len(total_samples)-1)
             for n in range(len(total_samples)):
                 total_samples[n] *= int(voxel_dim / div)
@@ -203,3 +214,7 @@ class Parameters:
             except ValueError:
                 return res
         return res
+
+if __name__ == "__main__":
+    params = Parameters(downsampling_f=2, mesh_size=5).gomea().multi_resolution().instance(Collection.EMPIRE, 16)
+    params.write(Path())

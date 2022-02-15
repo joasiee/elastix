@@ -43,7 +43,7 @@ SimilarityTransformElastix<TElastix>::SimilarityTransformElastix()
 
 template <class TElastix>
 void
-SimilarityTransformElastix<TElastix>::BeforeRegistration(void)
+SimilarityTransformElastix<TElastix>::BeforeRegistration()
 {
   /** Task 1 - Set center of rotation and initial translation. */
   this->InitializeTransform();
@@ -60,7 +60,7 @@ SimilarityTransformElastix<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-SimilarityTransformElastix<TElastix>::ReadFromFile(void)
+SimilarityTransformElastix<TElastix>::ReadFromFile()
 {
   if (!this->HasITKTransformParameters())
   {
@@ -73,7 +73,7 @@ SimilarityTransformElastix<TElastix>::ReadFromFile(void)
      * transform parameter file, this is the new, and preferred
      * way, since elastix 3.402.
      */
-    bool pointRead = this->ReadCenterOfRotationPoint(centerOfRotationPoint);
+    const bool pointRead = this->ReadCenterOfRotationPoint(centerOfRotationPoint);
 
     /** If this did not succeed, probably a transform parameter file
      * is trying to be read that was generated using an older elastix
@@ -86,8 +86,7 @@ SimilarityTransformElastix<TElastix>::ReadFromFile(void)
 
     if (!pointRead && !indexRead)
     {
-      xl::xout["error"] << "ERROR: No center of rotation is specified in the "
-                        << "transform parameter file." << std::endl;
+      xl::xout["error"] << "ERROR: No center of rotation is specified in the transform parameter file." << std::endl;
       itkExceptionMacro(<< "Transform parameter file is corrupt.")
     }
 
@@ -110,7 +109,7 @@ SimilarityTransformElastix<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 auto
-SimilarityTransformElastix<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+SimilarityTransformElastix<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   return { { "CenterOfRotationPoint", Conversion::ToVectorOfStrings(m_SimilarityTransform->GetCenter()) } };
 
@@ -123,7 +122,7 @@ SimilarityTransformElastix<TElastix>::CreateDerivedTransformParametersMap(void) 
 
 template <class TElastix>
 void
-SimilarityTransformElastix<TElastix>::InitializeTransform(void)
+SimilarityTransformElastix<TElastix>::InitializeTransform()
 {
   /** Set the parameters to mimic the identity transform. */
   this->m_SimilarityTransform->SetIdentity();
@@ -165,8 +164,8 @@ SimilarityTransformElastix<TElastix>::InitializeTransform(void)
   }
   if (centerGivenAsPoint)
   {
-    typedef itk::ContinuousIndex<double, SpaceDimension> ContinuousIndexType;
-    ContinuousIndexType                                  cindex;
+    using ContinuousIndexType = itk::ContinuousIndex<double, SpaceDimension>;
+    ContinuousIndexType cindex;
     CORPointInImage =
       this->m_Registration->GetAsITKBaseType()->GetFixedImage()->TransformPhysicalPointToContinuousIndex(
         centerOfRotationPoint, cindex);
@@ -175,15 +174,13 @@ SimilarityTransformElastix<TElastix>::InitializeTransform(void)
   /** Give a warning if necessary. */
   if (!CORIndexInImage && centerGivenAsIndex)
   {
-    xl::xout["warning"] << "WARNING: Center of Rotation (index) is not "
-                        << "within image boundaries!" << std::endl;
+    xl::xout["warning"] << "WARNING: Center of Rotation (index) is not within image boundaries!" << std::endl;
   }
 
   /** Give a warning if necessary. */
   if (!CORPointInImage && centerGivenAsPoint && !centerGivenAsIndex)
   {
-    xl::xout["warning"] << "WARNING: Center of Rotation (point) is not "
-                        << "within image boundaries!" << std::endl;
+    xl::xout["warning"] << "WARNING: Center of Rotation (point) is not within image boundaries!" << std::endl;
   }
 
   /** Check if user wants automatic transform initialization; false by default.
@@ -275,11 +272,11 @@ SimilarityTransformElastix<TElastix>::InitializeTransform(void)
 
 template <class TElastix>
 void
-SimilarityTransformElastix<TElastix>::SetScales(void)
+SimilarityTransformElastix<TElastix>::SetScales()
 {
   /** Create the new scales. */
-  const NumberOfParametersType N = this->GetNumberOfParameters();
-  ScalesType                   newscales(N);
+  const NumberOfParametersType numberOfParameters = this->GetNumberOfParameters();
+  ScalesType                   newscales(numberOfParameters);
   newscales.Fill(1.0);
 
   /** Check if automatic scales estimation is desired. */
@@ -317,7 +314,7 @@ SimilarityTransformElastix<TElastix>::SetScales(void)
     }
 
     /** Get the scales from the parameter file. */
-    for (unsigned int i = 0; i < N; ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       this->GetConfiguration()->ReadParameter(newscales[i], "Scales", this->GetComponentLabel(), i, -1);
     }
@@ -415,9 +412,9 @@ SimilarityTransformElastix<TElastix>::ReadCenterOfRotationIndex(InputPointType &
   /** Make a temporary image with the right region info,
    * so that the TransformIndexToPhysicalPoint-functions will be right.
    */
-  typedef FixedImageType           DummyImageType;
-  typename DummyImageType::Pointer dummyImage = DummyImageType::New();
-  RegionType                       region;
+  using DummyImageType = FixedImageType;
+  auto       dummyImage = DummyImageType::New();
+  RegionType region;
   region.SetIndex(index);
   region.SetSize(size);
   dummyImage->SetRegions(region);

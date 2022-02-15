@@ -1,60 +1,47 @@
 // ********** Image Types
-
 (FixedInternalImagePixelType "float")
 (MovingInternalImagePixelType "float")
 
 
-// ********** Components
-
+// ********* Components
 (Registration "MultiResolutionRegistration")
-(FixedImagePyramid "FixedSmoothingImagePyramid")
-(MovingImagePyramid "MovingSmoothingImagePyramid")
+(FixedImagePyramid "FixedRecursiveImagePyramid")
+(MovingImagePyramid "MovingRecursiveImagePyramid")
 (Interpolator "BSplineInterpolator")
 (Metric "AdvancedMeanSquares")
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
-(Transform "BSplineTransform")
+(Transform "RecursiveBSplineTransform")
 
 
 // ********** Pyramid
-
 // Total number of resolutions
 (NumberOfResolutions 1)
 
 // ********** Transform
-
-(FinalGridSpacingInVoxels 15)
+(FinalGridSpacingInVoxels 30)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 
 // ********** Optimizer
-
-(MaximumNumberOfIterations 30)
-(BasePopulationSize 10)
+(MaximumNumberOfIterations 5)
 (PartialEvaluations "true")
 (FosElementSize -6)
 
 // ********** Several
-
-(WriteTransformParametersEachIteration "false")
-(WriteTransformParametersEachResolution "false")
-(WriteResultImageAfterEachResolution "false")
 (WriteResultImage "true")
 (ShowExactMetricValue "false")
-(ErodeMask "true")
 
 
 // ********** ImageSampler
-
 (ImageSampler "Random")
 (NumberOfSpatialSamples 10000)
 (SamplingPercentage 0.05)
 
 
 // ********** Interpolator and Resampler
-
 //Order of B-Spline interpolation used in each resolution level:
 (BSplineInterpolationOrder 1)
 

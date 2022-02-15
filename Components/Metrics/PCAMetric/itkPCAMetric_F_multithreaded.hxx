@@ -21,11 +21,11 @@
 #include "itkPCAMetric_F_multithreaded.h"
 
 #include "itkMersenneTwisterRandomVariateGenerator.h"
-#include "vnl/algo/vnl_matrix_update.h"
+#include <vnl/algo/vnl_matrix_update.h>
 #include "itkImage.h"
-#include "vnl/algo/vnl_svd.h"
-#include "vnl/vnl_trace.h"
-#include "vnl/algo/vnl_symmetric_eigensystem.h"
+#include <vnl/algo/vnl_svd.h>
+#include <vnl/vnl_trace.h>
+#include <vnl/algo/vnl_symmetric_eigensystem.h>
 #include <numeric>
 #include <fstream>
 
@@ -72,7 +72,7 @@ PCAMetric<TFixedImage, TMovingImage>::~PCAMetric()
 
 template <class TFixedImage, class TMovingImage>
 void
-PCAMetric<TFixedImage, TMovingImage>::Initialize(void)
+PCAMetric<TFixedImage, TMovingImage>::Initialize()
 {
   /** Initialize transform, interpolator, etc. */
   Superclass::Initialize();
@@ -108,7 +108,7 @@ PCAMetric<TFixedImage, TMovingImage>::PrintSelf(std::ostream & os, Indent indent
 
 template <class TFixedImage, class TMovingImage>
 void
-PCAMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters(void) const
+PCAMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters() const
 {
   const ThreadIdType numberOfThreads = Self::GetNumberOfWorkUnits();
 
@@ -150,20 +150,17 @@ PCAMetric<TFixedImage, TMovingImage>::EvaluateTransformJacobianInnerProduct(
   const MovingImageDerivativeType & movingImageDerivative,
   DerivativeType &                  imageJacobian) const
 {
-  typedef typename TransformJacobianType::const_iterator JacobianIteratorType;
-  typedef typename DerivativeType::iterator              DerivativeIteratorType;
-  JacobianIteratorType                                   jac = jacobian.begin();
+  using JacobianIteratorType = typename TransformJacobianType::const_iterator;
+  JacobianIteratorType jac = jacobian.begin();
   imageJacobian.Fill(0.0);
-  const unsigned int sizeImageJacobian = imageJacobian.GetSize();
+
   for (unsigned int dim = 0; dim < FixedImageDimension; ++dim)
   {
-    const double           imDeriv = movingImageDerivative[dim];
-    DerivativeIteratorType imjac = imageJacobian.begin();
+    const double imDeriv = movingImageDerivative[dim];
 
-    for (unsigned int mu = 0; mu < sizeImageJacobian; ++mu)
+    for (auto & imageJacobianElement : imageJacobian)
     {
-      (*imjac) += (*jac) * imDeriv;
-      ++imjac;
+      imageJacobianElement += (*jac) * imDeriv;
       ++jac;
     }
   }
@@ -175,8 +172,8 @@ PCAMetric<TFixedImage, TMovingImage>::EvaluateTransformJacobianInnerProduct(
  */
 
 template <class TFixedImage, class TMovingImage>
-typename PCAMetric<TFixedImage, TMovingImage>::MeasureType
-PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters) const
+auto
+PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters) const -> MeasureType
 {
   itkDebugMacro("GetValue( " << parameters << " ) ");
 
@@ -232,8 +229,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & p
     for (unsigned int d = 0; d < this->m_G; ++d)
     {
       /** Initialize some variables. */
-      RealType             movingImageValue;
-      MovingImagePointType mappedPoint;
+      RealType movingImageValue;
 
       /** Set fixed point's last dimension to lastDimPosition. */
       voxelCoord[this->m_LastDimIndex] = d;
@@ -241,18 +237,15 @@ PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & p
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
 
-      /** Transform point and check if it is inside the B-spline support region. */
-      bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+      /** Transform point. */
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-      /** Check if point is inside mask. */
-      if (sampleOk)
-      {
-        sampleOk = this->IsInsideMovingMask(mappedPoint);
-      }
+      /** Check if the point is inside the moving mask. */
+      bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
       if (sampleOk)
       {
-        sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+        sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
       }
 
       if (sampleOk)
@@ -416,8 +409,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(const 
     for (unsigned int d = 0; d < this->m_G; ++d)
     {
       /** Initialize some variables. */
-      RealType             movingImageValue;
-      MovingImagePointType mappedPoint;
+      RealType movingImageValue;
 
       /** Set fixed point's last dimension to lastDimPosition. */
       voxelCoord[this->m_LastDimIndex] = d;
@@ -425,18 +417,16 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(const 
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
 
-      /** Transform point and check if it is inside the B-spline support region. */
-      bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
-      /** Check if point is inside mask. */
-      if (sampleOk)
-      {
-        sampleOk = this->IsInsideMovingMask(mappedPoint);
-      }
+      /** Transform point. */
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
+
+      /** Check if the point is inside the moving mask. */
+      bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
       if (sampleOk)
 
       {
-        sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+        sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
       }
 
       if (sampleOk)
@@ -552,7 +542,6 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(const 
     {
       /** Initialize some variables. */
       RealType                  movingImageValue;
-      MovingImagePointType      mappedPoint;
       MovingImageDerivativeType movingImageDerivative;
 
       /** Set fixed point's last dimension to lastDimPosition. */
@@ -560,9 +549,9 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(const 
 
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
-      this->TransformPoint(fixedPoint, mappedPoint);
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-      this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
 
       /** Get the TransformJacobian dT/dmu */
       this->EvaluateTransformJacobian(fixedPoint, jacobian, nzjis[d]);
@@ -759,8 +748,7 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedGetSamples(ThreadIdType threadId)
     for (unsigned int d = 0; d < this->m_G; ++d)
     {
       /** Initialize some variables. */
-      RealType             movingImageValue;
-      MovingImagePointType mappedPoint;
+      RealType movingImageValue;
 
       /** Set fixed point's last dimension to lastDimPosition. */
       voxelCoord[this->m_LastDimIndex] = d;
@@ -768,18 +756,16 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedGetSamples(ThreadIdType threadId)
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
 
-      /** Transform point and check if it is inside the B-spline support region. */
-      bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
-      /** Check if point is inside mask. */
-      if (sampleOk)
-      {
-        sampleOk = this->IsInsideMovingMask(mappedPoint);
-      }
+      /** Transform point. */
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
+
+      /** Check if the point is inside the moving mask. */
+      bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
       if (sampleOk)
 
       {
-        sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+        sampleOk = this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, threadId);
       }
 
       if (sampleOk)
@@ -931,11 +917,11 @@ PCAMetric<TFixedImage, TMovingImage>::GetSamplesThreaderCallback(void * arg)
 
 template <class TFixedImage, class TMovingImage>
 void
-PCAMetric<TFixedImage, TMovingImage>::LaunchGetSamplesThreaderCallback(void) const
+PCAMetric<TFixedImage, TMovingImage>::LaunchGetSamplesThreaderCallback() const
 {
   /** Setup local threader. */
   // \todo: is a global threader better performance-wise? check
-  typename ThreaderType::Pointer local_threader = ThreaderType::New();
+  auto local_threader = ThreaderType::New();
   local_threader->SetNumberOfWorkUnits(Self::GetNumberOfWorkUnits());
   local_threader->SetSingleMethod(this->GetSamplesThreaderCallback,
                                   const_cast<void *>(static_cast<const void *>(&this->m_PCAMetricThreaderParameters)));
@@ -960,7 +946,6 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedComputeDerivative(ThreadIdType thr
 
   /** Initialize some variables. */
   RealType                  movingImageValue;
-  MovingImagePointType      mappedPoint;
   MovingImageDerivativeType movingImageDerivative;
 
   TransformJacobianType      jacobian;
@@ -989,9 +974,9 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedComputeDerivative(ThreadIdType thr
 
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
-      this->TransformPoint(fixedPoint, mappedPoint);
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-      this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative, threadId);
 
       /** Get the TransformJacobian dT/dmu */
       this->EvaluateTransformJacobian(fixedPoint, jacobian, nzjis);
@@ -1134,11 +1119,11 @@ PCAMetric<TFixedImage, TMovingImage>::ComputeDerivativeThreaderCallback(void * a
 
 template <class TFixedImage, class TMovingImage>
 void
-PCAMetric<TFixedImage, TMovingImage>::LaunchComputeDerivativeThreaderCallback(void) const
+PCAMetric<TFixedImage, TMovingImage>::LaunchComputeDerivativeThreaderCallback() const
 {
   /** Setup local threader. */
   // \todo: is a global threader better performance-wise? check
-  typename ThreaderType::Pointer local_threader = ThreaderType::New();
+  auto local_threader = ThreaderType::New();
   local_threader->SetNumberOfWorkUnits(Self::GetNumberOfWorkUnits());
   local_threader->SetSingleMethod(this->ComputeDerivativeThreaderCallback,
                                   const_cast<void *>(static_cast<const void *>(&this->m_PCAMetricThreaderParameters)));

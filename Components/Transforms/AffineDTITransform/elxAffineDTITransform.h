@@ -82,19 +82,17 @@ class ITK_TEMPLATE_EXPORT AffineDTITransformElastix
 {
 public:
   /** Standard ITK-stuff.*/
-  typedef AffineDTITransformElastix Self;
-  typedef itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                            elx::TransformBase<TElastix>::FixedImageDimension>
-                                        Superclass1;
-  typedef elx::TransformBase<TElastix>  Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = AffineDTITransformElastix;
+  using Superclass1 = itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                        elx::TransformBase<TElastix>::FixedImageDimension>;
+  using Superclass2 = elx::TransformBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** The ITK-class that provides most of the functionality, and
    * that is set as the "CurrentTransform" in the CombinationTransform */
-  typedef itk::AffineDTITransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                  elx::TransformBase<TElastix>::FixedImageDimension>
-    AffineDTITransformType;
+  using AffineDTITransformType = itk::AffineDTITransform<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                         elx::TransformBase<TElastix>::FixedImageDimension>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -128,8 +126,8 @@ public:
   using typename Superclass1::InputVnlVectorType;
   using typename Superclass1::OutputVnlVectorType;
 
-  typedef typename AffineDTITransformType::Pointer    AffineDTITransformPointer;
-  typedef typename AffineDTITransformType::OffsetType OffsetType;
+  using AffineDTITransformPointer = typename AffineDTITransformType::Pointer;
+  using OffsetType = typename AffineDTITransformType::OffsetType;
 
   /** Typedef's inherited from TransformBase. */
   using typename Superclass2::ElastixType;
@@ -142,21 +140,21 @@ public:
   using typename Superclass2::CoordRepType;
   using typename Superclass2::FixedImageType;
   using typename Superclass2::MovingImageType;
-  typedef typename Superclass2::ITKBaseType              ITKBaseType;
-  typedef typename Superclass2::CombinationTransformType CombinationTransformType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
+  using CombinationTransformType = typename Superclass2::CombinationTransformType;
 
   /** Other typedef's. */
-  typedef typename FixedImageType::IndexType     IndexType;
-  typedef typename IndexType::IndexValueType     IndexValueType;
-  typedef typename FixedImageType::SizeType      SizeType;
-  typedef typename FixedImageType::PointType     PointType;
-  typedef typename FixedImageType::SpacingType   SpacingType;
-  typedef typename FixedImageType::RegionType    RegionType;
-  typedef typename FixedImageType::DirectionType DirectionType;
+  using IndexType = typename FixedImageType::IndexType;
+  using IndexValueType = typename IndexType::IndexValueType;
+  using SizeType = typename FixedImageType::SizeType;
+  using PointType = typename FixedImageType::PointType;
+  using SpacingType = typename FixedImageType::SpacingType;
+  using RegionType = typename FixedImageType::RegionType;
+  using DirectionType = typename FixedImageType::DirectionType;
 
-  typedef itk::CenteredTransformInitializer<AffineDTITransformType, FixedImageType, MovingImageType>
-                                                     TransformInitializerType;
-  typedef typename TransformInitializerType::Pointer TransformInitializerPointer;
+  using TransformInitializerType =
+    itk::CenteredTransformInitializer<AffineDTITransformType, FixedImageType, MovingImageType>;
+  using TransformInitializerPointer = typename TransformInitializerType::Pointer;
 
   /** For scales setting in the optimizer */
   using typename Superclass2::ScalesType;
@@ -166,7 +164,38 @@ public:
    * \li Set the scales.
    */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
+
+  /** Set the scales
+   * \li If AutomaticScalesEstimation is "true" estimate scales
+   * \li If scales are provided by the user use those,
+   * \li Otherwise use some default value
+   * This function is called by BeforeRegistration, after
+   * the InitializeTransform function is called
+   */
+  virtual void
+  SetScales();
+
+  /** Function to read transform-parameters from a file.
+   *
+   * It reads the center of rotation and calls the superclass' implementation.
+   */
+  void
+  ReadFromFile() override;
+
+protected:
+  /** The constructor. */
+  AffineDTITransformElastix();
+  /** The destructor. */
+  ~AffineDTITransformElastix() override = default;
+
+  /** Try to read the CenterOfRotationPoint from the transform parameter file
+   * The CenterOfRotationPoint is already in world coordinates. */
+  virtual bool
+  ReadCenterOfRotationPoint(InputPointType & rotationPoint) const;
+
+private:
+  elxOverrideGetSelfMacro;
 
   /** Initialize Transform.
    * \li Set all parameters to zero.
@@ -183,43 +212,12 @@ public:
    *
    * It is not yet possible to enter an initial rotation angle.
    */
-  virtual void
-  InitializeTransform(void);
-
-  /** Set the scales
-   * \li If AutomaticScalesEstimation is "true" estimate scales
-   * \li If scales are provided by the user use those,
-   * \li Otherwise use some default value
-   * This function is called by BeforeRegistration, after
-   * the InitializeTransform function is called
-   */
-  virtual void
-  SetScales(void);
-
-  /** Function to read transform-parameters from a file.
-   *
-   * It reads the center of rotation and calls the superclass' implementation.
-   */
   void
-  ReadFromFile(void) override;
-
-protected:
-  /** The constructor. */
-  AffineDTITransformElastix();
-  /** The destructor. */
-  ~AffineDTITransformElastix() override = default;
-
-  /** Try to read the CenterOfRotationPoint from the transform parameter file
-   * The CenterOfRotationPoint is already in world coordinates. */
-  virtual bool
-  ReadCenterOfRotationPoint(InputPointType & rotationPoint) const;
-
-private:
-  elxOverrideGetSelfMacro;
+  InitializeTransform();
 
   /** Creates a map of the parameters specific for this (derived) transform type. */
   ParameterMapType
-  CreateDerivedTransformParametersMap(void) const override;
+  CreateDerivedTransformParametersMap() const override;
 
   /** The deleted copy constructor. */
   AffineDTITransformElastix(const Self &) = delete;

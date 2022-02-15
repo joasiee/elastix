@@ -21,18 +21,12 @@
 #include "elxRecursiveBSplineTransform.h"
 
 #include "itkImageRegionExclusionConstIteratorWithIndex.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
+#include <regex>
+
 
 namespace elastix
 {
-
-/**
- * ********************* Constructor ****************************
- */
-
-template <class TElastix>
-RecursiveBSplineTransform<TElastix>::RecursiveBSplineTransform() = default; // end Constructor()
-
 
 /**
  * ************ InitializeBSplineTransform ***************
@@ -40,54 +34,21 @@ RecursiveBSplineTransform<TElastix>::RecursiveBSplineTransform() = default; // e
 
 template <class TElastix>
 unsigned int
-RecursiveBSplineTransform<TElastix>::InitializeBSplineTransform(void)
+RecursiveBSplineTransform<TElastix>::InitializeBSplineTransform()
 {
   /** Initialize the right BSplineTransform and GridScheduleComputer. */
   if (this->m_Cyclic)
   {
     this->m_GridScheduleComputer = CyclicGridScheduleComputerType::New();
     this->m_GridScheduleComputer->SetBSplineOrder(this->m_SplineOrder);
-
-    if (this->m_SplineOrder == 1)
-    {
-      this->m_BSplineTransform = CyclicBSplineTransformLinearType::New();
-    }
-    else if (this->m_SplineOrder == 2)
-    {
-      this->m_BSplineTransform = CyclicBSplineTransformQuadraticType::New();
-    }
-    else if (this->m_SplineOrder == 3)
-    {
-      this->m_BSplineTransform = CyclicBSplineTransformCubicType::New();
-    }
-    else
-    {
-      itkExceptionMacro(<< "ERROR: The provided spline order is not supported.");
-      return 1;
-    }
+    m_BSplineTransform =
+      BSplineTransformBaseType::template Create<itk::CyclicBSplineDeformableTransform>(m_SplineOrder);
   }
   else
   {
     this->m_GridScheduleComputer = GridScheduleComputerType::New();
     this->m_GridScheduleComputer->SetBSplineOrder(this->m_SplineOrder);
-
-    if (this->m_SplineOrder == 1)
-    {
-      this->m_BSplineTransform = BSplineTransformLinearType::New();
-    }
-    else if (this->m_SplineOrder == 2)
-    {
-      this->m_BSplineTransform = BSplineTransformQuadraticType::New();
-    }
-    else if (this->m_SplineOrder == 3)
-    {
-      this->m_BSplineTransform = BSplineTransformCubicType::New();
-    }
-    else
-    {
-      itkExceptionMacro(<< "ERROR: The provided spline order is not supported.");
-      return 1;
-    }
+    m_BSplineTransform = BSplineTransformBaseType::template Create<itk::RecursiveBSplineTransform>(m_SplineOrder);
   }
 
   this->SetCurrentTransform(this->m_BSplineTransform);
@@ -104,7 +65,7 @@ RecursiveBSplineTransform<TElastix>::InitializeBSplineTransform(void)
 
 template <class TElastix>
 int
-RecursiveBSplineTransform<TElastix>::BeforeAll(void)
+RecursiveBSplineTransform<TElastix>::BeforeAll()
 {
   /** Read spline order and periodicity setting from configuration file. */
   this->m_SplineOrder = 3;
@@ -123,7 +84,7 @@ RecursiveBSplineTransform<TElastix>::BeforeAll(void)
 
 template <class TElastix>
 void
-RecursiveBSplineTransform<TElastix>::BeforeRegistration(void)
+RecursiveBSplineTransform<TElastix>::BeforeRegistration()
 {
   /** Set initial transform parameters to a 1x1x1 grid, with deformation (0,0,0).
    * In the method BeforeEachResolution() this will be replaced by the right grid size.
@@ -135,37 +96,20 @@ RecursiveBSplineTransform<TElastix>::BeforeRegistration(void)
 
   /** Task 1 - Set the Grid. */
 
-  /** Declarations. */
-  RegionType  gridregion;
-  SizeType    gridsize;
-  IndexType   gridindex;
-  SpacingType gridspacing;
-  OriginType  gridorigin;
-
-  /** Fill everything with default values. */
-  gridsize.Fill(1);
-  gridindex.Fill(0);
-  gridspacing.Fill(1.0);
-  gridorigin.Fill(0.0);
-
   /** Set gridsize for large dimension to 4 to prevent errors when checking
    * on support region size.
    */
+  SizeType gridsize = SizeType::Filled(1);
   gridsize.SetElement(gridsize.GetSizeDimension() - 1, 4);
 
   /** Set it all. */
-  gridregion.SetIndex(gridindex);
-  gridregion.SetSize(gridsize);
-  this->m_BSplineTransform->SetGridRegion(gridregion);
-  this->m_BSplineTransform->SetGridSpacing(gridspacing);
-  this->m_BSplineTransform->SetGridOrigin(gridorigin);
+  this->m_BSplineTransform->SetGridRegion(RegionType(gridsize));
+  this->m_BSplineTransform->SetGridSpacing(SpacingType(1.0));
+  this->m_BSplineTransform->SetGridOrigin(OriginType());
 
   /** Task 2 - Give the registration an initial parameter-array. */
-  ParametersType dummyInitialParameters(this->GetNumberOfParameters());
-  dummyInitialParameters.Fill(0.0);
-
-  /** Put parameters in the registration. */
-  this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(dummyInitialParameters);
+  this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(
+    ParametersType(this->GetNumberOfParameters(), 0.0));
 
   /** Precompute the B-spline grid regions. */
   this->PreComputeGridInformation();
@@ -179,7 +123,7 @@ RecursiveBSplineTransform<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-RecursiveBSplineTransform<TElastix>::BeforeEachResolution(void)
+RecursiveBSplineTransform<TElastix>::BeforeEachResolution()
 {
   /** What is the current resolution level? */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -210,7 +154,7 @@ RecursiveBSplineTransform<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-RecursiveBSplineTransform<TElastix>::PreComputeGridInformation(void)
+RecursiveBSplineTransform<TElastix>::PreComputeGridInformation()
 {
   /** Get the total number of resolution levels. */
   unsigned int nrOfResolutions = this->m_Registration->GetAsITKBaseType()->GetNumberOfLevels();
@@ -332,9 +276,9 @@ RecursiveBSplineTransform<TElastix>::PreComputeGridInformation(void)
   }
   else
   {
-    xl::xout["error"] << "ERROR: Invalid GridSpacingSchedule! The number of entries"
-                      << " behind the GridSpacingSchedule option should equal the"
-                      << " numberOfResolutions, or the numberOfResolutions * ImageDimension." << std::endl;
+    xl::xout["error"] << "ERROR: Invalid GridSpacingSchedule! The number of entries behind the GridSpacingSchedule "
+                         "option should equal the numberOfResolutions, or the numberOfResolutions * ImageDimension."
+                      << std::endl;
     itkExceptionMacro(<< "ERROR: Invalid GridSpacingSchedule!");
   }
 
@@ -343,8 +287,9 @@ RecursiveBSplineTransform<TElastix>::PreComputeGridInformation(void)
    */
   if (this->m_Cyclic)
   {
-    xl::xout["warning"] << "WARNING: The provided grid spacing may be adapted to fit the cyclic "
-                        << "behavior of the CyclicBSplineTransform." << std::endl;
+    xl::xout["warning"]
+      << "WARNING: The provided grid spacing may be adapted to fit the cyclic behavior of the CyclicBSplineTransform."
+      << std::endl;
   }
 
   /** Set the grid schedule and final grid spacing in the schedule computer. */
@@ -363,7 +308,7 @@ RecursiveBSplineTransform<TElastix>::PreComputeGridInformation(void)
 
 template <class TElastix>
 void
-RecursiveBSplineTransform<TElastix>::InitializeTransform(void)
+RecursiveBSplineTransform<TElastix>::InitializeTransform()
 {
   /** Compute the B-spline grid region, origin, and spacing. */
   RegionType    gridRegion;
@@ -392,7 +337,7 @@ RecursiveBSplineTransform<TElastix>::InitializeTransform(void)
 
 template <class TElastix>
 void
-RecursiveBSplineTransform<TElastix>::IncreaseScale(void)
+RecursiveBSplineTransform<TElastix>::IncreaseScale()
 {
   /** What is the current resolution level? */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -452,53 +397,70 @@ RecursiveBSplineTransform<TElastix>::IncreaseScale(void)
 
 template <class TElastix>
 void
-RecursiveBSplineTransform<TElastix>::ReadFromFile(void)
+RecursiveBSplineTransform<TElastix>::ReadFromFile()
 {
   /** Read spline order and periodicity settings and initialize BSplineTransform. */
   m_SplineOrder = 3;
-  this->GetConfiguration()->ReadParameter(
-    m_SplineOrder, "BSplineTransformSplineOrder", this->GetComponentLabel(), 0, 0);
   m_Cyclic = false;
-  this->GetConfiguration()->ReadParameter(m_Cyclic, "UseCyclicTransform", this->GetComponentLabel(), 0, 0);
-  InitializeBSplineTransform();
 
-  /** Read and Set the Grid: this is a BSplineTransform specific task. */
-
-  /** Declarations. */
-  RegionType    gridregion;
-  SizeType      gridsize;
-  IndexType     gridindex;
-  SpacingType   gridspacing;
-  OriginType    gridorigin;
-  DirectionType griddirection;
-
-  /** Fill everything with default values. */
-  gridsize.Fill(1);
-  gridindex.Fill(0);
-  gridspacing.Fill(1.0);
-  gridorigin.Fill(0.0);
-  griddirection.SetIdentity();
-
-  /** Get GridSize, GridIndex, GridSpacing and GridOrigin. */
-  for (unsigned int i = 0; i < SpaceDimension; ++i)
+  if (this->HasITKTransformParameters())
   {
-    this->m_Configuration->ReadParameter(gridsize[i], "GridSize", i);
-    this->m_Configuration->ReadParameter(gridindex[i], "GridIndex", i);
-    this->m_Configuration->ReadParameter(gridspacing[i], "GridSpacing", i);
-    this->m_Configuration->ReadParameter(gridorigin[i], "GridOrigin", i);
-    for (unsigned int j = 0; j < SpaceDimension; ++j)
-    {
-      this->m_Configuration->ReadParameter(griddirection(j, i), "GridDirection", i * SpaceDimension + j);
-    }
-  }
+    const std::vector<std::string> parameterValues = this->m_Configuration->GetValuesOfParameter("ITKTransformType");
 
-  /** Set it all. */
-  gridregion.SetIndex(gridindex);
-  gridregion.SetSize(gridsize);
-  this->m_BSplineTransform->SetGridRegion(gridregion);
-  this->m_BSplineTransform->SetGridSpacing(gridspacing);
-  this->m_BSplineTransform->SetGridOrigin(gridorigin);
-  this->m_BSplineTransform->SetGridDirection(griddirection);
+    if (!parameterValues.empty())
+    {
+      assert(parameterValues.size() == 1);
+
+      // itkTransformTypeAsString should be something like "BSplineTransform_double_2_2" (for a default spline order) or
+      // "BSplineTransform_double_3_3_2" (for a non-default spline order)
+      const auto itkTransformTypeAsString = parameterValues.front();
+
+      if (std::regex_match(itkTransformTypeAsString, std::regex("BSplineTransform_[a-z]+_\\d_\\d_\\d")))
+      {
+        // The last character from `itkTransformTypeAsString` represents a non-default spline order.
+        m_SplineOrder = static_cast<unsigned>(itkTransformTypeAsString.back() - '0');
+
+        // Assert that m_SplineOrder is one of the two supported non-default spline order values.
+        assert(m_SplineOrder == 1 || m_SplineOrder == 2);
+      }
+    }
+    this->InitializeBSplineTransform();
+  }
+  else
+  {
+    this->GetConfiguration()->ReadParameter(
+      m_SplineOrder, "BSplineTransformSplineOrder", this->GetComponentLabel(), 0, 0);
+    this->GetConfiguration()->ReadParameter(m_Cyclic, "UseCyclicTransform", this->GetComponentLabel(), 0, 0);
+    InitializeBSplineTransform();
+
+    /** Read and Set the Grid: this is a BSplineTransform specific task. */
+
+    /** Declarations. Everything filled with default values.*/
+    SizeType      gridsize = SizeType::Filled(1);
+    IndexType     gridindex = { { 0 } };
+    SpacingType   gridspacing(1.0);
+    OriginType    gridorigin{};
+    DirectionType griddirection = DirectionType::GetIdentity();
+
+    /** Get GridSize, GridIndex, GridSpacing and GridOrigin. */
+    for (unsigned int i = 0; i < SpaceDimension; ++i)
+    {
+      this->m_Configuration->ReadParameter(gridsize[i], "GridSize", i);
+      this->m_Configuration->ReadParameter(gridindex[i], "GridIndex", i);
+      this->m_Configuration->ReadParameter(gridspacing[i], "GridSpacing", i);
+      this->m_Configuration->ReadParameter(gridorigin[i], "GridOrigin", i);
+      for (unsigned int j = 0; j < SpaceDimension; ++j)
+      {
+        this->m_Configuration->ReadParameter(griddirection(j, i), "GridDirection", i * SpaceDimension + j);
+      }
+    }
+
+    /** Set it all. */
+    this->m_BSplineTransform->SetGridRegion(RegionType(gridindex, gridsize));
+    this->m_BSplineTransform->SetGridSpacing(gridspacing);
+    this->m_BSplineTransform->SetGridOrigin(gridorigin);
+    this->m_BSplineTransform->SetGridDirection(griddirection);
+  }
 
   /** Call the ReadFromFile from the TransformBase.
    * This must be done after setting the Grid, because later the
@@ -516,7 +478,7 @@ RecursiveBSplineTransform<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 auto
-RecursiveBSplineTransform<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+RecursiveBSplineTransform<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   const auto gridRegion = m_BSplineTransform->GetGridRegion();
 
@@ -540,18 +502,17 @@ void
 RecursiveBSplineTransform<TElastix>::SetOptimizerScales(const unsigned int edgeWidth)
 {
   /** Some typedefs. */
-  typedef itk::ImageRegionExclusionConstIteratorWithIndex<ImageType> IteratorType;
-  typedef typename RegistrationType::ITKBaseType                     ITKRegistrationType;
-  typedef typename ITKRegistrationType::OptimizerType                OptimizerType;
-  typedef typename OptimizerType::ScalesType                         ScalesType;
-  typedef typename ScalesType::ValueType                             ScalesValueType;
+  using IteratorType = itk::ImageRegionExclusionConstIteratorWithIndex<ImageType>;
+  using ITKRegistrationType = typename RegistrationType::ITKBaseType;
+  using OptimizerType = typename ITKRegistrationType::OptimizerType;
+  using ScalesType = typename OptimizerType::ScalesType;
+  using ScalesValueType = typename ScalesType::ValueType;
 
   /** Define new scales. */
   const NumberOfParametersType numberOfParameters = this->m_BSplineTransform->GetNumberOfParameters();
   const unsigned long          offset = numberOfParameters / SpaceDimension;
-  ScalesType                   newScales(numberOfParameters);
-  newScales.Fill(itk::NumericTraits<ScalesValueType>::One);
-  const ScalesValueType infScale = 10000.0;
+  ScalesType                   newScales(numberOfParameters, ScalesValueType{ 1.0 });
+  const ScalesValueType        infScale = 10000.0;
 
   if (edgeWidth == 0)
   {

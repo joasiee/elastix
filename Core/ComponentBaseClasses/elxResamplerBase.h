@@ -77,8 +77,8 @@ class ITK_TEMPLATE_EXPORT ResamplerBase : public BaseComponentSE<TElastix>
 {
 public:
   /** Standard ITK stuff. */
-  typedef ResamplerBase             Self;
-  typedef BaseComponentSE<TElastix> Superclass;
+  using Self = ResamplerBase;
+  using Superclass = BaseComponentSE<TElastix>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(ResamplerBase, BaseComponentSE);
@@ -93,36 +93,36 @@ public:
 
   /** Typedef's from elastix.
    * NB: it is assumed that fixed and moving image dimension are equal!  */
-  typedef typename ElastixType::MovingImageType InputImageType;
-  typedef typename ElastixType::MovingImageType OutputImageType;
+  using InputImageType = typename ElastixType::MovingImageType;
+  using OutputImageType = typename ElastixType::MovingImageType;
   // typedef typename ElastixType::FixedImageType      OutputImageType;
-  typedef ElastixBase::CoordRepType CoordRepType;
+  using CoordRepType = ElastixBase::CoordRepType;
 
   /** Other typedef's. */
-  typedef itk::ResampleImageFilter<InputImageType, OutputImageType, CoordRepType> ITKBaseType;
+  using ITKBaseType = itk::ResampleImageFilter<InputImageType, OutputImageType, CoordRepType>;
 
   /** Typedef's from ResampleImageFiler. */
-  typedef typename ITKBaseType::TransformType    TransformType;
-  typedef typename ITKBaseType::InterpolatorType InterpolatorType;
-  typedef typename ITKBaseType::SizeType         SizeType;
-  typedef typename ITKBaseType::IndexType        IndexType;
-  typedef typename ITKBaseType::SpacingType      SpacingType;
-  typedef typename ITKBaseType::DirectionType    DirectionType;
-  typedef typename ITKBaseType::OriginPointType  OriginPointType;
-  typedef typename ITKBaseType::PixelType        OutputPixelType;
+  using TransformType = typename ITKBaseType::TransformType;
+  using InterpolatorType = typename ITKBaseType::InterpolatorType;
+  using SizeType = typename ITKBaseType::SizeType;
+  using IndexType = typename ITKBaseType::IndexType;
+  using SpacingType = typename ITKBaseType::SpacingType;
+  using DirectionType = typename ITKBaseType::DirectionType;
+  using OriginPointType = typename ITKBaseType::OriginPointType;
+  using OutputPixelType = typename ITKBaseType::PixelType;
 
   /** Typedef that is used in the elastix dll version. */
-  typedef typename ElastixType::ParameterMapType ParameterMapType;
+  using ParameterMapType = typename ElastixType::ParameterMapType;
 
   /** Typedef for the ProgressCommand. */
-  typedef elx::ProgressCommand ProgressCommandType;
+  using ProgressCommandType = elx::ProgressCommand;
 
   /** Get the ImageDimension. */
   itkStaticConstMacro(ImageDimension, unsigned int, OutputImageType::ImageDimension);
 
   /** Retrieves this object as ITKBaseType. */
   ITKBaseType *
-  GetAsITKBaseType(void)
+  GetAsITKBaseType()
   {
     return &(this->GetSelf());
   }
@@ -130,7 +130,7 @@ public:
 
   /** Retrieves this object as ITKBaseType, to use in const functions. */
   const ITKBaseType *
-  GetAsITKBaseType(void) const
+  GetAsITKBaseType() const
   {
     return &(this->GetSelf());
   }
@@ -140,7 +140,7 @@ public:
    * \li nothing here
    */
   virtual int
-  BeforeAllTransformix(void)
+  BeforeAllTransformix()
   {
     return 0;
   }
@@ -152,29 +152,29 @@ public:
    * \li Set the default pixel value.
    */
   void
-  BeforeRegistrationBase(void) override;
+  BeforeRegistrationBase() override;
 
   /** Execute stuff after each resolution:
    * \li Write the resulting output image.
    */
   void
-  AfterEachResolutionBase(void) override;
+  AfterEachResolutionBase() override;
 
   /** Execute stuff after each iteration:
    * \li Write the resulting output image.
    */
   void
-  AfterEachIterationBase(void) override;
+  AfterEachIterationBase() override;
 
   /** Execute stuff after the registration:
    * \li Write the resulting output image.
    */
   void
-  AfterRegistrationBase(void) override;
+  AfterRegistrationBase() override;
 
   /** Function to read transform-parameters from a file. */
   virtual void
-  ReadFromFile(void);
+  ReadFromFile();
 
   /** Function to write transform-parameters to a file. */
   void
@@ -194,7 +194,7 @@ public:
 
   /** Function to create the result image in the format of an itk::Image. */
   virtual void
-  CreateItkResultImage(void);
+  CreateItkResultImage();
 
 protected:
   /** The constructor. */
@@ -204,7 +204,7 @@ protected:
 
   /** Method that sets the transform, the interpolator and the inputImage. */
   virtual void
-  SetComponents(void);
+  SetComponents();
 
   /** Variable that defines to print the progress or not. */
   bool m_ShowProgress;
@@ -226,7 +226,7 @@ private:
 
   /** Release memory. */
   void
-  ReleaseMemory(void);
+  ReleaseMemory();
 };
 
 } // end namespace elastix

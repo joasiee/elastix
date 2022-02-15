@@ -57,10 +57,10 @@ class ITK_TEMPLATE_EXPORT AdvancedCombinationTransform : public AdvancedTransfor
 {
 public:
   /** Standard itk. */
-  typedef AdvancedCombinationTransform                             Self;
-  typedef AdvancedTransform<TScalarType, NDimensions, NDimensions> Superclass;
-  typedef SmartPointer<Self>                                       Pointer;
-  typedef SmartPointer<const Self>                                 ConstPointer;
+  using Self = AdvancedCombinationTransform;
+  using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New method for creating an object using a factory. */
   itkNewMacro(Self);
@@ -93,30 +93,30 @@ public:
   using typename Superclass::SpatialHessianType;
   using typename Superclass::JacobianOfSpatialHessianType;
   using typename Superclass::InternalMatrixType;
-  typedef typename Superclass::InverseTransformBaseType InverseTransformBaseType;
+  using InverseTransformBaseType = typename Superclass::InverseTransformBaseType;
   using typename Superclass::InverseTransformBasePointer;
   using typename Superclass::TransformCategoryEnum;
   using typename Superclass::MovingImageGradientType;
   using typename Superclass::MovingImageGradientValueType;
 
   /** Transform typedefs for the from Superclass. */
-  typedef typename Superclass::TransformType   TransformType;
-  typedef typename TransformType::Pointer      TransformTypePointer;
-  typedef typename TransformType::ConstPointer TransformTypeConstPointer;
+  using TransformType = typename Superclass::TransformType;
+  using TransformTypePointer = typename TransformType::Pointer;
+  using TransformTypeConstPointer = typename TransformType::ConstPointer;
 
   /** Typedefs for the InitialTransform. */
-  typedef Superclass                                                 InitialTransformType;
-  typedef typename InitialTransformType::Pointer                     InitialTransformPointer;
-  typedef typename InitialTransformType::ConstPointer                InitialTransformConstPointer;
-  typedef typename InitialTransformType::InverseTransformBaseType    InitialTransformInverseTransformBaseType;
-  typedef typename InitialTransformType::InverseTransformBasePointer InitialTransformInverseTransformBasePointer;
+  using InitialTransformType = Superclass;
+  using InitialTransformPointer = typename InitialTransformType::Pointer;
+  using InitialTransformConstPointer = typename InitialTransformType::ConstPointer;
+  using InitialTransformInverseTransformBaseType = typename InitialTransformType::InverseTransformBaseType;
+  using InitialTransformInverseTransformBasePointer = typename InitialTransformType::InverseTransformBasePointer;
 
   /** Typedefs for the CurrentTransform. */
-  typedef Superclass                                                 CurrentTransformType;
-  typedef typename CurrentTransformType::Pointer                     CurrentTransformPointer;
-  typedef typename CurrentTransformType::ConstPointer                CurrentTransformConstPointer;
-  typedef typename CurrentTransformType::InverseTransformBaseType    CurrentTransformInverseTransformBaseType;
-  typedef typename CurrentTransformType::InverseTransformBasePointer CurrentTransformInverseTransformBasePointer;
+  using CurrentTransformType = Superclass;
+  using CurrentTransformPointer = typename CurrentTransformType::Pointer;
+  using CurrentTransformConstPointer = typename CurrentTransformType::ConstPointer;
+  using CurrentTransformInverseTransformBaseType = typename CurrentTransformType::InverseTransformBaseType;
+  using CurrentTransformInverseTransformBasePointer = typename CurrentTransformType::InverseTransformBasePointer;
 
   /** Set/Get a pointer to the InitialTransform. */
   void
@@ -135,7 +135,7 @@ public:
 
   /** Return the number of sub-transforms. */
   SizeValueType
-  GetNumberOfTransforms(void) const;
+  GetNumberOfTransforms() const;
 
   /** Get the Nth current transform.
    * Exact interface to the ITK4 MultiTransform::GetNthTransform( SizeValueType n )
@@ -167,42 +167,42 @@ public:
   OutputVectorType
   TransformVector(const InputVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformVector(const InputVectorType &) is not implemented "
-                      << "for AdvancedCombinationTransform");
+    itkExceptionMacro(
+      << "TransformVector(const InputVectorType &) is not implemented for AdvancedCombinationTransform");
   }
 
 
   OutputVnlVectorType
   TransformVector(const InputVnlVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformVector(const InputVnlVectorType &) is not implemented "
-                      << "for AdvancedCombinationTransform");
+    itkExceptionMacro(
+      << "TransformVector(const InputVnlVectorType &) is not implemented for AdvancedCombinationTransform");
   }
 
 
   OutputCovariantVectorType
   TransformCovariantVector(const InputCovariantVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformCovariantVector(const InputCovariantVectorType &) is not implemented "
-                      << "for AdvancedCombinationTransform");
+    itkExceptionMacro(<< "TransformCovariantVector(const InputCovariantVectorType &) is not implemented for "
+                         "AdvancedCombinationTransform");
   }
 
 
   /** Return the number of parameters that completely define the CurrentTransform. */
   NumberOfParametersType
-  GetNumberOfParameters(void) const override;
+  GetNumberOfParameters() const override;
 
   /** Get the number of nonzero Jacobian indices. By default all. */
   NumberOfParametersType
-  GetNumberOfNonZeroJacobianIndices(void) const override;
+  GetNumberOfNonZeroJacobianIndices() const override;
 
   /** Get the transformation parameters from the CurrentTransform. */
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** Get the fixed parameters from the CurrentTransform. */
   const FixedParametersType &
-  GetFixedParameters(void) const override;
+  GetFixedParameters() const override;
 
   /** Set the transformation parameters in the CurrentTransform. */
   void
@@ -234,7 +234,7 @@ public:
   /** Return whether the transform is linear (or actually: affine)
    * Returns true when both initial and current transform are linear */
   bool
-  IsLinear(void) const override;
+  IsLinear() const override;
 
   /** Special handling for combination transform. If all transforms
    * are linear, then return category Linear. Otherwise if all
@@ -245,10 +245,10 @@ public:
 
   /** Whether the advanced transform has nonzero matrices. */
   bool
-  GetHasNonZeroSpatialHessian(void) const override;
+  GetHasNonZeroSpatialHessian() const override;
 
   bool
-  HasNonZeroJacobianOfSpatialHessian(void) const;
+  HasNonZeroJacobianOfSpatialHessian() const;
 
   /** Compute the (sparse) Jacobian of the transformation. */
   void
@@ -312,7 +312,7 @@ protected:
    * SelectedGetJacobianFunction.
    */
   void
-  UpdateCombinationMethod(void);
+  UpdateCombinationMethod();
 
   /** ************************************************
    * Methods to transform a point.
@@ -553,30 +553,30 @@ private:
   CurrentTransformPointer m_CurrentTransform{ nullptr };
 
   /** Typedefs for function pointers. */
-  typedef OutputPointType (Self::*TransformPointFunctionPointer)(const InputPointType &) const;
-  typedef void (Self::*GetSparseJacobianFunctionPointer)(const InputPointType &,
-                                                         JacobianType &,
-                                                         NonZeroJacobianIndicesType &) const;
-  typedef void (Self::*EvaluateJacobianWithImageGradientProductFunctionPointer)(const InputPointType &,
-                                                                                const MovingImageGradientType &,
-                                                                                DerivativeType &,
-                                                                                NonZeroJacobianIndicesType &) const;
-  typedef void (Self::*GetSpatialJacobianFunctionPointer)(const InputPointType &, SpatialJacobianType &) const;
-  typedef void (Self::*GetSpatialHessianFunctionPointer)(const InputPointType &, SpatialHessianType &) const;
-  typedef void (Self::*GetJacobianOfSpatialJacobianFunctionPointer)(const InputPointType &,
-                                                                    JacobianOfSpatialJacobianType &,
-                                                                    NonZeroJacobianIndicesType &) const;
-  typedef void (Self::*GetJacobianOfSpatialJacobianFunctionPointer2)(const InputPointType &,
-                                                                     SpatialJacobianType &,
+  using TransformPointFunctionPointer = OutputPointType (Self::*)(const InputPointType &) const;
+  using GetSparseJacobianFunctionPointer = void (Self::*)(const InputPointType &,
+                                                          JacobianType &,
+                                                          NonZeroJacobianIndicesType &) const;
+  using EvaluateJacobianWithImageGradientProductFunctionPointer = void (Self::*)(const InputPointType &,
+                                                                                 const MovingImageGradientType &,
+                                                                                 DerivativeType &,
+                                                                                 NonZeroJacobianIndicesType &) const;
+  using GetSpatialJacobianFunctionPointer = void (Self::*)(const InputPointType &, SpatialJacobianType &) const;
+  using GetSpatialHessianFunctionPointer = void (Self::*)(const InputPointType &, SpatialHessianType &) const;
+  using GetJacobianOfSpatialJacobianFunctionPointer = void (Self::*)(const InputPointType &,
                                                                      JacobianOfSpatialJacobianType &,
                                                                      NonZeroJacobianIndicesType &) const;
-  typedef void (Self::*GetJacobianOfSpatialHessianFunctionPointer)(const InputPointType &,
-                                                                   JacobianOfSpatialHessianType &,
-                                                                   NonZeroJacobianIndicesType &) const;
-  typedef void (Self::*GetJacobianOfSpatialHessianFunctionPointer2)(const InputPointType &,
-                                                                    SpatialHessianType &,
+  using GetJacobianOfSpatialJacobianFunctionPointer2 = void (Self::*)(const InputPointType &,
+                                                                      SpatialJacobianType &,
+                                                                      JacobianOfSpatialJacobianType &,
+                                                                      NonZeroJacobianIndicesType &) const;
+  using GetJacobianOfSpatialHessianFunctionPointer = void (Self::*)(const InputPointType &,
                                                                     JacobianOfSpatialHessianType &,
                                                                     NonZeroJacobianIndicesType &) const;
+  using GetJacobianOfSpatialHessianFunctionPointer2 = void (Self::*)(const InputPointType &,
+                                                                     SpatialHessianType &,
+                                                                     JacobianOfSpatialHessianType &,
+                                                                     NonZeroJacobianIndicesType &) const;
 
   /**  A pointer to one of the following functions:
    * - TransformPointUseAddition,

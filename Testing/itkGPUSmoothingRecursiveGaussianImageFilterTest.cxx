@@ -67,24 +67,24 @@ main(int argc, char * argv[])
   std::cout << std::showpoint << std::setprecision(4);
 
   // Typedefs.
-  const unsigned int                             Dimension = 3;
-  typedef float                                  InputPixelType;
-  typedef float                                  OutputPixelType;
-  typedef itk::Image<InputPixelType, Dimension>  InputImageType;
-  typedef itk::Image<OutputPixelType, Dimension> OutputImageType;
+  const unsigned int Dimension = 3;
+  using InputPixelType = float;
+  using OutputPixelType = float;
+  using InputImageType = itk::Image<InputPixelType, Dimension>;
+  using OutputImageType = itk::Image<OutputPixelType, Dimension>;
 
   // CPU Typedefs
-  typedef itk::SmoothingRecursiveGaussianImageFilter<InputImageType, OutputImageType> FilterType;
-  typedef itk::ImageFileReader<InputImageType>                                        ReaderType;
-  typedef itk::ImageFileWriter<OutputImageType>                                       WriterType;
+  using FilterType = itk::SmoothingRecursiveGaussianImageFilter<InputImageType, OutputImageType>;
+  using ReaderType = itk::ImageFileReader<InputImageType>;
+  using WriterType = itk::ImageFileWriter<OutputImageType>;
 
   // Reader
-  ReaderType::Pointer reader = ReaderType::New();
+  auto reader = ReaderType::New();
   reader->SetFileName(inputFileName);
   reader->Update();
 
   // Construct the filter
-  FilterType::Pointer        filter = FilterType::New();
+  auto                       filter = FilterType::New();
   FilterType::SigmaArrayType sigmaArray;
   for (unsigned int i = 0; i < Dimension; ++i)
   {
@@ -118,7 +118,7 @@ main(int argc, char * argv[])
   std::cout << "CPU " << sigmaArray[0] << " " << filter->GetNumberOfWorkUnits() << " " << cputimer.GetMean() / runTimes;
 
   /** Write the CPU result. */
-  WriterType::Pointer writer = WriterType::New();
+  auto writer = WriterType::New();
   writer->SetInput(filter->GetOutput());
   writer->SetFileName(outputFileNameCPU.c_str());
   try
@@ -141,7 +141,7 @@ main(int argc, char * argv[])
   // that internally uses the recursive filter. By registering the recursive
   // filter, we now automatically use it, even if it's usage is hidden by a
   // wrapper.
-  typedef typelist::MakeTypeList<float>::Type OCLImageTypes;
+  using OCLImageTypes = typelist::MakeTypeList<float>::Type;
   itk::GPUImageFactory2<OCLImageTypes, OCLImageDims>::RegisterOneFactory();
   itk::GPURecursiveGaussianImageFilterFactory2<OCLImageTypes, OCLImageTypes, OCLImageDims>::RegisterOneFactory();
   itk::GPUCastImageFilterFactory2<OCLImageTypes, OCLImageTypes, OCLImageDims>::RegisterOneFactory();
@@ -167,7 +167,7 @@ main(int argc, char * argv[])
   // reads a GPUImage instead of a normal image.
   // Otherwise, you will get an exception when running the GPU filter:
   // "ERROR: The GPU InputImage is NULL. Filter unable to perform."
-  ReaderType::Pointer gpuReader = ReaderType::New();
+  auto gpuReader = ReaderType::New();
   gpuReader->SetFileName(inputFileName);
 
   // \todo: If the following line is uncommented something goes wrong with
@@ -201,7 +201,7 @@ main(int argc, char * argv[])
             << cputimer.GetMean() / gputimer.GetMean();
 
   /** Write the GPU result. */
-  WriterType::Pointer gpuWriter = WriterType::New();
+  auto gpuWriter = WriterType::New();
   gpuWriter->SetInput(gpuFilter->GetOutput());
   gpuWriter->SetFileName(outputFileNameGPU.c_str());
   try

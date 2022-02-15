@@ -66,7 +66,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage,
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters(void) const
+AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters() const
 {
   const ThreadIdType numberOfThreads = Self::GetNumberOfWorkUnits();
 
@@ -89,6 +89,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Init
   /** Some initialization. */
   const AccumulateType      zero1 = NumericTraits<AccumulateType>::Zero;
   const DerivativeValueType zero2 = NumericTraits<DerivativeValueType>::Zero;
+  const auto                numberOfParameters = this->GetNumberOfParameters();
   for (ThreadIdType i = 0; i < numberOfThreads; ++i)
   {
     this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted =
@@ -98,8 +99,8 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Init
     this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_Sfm = zero1;
     this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_Sf = zero1;
     this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_Sm = zero1;
-    this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_DerivativeF.SetSize(this->GetNumberOfParameters());
-    this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_DerivativeM.SetSize(this->GetNumberOfParameters());
+    this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_DerivativeF.SetSize(numberOfParameters);
+    this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_DerivativeM.SetSize(numberOfParameters);
     this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_Differential.SetSize(
       this->GetNumberOfParameters());
     this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_DerivativeF.Fill(zero2);
@@ -140,8 +141,10 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Upda
   DerivativeType &                   derivativeM,
   DerivativeType &                   differential) const
 {
+  const auto numberOfParameters = this->GetNumberOfParameters();
+
   /** Calculate the contributions to the derivatives with respect to each parameter. */
-  if (nzji.size() == this->GetNumberOfParameters())
+  if (nzji.size() == numberOfParameters)
   {
     /** Loop over all Jacobians. */
     typename DerivativeType::const_iterator imjacit = imageJacobian.begin();
@@ -149,7 +152,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Upda
     typename DerivativeType::iterator       derivativeMit = derivativeM.begin();
     typename DerivativeType::iterator       differentialit = differential.begin();
 
-    for (unsigned int mu = 0; mu < this->GetNumberOfParameters(); ++mu)
+    for (unsigned int mu = 0; mu < numberOfParameters; ++mu)
     {
       (*derivativeFit) += fixedImageValue * (*imjacit);
       (*derivativeMit) += movingImageValue * (*imjacit);
@@ -181,9 +184,9 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Upda
  */
 
 template <class TFixedImage, class TMovingImage>
-typename AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   itkDebugMacro("GetValue( " << parameters << " ) ");
 
@@ -227,22 +230,18 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
-    MovingImagePointType        mappedPoint;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value and check if the point is
      * inside the moving image buffer. */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+      sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
     }
 
     if (sampleOk)
@@ -331,7 +330,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
 {
   itkDebugMacro(<< "GetValueAndDerivative( " << parameters << " ) ");
 
-  typedef typename DerivativeType::ValueType DerivativeValueType;
+  using DerivativeValueType = typename DerivativeType::ValueType;
 
   /** Initialize some variables. */
   this->m_NumberOfPixelsCounted = 0;
@@ -385,24 +384,21 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
-    MovingImagePointType        mappedPoint;
     MovingImageDerivativeType   movingImageDerivative;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value M(T(x)) and derivative dM/dx and check if
      * the point is inside the moving image buffer.
      */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      sampleOk =
+        this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
     }
 
     if (sampleOk)
@@ -436,6 +432,8 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   /** Check if enough samples were valid. */
   this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
+  const auto numberOfParameters = this->GetNumberOfParameters();
+
   /** If SubtractMean, then subtract things from sff, smm, sfm,
    * derivativeF and derivativeM.
    */
@@ -446,7 +444,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
     smm -= (sm * sm / N);
     sfm -= (sf * sm / N);
 
-    for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       derivativeF[i] -= sf * differential[i] / N;
       derivativeM[i] -= sm * differential[i] / N;
@@ -460,7 +458,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   if (this->m_NumberOfPixelsCounted > 0 && denom < -1e-14)
   {
     value = sfm / denom;
-    for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       derivative[i] = (derivativeF[i] - (sfm / smm) * derivativeM[i]) / denom;
     }
@@ -573,24 +571,21 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Thre
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
-    MovingImagePointType        mappedPoint;
     MovingImageDerivativeType   movingImageDerivative;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value M(T(x)) and derivative dM/dx and check if
      * the point is inside the moving image buffer.
      */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      sampleOk = this->FastEvaluateMovingImageValueAndDerivative(
+        mappedPoint, movingImageValue, &movingImageDerivative, threadId);
     }
 
     if (sampleOk)
@@ -728,11 +723,13 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Afte
       differential += this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_Differential;
     }
 
+    const auto numberOfParameters = this->GetNumberOfParameters();
+
     /** If SubtractMean, then subtract things from  derivativeF and derivativeM. */
     if (this->m_SubtractMean)
     {
       double diff, derF, derM;
-      for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+      for (unsigned int i = 0; i < numberOfParameters; ++i)
       {
         diff = differential[i];
         derF = derivativeF[i] - (sf / N) * diff;
@@ -742,7 +739,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Afte
     }
     else
     {
-      for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+      for (unsigned int i = 0; i < numberOfParameters; ++i)
       {
         derivative[i] = (derivativeF[i] - (sfm / smm) * derivativeM[i]) / denom;
       }

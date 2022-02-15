@@ -19,7 +19,7 @@
 #define itkImageRandomCoordinateSampler_hxx
 
 #include "itkImageRandomCoordinateSampler.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -32,12 +32,12 @@ template <class TInputImage>
 ImageRandomCoordinateSampler<TInputImage>::ImageRandomCoordinateSampler()
 {
   /** Set default interpolator. */
-  typename DefaultInterpolatorType::Pointer bsplineInterpolator = DefaultInterpolatorType::New();
+  auto bsplineInterpolator = DefaultInterpolatorType::New();
   bsplineInterpolator->SetSplineOrder(3);
   this->m_Interpolator = bsplineInterpolator;
 
   /** Setup random generator. */
-  this->m_RandomGenerator = RandomGeneratorType::GetInstance();
+  this->m_RandomGenerator = RandomGeneratorType::New();
 
   this->m_UseRandomSampleRegion = false;
   this->m_SampleRegionSize.Fill(1.0);
@@ -51,7 +51,7 @@ ImageRandomCoordinateSampler<TInputImage>::ImageRandomCoordinateSampler()
 
 template <class TInputImage>
 void
-ImageRandomCoordinateSampler<TInputImage>::GenerateData(void)
+ImageRandomCoordinateSampler<TInputImage>::GenerateData()
 {
   /** Get a handle to the mask. If there was no mask supplied we exercise a multi-threaded version. */
   typename MaskType::ConstPointer mask = this->GetMask();
@@ -140,8 +140,8 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateData(void)
           typename ImageSampleContainerType::iterator stlend = sampleContainer->end();
           stlnow += iter.Index();
           sampleContainer->erase(stlnow, stlend);
-          itkExceptionMacro(<< "Could not find enough image samples within "
-                            << "reasonable time. Probably the mask is too small");
+          itkExceptionMacro(
+            << "Could not find enough image samples within reasonable time. Probably the mask is too small");
         }
 
         /** Generate a point in the input image region. */
@@ -165,7 +165,7 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateData(void)
 
 template <class TInputImage>
 void
-ImageRandomCoordinateSampler<TInputImage>::BeforeThreadedGenerateData(void)
+ImageRandomCoordinateSampler<TInputImage>::BeforeThreadedGenerateData()
 {
   /** Set up the interpolator. */
   typename InterpolatorType::Pointer interpolator = this->GetModifiableInterpolator();
@@ -309,9 +309,9 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateSampleRegion(
    * compute the maximum allowed value for the smallestContIndex,
    * such that a sample region of size SampleRegionSize still fits.
    */
-  typedef typename InputImageContinuousIndexType::VectorType CIndexVectorType;
-  CIndexVectorType                                           sampleRegionSize;
-  InputImageContinuousIndexType                              maxSmallestContIndex;
+  using CIndexVectorType = typename InputImageContinuousIndexType::VectorType;
+  CIndexVectorType              sampleRegionSize;
+  InputImageContinuousIndexType maxSmallestContIndex;
   for (unsigned int i = 0; i < InputImageDimension; ++i)
   {
     sampleRegionSize[i] = this->GetSampleRegionSize()[i] / this->GetInput()->GetSpacing()[i];
@@ -326,6 +326,22 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateSampleRegion(
   largestContIndex += sampleRegionSize;
 
 } // end GenerateSampleRegion()
+
+/**
+ * ******************* SetGeneratorSeed *******************
+ */
+
+template <class TInputImage>
+void
+ImageRandomCoordinateSampler<TInputImage>::SetGeneratorSeed(int seed)
+{
+  if (this->m_NextSeed != seed)
+  {
+    this->m_NextSeed = seed;
+    this->m_RandomGenerator->SetSeed(seed);
+    this->Modified();
+  }
+} // end SetGeneratorSeed()
 
 
 /**

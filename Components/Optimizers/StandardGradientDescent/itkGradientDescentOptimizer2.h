@@ -55,10 +55,10 @@ class GradientDescentOptimizer2 : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
   /** Standard class typedefs. */
-  typedef GradientDescentOptimizer2            Self;
-  typedef ScaledSingleValuedNonLinearOptimizer Superclass;
-  typedef SmartPointer<Self>                   Pointer;
-  typedef SmartPointer<const Self>             ConstPointer;
+  using Self = GradientDescentOptimizer2;
+  using Superclass = ScaledSingleValuedNonLinearOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -78,25 +78,25 @@ public:
   /** Codes of stopping conditions
    * The MinimumStepSize stopcondition never occurs, but may
    * be implemented in inheriting classes */
-  typedef enum
+  enum StopConditionType
   {
     MaximumNumberOfIterations,
     MetricError,
     MinimumStepSize
-  } StopConditionType;
+  };
 
   /** Advance one step following the gradient direction. */
   virtual void
-  AdvanceOneStep(void);
+  AdvanceOneStep();
 
   /** Start optimization. */
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
   /** Resume previously stopped optimization with current parameters
    * \sa StopOptimization. */
   virtual void
-  ResumeOptimization(void);
+  ResumeOptimization();
 
   /** Stop optimization and pass on exception. */
   virtual void
@@ -105,7 +105,7 @@ public:
   /** Stop optimization.
    * \sa ResumeOptimization */
   virtual void
-  StopOptimization(void);
+  StopOptimization();
 
   /** Set the learning rate. */
   itkSetMacro(LearningRate, double);

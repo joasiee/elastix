@@ -20,6 +20,7 @@
 #define elxCoreMainGTestUtilities_h
 
 #include <elxParameterObject.h>
+#include <elxSupportedImageTypes.h>
 
 #include <itkImage.h>
 #include <itkImageBufferRange.h>
@@ -35,7 +36,8 @@
 #include <map>
 #include <numeric> // For iota.
 #include <string>
-#include <type_traits> // For is_pointer.
+#include <type_traits> // For is_pointer, is_same, and integral_constant.
+#include <utility>     // For index_sequence.
 #include <vector>
 
 // GoogleTest header file:
@@ -121,6 +123,9 @@ template <typename T>
 itk::SmartPointer<T>
 CheckNew()
 {
+  static_assert(std::is_same<decltype(T::New()), itk::SmartPointer<T>>{},
+                "T::New() must return an itk::SmartPointer<T>!");
+
   const auto ptr = T::New();
   if (ptr == nullptr)
   {
@@ -256,6 +261,18 @@ GetTransformParametersFromFilter(TFilter & filter)
 }
 
 
+// Creates a test image, filled with zero.
+template <typename TPixel, unsigned VImageDimension>
+auto
+CreateImage(const itk::Size<VImageDimension> & imageSize)
+{
+  const auto image = itk::Image<TPixel, VImageDimension>::New();
+  image->SetRegions(imageSize);
+  image->Allocate(true);
+  return image;
+}
+
+
 // Creates a test image, filled with a sequence of natural numbers, 1, 2, 3, ..., N.
 template <typename TPixel, unsigned VImageDimension>
 auto
@@ -271,12 +288,46 @@ CreateImageFilledWithSequenceOfNaturalNumbers(const itk::Size<VImageDimension> &
 }
 
 
+template <typename TFunction, std::size_t... VIndexSequence>
+void
+ForEachSupportedImageType(const TFunction & func, const std::index_sequence<VIndexSequence...> &)
+{
+  struct Empty
+  {};
+
+  const auto supportImageTypeWithIndex = [&func](const auto index) {
+    // Use `index + 1` instead of `index`, because the indices from SupportedImageTypes start with 1, while the sequence
+    // returned by `std::make_index_sequence()` starts with zero.
+    func(elx::ElastixTypedef<index + 1>{});
+    return Empty{};
+  };
+
+  // Expand the "variadic template" index sequence by the initialization of a dummy array.
+  const Empty dummyArray[] = { supportImageTypeWithIndex(std::integral_constant<std::size_t, VIndexSequence>{})... };
+  (void)dummyArray;
+}
+
+
+// Runs a function `func(ElastixTypedef<VIndex>{})`, for each supported image type from "elxSupportedImageTypes.h".
+template <typename TFunction>
+void
+ForEachSupportedImageType(const TFunction & func)
+{
+  ForEachSupportedImageType(func, std::make_index_sequence<elx::NrOfSupportedImageTypes>());
+}
+
+
 std::string
 GetDataDirectoryPath();
 
-// Returns CMAKE_BINARY_DIR: the path to the top level of the elastix build tree (without trailing slash).
+// Returns CMAKE_CURRENT_BINARY_DIR: the path to Core Main GTesting subdirectory of the elastix build tree (without
+// trailing slash).
 std::string
-GetBinaryDirectoryPath();
+GetCurrentBinaryDirectoryPath();
+
+// Returns the name of a test defined by `GTEST_TEST(TestSuiteName, TestName)` as "TestSuiteName_TestName_Test".
+std::string
+GetNameOfTest(const testing::Test &);
 
 } // namespace CoreMainGTestUtilities
 } // namespace elastix

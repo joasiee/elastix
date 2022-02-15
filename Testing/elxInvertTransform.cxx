@@ -36,11 +36,11 @@
  */
 
 std::string
-GetHelpString(void)
+GetHelpString()
 {
   std::stringstream ss;
-  ss << "Usage:" << std::endl
-     << "elxInvertTransform" << std::endl
+  ss << "Usage:\n"
+     << "elxInvertTransform\n"
      << "  -tp    transform parameters file to be inverted\n"
      << "  -out   output inverted transform parameters filename\n"
      << "  -m     moving image file name\n"
@@ -85,25 +85,20 @@ main(int argc, char * argv[])
   /** Typedef's. */
   // const unsigned int Dimension = 2;
   const unsigned int Dimension = 3;
-  typedef float      PrecisionType;
-  std::string        dummyErrorMessage = "";
+  using PrecisionType = float;
+  std::string dummyErrorMessage = "";
 
-  typedef itk::Transform<PrecisionType, Dimension, Dimension> BaseTransformType;
-  typedef itk::EulerTransform<PrecisionType, Dimension>       RigidTransformType;
-  typedef itk::AffineTransform<PrecisionType, Dimension>      AffineTransformType;
-  typedef BaseTransformType::ParametersType                   ParametersType;
-  typedef BaseTransformType::ScalarType                       ScalarType;
-  typedef RigidTransformType::CenterType                      CenterType;
+  using BaseTransformType = itk::Transform<PrecisionType, Dimension, Dimension>;
+  using RigidTransformType = itk::EulerTransform<PrecisionType, Dimension>;
+  using AffineTransformType = itk::AffineTransform<PrecisionType, Dimension>;
+  using ParametersType = BaseTransformType::ParametersType;
+  using ScalarType = BaseTransformType::ScalarType;
+  using CenterType = RigidTransformType::CenterType;
   // typedef BaseTransformType::OutputPointType               OutputPointType;
 
   /** Interface to the original transform parameters file. */
-  typedef itk::ParameterFileParser   ParserType;
-  typedef itk::ParameterMapInterface InterfaceType;
-  ParserType::Pointer                parser = ParserType::New();
-  InterfaceType::Pointer             config = InterfaceType::New();
-  parser->SetParameterFileName(inputTransformParametersName);
-  parser->ReadParameterFile();
-  config->SetParameterMap(parser->GetParameterMap());
+  auto config = itk::ParameterMapInterface::New();
+  config->SetParameterMap(itk::ParameterFileParser::ReadParameterMap(inputTransformParametersName));
 
   /** Check no initial transform. */
   std::string initialTransform = "";
@@ -135,9 +130,9 @@ main(int argc, char * argv[])
    */
 
   /** Create a testReader. */
-  typedef itk::Image<short, Dimension>         DummyImageType;
-  typedef itk::ImageFileReader<DummyImageType> ReaderType;
-  ReaderType::Pointer                          testReader = ReaderType::New();
+  using DummyImageType = itk::Image<short, Dimension>;
+  using ReaderType = itk::ImageFileReader<DummyImageType>;
+  auto testReader = ReaderType::New();
   testReader->SetFileName(movingImageFileName);
 
   /** Generate all information. */
@@ -187,11 +182,11 @@ main(int argc, char * argv[])
   {
     if (transformType == "EulerTransform")
     {
-      RigidTransformType::Pointer rigidTransform = RigidTransformType::New();
+      auto rigidTransform = RigidTransformType::New();
       rigidTransform->SetCenter(centerOfRotation);
       rigidTransform->SetParametersByValue(transformParameters);
 
-      RigidTransformType::Pointer inverseRigidTransform = RigidTransformType::New();
+      auto inverseRigidTransform = RigidTransformType::New();
       rigidTransform->GetInverse(inverseRigidTransform);
 
       transformParametersInv = inverseRigidTransform->GetParameters();
@@ -199,11 +194,11 @@ main(int argc, char * argv[])
     }
     else if (transformType == "AffineTransform")
     {
-      AffineTransformType::Pointer affineTransform = AffineTransformType::New();
+      auto affineTransform = AffineTransformType::New();
       affineTransform->SetCenter(centerOfRotation);
       affineTransform->SetParametersByValue(transformParameters);
 
-      AffineTransformType::Pointer inverseAffineTransform = AffineTransformType::New();
+      auto inverseAffineTransform = AffineTransformType::New();
       affineTransform->GetInverse(inverseAffineTransform);
 
       transformParametersInv = inverseAffineTransform->GetParameters();
@@ -269,7 +264,7 @@ main(int argc, char * argv[])
   outputTPFile << "(HowToCombineTransforms \"" << combinationMethod << "\")" << std::endl;
 
   /** Write image specific things. */
-  outputTPFile << std::endl << "// Image specific" << std::endl;
+  outputTPFile << '\n' << "// Image specific" << std::endl;
 
   /** Write image dimensions. */
   outputTPFile << "(FixedImageDimension " << FixDim << ")" << std::endl;

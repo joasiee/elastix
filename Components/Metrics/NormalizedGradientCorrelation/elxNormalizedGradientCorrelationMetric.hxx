@@ -30,7 +30,7 @@ namespace elastix
 
 template <class TElastix>
 void
-NormalizedGradientCorrelationMetric<TElastix>::Initialize(void)
+NormalizedGradientCorrelationMetric<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -48,7 +48,7 @@ NormalizedGradientCorrelationMetric<TElastix>::Initialize(void)
 
 template <class TElastix>
 void
-NormalizedGradientCorrelationMetric<TElastix>::BeforeRegistration(void)
+NormalizedGradientCorrelationMetric<TElastix>::BeforeRegistration()
 {
   if (this->m_Elastix->GetFixedImage()->GetImageDimension() != 3)
   {
@@ -71,9 +71,9 @@ NormalizedGradientCorrelationMetric<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-NormalizedGradientCorrelationMetric<TElastix>::BeforeEachResolution(void)
+NormalizedGradientCorrelationMetric<TElastix>::BeforeEachResolution()
 {
-  typedef typename elastix::OptimizerBase<TElastix>::ITKBaseType::ScalesType ScalesType;
+  using ScalesType = typename elastix::OptimizerBase<TElastix>::ITKBaseType::ScalesType;
   ScalesType scales = this->m_Elastix->GetElxOptimizerBase()->GetAsITKBaseType()->GetScales();
   this->SetScales(scales);
 

@@ -77,7 +77,7 @@ GOMEAOptimizer::StartOptimization()
   this->SetCurrentPosition(this->GetInitialPosition());
   this->m_CurrentIteration = 0;
   this->m_CurrentValue = NumericTraits<MeasureType>::max();
-  this->m_NumberOfEvaluations = 0;
+  this->m_NumberOfEvaluations = 0L;
   this->m_StopCondition = Unknown;
   this->number_of_populations = 0;
   this->initialize();

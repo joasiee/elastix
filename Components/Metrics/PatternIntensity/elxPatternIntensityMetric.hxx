@@ -30,7 +30,7 @@ namespace elastix
 
 template <class TElastix>
 void
-PatternIntensityMetric<TElastix>::Initialize(void)
+PatternIntensityMetric<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -48,7 +48,7 @@ PatternIntensityMetric<TElastix>::Initialize(void)
 
 template <class TElastix>
 void
-PatternIntensityMetric<TElastix>::BeforeRegistration(void)
+PatternIntensityMetric<TElastix>::BeforeRegistration()
 {
   if (this->m_Elastix->GetFixedImage()->GetImageDimension() != 3)
   {
@@ -71,7 +71,7 @@ PatternIntensityMetric<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-PatternIntensityMetric<TElastix>::BeforeEachResolution(void)
+PatternIntensityMetric<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level.*/
   unsigned int level = (this->m_Registration->GetAsITKBaseType())->GetCurrentLevel();
@@ -87,7 +87,7 @@ PatternIntensityMetric<TElastix>::BeforeEachResolution(void)
     optimizenormalizationfactor, "OptimizeNormalizationFactor", this->GetComponentLabel(), level, 0);
   this->SetOptimizeNormalizationFactor(optimizenormalizationfactor);
 
-  typedef typename elastix::OptimizerBase<TElastix>::ITKBaseType::ScalesType ScalesType;
+  using ScalesType = typename elastix::OptimizerBase<TElastix>::ITKBaseType::ScalesType;
   ScalesType scales = this->m_Elastix->GetElxOptimizerBase()->GetAsITKBaseType()->GetScales();
   this->SetScales(scales);
 

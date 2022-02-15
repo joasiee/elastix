@@ -41,7 +41,7 @@
 
 namespace GOMEA
 {
-int64_t random_seed, random_seed_changing;
+int64_t random_seed{ 0 }, random_seed_changing;
 double  haveNextNextGaussian, nextNextGaussian;
 
 /*-=-=-=-=-=-=-=-=-=-=-= Section Elementary Operations -=-=-=-=-=-=-=-=-=-=-*/
@@ -169,8 +169,8 @@ linpackDCHDC(double a[], int lda, int p, double work[], int ipvt[])
 void
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 {
-  int     i, j, k, info, *ipvt;
-  double *work;
+  int      i, j, k, info, *ipvt;
+  double * work;
 
   work = (double *)Malloc(n * sizeof(double));
   ipvt = (int *)Malloc(n * sizeof(int));
@@ -186,7 +186,6 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 
   free(ipvt);
   free(work);
-
 }
 
 /**
@@ -526,6 +525,12 @@ random1DNormalParameterized(double mean, double variance)
 void
 initializeRandomNumberGenerator(void)
 {
+  if (random_seed != 0)
+  {
+    random_seed_changing = random_seed;
+    return;
+  }
+
   struct timeval tv;
 
   while (random_seed_changing == 0)

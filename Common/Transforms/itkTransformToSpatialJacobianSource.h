@@ -19,6 +19,7 @@
 #define itkTransformToSpatialJacobianSource_h
 
 #include "itkAdvancedTransform.h"
+#include "itkAdvancedIdentityTransform.h"
 #include "itkImageSource.h"
 
 namespace itk
@@ -67,15 +68,15 @@ class ITK_TEMPLATE_EXPORT TransformToSpatialJacobianSource : public ImageSource<
 {
 public:
   /** Standard class typedefs. */
-  typedef TransformToSpatialJacobianSource Self;
-  typedef ImageSource<TOutputImage>        Superclass;
-  typedef SmartPointer<Self>               Pointer;
-  typedef SmartPointer<const Self>         ConstPointer;
+  using Self = TransformToSpatialJacobianSource;
+  using Superclass = ImageSource<TOutputImage>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
-  typedef TOutputImage                           OutputImageType;
-  typedef typename OutputImageType::Pointer      OutputImagePointer;
-  typedef typename OutputImageType::ConstPointer OutputImageConstPointer;
-  typedef typename OutputImageType::RegionType   OutputImageRegionType;
+  using OutputImageType = TOutputImage;
+  using OutputImagePointer = typename OutputImageType::Pointer;
+  using OutputImageConstPointer = typename OutputImageType::ConstPointer;
+  using OutputImageRegionType = typename OutputImageType::RegionType;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -87,23 +88,23 @@ public:
   itkStaticConstMacro(ImageDimension, unsigned int, TOutputImage::ImageDimension);
 
   /** Typedefs for transform. */
-  typedef AdvancedTransform<TTransformPrecisionType, Self::ImageDimension, Self::ImageDimension> TransformType;
-  typedef typename TransformType::ConstPointer                                                   TransformPointerType;
-  typedef typename TransformType::SpatialJacobianType                                            SpatialJacobianType;
+  using TransformType = AdvancedTransform<TTransformPrecisionType, Self::ImageDimension, Self::ImageDimension>;
+  using TransformPointerType = typename TransformType::ConstPointer;
+  using SpatialJacobianType = typename TransformType::SpatialJacobianType;
 
   /** Typedefs for output image. */
-  typedef typename OutputImageType::PixelType PixelType;
+  using PixelType = typename OutputImageType::PixelType;
   // typedef typename PixelType::ValueType           PixelValueType;
-  typedef typename OutputImageType::RegionType    RegionType;
-  typedef typename RegionType::SizeType           SizeType;
-  typedef typename OutputImageType::IndexType     IndexType;
-  typedef typename OutputImageType::PointType     PointType;
-  typedef typename OutputImageType::SpacingType   SpacingType;
-  typedef typename OutputImageType::PointType     OriginType;
-  typedef typename OutputImageType::DirectionType DirectionType;
+  using RegionType = typename OutputImageType::RegionType;
+  using SizeType = typename RegionType::SizeType;
+  using IndexType = typename OutputImageType::IndexType;
+  using PointType = typename OutputImageType::PointType;
+  using SpacingType = typename OutputImageType::SpacingType;
+  using OriginType = typename OutputImageType::PointType;
+  using DirectionType = typename OutputImageType::DirectionType;
 
   /** Typedefs for base image. */
-  typedef ImageBase<Self::ImageDimension> ImageBaseType;
+  using ImageBaseType = ImageBase<Self::ImageDimension>;
 
   /** Set the coordinate transformation.
    * Set the coordinate transform to use for resampling.  Note that this must
@@ -166,16 +167,16 @@ public:
 
   /** TransformToSpatialJacobianSource produces a floating value image. */
   void
-  GenerateOutputInformation(void) override;
+  GenerateOutputInformation() override;
 
   /** Checking if transform is set. If a linear transformation is used,
    * the unthreaded LinearGenerateData is called. */
   void
-  BeforeThreadedGenerateData(void) override;
+  BeforeThreadedGenerateData() override;
 
   /** Compute the Modified Time based on changes to the components. */
   ModifiedTimeType
-  GetMTime(void) const override;
+  GetMTime() const override;
 
 protected:
   TransformToSpatialJacobianSource();
@@ -200,7 +201,7 @@ protected:
    *  transformation types. Unthreaded.
    */
   void
-  LinearGenerateData(void);
+  LinearGenerateData();
 
 private:
   TransformToSpatialJacobianSource(const Self &) = delete;
@@ -208,11 +209,13 @@ private:
   operator=(const Self &) = delete;
 
   /** Member variables. */
-  RegionType           m_OutputRegion;    // region of the output image
-  TransformPointerType m_Transform;       // Coordinate transform to use
-  SpacingType          m_OutputSpacing;   // output image spacing
-  OriginType           m_OutputOrigin;    // output image origin
-  DirectionType        m_OutputDirection; // output image direction cosines
+  RegionType           m_OutputRegion{}; // region of the output image
+  TransformPointerType m_Transform{
+    AdvancedIdentityTransform<TTransformPrecisionType, ImageDimension>::New()
+  };                                                               // Coordinate transform to use
+  SpacingType   m_OutputSpacing{ 1.0 };                            // output image spacing
+  OriginType    m_OutputOrigin{};                                  // output image origin
+  DirectionType m_OutputDirection{ DirectionType::GetIdentity() }; // output image direction cosines
 };
 
 } // end namespace itk

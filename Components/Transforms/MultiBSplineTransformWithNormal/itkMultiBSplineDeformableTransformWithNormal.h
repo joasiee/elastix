@@ -44,10 +44,10 @@ class ITK_TEMPLATE_EXPORT MultiBSplineDeformableTransformWithNormal
 {
 public:
   /** Standard class typedefs. */
-  typedef MultiBSplineDeformableTransformWithNormal                Self;
-  typedef AdvancedTransform<TScalarType, NDimensions, NDimensions> Superclass;
-  typedef SmartPointer<Self>                                       Pointer;
-  typedef SmartPointer<const Self>                                 ConstPointer;
+  using Self = MultiBSplineDeformableTransformWithNormal;
+  using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New macro for creation of through the object factory. */
   itkNewMacro(Self);
@@ -83,8 +83,8 @@ public:
   using typename Superclass::InternalMatrixType;
 
   /** Interpolation weights function type. */
-  typedef BSplineInterpolationWeightFunction2<ScalarType, Self::SpaceDimension, Self::SplineOrder> WeightsFunctionType;
-  typedef typename WeightsFunctionType::WeightsType                                                WeightsType;
+  using WeightsFunctionType = BSplineInterpolationWeightFunction2<ScalarType, Self::SpaceDimension, VSplineOrder>;
+  using WeightsType = typename WeightsFunctionType::WeightsType;
 
   /** This method sets the parameters of the transform.
    * For a BSpline deformation transform, the parameters are the BSpline
@@ -153,25 +153,25 @@ public:
    *  the values get modified when the user invokes SetIdentity().
    */
   void
-  SetIdentity(void);
+  SetIdentity();
 
   /** Get the Transformation Parameters. */
   const ParametersType &
-  GetParameters(void) const override;
+  GetParameters() const override;
 
   /** Get the Transformation Fixed Parameters. */
   const ParametersType &
-  GetFixedParameters(void) const override;
+  GetFixedParameters() const override;
 
   /** Parameters as SpaceDimension number of images. */
-  typedef typename ParametersType::ValueType     PixelType;
-  typedef Image<PixelType, Self::SpaceDimension> ImageType;
-  typedef typename ImageType::Pointer            ImagePointer;
+  using PixelType = typename ParametersType::ValueType;
+  using ImageType = Image<PixelType, Self::SpaceDimension>;
+  using ImagePointer = typename ImageType::Pointer;
 
   /** Get the array of coefficient images. */
-  // virtual ImagePointer * GetCoefficientImage( void )
+  // virtual ImagePointer * GetCoefficientImage()
   //  { return this->m_CoefficientImage; }
-  // virtual const ImagePointer * GetCoefficientImage( void ) const
+  // virtual const ImagePointer * GetCoefficientImage() const
   //  { return this->m_CoefficientImage; }
 
   /** Set the array of coefficient images.
@@ -188,57 +188,57 @@ public:
   // virtual void SetCoefficientImage( ImagePointer images[] );
 
   /** Typedefs for specifying the extend to the grid. */
-  typedef ImageRegion<Self::SpaceDimension> RegionType;
+  using RegionType = ImageRegion<Self::SpaceDimension>;
 
-  typedef typename RegionType::IndexType    IndexType;
-  typedef typename RegionType::SizeType     SizeType;
-  typedef typename ImageType::SpacingType   SpacingType;
-  typedef typename ImageType::DirectionType DirectionType;
-  typedef typename ImageType::PointType     OriginType;
-  typedef IndexType                         GridOffsetType;
+  using IndexType = typename RegionType::IndexType;
+  using SizeType = typename RegionType::SizeType;
+  using SpacingType = typename ImageType::SpacingType;
+  using DirectionType = typename ImageType::DirectionType;
+  using OriginType = typename ImageType::PointType;
+  using GridOffsetType = IndexType;
 
   /** This method specifies the region over which the grid resides. */
   virtual void
   SetGridRegion(const RegionType & region);
 
   virtual RegionType
-  GetGridRegion(void) const;
+  GetGridRegion() const;
 
   /** This method specifies the grid spacing or resolution. */
   virtual void
   SetGridSpacing(const SpacingType & spacing);
 
   virtual SpacingType
-  GetGridSpacing(void) const;
+  GetGridSpacing() const;
 
   /** This method specifies the grid directions . */
   virtual void
   SetGridDirection(const DirectionType & spacing);
 
   virtual DirectionType
-  GetGridDirection(void) const;
+  GetGridDirection() const;
 
   /** This method specifies the grid origin. */
   virtual void
   SetGridOrigin(const OriginType & origin);
 
   virtual OriginType
-  GetGridOrigin(void) const;
+  GetGridOrigin() const;
 
   /** Typedef of the label image. */
-  typedef Image<unsigned char, Self::SpaceDimension> ImageLabelType;
-  typedef typename ImageLabelType::Pointer           ImageLabelPointer;
+  using ImageLabelType = Image<unsigned char, Self::SpaceDimension>;
+  using ImageLabelPointer = typename ImageLabelType::Pointer;
 
-  typedef itk::NearestNeighborInterpolateImageFunction<ImageLabelType, TScalarType> ImageLabelInterpolator;
-  typedef typename ImageLabelInterpolator::Pointer                                  ImageLabelInterpolatorPointer;
+  using ImageLabelInterpolator = itk::NearestNeighborInterpolateImageFunction<ImageLabelType, TScalarType>;
+  using ImageLabelInterpolatorPointer = typename ImageLabelInterpolator::Pointer;
 
   /** Typedef of the Normal Grid. */
-  typedef Vector<TScalarType, Self::SpaceDimension> VectorType;
-  typedef Vector<VectorType, Self::SpaceDimension>  BaseType;
-  typedef Image<VectorType, Self::SpaceDimension>   ImageVectorType;
-  typedef typename ImageVectorType::Pointer         ImageVectorPointer;
-  typedef Image<BaseType, Self::SpaceDimension>     ImageBaseType;
-  typedef typename ImageBaseType::Pointer           ImageBasePointer;
+  using VectorType = Vector<TScalarType, Self::SpaceDimension>;
+  using BaseType = Vector<VectorType, Self::SpaceDimension>;
+  using ImageVectorType = Image<VectorType, Self::SpaceDimension>;
+  using ImageVectorPointer = typename ImageVectorType::Pointer;
+  using ImageBaseType = Image<BaseType, Self::SpaceDimension>;
+  using ImageBasePointer = typename ImageBaseType::Pointer;
 
   /** This method specifies the label image. */
   void
@@ -250,12 +250,12 @@ public:
 
   /** Update Local Bases : call to it should become automatic and the function should become private */
   void
-  UpdateLocalBases(void);
+  UpdateLocalBases();
 
   itkGetConstMacro(LocalBases, ImageBaseType *);
 
   /** Parameter index array type. */
-  typedef Array<unsigned long> ParameterIndexArrayType;
+  using ParameterIndexArrayType = Array<unsigned long>;
 
   /** Method to transform a vector -
    *  not applicable for this type of transform.
@@ -292,15 +292,15 @@ public:
 
   /** Return the number of parameters that completely define the Transform. */
   NumberOfParametersType
-  GetNumberOfParameters(void) const override;
+  GetNumberOfParameters() const override;
 
   /** Return the number of parameters per dimension */
   virtual NumberOfParametersType
-  GetNumberOfParametersPerDimension(void) const;
+  GetNumberOfParametersPerDimension() const;
 
   /** Return the region of the grid wholly within the support region */
   virtual const RegionType &
-  GetValidRegion(void)
+  GetValidRegion()
   {
     return m_Trans[0]->GetValidRegion();
   }
@@ -312,28 +312,28 @@ public:
    *           T( a*P + b*Q ) = a * T(P) + b * T(Q)
    */
   bool
-  IsLinear(void) const override
+  IsLinear() const override
   {
     return false;
   }
 
   /** Get number of weights. */
   virtual unsigned long
-  GetNumberOfWeights(void) const
+  GetNumberOfWeights() const
   {
     return m_Trans[0]->m_WeightsFunction->GetNumberOfWeights();
   }
 
 
   virtual unsigned int
-  GetNumberOfAffectedWeights(void) const
+  GetNumberOfAffectedWeights() const
   {
     return m_Trans[0]->m_WeightsFunction->GetNumberOfWeights();
   }
 
 
   NumberOfParametersType
-  GetNumberOfNonZeroJacobianIndices(void) const override
+  GetNumberOfNonZeroJacobianIndices() const override
   {
     return m_Trans[0]->m_WeightsFunction->GetNumberOfWeights() * SpaceDimension;
   }
@@ -341,35 +341,35 @@ public:
 
   /** Whether the advanced transform has nonzero matrices. */
   virtual bool
-  GetHasNonZeroSpatialJacobian(void) const
+  GetHasNonZeroSpatialJacobian() const
   {
     return true;
   }
 
 
   virtual bool
-  HasNonZeroJacobianOfSpatialJacobian(void) const
+  HasNonZeroJacobianOfSpatialJacobian() const
   {
     return true;
   }
 
 
   bool
-  GetHasNonZeroSpatialHessian(void) const override
+  GetHasNonZeroSpatialHessian() const override
   {
     return true;
   }
 
 
   virtual bool
-  HasNonZeroJacobianOfSpatialHessian(void) const
+  HasNonZeroJacobianOfSpatialHessian() const
   {
     return true;
   }
 
 
   /** This typedef should be equal to the typedef used in derived classes based on the weightsfunction. */
-  typedef ContinuousIndex<ScalarType, SpaceDimension> ContinuousIndexType;
+  using ContinuousIndexType = ContinuousIndex<ScalarType, SpaceDimension>;
 
   /** Transform points by a BSpline deformable transformation. */
   OutputPointType
@@ -406,8 +406,8 @@ public:
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override
   {
-    itkExceptionMacro(<< "ERROR: GetJacobianOfSpatialHessian() not yet implemented "
-                      << "in the MultiBSplineDeformableTransformWithNormal class.");
+    itkExceptionMacro(<< "ERROR: GetJacobianOfSpatialHessian() not yet implemented in the "
+                         "MultiBSplineDeformableTransformWithNormal class.");
   }
 
 
@@ -423,10 +423,10 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   MultiBSplineDeformableTransformWithNormal();
-  ~MultiBSplineDeformableTransformWithNormal() override;
+  ~MultiBSplineDeformableTransformWithNormal() override = default;
 
   /** Wrap flat array into images of coefficients. */
-  // void WrapAsImages( void );
+  // void WrapAsImages();
 
   /** Convert an input point to a continuous index inside the BSpline grid. */
   /*
@@ -477,9 +477,9 @@ protected:
 
   /** Jacobian as SpaceDimension number of images. */
   /*
-  typedef typename JacobianType::ValueType      JacobianPixelType;
-  typedef Image< JacobianPixelType,
-    itkGetStaticConstMacro( SpaceDimension ) >  JacobianImageType;
+  using JacobianPixelType = typename JacobianType::ValueType;
+  using JacobianImageType = Image< JacobianPixelType,
+    itkGetStaticConstMacro( SpaceDimension ) >;
 
   typename JacobianImageType::Pointer m_JacobianImage[ NDimensions ];
   */
@@ -495,7 +495,7 @@ protected:
   /** Internal parameters buffer. */
   ParametersType m_InternalParametersBuffer;
 
-  typedef AdvancedBSplineDeformableTransform<TScalarType, Self::SpaceDimension, Self::SplineOrder> TransformType;
+  using TransformType = AdvancedBSplineDeformableTransform<TScalarType, Self::SpaceDimension, VSplineOrder>;
 
   unsigned char                                m_NbLabels;
   ImageLabelPointer                            m_Labels;

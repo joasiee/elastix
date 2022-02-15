@@ -185,7 +185,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 void
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::SetRescaleScheduleToUnity(void)
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::SetRescaleScheduleToUnity()
 {
   RescaleScheduleType schedule;
   schedule.Fill(NumericTraits<ScalarRealType>::OneValue());
@@ -245,7 +245,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 void
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::SetSmoothingScheduleToZero(void)
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::SetSmoothingScheduleToZero()
 {
   SmoothingScheduleType schedule;
   schedule.Fill(NumericTraits<ScalarRealType>::ZeroValue());
@@ -259,7 +259,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 void
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::GenerateData(void)
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::GenerateData()
 {
   // Depending on user setting of the SetUseMultiResolutionRescaleSchedule() and
   // SetUseMultiResolutionSmoothingSchedule()
@@ -466,13 +466,13 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
   typename ImageToImageFilterDifferentTypes::Pointer & rescaleDifferentTypes)
 {
   // Typedefs
-  typedef IdentityTransform<TPrecisionType, OutputImageType::ImageDimension>    TransformType;
-  typedef ShrinkImageFilter<OutputImageType, OutputImageType>                   ShrinkerSameType;
-  typedef ResampleImageFilter<OutputImageType, OutputImageType, TPrecisionType> ResamplerSameType;
-  typedef ShrinkImageFilter<InputImageType, OutputImageType>                    ShrinkerDifferentType;
-  typedef ResampleImageFilter<InputImageType, OutputImageType, TPrecisionType>  ResamplerDifferentType;
-  typedef LinearInterpolateImageFunction<OutputImageType, TPrecisionType>       InterpolatorForSameType;
-  typedef LinearInterpolateImageFunction<InputImageType, TPrecisionType>        InterpolatorForDifferentType;
+  using TransformType = IdentityTransform<TPrecisionType, OutputImageType::ImageDimension>;
+  using ShrinkerSameType = ShrinkImageFilter<OutputImageType, OutputImageType>;
+  using ResamplerSameType = ResampleImageFilter<OutputImageType, OutputImageType, TPrecisionType>;
+  using ShrinkerDifferentType = ShrinkImageFilter<InputImageType, OutputImageType>;
+  using ResamplerDifferentType = ResampleImageFilter<InputImageType, OutputImageType, TPrecisionType>;
+  using InterpolatorForSameType = LinearInterpolateImageFunction<OutputImageType, TPrecisionType>;
+  using InterpolatorForDifferentType = LinearInterpolateImageFunction<InputImageType, TPrecisionType>;
 
   /**
    * Define pipeline in case input and output types are THE SAME.
@@ -486,7 +486,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
       if (this->GetUseShrinkImageFilter())
       {
         // Define and setup shrinker
-        typename ShrinkerSameType::Pointer shrinker = ShrinkerSameType::New();
+        auto shrinker = ShrinkerSameType::New();
         shrinker->SetShrinkFactors(shrinkFactors);
 
         // Assign
@@ -495,16 +495,16 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
       else
       {
         // Define and setup resampler
-        typename ResamplerSameType::Pointer resampler = ResamplerSameType::New();
+        auto resampler = ResamplerSameType::New();
         resampler->SetOutputParametersFromImage(outputPtr);
         resampler->SetDefaultPixelValue(0);
 
         // Define and set interpolator
-        typename InterpolatorForSameType::Pointer interpolator = InterpolatorForSameType::New();
+        auto interpolator = InterpolatorForSameType::New();
         resampler->SetInterpolator(interpolator);
 
         // Define and set transform
-        typename TransformType::Pointer transform = TransformType::New();
+        auto transform = TransformType::New();
         resampler->SetTransform(transform);
 
         // Assign
@@ -542,7 +542,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
     if (this->GetUseShrinkImageFilter())
     {
       // Define and setup shrinker
-      typename ShrinkerDifferentType::Pointer shrinker = ShrinkerDifferentType::New();
+      auto shrinker = ShrinkerDifferentType::New();
       shrinker->SetShrinkFactors(shrinkFactors);
 
       // Assign
@@ -551,16 +551,16 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
     else
     {
       // Define and setup resampler
-      typename ResamplerDifferentType::Pointer resampler = ResamplerDifferentType::New();
+      auto resampler = ResamplerDifferentType::New();
       resampler->SetOutputParametersFromImage(outputPtr);
       resampler->SetDefaultPixelValue(0);
 
       // Define and set interpolator
-      typename InterpolatorForDifferentType::Pointer interpolator = InterpolatorForDifferentType::New();
+      auto interpolator = InterpolatorForDifferentType::New();
       resampler->SetInterpolator(interpolator);
 
       // Define and set transform
-      typename TransformType::Pointer transform = TransformType::New();
+      auto transform = TransformType::New();
       resampler->SetTransform(transform);
 
       // Assign
@@ -593,7 +593,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 void
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::GenerateOutputInformation(void)
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::GenerateOutputInformation()
 {
   if (this->IsRescaleUsed())
   {
@@ -640,7 +640,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 void
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::GenerateInputRequestedRegion(void)
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::GenerateInputRequestedRegion()
 {
   if (this->IsRescaleUsed())
   {
@@ -680,7 +680,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 void
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::ReleaseOutputs(void)
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::ReleaseOutputs()
 {
   // release the memories if already has been allocated
   for (unsigned int level = 0; level < this->m_NumberOfLevels; ++level)
@@ -745,7 +745,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 void
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::SetSmoothingScheduleToDefault(void)
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::SetSmoothingScheduleToDefault()
 {
   InputImageConstPointer input = this->GetInput();
   const SpacingType &    spacing = input->GetSpacing();
@@ -858,7 +858,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 bool
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::IsSmoothingUsed(void) const
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::IsSmoothingUsed() const
 {
   // If for any level all sigma elements are not zeros then smooth are used in pipeline
   SigmaArrayType sigmaArray;
@@ -880,7 +880,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
 
 template <class TInputImage, class TOutputImage, class TPrecisionType>
 bool
-GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::IsRescaleUsed(void) const
+GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionType>::IsRescaleUsed() const
 {
   // If for any level all rescale factors are not ones then rescale are used in pipeline
   RescaleFactorArrayType rescaleFactors;
@@ -918,7 +918,7 @@ GenericMultiResolutionPyramidImageFilter<TInputImage, TOutputImage, TPrecisionTy
   }
   else
   {
-    os << std::endl << this->m_SmoothingSchedule << std::endl;
+    os << '\n' << this->m_SmoothingSchedule << std::endl;
   }
 } // end PrintSelf()
 

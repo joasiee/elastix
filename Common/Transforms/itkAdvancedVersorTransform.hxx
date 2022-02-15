@@ -98,8 +98,8 @@ AdvancedVersorTransform<TScalarType>::SetParameters(const ParametersType & param
 
 /** Set Parameters */
 template <class TScalarType>
-const typename AdvancedVersorTransform<TScalarType>::ParametersType &
-AdvancedVersorTransform<TScalarType>::GetParameters(void) const
+auto
+AdvancedVersorTransform<TScalarType>::GetParameters() const -> const ParametersType &
 {
   this->m_Parameters[0] = this->m_Versor.GetRight()[0];
   this->m_Parameters[1] = this->m_Versor.GetRight()[1];
@@ -146,7 +146,7 @@ AdvancedVersorTransform<TScalarType>::SetIdentity()
 /** Compute the matrix */
 template <class TScalarType>
 void
-AdvancedVersorTransform<TScalarType>::ComputeMatrix(void)
+AdvancedVersorTransform<TScalarType>::ComputeMatrix()
 {
 
   const TScalarType vx = m_Versor.GetX();
@@ -181,7 +181,7 @@ AdvancedVersorTransform<TScalarType>::ComputeMatrix(void)
 /** Compute the matrix */
 template <class TScalarType>
 void
-AdvancedVersorTransform<TScalarType>::ComputeMatrixParameters(void)
+AdvancedVersorTransform<TScalarType>::ComputeMatrixParameters()
 {
   m_Versor.Set(this->GetMatrix());
 }
@@ -194,7 +194,7 @@ AdvancedVersorTransform<TScalarType>::GetJacobian(const InputPointType &       p
                                                   JacobianType &               j,
                                                   NonZeroJacobianIndicesType & nzji) const
 {
-  typedef typename VersorType::ValueType ValueType;
+  using ValueType = typename VersorType::ValueType;
 
   // Initialize the Jacobian. Resizing is only performed when needed.
   // Filling with zeros is needed because the lower loops only visit

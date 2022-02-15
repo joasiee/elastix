@@ -76,10 +76,10 @@ class ITK_TEMPLATE_EXPORT ParzenWindowHistogramImageToImageMetric
 {
 public:
   /** Standard class typedefs. */
-  typedef ParzenWindowHistogramImageToImageMetric               Self;
-  typedef AdvancedImageToImageMetric<TFixedImage, TMovingImage> Superclass;
-  typedef SmartPointer<Self>                                    Pointer;
-  typedef SmartPointer<const Self>                              ConstPointer;
+  using Self = ParzenWindowHistogramImageToImageMetric;
+  using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(ParzenWindowHistogramImageToImageMetric, AdvancedImageToImageMetric);
@@ -141,7 +141,7 @@ public:
    * (4) Resize AlphaDerivatives
    */
   void
-  Initialize(void) override;
+  Initialize() override;
 
   /** Get the derivatives of the match measure. This method simply calls the
    * the GetValueAndDerivative, since this will be mostly almost as fast
@@ -228,7 +228,7 @@ protected:
   /** Typedefs inherited from superclass. */
   using typename Superclass::FixedImageIndexType;
   using typename Superclass::FixedImageIndexValueType;
-  typedef typename FixedImageType::OffsetValueType OffsetValueType;
+  using OffsetValueType = typename FixedImageType::OffsetValueType;
   using typename Superclass::MovingImageIndexType;
   using typename Superclass::FixedImagePointType;
   using typename Superclass::MovingImagePointType;
@@ -239,29 +239,29 @@ protected:
   using typename Superclass::NonZeroJacobianIndicesType;
 
   /** Typedefs for the PDFs and PDF derivatives. */
-  typedef double                                       PDFValueType;
-  typedef float                                        PDFDerivativeValueType;
-  typedef Array<PDFValueType>                          MarginalPDFType;
-  typedef Image<PDFValueType, 2>                       JointPDFType;
-  typedef typename JointPDFType::Pointer               JointPDFPointer;
-  typedef Image<PDFDerivativeValueType, 3>             JointPDFDerivativesType;
-  typedef typename JointPDFDerivativesType::Pointer    JointPDFDerivativesPointer;
-  typedef Image<PDFValueType, 2>                       IncrementalMarginalPDFType;
-  typedef typename IncrementalMarginalPDFType::Pointer IncrementalMarginalPDFPointer;
-  typedef JointPDFType::IndexType                      JointPDFIndexType;
-  typedef JointPDFType::RegionType                     JointPDFRegionType;
-  typedef JointPDFType::SizeType                       JointPDFSizeType;
-  typedef JointPDFDerivativesType::IndexType           JointPDFDerivativesIndexType;
-  typedef JointPDFDerivativesType::RegionType          JointPDFDerivativesRegionType;
-  typedef JointPDFDerivativesType::SizeType            JointPDFDerivativesSizeType;
-  typedef IncrementalMarginalPDFType::IndexType        IncrementalMarginalPDFIndexType;
-  typedef IncrementalMarginalPDFType::RegionType       IncrementalMarginalPDFRegionType;
-  typedef IncrementalMarginalPDFType::SizeType         IncrementalMarginalPDFSizeType;
-  typedef Array<PDFValueType>                          ParzenValueContainerType;
+  using PDFValueType = double;
+  using PDFDerivativeValueType = float;
+  using MarginalPDFType = Array<PDFValueType>;
+  using JointPDFType = Image<PDFValueType, 2>;
+  using JointPDFPointer = typename JointPDFType::Pointer;
+  using JointPDFDerivativesType = Image<PDFDerivativeValueType, 3>;
+  using JointPDFDerivativesPointer = typename JointPDFDerivativesType::Pointer;
+  using IncrementalMarginalPDFType = Image<PDFValueType, 2>;
+  using IncrementalMarginalPDFPointer = typename IncrementalMarginalPDFType::Pointer;
+  using JointPDFIndexType = JointPDFType::IndexType;
+  using JointPDFRegionType = JointPDFType::RegionType;
+  using JointPDFSizeType = JointPDFType::SizeType;
+  using JointPDFDerivativesIndexType = JointPDFDerivativesType::IndexType;
+  using JointPDFDerivativesRegionType = JointPDFDerivativesType::RegionType;
+  using JointPDFDerivativesSizeType = JointPDFDerivativesType::SizeType;
+  using IncrementalMarginalPDFIndexType = IncrementalMarginalPDFType::IndexType;
+  using IncrementalMarginalPDFRegionType = IncrementalMarginalPDFType::RegionType;
+  using IncrementalMarginalPDFSizeType = IncrementalMarginalPDFType::SizeType;
+  using ParzenValueContainerType = Array<PDFValueType>;
 
   /** Typedefs for Parzen kernel. */
-  typedef KernelFunctionBase2<PDFValueType>    KernelFunctionType;
-  typedef typename KernelFunctionType::Pointer KernelFunctionPointer;
+  using KernelFunctionType = KernelFunctionBase2<PDFValueType>;
+  using KernelFunctionPointer = typename KernelFunctionType::Pointer;
 
   /** Protected variables **************************** */
 
@@ -323,7 +323,7 @@ protected:
 
   /** Initialize threading related parameters. */
   void
-  InitializeThreadingParameters(void) const override;
+  InitializeThreadingParameters() const override;
 
   /** Multi-threaded versions of the ComputePDF function. */
   inline void
@@ -331,7 +331,7 @@ protected:
 
   /** Single-threadedly accumulate results. */
   inline void
-  AfterThreadedComputePDFs(void) const;
+  AfterThreadedComputePDFs() const;
 
   /** Helper function to launch the threads. */
   static ITK_THREAD_RETURN_FUNCTION_CALL_CONVENTION
@@ -339,7 +339,7 @@ protected:
 
   /** Helper function to launch the threads. */
   void
-  LaunchComputePDFsThreaderCallback(void) const;
+  LaunchComputePDFsThreaderCallback() const;
 
   /** Compute the Parzen values given an image value and a starting histogram index
    * Compute the values at (parzenWindowIndex - parzenWindowTerm + k) for
@@ -473,10 +473,10 @@ protected:
 
   /** Some initialization functions, called by Initialize. */
   virtual void
-  InitializeHistograms(void);
+  InitializeHistograms();
 
   virtual void
-  InitializeKernels(void);
+  InitializeKernels();
 
   /** Get the value and analytic derivatives for single valued optimizers.
    * Called by GetValueAndDerivative if UseFiniteDifferenceDerivative == false

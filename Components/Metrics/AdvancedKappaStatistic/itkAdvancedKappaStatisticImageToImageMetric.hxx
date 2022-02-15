@@ -65,7 +65,7 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::~AdvancedKa
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters(void) const
+AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters() const
 {
   /** Resize and initialize the threading related parameters.
    * The SetSize() functions do not resize the data when this is not
@@ -125,9 +125,9 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::PrintSelf(s
  */
 
 template <class TFixedImage, class TMovingImage>
-typename AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   itkDebugMacro("GetValue( " << parameters << " ) ");
 
@@ -159,11 +159,10 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   typename ImageSampleContainerType::ConstIterator fend = sampleContainer->End();
 
   /** Some variables. */
-  RealType             movingImageValue;
-  MovingImagePointType mappedPoint;
-  std::size_t          fixedForegroundArea = 0; // or unsigned long
-  std::size_t          movingForegroundArea = 0;
-  std::size_t          intersection = 0;
+  RealType    movingImageValue;
+  std::size_t fixedForegroundArea = 0; // or unsigned long
+  std::size_t movingForegroundArea = 0;
+  std::size_t intersection = 0;
 
   /** Loop over the fixed image samples to calculate the kappa statistic. */
   for (fiter = fbegin; fiter != fend; ++fiter)
@@ -171,21 +170,18 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
     /** Check if point is inside moving mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value and check if the point is
      * inside the moving image buffer.
      */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
+      sampleOk = this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr);
     }
 
     /** Do the actual calculation of the metric value. */
@@ -321,11 +317,10 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValueAnd
   ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
 
   /** Some variables. */
-  RealType             movingImageValue;
-  MovingImagePointType mappedPoint;
-  std::size_t          fixedForegroundArea = 0; // or unsigned long
-  std::size_t          movingForegroundArea = 0;
-  std::size_t          intersection = 0;
+  RealType    movingImageValue;
+  std::size_t fixedForegroundArea = 0; // or unsigned long
+  std::size_t movingForegroundArea = 0;
+  std::size_t intersection = 0;
 
   DerivativeType vecSum1(this->GetNumberOfParameters());
   DerivativeType vecSum2(this->GetNumberOfParameters());
@@ -343,14 +338,11 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValueAnd
     /** Read fixed coordinates. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside moving mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value M(T(x)) and derivative dM/dx and check if
      * the point is inside the moving image buffer.
@@ -358,7 +350,8 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValueAnd
     MovingImageDerivativeType movingImageDerivative;
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      sampleOk =
+        this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
     }
 
     /** Do the actual calculation of the metric value. */
@@ -506,12 +499,11 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGet
   pos_end = (pos_end > sampleContainerSize) ? sampleContainerSize : pos_end;
 
   /** Some variables. */
-  RealType             movingImageValue;
-  MovingImagePointType mappedPoint;
-  std::size_t          fixedForegroundArea = 0; // or unsigned long
-  std::size_t          movingForegroundArea = 0;
-  std::size_t          intersection = 0;
-  unsigned long        numberOfPixelsCounted = 0;
+  RealType      movingImageValue;
+  std::size_t   fixedForegroundArea = 0; // or unsigned long
+  std::size_t   movingForegroundArea = 0;
+  std::size_t   intersection = 0;
+  unsigned long numberOfPixelsCounted = 0;
 
   /** Create iterator over the sample container. */
   typename ImageSampleContainerType::ConstIterator fiter;
@@ -526,14 +518,11 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGet
     /** Read fixed coordinates. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside moving mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value M(T(x)) and derivative dM/dx and check if
      * the point is inside the moving image buffer.
@@ -541,7 +530,8 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGet
     MovingImageDerivativeType movingImageDerivative;
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      sampleOk = this->FastEvaluateMovingImageValueAndDerivative(
+        mappedPoint, movingImageValue, &movingImageDerivative, threadId);
     }
 
     /** Do the actual calculation of the metric value. */
@@ -779,14 +769,16 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::UpdateValue
     }
   }
 
+  const auto numberOfParameters = this->GetNumberOfParameters();
+
   /** Calculate the contributions to the derivatives with respect to each parameter. */
-  if (nzji.size() == this->GetNumberOfParameters())
+  if (nzji.size() == numberOfParameters)
   {
     /** Loop over all Jacobians. */
     typename DerivativeType::const_iterator imjacit = imageJacobian.begin();
     typename DerivativeType::iterator       sum1it = sum1.begin();
     typename DerivativeType::iterator       sum2it = sum2.begin();
-    for (unsigned int mu = 0; mu < this->GetNumberOfParameters(); ++mu)
+    for (unsigned int mu = 0; mu < numberOfParameters; ++mu)
     {
       if (usableFixedSample)
       {
@@ -824,14 +816,14 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::UpdateValue
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::ComputeGradient(void)
+AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::ComputeGradient()
 {
   /** Typedefs. */
-  typedef itk::ImageRegionIteratorWithIndex<GradientImageType>    GradientIteratorType;
-  typedef itk::ImageRegionConstIteratorWithIndex<MovingImageType> MovingIteratorType;
+  using GradientIteratorType = itk::ImageRegionIteratorWithIndex<GradientImageType>;
+  using MovingIteratorType = itk::ImageRegionConstIteratorWithIndex<MovingImageType>;
 
   /** Create a temporary moving gradient image. */
-  typename GradientImageType::Pointer tempGradientImage = GradientImageType::New();
+  auto tempGradientImage = GradientImageType::New();
   tempGradientImage->SetRegions(this->m_MovingImage->GetBufferedRegion().GetSize());
   tempGradientImage->Allocate();
 

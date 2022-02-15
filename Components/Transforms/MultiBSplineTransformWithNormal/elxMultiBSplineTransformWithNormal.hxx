@@ -25,17 +25,10 @@
 #include "itkResampleImageFilter.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itksys/System.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace elastix
 {
-
-/**
- * ********************* Constructor ****************************
- */
-
-template <class TElastix>
-MultiBSplineTransformWithNormal<TElastix>::MultiBSplineTransformWithNormal() = default; // end Constructor()
 
 /**
  * ************ InitializeBSplineTransform ***************
@@ -43,7 +36,7 @@ MultiBSplineTransformWithNormal<TElastix>::MultiBSplineTransformWithNormal() = d
 
 template <class TElastix>
 unsigned int
-MultiBSplineTransformWithNormal<TElastix>::InitializeBSplineTransform(void)
+MultiBSplineTransformWithNormal<TElastix>::InitializeBSplineTransform()
 {
   /** Initialize the right BSplineTransform and GridScheduleComputer. */
   this->m_GridScheduleComputer = GridScheduleComputerType::New();
@@ -83,7 +76,7 @@ MultiBSplineTransformWithNormal<TElastix>::InitializeBSplineTransform(void)
 
 template <class TElastix>
 int
-MultiBSplineTransformWithNormal<TElastix>::BeforeAll(void)
+MultiBSplineTransformWithNormal<TElastix>::BeforeAll()
 {
   /** Read spline order and periodicity setting from configuration file. */
   this->m_SplineOrder = 3;
@@ -116,7 +109,7 @@ MultiBSplineTransformWithNormal<TElastix>::BeforeAll(void)
 
 template <class TElastix>
 void
-MultiBSplineTransformWithNormal<TElastix>::BeforeRegistration(void)
+MultiBSplineTransformWithNormal<TElastix>::BeforeRegistration()
 {
   /** Set initial transform parameters to a 1x1x1 grid, with deformation (0,0,0).
    * In the method BeforeEachResolution() this will be replaced by the right grid size.
@@ -128,37 +121,20 @@ MultiBSplineTransformWithNormal<TElastix>::BeforeRegistration(void)
 
   /** Task 1 - Set the Grid. */
 
-  /** Declarations. */
-  RegionType  gridregion;
-  SizeType    gridsize;
-  IndexType   gridindex;
-  SpacingType gridspacing;
-  OriginType  gridorigin;
-
-  /** Fill everything with default values. */
-  gridsize.Fill(1);
-  gridindex.Fill(0);
-  gridspacing.Fill(1.0);
-  gridorigin.Fill(0.0);
-
   /** Set gridsize for large dimension to 4 to prevent errors when checking
    * on support region size.
    */
+  SizeType gridsize = SizeType::Filled(1);
   gridsize.SetElement(gridsize.GetSizeDimension() - 1, 4);
 
   /** Set it all. */
-  gridregion.SetIndex(gridindex);
-  gridregion.SetSize(gridsize);
-  this->m_MultiBSplineTransformWithNormal->SetGridRegion(gridregion);
-  this->m_MultiBSplineTransformWithNormal->SetGridSpacing(gridspacing);
-  this->m_MultiBSplineTransformWithNormal->SetGridOrigin(gridorigin);
+  this->m_MultiBSplineTransformWithNormal->SetGridRegion(RegionType(gridsize));
+  this->m_MultiBSplineTransformWithNormal->SetGridSpacing(SpacingType(1.0));
+  this->m_MultiBSplineTransformWithNormal->SetGridOrigin(OriginType());
 
   /** Task 2 - Give the registration an initial parameter-array. */
-  ParametersType dummyInitialParameters(this->GetNumberOfParameters());
-  dummyInitialParameters.Fill(0.0);
-
-  /** Put parameters in the registration. */
-  this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(dummyInitialParameters);
+  this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(
+    ParametersType(this->GetNumberOfParameters(), 0.0));
 
   /** Precompute the B-spline grid regions. */
   this->PreComputeGridInformation();
@@ -172,7 +148,7 @@ MultiBSplineTransformWithNormal<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-MultiBSplineTransformWithNormal<TElastix>::BeforeEachResolution(void)
+MultiBSplineTransformWithNormal<TElastix>::BeforeEachResolution()
 {
   /** What is the current resolution level? */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -197,7 +173,7 @@ MultiBSplineTransformWithNormal<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-MultiBSplineTransformWithNormal<TElastix>::PreComputeGridInformation(void)
+MultiBSplineTransformWithNormal<TElastix>::PreComputeGridInformation()
 {
   /** Get the total number of resolution levels. */
   unsigned int nrOfResolutions = this->m_Registration->GetAsITKBaseType()->GetNumberOfLevels();
@@ -329,9 +305,9 @@ MultiBSplineTransformWithNormal<TElastix>::PreComputeGridInformation(void)
   }
   else
   {
-    xl::xout["error"] << "ERROR: Invalid GridSpacingSchedule! The number of entries"
-                      << " behind the GridSpacingSchedule option should equal the"
-                      << " numberOfResolutions, or the numberOfResolutions * ImageDimension." << std::endl;
+    xl::xout["error"] << "ERROR: Invalid GridSpacingSchedule! The number of entries behind the GridSpacingSchedule "
+                         "option should equal the numberOfResolutions, or the numberOfResolutions * ImageDimension."
+                      << std::endl;
     itkExceptionMacro(<< "ERROR: Invalid GridSpacingSchedule!");
   }
 
@@ -354,7 +330,7 @@ MultiBSplineTransformWithNormal<TElastix>::PreComputeGridInformation(void)
 
 template <class TElastix>
 void
-MultiBSplineTransformWithNormal<TElastix>::InitializeTransform(void)
+MultiBSplineTransformWithNormal<TElastix>::InitializeTransform()
 {
   /** Compute the B-spline grid region, origin, and spacing. */
   RegionType    gridRegion;
@@ -387,7 +363,7 @@ MultiBSplineTransformWithNormal<TElastix>::InitializeTransform(void)
 
 template <class TElastix>
 void
-MultiBSplineTransformWithNormal<TElastix>::IncreaseScale(void)
+MultiBSplineTransformWithNormal<TElastix>::IncreaseScale()
 {
   /** What is the current resolution level? */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -420,12 +396,12 @@ MultiBSplineTransformWithNormal<TElastix>::IncreaseScale(void)
   this->m_GridUpsampler->SetRequiredGridRegion(requiredGridRegion);
   this->m_GridUpsampler->SetRequiredGridDirection(requiredGridDirection);
 
-  typedef itk::Vector<double, Self::SpaceDimension> VectorType;
+  using VectorType = itk::Vector<double, Self::SpaceDimension>;
 
-  typedef itk::Vector<VectorType, Self::SpaceDimension> BaseType;
-  typedef itk::Image<BaseType, Self::SpaceDimension>    ImageBaseType;
-  typedef typename ImageBaseType::Pointer               ImageBasePointer;
-  typedef typename ImageBaseType::PixelContainer        BaseContainer;
+  using BaseType = itk::Vector<VectorType, Self::SpaceDimension>;
+  using ImageBaseType = itk::Image<BaseType, Self::SpaceDimension>;
+  using ImageBasePointer = typename ImageBaseType::Pointer;
+  using BaseContainer = typename ImageBaseType::PixelContainer;
 
   ImageBasePointer      Bases = this->m_MultiBSplineTransformWithNormal->GetLocalBases();
   const BaseContainer & bases = *Bases->GetPixelContainer();
@@ -453,7 +429,7 @@ MultiBSplineTransformWithNormal<TElastix>::IncreaseScale(void)
   ImageBasePointer      new_Bases = this->m_MultiBSplineTransformWithNormal->GetLocalBases();
   const BaseContainer & new_bases = *new_Bases->GetPixelContainer();
 
-  typedef itk::Image<unsigned char, Self::SpaceDimension> ImageLabelType;
+  using ImageLabelType = itk::Image<unsigned char, Self::SpaceDimension>;
   typename ImageLabelType::Pointer labels1 = this->m_MultiBSplineTransformWithNormal->GetLabels();
   typename itk::ResampleImageFilter<ImageLabelType, ImageLabelType>::Pointer filter =
     itk::ResampleImageFilter<ImageLabelType, ImageLabelType>::New();
@@ -462,8 +438,8 @@ MultiBSplineTransformWithNormal<TElastix>::IncreaseScale(void)
   filter->SetOutputParametersFromImage(new_Bases);
   filter->Update();
 
-  typedef typename ImageLabelType::PixelContainer LabelContainer;
-  const LabelContainer &                          labels = *filter->GetOutput()->GetPixelContainer();
+  using LabelContainer = typename ImageLabelType::PixelContainer;
+  const LabelContainer & labels = *filter->GetOutput()->GetPixelContainer();
 
   unsigned new_ParametersPerDimension = this->m_MultiBSplineTransformWithNormal->GetNumberOfParametersPerDimension();
 
@@ -550,7 +526,7 @@ MultiBSplineTransformWithNormal<TElastix>::IncreaseScale(void)
 
 template <class TElastix>
 void
-MultiBSplineTransformWithNormal<TElastix>::ReadFromFile(void)
+MultiBSplineTransformWithNormal<TElastix>::ReadFromFile()
 {
   /** Read spline order and periodicity settings and initialize BSplineTransform. */
   this->m_SplineOrder = 3;
@@ -560,20 +536,12 @@ MultiBSplineTransformWithNormal<TElastix>::ReadFromFile(void)
 
   /** Read and Set the Grid: this is a BSplineTransform specific task. */
 
-  /** Declarations. */
-  RegionType    gridregion;
-  SizeType      gridsize;
-  IndexType     gridindex;
-  SpacingType   gridspacing;
-  OriginType    gridorigin;
-  DirectionType griddirection;
-
-  /** Fill everything with default values. */
-  gridsize.Fill(1);
-  gridindex.Fill(0);
-  gridspacing.Fill(1.0);
-  gridorigin.Fill(0.0);
-  griddirection.SetIdentity();
+  /** Declarations. Everything filled with default values.*/
+  SizeType      gridsize = SizeType::Filled(1);
+  IndexType     gridindex = { { 0 } };
+  SpacingType   gridspacing(1.0);
+  OriginType    gridorigin{};
+  DirectionType griddirection = DirectionType::GetIdentity();
 
   /** Get GridSize, GridIndex, GridSpacing and GridOrigin. */
   for (unsigned int i = 0; i < SpaceDimension; ++i)
@@ -589,9 +557,7 @@ MultiBSplineTransformWithNormal<TElastix>::ReadFromFile(void)
   }
 
   /** Set it all. */
-  gridregion.SetIndex(gridindex);
-  gridregion.SetSize(gridsize);
-  this->m_MultiBSplineTransformWithNormal->SetGridRegion(gridregion);
+  this->m_MultiBSplineTransformWithNormal->SetGridRegion(RegionType(gridindex, gridsize));
   this->m_MultiBSplineTransformWithNormal->SetGridSpacing(gridspacing);
   this->m_MultiBSplineTransformWithNormal->SetGridOrigin(gridorigin);
   this->m_MultiBSplineTransformWithNormal->SetGridDirection(griddirection);
@@ -625,7 +591,7 @@ MultiBSplineTransformWithNormal<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 auto
-MultiBSplineTransformWithNormal<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+MultiBSplineTransformWithNormal<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   const auto & itkTransform = *m_MultiBSplineTransformWithNormal;
   const auto   gridRegion = itkTransform.GetGridRegion();
@@ -652,17 +618,16 @@ void
 MultiBSplineTransformWithNormal<TElastix>::SetOptimizerScales(const unsigned int edgeWidth)
 {
   /** Some typedefs. */
-  typedef itk::ImageRegionExclusionConstIteratorWithIndex<ImageType> IteratorType;
-  typedef typename RegistrationType::ITKBaseType                     ITKRegistrationType;
-  typedef typename ITKRegistrationType::OptimizerType                OptimizerType;
-  typedef typename OptimizerType::ScalesType                         ScalesType;
-  typedef typename ScalesType::ValueType                             ScalesValueType;
+  using IteratorType = itk::ImageRegionExclusionConstIteratorWithIndex<ImageType>;
+  using ITKRegistrationType = typename RegistrationType::ITKBaseType;
+  using OptimizerType = typename ITKRegistrationType::OptimizerType;
+  using ScalesType = typename OptimizerType::ScalesType;
+  using ScalesValueType = typename ScalesType::ValueType;
 
   /** Define new scales. */
-  const unsigned long numberOfParameters = this->m_MultiBSplineTransformWithNormal->GetNumberOfParameters();
-  const unsigned long offset = numberOfParameters / SpaceDimension;
-  ScalesType          newScales(numberOfParameters);
-  newScales.Fill(itk::NumericTraits<ScalesValueType>::OneValue());
+  const unsigned long   numberOfParameters = this->m_MultiBSplineTransformWithNormal->GetNumberOfParameters();
+  const unsigned long   offset = numberOfParameters / SpaceDimension;
+  ScalesType            newScales(numberOfParameters, ScalesValueType{ 1.0 });
   const ScalesValueType infScale = 10000.0;
 
   if (edgeWidth == 0)

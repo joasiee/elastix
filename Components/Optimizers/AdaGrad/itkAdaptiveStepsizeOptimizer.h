@@ -72,10 +72,10 @@ class AdaptiveStepsizeOptimizer : public StandardGradientDescentOptimizer
 {
 public:
   /** Standard ITK.*/
-  typedef AdaptiveStepsizeOptimizer        Self;
-  typedef StandardGradientDescentOptimizer Superclass;
-  typedef SmartPointer<Self>               Pointer;
-  typedef SmartPointer<const Self>         ConstPointer;
+  using Self = AdaptiveStepsizeOptimizer;
+  using Superclass = StandardGradientDescentOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -127,7 +127,7 @@ protected:
    * In that case, also the m_PreviousGradient is updated.
    */
   void
-  UpdateCurrentTime(void) override;
+  UpdateCurrentTime() override;
 
   /** The PreviousGradient, necessary for the CruzAcceleration */
   DerivativeType m_PreviousSearchDirection;

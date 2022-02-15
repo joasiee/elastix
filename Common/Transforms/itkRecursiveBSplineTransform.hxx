@@ -35,9 +35,6 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::RecursiveBSplineT
   : Superclass()
 {
   this->m_RecursiveBSplineWeightFunction = RecursiveBSplineWeightFunctionType::New();
-  this->m_Kernel = KernelType::New();
-  this->m_DerivativeKernel = DerivativeKernelType::New();
-  this->m_SecondOrderDerivativeKernel = SecondOrderDerivativeKernelType::New();
 } // end Constructor()
 
 
@@ -46,8 +43,9 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::RecursiveBSplineT
  */
 
 template <typename TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
-typename RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::OutputPointType
+auto
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(const InputPointType & point) const
+  -> OutputPointType
 {
   /** Define some constants. */
   const unsigned int numberOfWeights = RecursiveBSplineWeightFunctionType::NumberOfWeights;
@@ -68,8 +66,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(co
   }
 
   /** Convert to continuous index. */
-  ContinuousIndexType cindex;
-  this->TransformPointToContinuousGridIndex(point, cindex);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(point);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and return the input point
@@ -101,7 +98,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(co
   /** Call the recursive TransformPoint function. */
   ScalarType displacement[SpaceDimension];
   RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::TransformPoint(
-    displacement, mu, bsplineOffsetTable, weightsArray1D);
+    displacement, mu, bsplineOffsetTable, &(weights1D[0]));
 
   // The output point is the start point + displacement.
   for (unsigned int j = 0; j < SpaceDimension; ++j)
@@ -127,8 +124,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobian(
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  ContinuousIndexType cindex;
-  this->TransformPointToContinuousGridIndex(ipp, cindex);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
 
   /** Initialize. */
   const NumberOfParametersType nnzji = this->GetNumberOfNonZeroJacobianIndices();
@@ -167,14 +163,12 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobian(
    */
   ParametersValueType * jacobianPointer = jacobian.data_block();
   RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::GetJacobian(
-    jacobianPointer, weightsArray1D, 1.0);
+    jacobianPointer, &(weights1D[0]), 1.0);
 
   /** Compute the nonzero Jacobian indices.
    * Takes a significant portion of the computation time of this function.
    */
-  RegionType supportRegion;
-  supportRegion.SetSize(this->m_SupportSize);
-  supportRegion.SetIndex(supportIndex);
+  const RegionType supportRegion(supportIndex, Superclass::m_SupportSize);
   this->ComputeNonZeroJacobianIndices(nonZeroJacobianIndices, supportRegion);
 
 } // end GetJacobian()
@@ -195,8 +189,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::EvaluateJacobianW
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  ContinuousIndexType cindex;
-  this->TransformPointToContinuousGridIndex(ipp, cindex);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
 
   /** NOTE: if the support region does not lie totally within the grid
    * we assume zero displacement and zero Jacobian.
@@ -233,12 +226,10 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::EvaluateJacobianW
   }
   ParametersValueType * imageJacobianPointer = imageJacobian.data_block();
   RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::
-    EvaluateJacobianWithImageGradientProduct(imageJacobianPointer, migArray, weightsArray1D, 1.0);
+    EvaluateJacobianWithImageGradientProduct(imageJacobianPointer, migArray, &(weights1D[0]), 1.0);
 
   /** Setup support region needed for the nonZeroJacobianIndices. */
-  RegionType supportRegion;
-  supportRegion.SetSize(this->m_SupportSize);
-  supportRegion.SetIndex(supportIndex);
+  const RegionType supportRegion(supportIndex, Superclass::m_SupportSize);
 
   /** Compute the nonzero Jacobian indices.
    * Takes a significant portion of the computation time of this function.
@@ -260,8 +251,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialJacobia
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  ContinuousIndexType cindex;
-  this->TransformPointToContinuousGridIndex(ipp, cindex);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and identity spatial Jacobian
@@ -345,8 +335,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialHessian
   /** Convert the physical point to a continuous index, which
    * is needed for the evaluate functions below.
    */
-  ContinuousIndexType cindex;
-  this->TransformPointToContinuousGridIndex(ipp, cindex);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and zero spatial Hessian
@@ -460,8 +449,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  ContinuousIndexType cindex;
-  this->TransformPointToContinuousGridIndex(ipp, cindex);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and zero jsj.
@@ -509,9 +497,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
     GetJacobianOfSpatialJacobian(jsjPtr2, weightsPointer, derivativeWeightsPointer, dc, dummy);
 
   /** Setup support region needed for the nonZeroJacobianIndices. */
-  RegionType supportRegion;
-  supportRegion.SetSize(this->m_SupportSize);
-  supportRegion.SetIndex(supportIndex);
+  const RegionType supportRegion(supportIndex, Superclass::m_SupportSize);
 
   /** Compute the nonzero Jacobian indices. */
   this->ComputeNonZeroJacobianIndices(nonZeroJacobianIndices, supportRegion);
@@ -559,8 +545,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  ContinuousIndexType cindex;
-  this->TransformPointToContinuousGridIndex(ipp, cindex);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and identity sj and zero jsj.
@@ -615,9 +600,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
     GetJacobianOfSpatialHessian(jshPtr, weightsPointer, derivativeWeightsPointer, hessianWeightsPointer, dc, dummy);
 
   /** Setup support region needed for the nonZeroJacobianIndices. */
-  RegionType supportRegion;
-  supportRegion.SetSize(this->m_SupportSize);
-  supportRegion.SetIndex(supportIndex);
+  const RegionType supportRegion(supportIndex, Superclass::m_SupportSize);
 
   /** Compute the nonzero Jacobian indices. */
   this->ComputeNonZeroJacobianIndices(nonZeroJacobianIndices, supportRegion);

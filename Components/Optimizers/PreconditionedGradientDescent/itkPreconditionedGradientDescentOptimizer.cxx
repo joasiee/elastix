@@ -21,8 +21,8 @@
 #include "itkCommand.h"
 #include "itkEventObject.h"
 #include "itkMacro.h"
-#include "vnl/vnl_vector.h"
-#include "vnl/algo/vnl_sparse_symmetric_eigensystem.h"
+#include <vnl/vnl_vector.h>
+#include <vnl/algo/vnl_sparse_symmetric_eigensystem.h>
 #include <algorithm> // For max.
 
 namespace itk
@@ -121,7 +121,7 @@ PreconditionedGradientDescentOptimizer::PrintSelf(std::ostream & os, Indent inde
  */
 
 void
-PreconditionedGradientDescentOptimizer::StartOptimization(void)
+PreconditionedGradientDescentOptimizer::StartOptimization()
 {
   this->m_CurrentIteration = 0;
 
@@ -145,7 +145,7 @@ PreconditionedGradientDescentOptimizer::StartOptimization(void)
  */
 
 void
-PreconditionedGradientDescentOptimizer::ResumeOptimization(void)
+PreconditionedGradientDescentOptimizer::ResumeOptimization()
 {
   itkDebugMacro("ResumeOptimization");
 
@@ -219,7 +219,7 @@ PreconditionedGradientDescentOptimizer::MetricErrorResponse(ExceptionObject & er
  */
 
 void
-PreconditionedGradientDescentOptimizer::StopOptimization(void)
+PreconditionedGradientDescentOptimizer::StopOptimization()
 {
   itkDebugMacro("StopOptimization");
 
@@ -233,10 +233,10 @@ PreconditionedGradientDescentOptimizer::StopOptimization(void)
  */
 
 void
-PreconditionedGradientDescentOptimizer::AdvanceOneStep(void)
+PreconditionedGradientDescentOptimizer::AdvanceOneStep()
 {
-  typedef DerivativeType::ValueType      DerivativeValueType;
-  typedef DerivativeType::const_iterator DerivativeIteratorType;
+  using DerivativeValueType = DerivativeType::ValueType;
+  using DerivativeIteratorType = DerivativeType::const_iterator;
 
   const unsigned int spaceDimension = this->GetScaledCostFunction()->GetNumberOfParameters();
 
@@ -274,8 +274,8 @@ PreconditionedGradientDescentOptimizer::CholmodSolve(const DerivativeType & grad
    */
   itkDebugMacro("CholmodSolve");
 
-  typedef DerivativeType::ValueType      DerivativeValueType;
-  typedef DerivativeType::const_iterator DerivativeIteratorType;
+  using DerivativeValueType = DerivativeType::ValueType;
+  using DerivativeIteratorType = DerivativeType::const_iterator;
 
   /** Get the spaceDimension from the cost function. */
   const unsigned int spaceDimension = this->GetScaledCostFunction()->GetNumberOfParameters();
@@ -350,9 +350,9 @@ PreconditionedGradientDescentOptimizer::SetPreconditionMatrix(PreconditionType &
    */
   itkDebugMacro("SetPreconditionMatrix");
 
-  typedef PreconditionType::row             RowType;
-  typedef RowType::const_iterator           RowIteratorType;
-  typedef vnl_vector<PreconditionValueType> DiagonalType;
+  using RowType = PreconditionType::row;
+  using RowIteratorType = RowType::const_iterator;
+  using DiagonalType = vnl_vector<PreconditionValueType>;
 
   const size_t spaceDimension = static_cast<size_t>(precondition.cols());
 

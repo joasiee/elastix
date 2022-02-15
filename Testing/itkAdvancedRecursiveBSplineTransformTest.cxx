@@ -39,7 +39,7 @@ main(int argc, char * argv[])
    */
   const unsigned int Dimension = 3;
   const unsigned int SplineOrder = 3;
-  typedef double     CoordinateRepresentationType;
+  using CoordinateRepresentationType = double;
   // const double distance = 1e-3; // the allowable distance
   // const double allowedTimeDifference = 0.1; // 10% is considered within limits
 
@@ -56,40 +56,39 @@ main(int argc, char * argv[])
   /** Check. */
   if (argc != 2)
   {
-    std::cerr << "ERROR: You should specify a text file with the B-spline "
-              << "transformation parameters." << std::endl;
+    std::cerr << "ERROR: You should specify a text file with the B-spline transformation parameters." << std::endl;
     return EXIT_FAILURE;
   }
 
   /** Other typedefs. */
-  typedef itk::BSplineDeformableTransform<CoordinateRepresentationType, Dimension, SplineOrder> ITKTransformType;
-  typedef itk::AdvancedBSplineDeformableTransform<CoordinateRepresentationType, Dimension, SplineOrder> TransformType;
-  typedef itk::RecursiveBSplineTransform<CoordinateRepresentationType, Dimension, SplineOrder> RecursiveTransformType;
+  using ITKTransformType = itk::BSplineDeformableTransform<CoordinateRepresentationType, Dimension, SplineOrder>;
+  using TransformType = itk::AdvancedBSplineDeformableTransform<CoordinateRepresentationType, Dimension, SplineOrder>;
+  using RecursiveTransformType = itk::RecursiveBSplineTransform<CoordinateRepresentationType, Dimension, SplineOrder>;
 
-  typedef TransformType::JacobianType                            JacobianType;
-  typedef TransformType::SpatialJacobianType                     SpatialJacobianType;
-  typedef TransformType::SpatialHessianType                      SpatialHessianType;
-  typedef TransformType::JacobianOfSpatialJacobianType           JacobianOfSpatialJacobianType;
-  typedef TransformType::JacobianOfSpatialHessianType            JacobianOfSpatialHessianType;
-  typedef TransformType::NonZeroJacobianIndicesType              NonZeroJacobianIndicesType;
-  typedef TransformType::NumberOfParametersType                  NumberOfParametersType;
-  typedef TransformType::InputPointType                          InputPointType;
-  typedef TransformType::OutputPointType                         OutputPointType;
-  typedef TransformType::ParametersType                          ParametersType;
-  typedef TransformType::ImagePointer                            CoefficientImagePointer;
-  typedef itk::Image<CoordinateRepresentationType, Dimension>    InputImageType;
-  typedef InputImageType::RegionType                             RegionType;
-  typedef InputImageType::SizeType                               SizeType;
-  typedef InputImageType::IndexType                              IndexType;
-  typedef InputImageType::SpacingType                            SpacingType;
-  typedef InputImageType::PointType                              OriginType;
-  typedef InputImageType::DirectionType                          DirectionType;
-  typedef itk::Statistics::MersenneTwisterRandomVariateGenerator MersenneTwisterType;
+  using JacobianType = TransformType::JacobianType;
+  using SpatialJacobianType = TransformType::SpatialJacobianType;
+  using SpatialHessianType = TransformType::SpatialHessianType;
+  using JacobianOfSpatialJacobianType = TransformType::JacobianOfSpatialJacobianType;
+  using JacobianOfSpatialHessianType = TransformType::JacobianOfSpatialHessianType;
+  using NonZeroJacobianIndicesType = TransformType::NonZeroJacobianIndicesType;
+  using NumberOfParametersType = TransformType::NumberOfParametersType;
+  using InputPointType = TransformType::InputPointType;
+  using OutputPointType = TransformType::OutputPointType;
+  using ParametersType = TransformType::ParametersType;
+  using CoefficientImagePointer = TransformType::ImagePointer;
+  using InputImageType = itk::Image<CoordinateRepresentationType, Dimension>;
+  using RegionType = InputImageType::RegionType;
+  using SizeType = InputImageType::SizeType;
+  using IndexType = InputImageType::IndexType;
+  using SpacingType = InputImageType::SpacingType;
+  using OriginType = InputImageType::PointType;
+  using DirectionType = InputImageType::DirectionType;
+  using MersenneTwisterType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
 
   /** Create the transforms. */
-  ITKTransformType::Pointer       transformITK = ITKTransformType::New();
-  TransformType::Pointer          transform = TransformType::New();
-  RecursiveTransformType::Pointer recursiveTransform = RecursiveTransformType::New();
+  auto transformITK = ITKTransformType::New();
+  auto transform = TransformType::New();
+  auto recursiveTransform = RecursiveTransformType::New();
 
   /** Setup the B-spline transform:
    * (GridSize 44 43 35)
@@ -100,8 +99,7 @@ main(int argc, char * argv[])
   std::ifstream input(argv[1]);
   if (!input.is_open())
   {
-    std::cerr << "ERROR: could not open the text file containing the "
-              << "parameter values." << std::endl;
+    std::cerr << "ERROR: could not open the text file containing the parameter values." << std::endl;
     return EXIT_FAILURE;
   }
   int dimsInPar1;
@@ -235,20 +233,10 @@ main(int argc, char * argv[])
    *
    */
 
-  itk::TimeProbesCollectorBase                    timeCollector;
-  TransformType::WeightsType                      weights;
-  RecursiveTransformType::WeightsType             weights2;
-  TransformType::ParameterIndexArrayType          indices;
-  RecursiveTransformType::ParameterIndexArrayType indices2;
-
-  const unsigned int dummyNum = std::pow(static_cast<double>(SplineOrder + 1), static_cast<double>(Dimension));
-  weights.SetSize(dummyNum);
-  indices.SetSize(dummyNum);
-  weights2.SetSize(dummyNum);
-  indices2.SetSize(dummyNum);
+  itk::TimeProbesCollectorBase timeCollector;
 
   // Generate a list of random points
-  MersenneTwisterType::Pointer mersenneTwister = MersenneTwisterType::New();
+  auto mersenneTwister = MersenneTwisterType::New();
   mersenneTwister->Initialize(140377);
   std::vector<InputPointType>  pointList(N);
   std::vector<OutputPointType> transformedPointList1(N);

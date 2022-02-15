@@ -22,7 +22,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace elastix
 {
@@ -45,7 +45,7 @@ FullSearch<TElastix>::FullSearch()
 
 template <class TElastix>
 void
-FullSearch<TElastix>::BeforeRegistration(void)
+FullSearch<TElastix>::BeforeRegistration()
 {
   /** Add the target cells "ItNr" and "Metric" to IterationInfo. */
   this->AddTargetCellToIterationInfo("2:Metric");
@@ -62,7 +62,7 @@ FullSearch<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-FullSearch<TElastix>::BeforeEachResolution(void)
+FullSearch<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level.*/
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
@@ -170,8 +170,7 @@ FullSearch<TElastix>::BeforeEachResolution(void)
   }
   else
   {
-    itkExceptionMacro(<< "ERROR: elastix found an error in the search "
-                      << "space definition, and is quiting.");
+    itkExceptionMacro(<< "ERROR: elastix found an error in the search space definition, and is quiting.");
   }
 
 } // end BeforeEachResolution()
@@ -183,7 +182,7 @@ FullSearch<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-FullSearch<TElastix>::AfterEachIteration(void)
+FullSearch<TElastix>::AfterEachIteration()
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->GetValue();
@@ -209,9 +208,9 @@ FullSearch<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-FullSearch<TElastix>::AfterEachResolution(void)
+FullSearch<TElastix>::AfterEachResolution()
 {
-  // typedef enum {FullRangeSearched,  MetricError } StopConditionType;
+  // enum StopConditionType {FullRangeSearched,  MetricError };
   std::string stopcondition;
 
   switch (this->GetStopCondition())
@@ -254,15 +253,14 @@ FullSearch<TElastix>::AfterEachResolution(void)
   }
 
   /** Print the best metric value */
-  elxout << std::endl << "Best metric value in this resolution = " << this->GetBestValue() << std::endl;
+  elxout << '\n' << "Best metric value in this resolution = " << this->GetBestValue() << std::endl;
 
   /** Print the best index and point */
   SearchSpaceIndexType bestIndex = this->GetBestIndexInSearchSpace();
   SearchSpacePointType bestPoint = this->GetBestPointInSearchSpace();
   unsigned int         nrOfSSDims = bestIndex.GetSize();
 
-  elxout << "Index of the point in the optimization surface image that has "
-         << "the best metric value: [ ";
+  elxout << "Index of the point in the optimization surface image that has the best metric value: [ ";
   for (unsigned int dim = 0; dim < nrOfSSDims; ++dim)
   {
     elxout << bestIndex[dim] << " ";
@@ -298,11 +296,11 @@ FullSearch<TElastix>::AfterEachResolution(void)
  */
 template <class TElastix>
 void
-FullSearch<TElastix>::AfterRegistration(void)
+FullSearch<TElastix>::AfterRegistration()
 {
   /** Print the best metric value. */
   double bestValue = this->GetBestValue();
-  elxout << std::endl << "Final metric value  = " << bestValue << std::endl;
+  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
 
 } // end AfterRegistration()
 
@@ -324,8 +322,7 @@ FullSearch<TElastix>::CheckSearchSpaceRangeDefinition(const std::string & fullFi
   {
     xl::xout["error"] << "ERROR:\nNo (valid) range specified for the full search optimizer!\n"
                       << "Please define the field (" << fullFieldName
-                      << " \"name\" parameter_nr min max stepsize) correctly in the "
-                      << "parameter file" << std::endl;
+                      << " \"name\" parameter_nr min max stepsize) correctly in the parameter file" << std::endl;
     return false;
   }
 

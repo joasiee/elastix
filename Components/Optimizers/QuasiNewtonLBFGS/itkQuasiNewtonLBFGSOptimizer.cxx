@@ -18,7 +18,7 @@
 
 #include "itkQuasiNewtonLBFGSOptimizer.h"
 #include "itkArray.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -247,8 +247,8 @@ QuasiNewtonLBFGSOptimizer::ComputeSearchDirection(const DerivativeType & gradien
 
   /** Assumes m_Rho, m_S, and m_Y are up-to-date at m_PreviousPoint */
 
-  typedef Array<double> AlphaType;
-  AlphaType             alpha(this->GetMemory());
+  using AlphaType = Array<double>;
+  AlphaType alpha(this->GetMemory());
 
   const unsigned int numberOfParameters = gradient.GetSize();
   DiagonalMatrixType H0;

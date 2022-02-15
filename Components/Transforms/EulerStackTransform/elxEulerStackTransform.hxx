@@ -24,28 +24,14 @@ namespace elastix
 {
 
 /**
- * ********************* Constructor ****************************
- */
-template <class TElastix>
-EulerStackTransform<TElastix>::EulerStackTransform() = default; // end Constructor
-
-
-/**
  * ********************* InitializeAffineTransform ****************************
  */
 template <class TElastix>
 unsigned int
 EulerStackTransform<TElastix>::InitializeEulerTransform()
 {
-  /** Initialize the m_AffineDummySubTransform */
-  this->m_EulerDummySubTransform = ReducedDimensionEulerTransformType::New();
-
-  /** Create stack transform. */
-  this->m_EulerStackTransform = EulerStackTransformType::New();
-
-  /** Set stack transform as current transform. */
-  this->SetCurrentTransform(this->m_EulerStackTransform);
-
+  /** Initialize the m_DummySubTransform */
+  this->m_DummySubTransform = ReducedDimensionEulerTransformType::New();
   return 0;
 }
 
@@ -56,7 +42,7 @@ EulerStackTransform<TElastix>::InitializeEulerTransform()
 
 template <class TElastix>
 int
-EulerStackTransform<TElastix>::BeforeAll(void)
+EulerStackTransform<TElastix>::BeforeAll()
 {
   /** Initialize affine transform. */
   return InitializeEulerTransform();
@@ -69,7 +55,7 @@ EulerStackTransform<TElastix>::BeforeAll(void)
 
 template <class TElastix>
 void
-EulerStackTransform<TElastix>::BeforeRegistration(void)
+EulerStackTransform<TElastix>::BeforeRegistration()
 {
   /** Task 1 - Set the stack transform parameters. */
 
@@ -80,19 +66,16 @@ EulerStackTransform<TElastix>::BeforeRegistration(void)
   this->m_StackOrigin = this->GetElastix()->GetFixedImage()->GetOrigin()[SpaceDimension - 1];
 
   /** Set stack transform parameters. */
-  this->m_EulerStackTransform->SetNumberOfSubTransforms(this->m_NumberOfSubTransforms);
-  this->m_EulerStackTransform->SetStackOrigin(this->m_StackOrigin);
-  this->m_EulerStackTransform->SetStackSpacing(this->m_StackSpacing);
+  this->m_StackTransform->SetNumberOfSubTransforms(this->m_NumberOfSubTransforms);
+  this->m_StackTransform->SetStackOrigin(this->m_StackOrigin);
+  this->m_StackTransform->SetStackSpacing(this->m_StackSpacing);
 
   /** Initialize stack sub transforms. */
-  this->m_EulerStackTransform->SetAllSubTransforms(this->m_EulerDummySubTransform);
+  this->m_StackTransform->SetAllSubTransforms(*m_DummySubTransform);
 
   /** Task 2 - Give the registration an initial parameter-array. */
-  ParametersType dummyInitialParameters(this->GetNumberOfParameters());
-  dummyInitialParameters.Fill(0.0);
-
-  /** Put parameters in the registration. */
-  this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(dummyInitialParameters);
+  this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(
+    ParametersType(this->GetNumberOfParameters(), 0.0));
 
   /** Task 3 - Initialize the transform */
   this->InitializeTransform();
@@ -109,44 +92,44 @@ EulerStackTransform<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-EulerStackTransform<TElastix>::ReadFromFile(void)
+EulerStackTransform<TElastix>::ReadFromFile()
 {
-
-  /** Read stack-spacing, stack-origin and number of sub-transforms. */
-  this->GetConfiguration()->ReadParameter(
-    this->m_NumberOfSubTransforms, "NumberOfSubTransforms", this->GetComponentLabel(), 0, 0);
-  this->GetConfiguration()->ReadParameter(this->m_StackOrigin, "StackOrigin", this->GetComponentLabel(), 0, 0);
-  this->GetConfiguration()->ReadParameter(this->m_StackSpacing, "StackSpacing", this->GetComponentLabel(), 0, 0);
-
-  ReducedDimensionInputPointType RDcenterOfRotationPoint;
-  RDcenterOfRotationPoint.Fill(0.0);
-  bool pointRead = false;
-  bool indexRead = false;
-
-  /** Try first to read the CenterOfRotationPoint from the
-   * transform parameter file, this is the new, and preferred
-   * way, since elastix 3.402.
-   */
-  pointRead = this->ReadCenterOfRotationPoint(RDcenterOfRotationPoint);
-
-  if (!pointRead && !indexRead)
+  if (!this->HasITKTransformParameters())
   {
-    xl::xout["error"] << "ERROR: No center of rotation is specified in the "
-                      << "transform parameter file" << std::endl;
-    itkExceptionMacro(<< "Transform parameter file is corrupt.")
+    /** Read stack-spacing, stack-origin and number of sub-transforms. */
+    this->GetConfiguration()->ReadParameter(
+      this->m_NumberOfSubTransforms, "NumberOfSubTransforms", this->GetComponentLabel(), 0, 0);
+    this->GetConfiguration()->ReadParameter(this->m_StackOrigin, "StackOrigin", this->GetComponentLabel(), 0, 0);
+    this->GetConfiguration()->ReadParameter(this->m_StackSpacing, "StackSpacing", this->GetComponentLabel(), 0, 0);
+
+    ReducedDimensionInputPointType RDcenterOfRotationPoint{};
+
+    bool indexRead = false;
+
+    /** Try first to read the CenterOfRotationPoint from the
+     * transform parameter file, this is the new, and preferred
+     * way, since elastix 3.402.
+     */
+    const bool pointRead = this->ReadCenterOfRotationPoint(RDcenterOfRotationPoint);
+
+    if (!pointRead && !indexRead)
+    {
+      xl::xout["error"] << "ERROR: No center of rotation is specified in the transform parameter file" << std::endl;
+      itkExceptionMacro(<< "Transform parameter file is corrupt.")
+    }
+
+    this->InitializeEulerTransform();
+
+    this->m_DummySubTransform->SetCenter(RDcenterOfRotationPoint);
+
+    /** Set stack transform parameters. */
+    this->m_StackTransform->SetNumberOfSubTransforms(this->m_NumberOfSubTransforms);
+    this->m_StackTransform->SetStackOrigin(this->m_StackOrigin);
+    this->m_StackTransform->SetStackSpacing(this->m_StackSpacing);
+
+    /** Set stack subtransforms. */
+    this->m_StackTransform->SetAllSubTransforms(*m_DummySubTransform);
   }
-
-  this->InitializeEulerTransform();
-
-  this->m_EulerDummySubTransform->SetCenter(RDcenterOfRotationPoint);
-
-  /** Set stack transform parameters. */
-  this->m_EulerStackTransform->SetNumberOfSubTransforms(this->m_NumberOfSubTransforms);
-  this->m_EulerStackTransform->SetStackOrigin(this->m_StackOrigin);
-  this->m_EulerStackTransform->SetStackSpacing(this->m_StackSpacing);
-
-  /** Set stack subtransforms. */
-  this->m_EulerStackTransform->SetAllSubTransforms(this->m_EulerDummySubTransform);
 
   /** Call the ReadFromFile from the TransformBase. */
   this->Superclass2::ReadFromFile();
@@ -160,11 +143,11 @@ EulerStackTransform<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 auto
-EulerStackTransform<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+EulerStackTransform<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
-  const auto & itkTransform = *m_EulerStackTransform;
+  const auto & itkTransform = *m_StackTransform;
 
-  return { { "CenterOfRotationPoint", Conversion::ToVectorOfStrings(m_EulerDummySubTransform->GetCenter()) },
+  return { { "CenterOfRotationPoint", Conversion::ToVectorOfStrings(m_DummySubTransform->GetCenter()) },
            { "StackSpacing", { Conversion::ToString(itkTransform.GetStackSpacing()) } },
            { "StackOrigin", { Conversion::ToString(itkTransform.GetStackOrigin()) } },
            { "NumberOfSubTransforms", { Conversion::ToString(itkTransform.GetNumberOfSubTransforms()) } } };
@@ -182,16 +165,16 @@ EulerStackTransform<TElastix>::InitializeTransform()
 {
 
   /** Set all parameters to zero (no rotations, no translation). */
-  this->m_EulerDummySubTransform->SetIdentity();
+  this->m_DummySubTransform->SetIdentity();
 
   /** Try to read CenterOfRotationIndex from parameter file,
    * which is the rotationPoint, expressed in index-values.
    */
 
-  ContinuousIndexType                 centerOfRotationIndex;
-  InputPointType                      centerOfRotationPoint;
-  ReducedDimensionContinuousIndexType redDimCenterOfRotationIndex;
-  ReducedDimensionInputPointType      redDimCenterOfRotationPoint;
+  ContinuousIndexType                 centerOfRotationIndex{};
+  InputPointType                      centerOfRotationPoint{};
+  ReducedDimensionContinuousIndexType redDimCenterOfRotationIndex{};
+  ReducedDimensionInputPointType      redDimCenterOfRotationPoint{};
 
   bool     centerGivenAsIndex = true;
   bool     centerGivenAsPoint = true;
@@ -201,12 +184,6 @@ EulerStackTransform<TElastix>::InitializeTransform()
   /** Try to read center of rotation point (COP) from parameter file. */
   for (unsigned int i = 0; i < ReducedSpaceDimension; ++i)
   {
-    /** Initialize. */
-    centerOfRotationIndex[i] = 0;
-    centerOfRotationPoint[i] = 0.0;
-    redDimCenterOfRotationIndex[i] = 0;
-    redDimCenterOfRotationPoint[i] = 0.0;
-
     /** Check COR index: Returns zero when parameter was in the parameter file. */
     const bool foundI = this->m_Configuration->ReadParameter(centerOfRotationIndex[i], "CenterOfRotation", i, false);
     if (!foundI)
@@ -247,8 +224,9 @@ EulerStackTransform<TElastix>::InitializeTransform()
     this->m_Configuration->ReadParameter(UseDirectionCosines, "UseDirectionCosines", 0);
     if (!UseDirectionCosines)
     {
-      elxout << "warning: a wrong center of rotation could have been set, "
-             << " please check the transform matrix in the header file" << std::endl;
+      elxout << "warning: a wrong center of rotation could have been set,  please check the transform matrix in the "
+                "header file"
+             << std::endl;
     }
   }
 
@@ -268,15 +246,13 @@ EulerStackTransform<TElastix>::InitializeTransform()
   InitialTransformCenter(redDimCenterOfRotationPoint);
 
   /** Set the center of rotation point. */
-  this->m_EulerDummySubTransform->SetCenter(redDimCenterOfRotationPoint);
+  this->m_DummySubTransform->SetCenter(redDimCenterOfRotationPoint);
 
   /** Set the translation to zero */
-  ReducedDimensionOutputVectorType noTranslation;
-  noTranslation.Fill(0.0);
-  this->m_EulerDummySubTransform->SetTranslation(noTranslation);
+  this->m_DummySubTransform->SetTranslation(ReducedDimensionOutputVectorType());
 
   /** Set all subtransforms to a copy of the dummy Translation sub transform. */
-  this->m_EulerStackTransform->SetAllSubTransforms(this->m_EulerDummySubTransform);
+  this->m_StackTransform->SetAllSubTransforms(*m_DummySubTransform);
 
   /** Set the initial parameters in this->m_Registration. */
   this->m_Registration->GetAsITKBaseType()->SetInitialTransformParameters(this->GetParameters());
@@ -312,8 +288,7 @@ EulerStackTransform<TElastix>::InitialTransformCenter(ReducedDimensionInputPoint
 
     /** Transform center of rotation point for each time point and
      * compute average. */
-    ReducedDimensionInputPointType averagePoint;
-    averagePoint.Fill(0.0);
+    ReducedDimensionInputPointType averagePoint{};
     for (unsigned int t = 0; t < numTimePoints; ++t)
     {
       /** Set time point and transform back to point. */
@@ -347,12 +322,12 @@ EulerStackTransform<TElastix>::InitialTransformCenter(ReducedDimensionInputPoint
 
 template <class TElastix>
 void
-EulerStackTransform<TElastix>::SetScales(void)
+EulerStackTransform<TElastix>::SetScales()
 {
 
   /** Create the new scales. */
-  const NumberOfParametersType N = this->GetNumberOfParameters();
-  ScalesType                   newscales(N);
+  const NumberOfParametersType numberOfParameters = this->GetNumberOfParameters();
+  ScalesType                   newscales(numberOfParameters);
 
   /** Check if automatic scales estimation is desired. */
   bool automaticScalesEstimation = false;
@@ -374,7 +349,7 @@ EulerStackTransform<TElastix>::SetScales(void)
   if (automaticScalesEstimation)
   {
     elxout << "Scales are estimated automatically." << std::endl;
-    this->AutomaticScalesEstimationStackTransform(this->m_EulerStackTransform->GetNumberOfSubTransforms(), newscales);
+    this->AutomaticScalesEstimationStackTransform(this->m_StackTransform->GetNumberOfSubTransforms(), newscales);
     elxout << "finished setting scales" << std::endl;
   }
   else
@@ -460,11 +435,11 @@ EulerStackTransform<TElastix>::SetScales(void)
         }
       }
     }
-    else if (count == this->GetNumberOfParameters())
+    else if (count == numberOfParameters)
     {
       newscales.Fill(1.0);
       /** In this case the third option is used. */
-      for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+      for (unsigned int i = 0; i < numberOfParameters; ++i)
       {
         this->m_Configuration->ReadParameter(newscales[i], "Scales", i);
       }
@@ -475,8 +450,7 @@ EulerStackTransform<TElastix>::SetScales(void)
        * An error is thrown, because using erroneous scales in the optimizer
        * can give unpredictable results.
        */
-      itkExceptionMacro(<< "ERROR: The Scales-option in the parameter-file"
-                        << " has not been set properly.");
+      itkExceptionMacro(<< "ERROR: The Scales-option in the parameter-file has not been set properly.");
     }
 
   } // end else: no automaticScalesEstimation
@@ -500,12 +474,10 @@ EulerStackTransform<TElastix>::ReadCenterOfRotationPoint(ReducedDimensionInputPo
   /** Try to read CenterOfRotationPoint from the transform parameter
    * file, which is the rotationPoint, expressed in world coordinates.
    */
-  ReducedDimensionInputPointType redDimCenterOfRotationPoint;
+  ReducedDimensionInputPointType redDimCenterOfRotationPoint{};
   bool                           centerGivenAsPoint = true;
   for (unsigned int i = 0; i < ReducedSpaceDimension; ++i)
   {
-    redDimCenterOfRotationPoint[i] = 0.0;
-
     /** Returns zero when parameter was in the parameter file. */
     bool found =
       this->m_Configuration->ReadParameter(redDimCenterOfRotationPoint[i], "CenterOfRotationPoint", i, false);

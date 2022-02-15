@@ -23,7 +23,7 @@
 /** Include itk transforms needed. */
 #include "itkAdvancedCombinationTransform.h"
 #include "itkAdvancedBSplineDeformableTransform.h"
-#include "itkStackTransform.h"
+#include "itkBSplineStackTransform.h"
 
 /** Include grid schedule computer and upsample filter. */
 #include "itkGridScheduleComputer.h"
@@ -116,13 +116,12 @@ class ITK_TEMPLATE_EXPORT BSplineStackTransform
 {
 public:
   /** Standard ITK-stuff. */
-  typedef BSplineStackTransform Self;
-  typedef itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                            elx::TransformBase<TElastix>::FixedImageDimension>
-                                        Superclass1;
-  typedef elx::TransformBase<TElastix>  Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = BSplineStackTransform;
+  using Superclass1 = itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                        elx::TransformBase<TElastix>::FixedImageDimension>;
+  using Superclass2 = elx::TransformBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -143,36 +142,16 @@ public:
   /** The ITK-class that provides most of the functionality, and
    * that is set as the "CurrentTransform" in the CombinationTransform.
    */
-  typedef itk::AdvancedBSplineDeformableTransformBase<typename elx::TransformBase<TElastix>::CoordRepType,
-                                                      Self::SpaceDimension>
-                                                     BSplineTransformBaseType;
-  typedef typename BSplineTransformBaseType::Pointer BSplineTransformBasePointer;
+  using BSplineTransformBaseType =
+    itk::AdvancedBSplineDeformableTransformBase<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                Self::SpaceDimension>;
+  using BSplineTransformBasePointer = typename BSplineTransformBaseType::Pointer;
 
   /** The ITK-class for the sub transforms, which have a reduced dimension. */
-  typedef itk::AdvancedBSplineDeformableTransformBase<typename elx::TransformBase<TElastix>::CoordRepType,
-                                                      Self::ReducedSpaceDimension>
-                                                                     ReducedDimensionBSplineTransformBaseType;
-  typedef typename ReducedDimensionBSplineTransformBaseType::Pointer ReducedDimensionBSplineTransformBasePointer;
-
-  /** Typedef for stack transform. */
-  typedef itk::
-    StackTransform<typename elx::TransformBase<TElastix>::CoordRepType, Self::SpaceDimension, Self::SpaceDimension>
-                                                      BSplineStackTransformType;
-  typedef typename BSplineStackTransformType::Pointer BSplineStackTransformPointer;
-
-  /** Typedef for supported BSplineTransform types. */
-  typedef itk::AdvancedBSplineDeformableTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                                  Self::ReducedSpaceDimension,
-                                                  1>
-    BSplineTransformLinearType;
-  typedef itk::AdvancedBSplineDeformableTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                                  Self::ReducedSpaceDimension,
-                                                  2>
-    BSplineTransformQuadraticType;
-  typedef itk::AdvancedBSplineDeformableTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                                  Self::ReducedSpaceDimension,
-                                                  3>
-    BSplineTransformCubicType;
+  using ReducedDimensionBSplineTransformBaseType =
+    itk::AdvancedBSplineDeformableTransformBase<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                Self::ReducedSpaceDimension>;
+  using ReducedDimensionBSplineTransformBasePointer = typename ReducedDimensionBSplineTransformBaseType::Pointer;
 
   /** Typedefs inherited from the superclass. */
   using typename Superclass1::ParametersType;
@@ -180,15 +159,15 @@ public:
   using typename Superclass1::NumberOfParametersType;
 
   /** Typedef's specific for the BSplineTransform. */
-  typedef typename BSplineTransformBaseType::PixelType     PixelType;
-  typedef typename BSplineTransformBaseType::ImageType     ImageType;
-  typedef typename BSplineTransformBaseType::ImagePointer  ImagePointer;
-  typedef typename BSplineTransformBaseType::RegionType    RegionType;
-  typedef typename BSplineTransformBaseType::IndexType     IndexType;
-  typedef typename BSplineTransformBaseType::SizeType      SizeType;
-  typedef typename BSplineTransformBaseType::SpacingType   SpacingType;
-  typedef typename BSplineTransformBaseType::OriginType    OriginType;
-  typedef typename BSplineTransformBaseType::DirectionType DirectionType;
+  using PixelType = typename BSplineTransformBaseType::PixelType;
+  using ImageType = typename BSplineTransformBaseType::ImageType;
+  using ImagePointer = typename BSplineTransformBaseType::ImagePointer;
+  using RegionType = typename BSplineTransformBaseType::RegionType;
+  using IndexType = typename BSplineTransformBaseType::IndexType;
+  using SizeType = typename BSplineTransformBaseType::SizeType;
+  using SpacingType = typename BSplineTransformBaseType::SpacingType;
+  using OriginType = typename BSplineTransformBaseType::OriginType;
+  using DirectionType = typename BSplineTransformBaseType::DirectionType;
 
   /** Typedef's from TransformBase. */
   using typename Superclass2::ElastixType;
@@ -200,27 +179,27 @@ public:
   using typename Superclass2::CoordRepType;
   using typename Superclass2::FixedImageType;
   using typename Superclass2::MovingImageType;
-  typedef typename Superclass2::ITKBaseType              ITKBaseType;
-  typedef typename Superclass2::CombinationTransformType CombinationTransformType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
+  using CombinationTransformType = typename Superclass2::CombinationTransformType;
 
   /** Reduced dimension image typedefs. */
-  typedef itk::Image<PixelType, Self::ReducedSpaceDimension> ReducedDimensionImageType;
-  typedef itk::ImageRegion<Self::ReducedSpaceDimension>      ReducedDimensionRegionType;
-  typedef typename ReducedDimensionRegionType::SizeType      ReducedDimensionSizeType;
-  typedef typename ReducedDimensionRegionType::IndexType     ReducedDimensionIndexType;
-  typedef typename ReducedDimensionImageType::SpacingType    ReducedDimensionSpacingType;
-  typedef typename ReducedDimensionImageType::DirectionType  ReducedDimensionDirectionType;
-  typedef typename ReducedDimensionImageType::PointType      ReducedDimensionOriginType;
+  using ReducedDimensionImageType = itk::Image<PixelType, Self::ReducedSpaceDimension>;
+  using ReducedDimensionRegionType = itk::ImageRegion<Self::ReducedSpaceDimension>;
+  using ReducedDimensionSizeType = typename ReducedDimensionRegionType::SizeType;
+  using ReducedDimensionIndexType = typename ReducedDimensionRegionType::IndexType;
+  using ReducedDimensionSpacingType = typename ReducedDimensionImageType::SpacingType;
+  using ReducedDimensionDirectionType = typename ReducedDimensionImageType::DirectionType;
+  using ReducedDimensionOriginType = typename ReducedDimensionImageType::PointType;
 
   /** Typedef's for the GridScheduleComputer and the UpsampleBSplineParametersFilter. */
-  typedef itk::GridScheduleComputer<CoordRepType, ReducedSpaceDimension>                  GridScheduleComputerType;
-  typedef typename GridScheduleComputerType::Pointer                                      GridScheduleComputerPointer;
-  typedef typename GridScheduleComputerType ::VectorGridSpacingFactorType                 GridScheduleType;
-  typedef itk::UpsampleBSplineParametersFilter<ParametersType, ReducedDimensionImageType> GridUpsamplerType;
-  typedef typename GridUpsamplerType::Pointer                                             GridUpsamplerPointer;
+  using GridScheduleComputerType = itk::GridScheduleComputer<CoordRepType, ReducedSpaceDimension>;
+  using GridScheduleComputerPointer = typename GridScheduleComputerType::Pointer;
+  using GridScheduleType = typename GridScheduleComputerType ::VectorGridSpacingFactorType;
+  using GridUpsamplerType = itk::UpsampleBSplineParametersFilter<ParametersType, ReducedDimensionImageType>;
+  using GridUpsamplerPointer = typename GridUpsamplerType::Pointer;
 
   /** Typedef's creation of parameter map */
-  typedef std::vector<std::string> ParameterValueType;
+  using ParameterValueType = std::vector<std::string>;
 
   /** Execute stuff before anything else is done:
    * \li Initialize the right BSplineTransform.
@@ -228,7 +207,7 @@ public:
    * \li Initialize upsample filter.
    */
   int
-  BeforeAll(void) override;
+  BeforeAll() override;
 
   /** Execute stuff before the actual registration:
    * \li Create an initial B-spline grid.
@@ -244,22 +223,14 @@ public:
    * before calling the BeforeEachResolution() methods.
    */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   /** Execute stuff before each new pyramid resolution:
    * \li In the first resolution call InitializeTransform().
    * \li In next resolutions upsample the B-spline grid if necessary (so, call IncreaseScale())
    */
   void
-  BeforeEachResolution(void) override;
-
-  /** Method to set the initial B-spline grid and grid scheduler and initialize the parameters (to 0).
-   * \li Define the initial grid region, origin and spacing, using the precomputed grid information.
-   * \li Set the initial parameters to zero and set then as InitialParametersOfNextLevel in the registration object.
-   * Called by BeforeEachResolution().
-   */
-  virtual void
-  InitializeTransform(void);
+  BeforeEachResolution() override;
 
   /** Method to increase the density of the B-spline grid.
    * \li Determine the new B-spline coefficients that describe the current deformation field
@@ -268,11 +239,11 @@ public:
    * Called by BeforeEachResolution().
    */
   virtual void
-  IncreaseScale(void);
+  IncreaseScale();
 
   /** Function to read transform-parameters from a file. */
   void
-  ReadFromFile(void) override;
+  ReadFromFile() override;
 
   /** Set the scales of the edge B-spline coefficients to zero. */
   virtual void
@@ -280,31 +251,43 @@ public:
 
 protected:
   /** The constructor. */
-  BSplineStackTransform();
+  BSplineStackTransform() { this->Superclass1::SetCurrentTransform(m_StackTransform); }
 
   /** The destructor. */
   ~BSplineStackTransform() override = default;
 
   /** Read user-specified gridspacing and call the itkGridScheduleComputer. */
   virtual void
-  PreComputeGridInformation(void);
+  PreComputeGridInformation();
 
 private:
   elxOverrideGetSelfMacro;
 
+  /** Method to set the initial B-spline grid and grid scheduler and initialize the parameters (to 0).
+   * \li Define the initial grid region, origin and spacing, using the precomputed grid information.
+   * \li Set the initial parameters to zero and set then as InitialParametersOfNextLevel in the registration object.
+   * Called by BeforeEachResolution().
+   */
+  void
+  InitializeTransform();
+
   /** Creates a map of the parameters specific for this (derived) transform type. */
   ParameterMapType
-  CreateDerivedTransformParametersMap(void) const override;
+  CreateDerivedTransformParametersMap() const override;
 
   /** The deleted copy constructor and assignment operator. */
   BSplineStackTransform(const Self &) = delete;
   void
   operator=(const Self &) = delete;
 
+  /** Typedef for stack transform. */
+  using StackTransformType = itk::BSplineStackTransform<SpaceDimension>;
+
   /** The B-spline stack transform. */
-  BSplineStackTransformPointer m_BSplineStackTransform;
+  const typename StackTransformType::Pointer m_StackTransform{ StackTransformType::New() };
+
   /** Dummy sub transform to be used to set sub transforms of stack transform. */
-  ReducedDimensionBSplineTransformBasePointer m_BSplineDummySubTransform;
+  ReducedDimensionBSplineTransformBasePointer m_DummySubTransform;
 
   /** Grid schedule computer and grid upsampler. */
   GridScheduleComputerPointer m_GridScheduleComputer;

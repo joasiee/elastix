@@ -22,7 +22,7 @@
 #include "itkParzenWindowNormalizedMutualInformationImageToImageMetric.h"
 
 #include "itkImageLinearConstIteratorWithIndex.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -56,7 +56,7 @@ ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingIm
   MarginalPDFType & pdf) const
 {
   /** Typedef iterator */
-  typedef typename MarginalPDFType::iterator MarginalPDFIteratorType;
+  using MarginalPDFIteratorType = typename MarginalPDFType::iterator;
 
   /** Prepare iterators for computing marginal logPDF. */
   MarginalPDFIteratorType       PDFit = pdf.begin();
@@ -86,13 +86,13 @@ ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingIm
  */
 
 template <class TFixedImage, class TMovingImage>
-typename ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::
-  ComputeNormalizedMutualInformation(MeasureType & jointEntropy) const
+  ComputeNormalizedMutualInformation(MeasureType & jointEntropy) const -> MeasureType
 {
   /** Typedef iterators */
-  typedef ImageLinearConstIteratorWithIndex<JointPDFType> JointPDFConstIteratorType;
-  typedef typename MarginalPDFType::const_iterator        MarginalPDFConstIteratorType;
+  using JointPDFConstIteratorType = ImageLinearConstIteratorWithIndex<JointPDFType>;
+  using MarginalPDFConstIteratorType = typename MarginalPDFType::const_iterator;
 
   /** Prepare iterators for computing measure */
   JointPDFConstIteratorType jointPDFconstit(this->m_JointPDF, this->m_JointPDF->GetLargestPossibleRegion());
@@ -138,9 +138,9 @@ ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingIm
  */
 
 template <class TFixedImage, class TMovingImage>
-typename ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const ParametersType & parameters) const
+  const ParametersType & parameters) const -> MeasureType
 {
   /** Construct the JointPDF and Alpha */
   this->ComputePDFs(parameters);
@@ -180,7 +180,7 @@ ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingIm
   /** Initialize some variables */
   value = NumericTraits<MeasureType>::Zero;
   derivative = DerivativeType(this->GetNumberOfParameters());
-  derivative.Fill(NumericTraits<double>::ZeroValue());
+  derivative.Fill(0.0);
 
   /** Construct the JointPDF, JointPDFDerivatives, and Alpha. */
   this->ComputePDFsAndPDFDerivatives(parameters);
@@ -216,11 +216,11 @@ ParzenWindowNormalizedMutualInformationImageToImageMetric<TFixedImage, TMovingIm
    **/
 
   /** Typedefs for iterators */
-  typedef ImageLinearConstIteratorWithIndex<JointPDFDerivativesType> JointPDFDerivativesConstIteratorType;
-  typedef typename DerivativeType::iterator                          DerivativeIteratorType;
-  typedef typename DerivativeType::const_iterator                    DerivativeConstIteratorType;
-  typedef ImageLinearConstIteratorWithIndex<JointPDFType>            JointPDFConstIteratorType;
-  typedef typename MarginalPDFType::const_iterator                   MarginalPDFConstIteratorType;
+  using JointPDFDerivativesConstIteratorType = ImageLinearConstIteratorWithIndex<JointPDFDerivativesType>;
+  using DerivativeIteratorType = typename DerivativeType::iterator;
+  using DerivativeConstIteratorType = typename DerivativeType::const_iterator;
+  using JointPDFConstIteratorType = ImageLinearConstIteratorWithIndex<JointPDFType>;
+  using MarginalPDFConstIteratorType = typename MarginalPDFType::const_iterator;
 
   /** Setup iterators */
   JointPDFDerivativesConstIteratorType jointPDFDerivativesConstit(

@@ -39,7 +39,7 @@
 namespace itk
 {
 
-// Constructor with default arguments
+// Default-constructor
 template <class TScalarType>
 AdvancedEuler3DTransform<TScalarType>::AdvancedEuler3DTransform()
   : Superclass(ParametersDimension)
@@ -47,46 +47,6 @@ AdvancedEuler3DTransform<TScalarType>::AdvancedEuler3DTransform()
   m_ComputeZYX = false;
   m_AngleX = m_AngleY = m_AngleZ = NumericTraits<ScalarType>::Zero;
   this->PrecomputeJacobianOfSpatialJacobian();
-}
-
-
-// Constructor with default arguments
-template <class TScalarType>
-AdvancedEuler3DTransform<TScalarType>::AdvancedEuler3DTransform(const MatrixType &      matrix,
-                                                                const OutputPointType & offset)
-{
-  m_ComputeZYX = false;
-  this->SetMatrix(matrix);
-
-  OffsetType off;
-  off[0] = offset[0];
-  off[1] = offset[1];
-  off[2] = offset[2];
-  this->SetOffset(off);
-
-  this->PrecomputeJacobianOfSpatialJacobian();
-}
-
-
-// Constructor with arguments
-template <class TScalarType>
-AdvancedEuler3DTransform<TScalarType>::AdvancedEuler3DTransform(unsigned int parametersDimension)
-  : Superclass(parametersDimension)
-{
-  m_ComputeZYX = false;
-  m_AngleX = m_AngleY = m_AngleZ = NumericTraits<ScalarType>::Zero;
-  this->PrecomputeJacobianOfSpatialJacobian();
-}
-
-
-// Set Angles
-template <class TScalarType>
-void
-AdvancedEuler3DTransform<TScalarType>::SetVarRotation(ScalarType angleX, ScalarType angleY, ScalarType angleZ)
-{
-  this->m_AngleX = angleX;
-  this->m_AngleY = angleY;
-  this->m_AngleZ = angleZ;
 }
 
 
@@ -121,8 +81,8 @@ AdvancedEuler3DTransform<TScalarType>::SetParameters(const ParametersType & para
 
 // Get Parameters
 template <class TScalarType>
-const typename AdvancedEuler3DTransform<TScalarType>::ParametersType &
-AdvancedEuler3DTransform<TScalarType>::GetParameters(void) const
+auto
+AdvancedEuler3DTransform<TScalarType>::GetParameters() const -> const ParametersType &
 {
   this->m_Parameters[0] = m_AngleX;
   this->m_Parameters[1] = m_AngleY;
@@ -150,7 +110,7 @@ AdvancedEuler3DTransform<TScalarType>::SetRotation(ScalarType angleX, ScalarType
 // Compose
 template <class TScalarType>
 void
-AdvancedEuler3DTransform<TScalarType>::SetIdentity(void)
+AdvancedEuler3DTransform<TScalarType>::SetIdentity()
 {
   Superclass::SetIdentity();
   m_AngleX = 0;
@@ -163,7 +123,7 @@ AdvancedEuler3DTransform<TScalarType>::SetIdentity(void)
 // Compute angles from the rotation matrix
 template <class TScalarType>
 void
-AdvancedEuler3DTransform<TScalarType>::ComputeMatrixParameters(void)
+AdvancedEuler3DTransform<TScalarType>::ComputeMatrixParameters()
 {
   if (m_ComputeZYX)
   {
@@ -215,7 +175,7 @@ AdvancedEuler3DTransform<TScalarType>::ComputeMatrixParameters(void)
 // Compute the matrix
 template <class TScalarType>
 void
-AdvancedEuler3DTransform<TScalarType>::ComputeMatrix(void)
+AdvancedEuler3DTransform<TScalarType>::ComputeMatrix()
 {
   // need to check if angles are in the right order
   const double cx = std::cos(m_AngleX);
@@ -313,7 +273,7 @@ AdvancedEuler3DTransform<TScalarType>::GetJacobian(const InputPointType &       
 // Precompute Jacobian of Spatial Jacobian
 template <class TScalarType>
 void
-AdvancedEuler3DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian(void)
+AdvancedEuler3DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian()
 {
   if (ParametersDimension < 6)
   {

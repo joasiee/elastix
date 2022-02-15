@@ -118,11 +118,11 @@ class ITK_TEMPLATE_EXPORT CMAEvolutionStrategy
 {
 public:
   /** Standard ITK.*/
-  typedef CMAEvolutionStrategy          Self;
-  typedef CMAEvolutionStrategyOptimizer Superclass1;
-  typedef OptimizerBase<TElastix>       Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = CMAEvolutionStrategy;
+  using Superclass1 = CMAEvolutionStrategyOptimizer;
+  using Superclass2 = OptimizerBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -151,29 +151,29 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Check if any scales are set, and set the UseScales flag on or off;
    * after that call the superclass' implementation */
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
   /** Methods to set parameters and print output at different stages
    * in the registration process.*/
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
   void
-  AfterEachResolution(void) override;
+  AfterEachResolution() override;
 
   void
-  AfterEachIteration(void) override;
+  AfterEachIteration() override;
 
   void
-  AfterRegistration(void) override;
+  AfterRegistration() override;
 
 protected:
   CMAEvolutionStrategy() = default;
@@ -181,7 +181,7 @@ protected:
 
   /** Call the superclass' implementation and print the value of some variables */
   void
-  InitializeProgressVariables(void) override;
+  InitializeProgressVariables() override;
 
 private:
   elxOverrideGetSelfMacro;

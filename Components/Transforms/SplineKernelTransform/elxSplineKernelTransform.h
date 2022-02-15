@@ -119,20 +119,18 @@ class ITK_TEMPLATE_EXPORT SplineKernelTransform
 {
 public:
   /** Standard ITK-stuff. */
-  typedef SplineKernelTransform Self;
-  typedef itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
-                                            elx::TransformBase<TElastix>::FixedImageDimension>
-                                       Superclass1;
-  typedef elx::TransformBase<TElastix> Superclass2;
+  using Self = SplineKernelTransform;
+  using Superclass1 = itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                        elx::TransformBase<TElastix>::FixedImageDimension>;
+  using Superclass2 = elx::TransformBase<TElastix>;
 
   /** The ITK-class that provides most of the functionality, and
    * that is set as the "CurrentTransform" in the CombinationTransform.
    */
-  typedef itk::KernelTransform2<typename elx::TransformBase<TElastix>::CoordRepType,
-                                elx::TransformBase<TElastix>::FixedImageDimension>
-                                        KernelTransformType;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using KernelTransformType = itk::KernelTransform2<typename elx::TransformBase<TElastix>::CoordRepType,
+                                                    elx::TransformBase<TElastix>::FixedImageDimension>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -174,20 +172,20 @@ public:
   using typename Superclass2::CoordRepType;
   using typename Superclass2::FixedImageType;
   using typename Superclass2::MovingImageType;
-  typedef typename Superclass2::ITKBaseType              ITKBaseType;
-  typedef typename Superclass2::CombinationTransformType CombinationTransformType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
+  using CombinationTransformType = typename Superclass2::CombinationTransformType;
 
   /** Extra typedefs */
-  typedef typename KernelTransformType::Pointer      KernelTransformPointer;
-  typedef typename KernelTransformType::PointSetType PointSetType;
-  typedef typename PointSetType::Pointer             PointSetPointer;
+  using KernelTransformPointer = typename KernelTransformType::Pointer;
+  using PointSetType = typename KernelTransformType::PointSetType;
+  using PointSetPointer = typename PointSetType::Pointer;
 
   /** Execute stuff before everything else:
    * \li Check if -fp command line argument was given
    * \li Check if -mp command line argument was given
    */
   int
-  BeforeAll(void) override;
+  BeforeAll() override;
 
   /** Execute stuff before the actual registration:
    * \li Setup transform
@@ -196,11 +194,11 @@ public:
    * \li Call InitializeTransform.
    */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   /** Function to read transform-parameters from a file. */
   void
-  ReadFromFile(void) override;
+  ReadFromFile() override;
 
 protected:
   /** The constructor. */
@@ -208,11 +206,11 @@ protected:
   /** The destructor. */
   ~SplineKernelTransform() override = default;
 
-  typedef itk::ThinPlateSplineKernelTransform2<CoordRepType, Self::SpaceDimension>             TPKernelTransformType;
-  typedef itk::ThinPlateR2LogRSplineKernelTransform2<CoordRepType, Self::SpaceDimension>       TPRKernelTransformType;
-  typedef itk::VolumeSplineKernelTransform2<CoordRepType, Self::SpaceDimension>                VKernelTransformType;
-  typedef itk::ElasticBodySplineKernelTransform2<CoordRepType, Self::SpaceDimension>           EBKernelTransformType;
-  typedef itk::ElasticBodyReciprocalSplineKernelTransform2<CoordRepType, Self::SpaceDimension> EBRKernelTransformType;
+  using TPKernelTransformType = itk::ThinPlateSplineKernelTransform2<CoordRepType, Self::SpaceDimension>;
+  using TPRKernelTransformType = itk::ThinPlateR2LogRSplineKernelTransform2<CoordRepType, Self::SpaceDimension>;
+  using VKernelTransformType = itk::VolumeSplineKernelTransform2<CoordRepType, Self::SpaceDimension>;
+  using EBKernelTransformType = itk::ElasticBodySplineKernelTransform2<CoordRepType, Self::SpaceDimension>;
+  using EBRKernelTransformType = itk::ElasticBodyReciprocalSplineKernelTransform2<CoordRepType, Self::SpaceDimension>;
 
   /** Create an instance of a kernel transform. Returns false if the
    * kernelType is unknown.
@@ -224,14 +222,14 @@ protected:
    * \li Try reading -fp file
    */
   virtual void
-  DetermineSourceLandmarks(void);
+  DetermineSourceLandmarks();
 
   /** Read target landmarks from mp file or load identity.
    * \li Try reading -mp file
    * \li If no -mp file was given, place landmarks as identity.
    */
   virtual bool
-  DetermineTargetLandmarks(void);
+  DetermineTargetLandmarks();
 
   /** General function to read all landmarks. */
   virtual void
@@ -247,7 +245,7 @@ private:
 
   /** Creates a map of the parameters specific for this (derived) transform type. */
   ParameterMapType
-  CreateDerivedTransformParametersMap(void) const override;
+  CreateDerivedTransformParametersMap() const override;
 
   /** The deleted copy constructor. */
   SplineKernelTransform(const Self &) = delete;

@@ -119,11 +119,11 @@ class ITK_TEMPLATE_EXPORT GenericMultiResolutionPyramidImageFilter
 {
 public:
   /** Standard class typedefs. */
-  typedef GenericMultiResolutionPyramidImageFilter                     Self;
-  typedef MultiResolutionPyramidImageFilter<TInputImage, TOutputImage> Superclass;
-  typedef typename Superclass::Superclass                              SuperSuperclass;
-  typedef SmartPointer<Self>                                           Pointer;
-  typedef SmartPointer<const Self>                                     ConstPointer;
+  using Self = GenericMultiResolutionPyramidImageFilter;
+  using Superclass = MultiResolutionPyramidImageFilter<TInputImage, TOutputImage>;
+  using SuperSuperclass = typename Superclass::Superclass;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -142,17 +142,17 @@ public:
   using typename Superclass::InputImagePointer;
   using typename Superclass::OutputImagePointer;
   using typename Superclass::InputImageConstPointer;
-  typedef typename Superclass::InputImageType::SpacingType  SpacingType;
-  typedef typename InputImageType::PixelType                PixelType;
-  typedef typename NumericTraits<PixelType>::ScalarRealType ScalarRealType;
+  using SpacingType = typename Superclass::InputImageType::SpacingType;
+  using PixelType = typename InputImageType::PixelType;
+  using ScalarRealType = typename NumericTraits<PixelType>::ScalarRealType;
 
   /** SmoothingScheduleType typedef support. */
-  typedef Array2D<ScalarRealType> SmoothingScheduleType;
-  typedef ScheduleType            RescaleScheduleType;
+  using SmoothingScheduleType = Array2D<ScalarRealType>;
+  using RescaleScheduleType = ScheduleType;
 
   /** Define the type for the sigma array. */
-  typedef FixedArray<ScalarRealType, Self::ImageDimension> SigmaArrayType;
-  typedef SigmaArrayType                                   RescaleFactorArrayType;
+  using SigmaArrayType = FixedArray<ScalarRealType, Self::ImageDimension>;
+  using RescaleFactorArrayType = SigmaArrayType;
 
   /** Set a multi-resolution schedule. The input schedule must have only
    * ImageDimension number of columns and NumberOfLevels number of rows. For
@@ -176,11 +176,11 @@ public:
 
   /** Set a multi-resolution rescale schedule with ones. */
   virtual void
-  SetRescaleScheduleToUnity(void);
+  SetRescaleScheduleToUnity();
 
   /** Get the multi-resolution rescale schedule. */
   const RescaleScheduleType &
-  GetRescaleSchedule(void) const
+  GetRescaleSchedule() const
   {
     return this->m_Schedule;
   }
@@ -195,7 +195,7 @@ public:
 
   /** Set a multi-resolution rescale schedule with zeros. */
   virtual void
-  SetSmoothingScheduleToZero(void);
+  SetSmoothingScheduleToZero();
 
   /** Get the multi-resolution smoothing schedule. */
   itkGetConstReferenceMacro(SmoothingSchedule, SmoothingScheduleType);
@@ -246,7 +246,7 @@ protected:
    * below. \sa ProcessObject::GenerateOutputInformaton().
    */
   void
-  GenerateOutputInformation(void) override;
+  GenerateOutputInformation() override;
 
   /** Given one output whose requested region has been set, this method sets
    * the requested region for the remaining output images. The original
@@ -258,15 +258,15 @@ protected:
 
   /** Overwrite the Superclass implementation: no padding required. */
   void
-  GenerateInputRequestedRegion(void) override;
+  GenerateInputRequestedRegion() override;
 
   /** Generate the output data. */
   void
-  GenerateData(void) override;
+  GenerateData() override;
 
   /** Release the output data when the current level is used. */
   void
-  ReleaseOutputs(void);
+  ReleaseOutputs();
 
   SmoothingScheduleType m_SmoothingSchedule;
   unsigned int          m_CurrentLevel;
@@ -277,14 +277,14 @@ private:
   /** Typedef for smoother. Smooth always happens first, then only from
    * InputImageType to OutputImageType is possible.
    */
-  typedef SmoothingRecursiveGaussianImageFilter<InputImageType, OutputImageType> SmootherType;
+  using SmootherType = SmoothingRecursiveGaussianImageFilter<InputImageType, OutputImageType>;
 
   /** Typedefs for shrinker or resample. If smoother has not been used, then
    * we have to use InputImageType to OutputImageType,
    * otherwise OutputImageType to OutputImageType.
    */
-  typedef ImageToImageFilter<OutputImageType, OutputImageType> ImageToImageFilterSameTypes;
-  typedef ImageToImageFilter<InputImageType, OutputImageType>  ImageToImageFilterDifferentTypes;
+  using ImageToImageFilterSameTypes = ImageToImageFilter<OutputImageType, OutputImageType>;
+  using ImageToImageFilterDifferentTypes = ImageToImageFilter<InputImageType, OutputImageType>;
 
   /** Smooth image at current level. Returns true if performed.
    * This method does not perform execution.
@@ -316,7 +316,7 @@ private:
 
   /** Initialize m_SmoothingSchedule to default values for backward compatibility. */
   void
-  SetSmoothingScheduleToDefault(void);
+  SetSmoothingScheduleToDefault();
 
   /** Checks whether we have to compute anything based on
    * m_ComputeOnlyForCurrentLevel and m_CurrentLevel.
@@ -353,11 +353,11 @@ private:
 
   /** Returns true if smooth has been used in pipeline, otherwise return false. */
   bool
-  IsSmoothingUsed(void) const;
+  IsSmoothingUsed() const;
 
   /** Returns true if rescale has been used in pipeline, otherwise return false. */
   bool
-  IsRescaleUsed(void) const;
+  IsRescaleUsed() const;
 
 private:
   GenericMultiResolutionPyramidImageFilter(const Self &) = delete;

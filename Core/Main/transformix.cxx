@@ -63,10 +63,10 @@ main(int argc, char ** argv)
   }
 
   /** Some typedef's.*/
-  typedef elx::TransformixMain                 TransformixMainType;
-  typedef TransformixMainType::Pointer         TransformixMainPointer;
-  typedef TransformixMainType::ArgumentMapType ArgumentMapType;
-  typedef ArgumentMapType::value_type          ArgumentMapEntryType;
+  using TransformixMainType = elx::TransformixMain;
+  using TransformixMainPointer = TransformixMainType::Pointer;
+  using ArgumentMapType = TransformixMainType::ArgumentMapType;
+  using ArgumentMapEntryType = ArgumentMapType::value_type;
 
   /** Support Mevis Dicom Tiff (if selected in cmake) */
   RegisterMevisDicomTiff();
@@ -132,8 +132,9 @@ main(int argc, char ** argv)
   if (argMap.count("-in") == 0 && argMap.count("-ipp") == 0 && argMap.count("-def") == 0 && argMap.count("-jac") == 0 &&
       argMap.count("-jacmat") == 0)
   {
-    std::cerr << "ERROR: At least one of the CommandLine options \"-in\", "
-              << "\"-def\", \"-jac\", or \"-jacmat\" should be given!" << std::endl;
+    std::cerr
+      << "ERROR: At least one of the CommandLine options \"-in\", \"-def\", \"-jac\", or \"-jacmat\" should be given!"
+      << std::endl;
     returndummy |= -1;
   }
 
@@ -230,7 +231,7 @@ main(int argc, char ** argv)
  */
 
 void
-PrintHelp(void)
+PrintHelp()
 {
   /** Print the version. */
   std::cout << "transformix version: " ELASTIX_VERSION_STRING "\n\n";

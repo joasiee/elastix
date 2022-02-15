@@ -54,8 +54,8 @@ class ITK_TEMPLATE_EXPORT OptimizerBase : public BaseComponentSE<TElastix>
 {
 public:
   /** Standard ITK-stuff. */
-  typedef OptimizerBase             Self;
-  typedef BaseComponentSE<TElastix> Superclass;
+  using Self = OptimizerBase;
+  using Superclass = BaseComponentSE<TElastix>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(OptimizerBase, BaseComponentSE);
@@ -69,14 +69,14 @@ public:
   using typename Superclass::RegistrationPointer;
 
   /** ITKBaseType. */
-  typedef itk::Optimizer ITKBaseType;
+  using ITKBaseType = itk::Optimizer;
 
   /** Typedef needed for the SetCurrentPositionPublic function. */
-  typedef typename ITKBaseType::ParametersType ParametersType;
+  using ParametersType = typename ITKBaseType::ParametersType;
 
   /** Retrieves this object as ITKBaseType. */
   ITKBaseType *
-  GetAsITKBaseType(void)
+  GetAsITKBaseType()
   {
     return &(this->GetSelf());
   }
@@ -84,7 +84,7 @@ public:
 
   /** Retrieves this object as ITKBaseType, to use in const functions. */
   const ITKBaseType *
-  GetAsITKBaseType(void) const
+  GetAsITKBaseType() const
   {
     return &(this->GetSelf());
   }
@@ -104,7 +104,7 @@ public:
    * \li Compute and print MD5 hash of the transform parameters.
    */
   void
-  AfterRegistrationBase(void) override;
+  AfterRegistrationBase() override;
 
   /** Method that sets the scales defined by a sinus
    * scale[i] = amplitude^( sin(i/nrofparam*2pi*frequency) )
@@ -122,11 +122,11 @@ protected:
    * Not every metric may have implemented this.
    */
   virtual void
-  SelectNewSamples(void);
+  SelectNewSamples();
 
   /** Check whether the user asked to select new samples every iteration. */
   virtual bool
-  GetNewSamplesEveryIteration(void) const;
+  GetNewSamplesEveryIteration() const;
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);

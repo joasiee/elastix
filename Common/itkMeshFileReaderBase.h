@@ -38,10 +38,10 @@ class ITK_TEMPLATE_EXPORT MeshFileReaderBase : public MeshSource<TOutputMesh>
 {
 public:
   /** Standard class typedefs. */
-  typedef MeshFileReaderBase       Self;
-  typedef MeshSource<TOutputMesh>  Superclass;
-  typedef SmartPointer<Self>       Pointer;
-  typedef SmartPointer<const Self> ConstPointer;
+  using Self = MeshFileReaderBase;
+  using Superclass = MeshSource<TOutputMesh>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -62,7 +62,7 @@ public:
    * propagation of the pipeline.
    */
   void
-  GenerateOutputInformation(void) override;
+  GenerateOutputInformation() override;
 
   /** Give the reader a chance to indicate that it will produce more
    * output than it was requested to produce. MeshFileReader cannot
@@ -83,7 +83,7 @@ protected:
    * appropriate message will be thrown.
    */
   virtual void
-  TestFileExistanceAndReadability(void);
+  TestFileExistanceAndReadability();
 
   std::string m_FileName;
 

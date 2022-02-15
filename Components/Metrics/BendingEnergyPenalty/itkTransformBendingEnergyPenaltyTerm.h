@@ -51,10 +51,10 @@ class ITK_TEMPLATE_EXPORT TransformBendingEnergyPenaltyTerm : public TransformPe
 {
 public:
   /** Standard ITK stuff. */
-  typedef TransformBendingEnergyPenaltyTerm              Self;
-  typedef TransformPenaltyTerm<TFixedImage, TScalarType> Superclass;
-  typedef SmartPointer<Self>                             Pointer;
-  typedef SmartPointer<const Self>                       ConstPointer;
+  using Self = TransformBendingEnergyPenaltyTerm;
+  using Superclass = TransformPenaltyTerm<TFixedImage, TScalarType>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -98,8 +98,6 @@ public:
   using typename Superclass::FixedImagePixelType;
   using typename Superclass::ImageSampleContainerType;
   using typename Superclass::ImageSampleContainerPointer;
-  using typename Superclass::ImageSampleContainerReferencePointer;
-  using typename Superclass::ImageSampleContainerReferenceType;
   using typename Superclass::ScalarType;
   using typename Superclass::ThreaderType;
   using typename Superclass::ThreadInfoType;
@@ -189,7 +187,7 @@ protected:
   using typename Superclass::NonZeroJacobianIndicesType;
 
   /** Typedefs for SelfHessian */
-  typedef ImageGridSampler<FixedImageType> SelfHessianSamplerType;
+  using SelfHessianSamplerType = ImageGridSampler<FixedImageType>;
 
   /** The constructor. */
   TransformBendingEnergyPenaltyTerm();

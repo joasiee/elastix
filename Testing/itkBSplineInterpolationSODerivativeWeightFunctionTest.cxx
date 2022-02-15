@@ -23,7 +23,7 @@
 //-------------------------------------------------------------------------------------
 
 int
-main(void)
+main()
 {
   /** Some basic type definitions.
    * NOTE: don't change the dimension or the spline order, since the
@@ -31,8 +31,8 @@ main(void)
    */
   const unsigned int Dimension = 2;
   const unsigned int SplineOrder = 3;
-  typedef float      CoordinateRepresentationType;
-  const double       distance = 1e-3; // the allowable distance
+  using CoordinateRepresentationType = float;
+  const double distance = 1e-3; // the allowable distance
   // const double allowedTimeDifference = 0.1; // 10% is considered within limits
   /** The number of calls to Evaluate(). This number gives reasonably
    * fast test results in Release mode.
@@ -40,11 +40,10 @@ main(void)
   unsigned int N = static_cast<unsigned int>(1e6);
 
   /** Other typedefs. */
-  typedef itk::
-    BSplineInterpolationSecondOrderDerivativeWeightFunction<CoordinateRepresentationType, Dimension, SplineOrder>
-                                                              SODerivativeWeightFunctionType;
-  typedef SODerivativeWeightFunctionType::ContinuousIndexType ContinuousIndexType;
-  typedef SODerivativeWeightFunctionType::WeightsType         WeightsType;
+  using SODerivativeWeightFunctionType =
+    itk::BSplineInterpolationSecondOrderDerivativeWeightFunction<CoordinateRepresentationType, Dimension, SplineOrder>;
+  using ContinuousIndexType = SODerivativeWeightFunctionType::ContinuousIndexType;
+  using WeightsType = SODerivativeWeightFunctionType::WeightsType;
 
   std::cerr << "TESTING:\n" << std::endl;
 
@@ -55,7 +54,7 @@ main(void)
   std::cerr << "\nTESTING: derivatives (0,1)\n" << std::endl;
 
   /** Construct several weight functions. */
-  SODerivativeWeightFunctionType::Pointer soWeightFunction = SODerivativeWeightFunctionType::New();
+  auto soWeightFunction = SODerivativeWeightFunctionType::New();
 
   /** Create and fill a continuous index.
    * NOTE: don't change this, since the hard-coded ground truth depends on this.

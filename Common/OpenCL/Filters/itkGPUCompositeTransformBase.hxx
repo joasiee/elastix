@@ -109,7 +109,7 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::GetSourceCode(std::string &
 //------------------------------------------------------------------------------
 template <typename TScalarType, unsigned int NDimensions>
 bool
-GPUCompositeTransformBase<TScalarType, NDimensions>::HasIdentityTransform(void) const
+GPUCompositeTransformBase<TScalarType, NDimensions>::HasIdentityTransform() const
 {
   for (std::size_t i = 0; i < this->GetNumberOfTransforms(); ++i)
   {
@@ -126,7 +126,7 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::HasIdentityTransform(void) 
 //------------------------------------------------------------------------------
 template <typename TScalarType, unsigned int NDimensions>
 bool
-GPUCompositeTransformBase<TScalarType, NDimensions>::HasMatrixOffsetTransform(void) const
+GPUCompositeTransformBase<TScalarType, NDimensions>::HasMatrixOffsetTransform() const
 {
   for (std::size_t i = 0; i < this->GetNumberOfTransforms(); ++i)
   {
@@ -143,7 +143,7 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::HasMatrixOffsetTransform(vo
 //------------------------------------------------------------------------------
 template <typename TScalarType, unsigned int NDimensions>
 bool
-GPUCompositeTransformBase<TScalarType, NDimensions>::HasTranslationTransform(void) const
+GPUCompositeTransformBase<TScalarType, NDimensions>::HasTranslationTransform() const
 {
   for (std::size_t i = 0; i < this->GetNumberOfTransforms(); ++i)
   {
@@ -160,7 +160,7 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::HasTranslationTransform(voi
 //------------------------------------------------------------------------------
 template <typename TScalarType, unsigned int NDimensions>
 bool
-GPUCompositeTransformBase<TScalarType, NDimensions>::HasBSplineTransform(void) const
+GPUCompositeTransformBase<TScalarType, NDimensions>::HasBSplineTransform() const
 {
   for (std::size_t i = 0; i < this->GetNumberOfTransforms(); ++i)
   {
@@ -187,8 +187,8 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::IsIdentityTransform(const s
   }
 
   // Perform specific check
-  typedef GPUIdentityTransform<ScalarType, NDimensions> IdentityTransformType;
-  const IdentityTransformType *                         identity =
+  using IdentityTransformType = GPUIdentityTransform<ScalarType, NDimensions>;
+  const IdentityTransformType * identity =
     dynamic_cast<const IdentityTransformType *>(this->GetNthTransform(index).GetPointer());
   if (!identity)
   {
@@ -212,8 +212,8 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::IsMatrixOffsetTransform(con
   }
 
   // Perform specific check
-  typedef GPUMatrixOffsetTransformBase<ScalarType, InputSpaceDimension, OutputSpaceDimension>
-                                        MatrixOffsetTransformBaseType;
+  using MatrixOffsetTransformBaseType =
+    GPUMatrixOffsetTransformBase<ScalarType, InputSpaceDimension, OutputSpaceDimension>;
   const MatrixOffsetTransformBaseType * matrixoffset =
     dynamic_cast<const MatrixOffsetTransformBaseType *>(this->GetNthTransform(index).GetPointer());
   if (!matrixoffset)
@@ -238,8 +238,8 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::IsTranslationTransform(cons
   }
 
   // Perform specific check
-  typedef GPUTranslationTransformBase<ScalarType, InputSpaceDimension> TranslationTransformBaseType;
-  const TranslationTransformBaseType *                                 translation =
+  using TranslationTransformBaseType = GPUTranslationTransformBase<ScalarType, InputSpaceDimension>;
+  const TranslationTransformBaseType * translation =
     dynamic_cast<const TranslationTransformBaseType *>(this->GetNthTransform(index).GetPointer());
   if (!translation)
   {
@@ -272,8 +272,8 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::IsIdentityTransform(const s
                                                                          const bool        loadSource,
                                                                          std::string &     source) const
 {
-  typedef GPUIdentityTransform<ScalarType, NDimensions> IdentityTransformType;
-  const IdentityTransformType *                         identity =
+  using IdentityTransformType = GPUIdentityTransform<ScalarType, NDimensions>;
+  const IdentityTransformType * identity =
     dynamic_cast<const IdentityTransformType *>(this->GetNthTransform(index).GetPointer());
 
   if (!identity)
@@ -299,8 +299,8 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::IsMatrixOffsetTransform(con
                                                                              const bool        loadSource,
                                                                              std::string &     source) const
 {
-  typedef GPUMatrixOffsetTransformBase<ScalarType, InputSpaceDimension, OutputSpaceDimension>
-                                        MatrixOffsetTransformBaseType;
+  using MatrixOffsetTransformBaseType =
+    GPUMatrixOffsetTransformBase<ScalarType, InputSpaceDimension, OutputSpaceDimension>;
   const MatrixOffsetTransformBaseType * matrixoffset =
     dynamic_cast<const MatrixOffsetTransformBaseType *>(this->GetNthTransform(index).GetPointer());
 
@@ -327,8 +327,8 @@ GPUCompositeTransformBase<TScalarType, NDimensions>::IsTranslationTransform(cons
                                                                             const bool        loadSource,
                                                                             std::string &     source) const
 {
-  typedef GPUTranslationTransformBase<ScalarType, InputSpaceDimension> TranslationTransformBaseType;
-  const TranslationTransformBaseType *                                 translation =
+  using TranslationTransformBaseType = GPUTranslationTransformBase<ScalarType, InputSpaceDimension>;
+  const TranslationTransformBaseType * translation =
     dynamic_cast<const TranslationTransformBaseType *>(this->GetNthTransform(index).GetPointer());
 
   if (!translation)

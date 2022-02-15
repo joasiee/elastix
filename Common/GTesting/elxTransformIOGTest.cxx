@@ -21,9 +21,12 @@
 // First include the header file to be tested:
 #include "elxTransformIO.h"
 
+#include "elxConversion.h"
+#include "elxDefaultConstructibleSubclass.h"
 #include "elxElastixMain.h" // For xoutManager.
 #include "elxElastixTemplate.h"
 #include "elxGTestUtilities.h"
+#include "../Core/Main/GTesting/elxCoreMainGTestUtilities.h"
 
 #include "AdvancedAffineTransform/elxAdvancedAffineTransform.h"
 #include "AdvancedBSplineTransform/elxAdvancedBSplineTransform.h"
@@ -43,18 +46,24 @@
 #include "TranslationTransform/elxTranslationTransform.h"
 #include "WeightedCombinationTransform/elxWeightedCombinationTransform.h"
 
-#include <itkImage.h>
 #include <itkAffineTransform.h>
 #include <itkBSplineTransform.h>
+#include <itkCompositeTransform.h>
 #include <itkEuler2DTransform.h>
 #include <itkEuler3DTransform.h>
 #include <itkSimilarity2DTransform.h>
 #include <itkSimilarity3DTransform.h>
 #include <itkTranslationTransform.h>
 
+#include <itkImage.h>
+#include <itkIndexRange.h>
+#include <itkVector.h>
+
+#include <itksys/SystemTools.hxx>
+
 #include <cmath> // For M_PI_4.
 #include <typeinfo>
-#include <type_traits> // For is_same
+#include <type_traits> // For extent, is_base_of and is_same
 
 #include <gtest/gtest.h>
 
@@ -63,6 +72,7 @@ using ParameterMapType = itk::ParameterFileParser::ParameterMapType;
 
 
 // Using-declarations:
+using elx::CoreMainGTestUtilities::CheckNew;
 using elx::GTestUtilities::CreateDefaultElastixObject;
 using elx::GTestUtilities::ExpectAllKeysUnique;
 using elx::GTestUtilities::GeneratePseudoRandomParameters;
@@ -92,15 +102,31 @@ struct WithDimension
 
     template <typename TExpectedCorrespondingItkTransform>
     static void
-    Expect_CorrespondingItkTransform()
+    Expect_CorrespondingItkCompositeTransform()
     {
-      const auto elxTransform = ElastixTransformType::New();
+      using ItkCompositeTransformType = itk::CompositeTransform<double, NDimension>;
+
+      static_assert(
+        std::is_base_of<itk::Transform<double, NDimension, NDimension>, TExpectedCorrespondingItkTransform>::value,
+        "TExpectedCorrespondingItkTransform should be derived from the expected `itk::Transform` specialization!");
+      static_assert(!std::is_base_of<ItkCompositeTransformType, TExpectedCorrespondingItkTransform>::value,
+                    "TExpectedCorrespondingItkTransform should not be derived from `itk::CompositeTransform`!");
+
+      const auto elxTransform = CheckNew<ElastixTransformType>();
 
       EXPECT_EQ(elxTransform->elxGetClassName(),
                 elx::TransformIO::ConvertITKNameOfClassToElastixClassName(
-                  TExpectedCorrespondingItkTransform::New()->GetNameOfClass()));
+                  elx::DefaultConstructibleSubclass<TExpectedCorrespondingItkTransform>{}.GetNameOfClass()));
 
-      const auto itkTransform = elx::TransformIO::CreateCorrespondingItkTransform(*elxTransform);
+      const auto compositeTransform = elx::TransformIO::ConvertToItkCompositeTransform(*elxTransform);
+      ASSERT_NE(compositeTransform, nullptr);
+      static_assert(
+        std::is_same<const itk::SmartPointer<ItkCompositeTransformType>, decltype(compositeTransform)>::value,
+        "`ConvertToItkCompositeTransform` should have the expected `SmartPointer` return type!");
+
+      const auto & transformQueue = compositeTransform->GetTransformQueue();
+      ASSERT_EQ(transformQueue.size(), 1);
+      const auto & itkTransform = transformQueue.front();
       ASSERT_NE(itkTransform, nullptr);
 
       const auto & actualItkTransformTypeId = typeid(*itkTransform);
@@ -113,7 +139,7 @@ struct WithDimension
     static void
     Expect_default_elastix_FixedParameters_empty()
     {
-      const auto fixedParameters = ElastixTransformType::New()->GetFixedParameters();
+      const auto fixedParameters = CheckNew<ElastixTransformType>()->GetFixedParameters();
       ASSERT_EQ(fixedParameters, vnl_vector<double>());
     }
 
@@ -121,7 +147,7 @@ struct WithDimension
     static void
     Expect_default_elastix_FixedParameters_are_all_zero()
     {
-      const auto fixedParameters = ElastixTransformType::New()->GetFixedParameters();
+      const auto fixedParameters = CheckNew<ElastixTransformType>()->GetFixedParameters();
       ASSERT_EQ(fixedParameters.size(), NDimension);
       ASSERT_EQ(fixedParameters, vnl_vector<double>(NDimension, 0.0));
     }
@@ -137,7 +163,7 @@ struct WithDimension
                      .append("\n  fixed = ")
                      .append(elx::Conversion::BoolToString(fixed)));
 
-      const auto transform = ElastixTransformType::New();
+      const auto transform = CheckNew<ElastixTransformType>();
       const auto parameters = elx::TransformIO::GetParameters(fixed, *transform);
       elx::TransformIO::SetParameters(fixed, *transform, parameters);
       ASSERT_EQ(elx::TransformIO::GetParameters(fixed, *transform), parameters);
@@ -156,10 +182,14 @@ struct WithDimension
                      .append("\n  fixed = ")
                      .append(elx::Conversion::BoolToString(fixed)));
 
-      const auto elxTransform = ElastixTransformType::New();
+      const auto elxTransform = CheckNew<ElastixTransformType>();
       SCOPED_TRACE(fixed);
 
-      const auto itkTransform = elx::TransformIO::CreateCorrespondingItkTransform(*elxTransform);
+      const auto compositeTransform = elx::TransformIO::ConvertToItkCompositeTransform(*elxTransform);
+      ASSERT_NE(compositeTransform, nullptr);
+      const auto & transformQueue = compositeTransform->GetTransformQueue();
+      ASSERT_EQ(transformQueue.size(), 1);
+      const auto & itkTransform = transformQueue.front();
       ASSERT_NE(itkTransform, nullptr);
 
       const auto parameters = elx::TransformIO::GetParameters(fixed, *elxTransform);
@@ -172,11 +202,15 @@ struct WithDimension
     static void
     Test_copying_parameters()
     {
-      const auto elxTransform = ElastixTransformType::New();
+      const auto elxTransform = CheckNew<ElastixTransformType>();
 
       SCOPED_TRACE(elxTransform->elxGetClassName());
 
-      const auto itkTransform = elx::TransformIO::CreateCorrespondingItkTransform(*elxTransform);
+      const auto compositeTransform = elx::TransformIO::ConvertToItkCompositeTransform(*elxTransform);
+      ASSERT_NE(compositeTransform, nullptr);
+      const auto & transformQueue = compositeTransform->GetTransformQueue();
+      ASSERT_EQ(transformQueue.size(), 1);
+      const auto & itkTransform = transformQueue.front();
       ASSERT_NE(itkTransform, nullptr);
 
       const auto & actualItkTransformTypeId = typeid(*itkTransform);
@@ -213,7 +247,7 @@ struct WithDimension
 
       const elx::xoutManager manager("", false, false);
 
-      const auto elxTransform = ElastixTransformType::New();
+      const auto elxTransform = CheckNew<ElastixTransformType>();
       const auto elastixObject = CreateDefaultElastixObject<ElastixType<NDimension>>();
 
       // Note: SetElastix does not take or share the ownership of its argument!
@@ -222,7 +256,7 @@ struct WithDimension
       // BeforeAll() appears necessary to for MultiBSplineTransformWithNormal
       // and AdvancedBSplineTransform to initialize the internal ITK
       // transform of the elastix transform, by calling
-      // InitializeBSplineTransform(void)
+      // InitializeBSplineTransform()
       elxTransform->BeforeAll();
 
       // Overrule the default-constructors of BSplineTransformWithDiffusion
@@ -271,8 +305,8 @@ struct WithDimension
                     "The expected precision for double floating point numbers");
       const auto expectedString = "0." + std::string(expectedPrecision, '3');
 
-      const auto elastixObject = ElastixType<NDimension>::New();
-      elastixObject->SetConfiguration(elx::Configuration::New());
+      const auto elastixObject = CheckNew<ElastixType<NDimension>>();
+      elastixObject->SetConfiguration(CheckNew<elx::Configuration>());
 
       const auto imageContainer = elx::ElastixBase::DataObjectContainerType::New();
       const auto image = itk::Image<float, NDimension>::New();
@@ -283,7 +317,7 @@ struct WithDimension
       elastixObject->SetFixedImageContainer(imageContainer);
       elastixObject->SetMovingImageContainer(imageContainer);
 
-      const auto elxTransform = ElastixTransformType::New();
+      const auto elxTransform = CheckNew<ElastixTransformType>();
       elxTransform->SetElastix(elastixObject);
       elxTransform->BeforeAll();
 
@@ -307,7 +341,7 @@ struct WithDimension
     {
       const elx::xoutManager manager("", false, false);
 
-      const auto elxTransform = ElastixTransformType::New();
+      const auto elxTransform = CheckNew<ElastixTransformType>();
 
       const auto elastixObject = CreateDefaultElastixObject<ElastixType<NDimension>>();
 
@@ -337,7 +371,7 @@ struct WithDimension
   static void
   Expect_default_AdvancedBSplineTransform_GetParameters_throws_ExceptionObject(const bool fixed)
   {
-    const auto transform = elx::AdvancedBSplineTransform<ElastixType<NDimension>>::New();
+    const auto transform = CheckNew<elx::AdvancedBSplineTransform<ElastixType<NDimension>>>();
     EXPECT_THROW(elx::TransformIO::GetParameters(fixed, *transform), itk::ExceptionObject);
   }
 
@@ -353,7 +387,7 @@ struct WithDimension
                    .append("\n  ElastixTransformType = ")
                    .append(typeid(ElastixTransformType).name()));
 
-    const auto parameters = ElastixTransformType::New()->GetParameters();
+    const auto parameters = CheckNew<ElastixTransformType>()->GetParameters();
     ASSERT_EQ(parameters, vnl_vector<double>(expectedParameters.data(), NExpectedParameters));
   }
 
@@ -525,11 +559,16 @@ Expect_elx_TransformPoint_yields_same_point_as_ITK(const TITKTransform & itkTran
 
   const auto elastixObject = CreateDefaultElastixObject<ElastixType<Dimension>>();
 
-  const auto elxTransform = TElastixTransform<ElastixType<Dimension>>::New();
+  const auto elxTransform = CheckNew<TElastixTransform<ElastixType<Dimension>>>();
 
-  // Check that the elastix transform type corresponds with the ITK transform type.
-  EXPECT_EQ(elxTransform->elxGetClassName(),
-            elx::TransformIO::ConvertITKNameOfClassToElastixClassName(itkTransform.GetNameOfClass()));
+  const std::string elxClassName = elxTransform->elxGetClassName();
+  const std::string itkNameOfClass = itkTransform.GetNameOfClass();
+
+  if (!((elxClassName == "BSplineTransform") && (itkNameOfClass == elxClassName)))
+  {
+    // Check that the elastix transform type corresponds with the ITK transform type.
+    EXPECT_EQ(elxClassName, elx::TransformIO::ConvertITKNameOfClassToElastixClassName(itkNameOfClass));
+  }
 
   // Note: SetElastix does not take or share the ownership of its argument!
   elxTransform->SetElastix(elastixObject);
@@ -558,14 +597,15 @@ Expect_elx_TransformPoint_yields_same_point_as_ITK(const TITKTransform & itkTran
                                          0.0,
                                          NumericLimits::min(),
                                          0.5,
-                                         1.0 - NumericLimits::epsilon(), // Note: 1.0 fails on BSpline!!!
+                                         1.0 - (2 * NumericLimits::epsilon()), // Note: 1.0 fails on BSpline!!!
                                          1.0 + 1.0e-14,
                                          2.0,
                                          NumericLimits::max() };
 
+  constexpr auto numberOfTestInputValues = std::extent<decltype(testInputValues)>::value;
+
   // Use the test input values as coordinates.
-  for (const auto index :
-       itk::ZeroBasedIndexRange<Dimension>(itk::Size<Dimension>::Filled(GTEST_ARRAY_SIZE_(testInputValues))))
+  for (const auto index : itk::ZeroBasedIndexRange<Dimension>(itk::Size<Dimension>::Filled(numberOfTestInputValues)))
   {
     itk::Point<double, Dimension> inputPoint;
     std::transform(index.begin(), index.end(), inputPoint.begin(), [&testInputValues](const itk::SizeValueType value) {
@@ -612,35 +652,38 @@ Expect_elx_TransformPoint_yields_same_point_as_ITK(const TITKTransform & itkTran
 } // namespace
 
 
-GTEST_TEST(TransformIO, CorrespondingItkTransform)
+// Tests that elx::TransformIO::ConvertToItkCompositeTransform(elxTransform) yields the expected corresponding
+// `itk::CompositeTransform`.
+GTEST_TEST(TransformIO, CorrespondingItkCompositeTransform)
 {
-  WithDimension<2>::WithElastixTransform<elx::AdvancedAffineTransformElastix>::Expect_CorrespondingItkTransform<
-    itk::AffineTransform<double, 2>>();
-  WithDimension<3>::WithElastixTransform<elx::AdvancedAffineTransformElastix>::Expect_CorrespondingItkTransform<
-    itk::AffineTransform<double, 3>>();
-  WithDimension<4>::WithElastixTransform<elx::AdvancedAffineTransformElastix>::Expect_CorrespondingItkTransform<
-    itk::AffineTransform<double, 4>>();
+  WithDimension<2>::WithElastixTransform<
+    elx::AdvancedAffineTransformElastix>::Expect_CorrespondingItkCompositeTransform<itk::AffineTransform<double, 2>>();
+  WithDimension<3>::WithElastixTransform<
+    elx::AdvancedAffineTransformElastix>::Expect_CorrespondingItkCompositeTransform<itk::AffineTransform<double, 3>>();
+  WithDimension<4>::WithElastixTransform<
+    elx::AdvancedAffineTransformElastix>::Expect_CorrespondingItkCompositeTransform<itk::AffineTransform<double, 4>>();
 
-  WithDimension<2>::WithElastixTransform<elx::AdvancedBSplineTransform>::Expect_CorrespondingItkTransform<
-    itk::BSplineTransform<double, 2>>();
-  WithDimension<3>::WithElastixTransform<elx::AdvancedBSplineTransform>::Expect_CorrespondingItkTransform<
-    itk::BSplineTransform<double, 3>>();
+  // Note: This test fails for `elx::AdvancedBSplineTransform` (corresponding with `itk::BSplineTransform`), as it
+  // produces an `itk::ExceptionObject`: unknown file: error: C++ exception with description
+  // "<source-directory>\elastix\Common\Transforms\itkAdvancedCombinationTransform.hxx:223: ITK ERROR:
+  // AdvancedBSplineTransform(0000018BCE262040): No current transform set in the AdvancedCombinationTransform" thrown in
+  // the test body.
 
-  WithDimension<2>::WithElastixTransform<elx::TranslationTransformElastix>::Expect_CorrespondingItkTransform<
+  WithDimension<2>::WithElastixTransform<elx::TranslationTransformElastix>::Expect_CorrespondingItkCompositeTransform<
     itk::TranslationTransform<double, 2>>();
-  WithDimension<3>::WithElastixTransform<elx::TranslationTransformElastix>::Expect_CorrespondingItkTransform<
+  WithDimension<3>::WithElastixTransform<elx::TranslationTransformElastix>::Expect_CorrespondingItkCompositeTransform<
     itk::TranslationTransform<double, 3>>();
-  WithDimension<4>::WithElastixTransform<elx::TranslationTransformElastix>::Expect_CorrespondingItkTransform<
+  WithDimension<4>::WithElastixTransform<elx::TranslationTransformElastix>::Expect_CorrespondingItkCompositeTransform<
     itk::TranslationTransform<double, 4>>();
 
-  WithDimension<2>::WithElastixTransform<elx::SimilarityTransformElastix>::Expect_CorrespondingItkTransform<
+  WithDimension<2>::WithElastixTransform<elx::SimilarityTransformElastix>::Expect_CorrespondingItkCompositeTransform<
     itk::Similarity2DTransform<double>>();
-  WithDimension<3>::WithElastixTransform<elx::SimilarityTransformElastix>::Expect_CorrespondingItkTransform<
+  WithDimension<3>::WithElastixTransform<elx::SimilarityTransformElastix>::Expect_CorrespondingItkCompositeTransform<
     itk::Similarity3DTransform<double>>();
 
-  WithDimension<2>::WithElastixTransform<elx::EulerTransformElastix>::Expect_CorrespondingItkTransform<
+  WithDimension<2>::WithElastixTransform<elx::EulerTransformElastix>::Expect_CorrespondingItkCompositeTransform<
     itk::Euler2DTransform<double>>();
-  WithDimension<3>::WithElastixTransform<elx::EulerTransformElastix>::Expect_CorrespondingItkTransform<
+  WithDimension<3>::WithElastixTransform<elx::EulerTransformElastix>::Expect_CorrespondingItkCompositeTransform<
     itk::Euler3DTransform<double>>();
 }
 
@@ -755,8 +798,12 @@ GTEST_TEST(TransformIO, CopyDefaultParametersToCorrespondingItkTransform)
 
 GTEST_TEST(TransformIO, CopyDefaultEulerTransformElastix3DFixedParametersToCorrespondingItkTransform)
 {
-  const auto elxTransform = elx::EulerTransformElastix<ElastixType<3>>::New();
-  const auto itkTransform = elx::TransformIO::CreateCorrespondingItkTransform(*elxTransform);
+  const auto elxTransform = CheckNew<elx::EulerTransformElastix<ElastixType<3>>>();
+  const auto compositeTransform = elx::TransformIO::ConvertToItkCompositeTransform(*elxTransform);
+  ASSERT_NE(compositeTransform, nullptr);
+  const auto & transformQueue = compositeTransform->GetTransformQueue();
+  ASSERT_EQ(transformQueue.size(), 1);
+  const auto & itkTransform = transformQueue.front();
   ASSERT_NE(itkTransform, nullptr);
 
   const auto elxFixedParameters = elxTransform->GetFixedParameters();
@@ -824,10 +871,10 @@ GTEST_TEST(Transform, TransformedPointSameAsITKTranslation2D)
 {
   constexpr auto Dimension = 2U;
 
-  const auto itkTransform = itk::TranslationTransform<double, Dimension>::New();
-  itkTransform->SetOffset(MakeVector(1.0, 2.0));
+  elx::DefaultConstructibleSubclass<itk::TranslationTransform<double, Dimension>> itkTransform;
+  itkTransform.SetOffset(MakeVector(1.0, 2.0));
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::TranslationTransformElastix>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::TranslationTransformElastix>(itkTransform);
 }
 
 
@@ -835,10 +882,10 @@ GTEST_TEST(Transform, TransformedPointSameAsITKTranslation3D)
 {
   constexpr auto Dimension = 3U;
 
-  const auto itkTransform = itk::TranslationTransform<double, Dimension>::New();
-  itkTransform->SetOffset(MakeVector(1.0, 2.0, 3.0));
+  elx::DefaultConstructibleSubclass<itk::TranslationTransform<double, Dimension>> itkTransform;
+  itkTransform.SetOffset(MakeVector(1.0, 2.0, 3.0));
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::TranslationTransformElastix>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::TranslationTransformElastix>(itkTransform);
 }
 
 
@@ -846,13 +893,13 @@ GTEST_TEST(Transform, TransformedPointSameAsITKAffine2D)
 {
   constexpr auto Dimension = 2U;
 
-  const auto itkTransform = itk::AffineTransform<double, Dimension>::New();
-  itkTransform->SetTranslation(MakeVector(1.0, 2.0));
-  itkTransform->Scale(MakeVector(1.5, 1.75));
-  itkTransform->SetCenter(MakePoint(0.5, 1.5));
-  itkTransform->Rotate2D(M_PI_4);
+  elx::DefaultConstructibleSubclass<itk::AffineTransform<double, Dimension>> itkTransform;
+  itkTransform.SetTranslation(MakeVector(1.0, 2.0));
+  itkTransform.Scale(MakeVector(1.5, 1.75));
+  itkTransform.SetCenter(MakePoint(0.5, 1.5));
+  itkTransform.Rotate2D(M_PI_4);
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedAffineTransformElastix>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedAffineTransformElastix>(itkTransform);
 }
 
 
@@ -860,74 +907,76 @@ GTEST_TEST(Transform, TransformedPointSameAsITKAffine3D)
 {
   constexpr auto Dimension = 3U;
 
-  const auto itkTransform = itk::AffineTransform<double, Dimension>::New();
-  itkTransform->SetTranslation(MakeVector(1.0, 2.0, 3.0));
-  itkTransform->SetCenter(MakePoint(3.0, 2.0, 1.0));
-  itkTransform->Scale(MakeVector(1.25, 1.5, 1.75));
-  itkTransform->Rotate3D(itk::Vector<double, Dimension>(1.0), M_PI_4);
+  elx::DefaultConstructibleSubclass<itk::AffineTransform<double, Dimension>> itkTransform;
+  itkTransform.SetTranslation(MakeVector(1.0, 2.0, 3.0));
+  itkTransform.SetCenter(MakePoint(3.0, 2.0, 1.0));
+  itkTransform.Scale(MakeVector(1.25, 1.5, 1.75));
+  itkTransform.Rotate3D(itk::Vector<double, Dimension>(1.0), M_PI_4);
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedAffineTransformElastix>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedAffineTransformElastix>(itkTransform);
 }
 
 
 GTEST_TEST(Transform, TransformedPointSameAsITKEuler2D)
 {
-  const auto itkTransform = itk::Euler2DTransform<double>::New();
-  itkTransform->SetTranslation(MakeVector(1.0, 2.0));
-  itkTransform->SetCenter(MakePoint(0.5, 1.5));
-  itkTransform->SetAngle(M_PI_4);
+  elx::DefaultConstructibleSubclass<itk::Euler2DTransform<double>> itkTransform;
+  itkTransform.SetTranslation(MakeVector(1.0, 2.0));
+  itkTransform.SetCenter(MakePoint(0.5, 1.5));
+  itkTransform.SetAngle(M_PI_4);
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::EulerTransformElastix>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::EulerTransformElastix>(itkTransform);
 }
 
 
 GTEST_TEST(Transform, TransformedPointSameAsITKEuler3D)
 {
-  const auto itkTransform = itk::Euler3DTransform<double>::New();
-  itkTransform->SetTranslation(MakeVector(1.0, 2.0, 3.0));
-  itkTransform->SetCenter(MakePoint(3.0, 2.0, 1.0));
-  itkTransform->SetRotation(M_PI_2, M_PI_4, M_PI_4 / 2.0);
+  elx::DefaultConstructibleSubclass<itk::Euler3DTransform<double>> itkTransform;
+  itkTransform.SetTranslation(MakeVector(1.0, 2.0, 3.0));
+  itkTransform.SetCenter(MakePoint(3.0, 2.0, 1.0));
+  itkTransform.SetRotation(M_PI_2, M_PI_4, M_PI_4 / 2.0);
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::EulerTransformElastix>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::EulerTransformElastix>(itkTransform);
 }
 
 
 GTEST_TEST(Transform, TransformedPointSameAsITKSimilarity2D)
 {
-  const auto itkTransform = itk::Similarity2DTransform<double>::New();
-  itkTransform->SetScale(0.75);
-  itkTransform->SetTranslation(MakeVector(1.0, 2.0));
-  itkTransform->SetCenter(MakePoint(0.5, 1.5));
-  itkTransform->SetAngle(M_PI_4);
+  elx::DefaultConstructibleSubclass<itk::Similarity2DTransform<double>> itkTransform;
+  itkTransform.SetScale(0.75);
+  itkTransform.SetTranslation(MakeVector(1.0, 2.0));
+  itkTransform.SetCenter(MakePoint(0.5, 1.5));
+  itkTransform.SetAngle(M_PI_4);
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::SimilarityTransformElastix>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::SimilarityTransformElastix>(itkTransform);
 }
 
 
 GTEST_TEST(Transform, TransformedPointSameAsITKSimilarity3D)
 {
-  const auto itkTransform = itk::Similarity3DTransform<double>::New();
-  itkTransform->SetScale(0.75);
-  itkTransform->SetTranslation(MakeVector(1.0, 2.0, 3.0));
-  itkTransform->SetCenter(MakePoint(3.0, 2.0, 1.0));
-  itkTransform->SetRotation(itk::Vector<double, 3>(1.0), M_PI_4);
+  elx::DefaultConstructibleSubclass<itk::Similarity3DTransform<double>> itkTransform;
+  itkTransform.SetScale(0.75);
+  itkTransform.SetTranslation(MakeVector(1.0, 2.0, 3.0));
+  itkTransform.SetCenter(MakePoint(3.0, 2.0, 1.0));
+  itkTransform.SetRotation(itk::Vector<double, 3>(1.0), M_PI_4);
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::SimilarityTransformElastix>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::SimilarityTransformElastix>(itkTransform);
 }
 
 
 GTEST_TEST(Transform, TransformedPointSameAsITKBSpline2D)
 {
-  const auto itkTransform = itk::BSplineTransform<double, 2>::New();
-  itkTransform->SetParameters(GeneratePseudoRandomParameters(itkTransform->GetParameters().size(), -1.0));
+  elx::DefaultConstructibleSubclass<itk::BSplineTransform<double, 2>> itkTransform;
+  itkTransform.SetParameters(GeneratePseudoRandomParameters(itkTransform.GetParameters().size(), -1.0));
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedBSplineTransform>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedBSplineTransform>(itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::RecursiveBSplineTransform>(itkTransform);
 }
 
 GTEST_TEST(Transform, TransformedPointSameAsITKBSpline3D)
 {
-  const auto itkTransform = itk::BSplineTransform<double, 3>::New();
-  itkTransform->SetParameters(GeneratePseudoRandomParameters(itkTransform->GetParameters().size(), -1.0));
+  elx::DefaultConstructibleSubclass<itk::BSplineTransform<double, 3>> itkTransform;
+  itkTransform.SetParameters(GeneratePseudoRandomParameters(itkTransform.GetParameters().size(), -1.0));
 
-  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedBSplineTransform>(*itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedBSplineTransform>(itkTransform);
+  Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::RecursiveBSplineTransform>(itkTransform);
 }

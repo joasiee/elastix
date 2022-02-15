@@ -99,10 +99,10 @@ class ITK_TEMPLATE_EXPORT MultiResolutionImageRegistrationMethod2 : public Proce
 {
 public:
   /** Standard class typedefs. */
-  typedef MultiResolutionImageRegistrationMethod2 Self;
-  typedef ProcessObject                           Superclass;
-  typedef SmartPointer<Self>                      Pointer;
-  typedef SmartPointer<const Self>                ConstPointer;
+  using Self = MultiResolutionImageRegistrationMethod2;
+  using Superclass = ProcessObject;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -111,60 +111,60 @@ public:
   itkTypeMacro(MultiResolutionImageRegistrationMethod2, ProcessObject);
 
   /**  Type of the Fixed image. */
-  typedef TFixedImage                           FixedImageType;
-  typedef typename FixedImageType::ConstPointer FixedImageConstPointer;
-  typedef typename FixedImageType::RegionType   FixedImageRegionType;
-  typedef std::vector<FixedImageRegionType>     FixedImageRegionPyramidType;
+  using FixedImageType = TFixedImage;
+  using FixedImageConstPointer = typename FixedImageType::ConstPointer;
+  using FixedImageRegionType = typename FixedImageType::RegionType;
+  using FixedImageRegionPyramidType = std::vector<FixedImageRegionType>;
 
   /**  Type of the Moving image. */
-  typedef TMovingImage                           MovingImageType;
-  typedef typename MovingImageType::ConstPointer MovingImageConstPointer;
+  using MovingImageType = TMovingImage;
+  using MovingImageConstPointer = typename MovingImageType::ConstPointer;
 
   /**  Type of the metric. */
-  typedef AdvancedImageToImageMetric<FixedImageType, MovingImageType> MetricType;
-  typedef typename MetricType::Pointer                                MetricPointer;
+  using MetricType = AdvancedImageToImageMetric<FixedImageType, MovingImageType>;
+  using MetricPointer = typename MetricType::Pointer;
 
   /**  Type of the Transform . */
-  typedef typename MetricType::AdvancedTransformType TransformType;
-  typedef typename TransformType::Pointer            TransformPointer;
+  using TransformType = typename MetricType::AdvancedTransformType;
+  using TransformPointer = typename TransformType::Pointer;
 
   /** Type for the output: Using Decorator pattern for enabling
    * the Transform to be passed in the data pipeline.
    */
-  typedef DataObjectDecorator<TransformType>         TransformOutputType;
-  typedef typename TransformOutputType::Pointer      TransformOutputPointer;
-  typedef typename TransformOutputType::ConstPointer TransformOutputConstPointer;
+  using TransformOutputType = DataObjectDecorator<TransformType>;
+  using TransformOutputPointer = typename TransformOutputType::Pointer;
+  using TransformOutputConstPointer = typename TransformOutputType::ConstPointer;
 
   /**  Type of the Interpolator. */
-  typedef typename MetricType::InterpolatorType InterpolatorType;
-  typedef typename InterpolatorType::Pointer    InterpolatorPointer;
+  using InterpolatorType = typename MetricType::InterpolatorType;
+  using InterpolatorPointer = typename InterpolatorType::Pointer;
 
   /**  Type of the optimizer. */
-  typedef SingleValuedNonLinearOptimizer OptimizerType;
+  using OptimizerType = SingleValuedNonLinearOptimizer;
 
   /** Type of the Fixed image multiresolution pyramid. */
-  typedef MultiResolutionPyramidImageFilter<FixedImageType, FixedImageType> FixedImagePyramidType;
-  typedef typename FixedImagePyramidType::Pointer                           FixedImagePyramidPointer;
+  using FixedImagePyramidType = MultiResolutionPyramidImageFilter<FixedImageType, FixedImageType>;
+  using FixedImagePyramidPointer = typename FixedImagePyramidType::Pointer;
 
   /** Type of the moving image multiresolution pyramid. */
-  typedef MultiResolutionPyramidImageFilter<MovingImageType, MovingImageType> MovingImagePyramidType;
-  typedef typename MovingImagePyramidType::Pointer                            MovingImagePyramidPointer;
+  using MovingImagePyramidType = MultiResolutionPyramidImageFilter<MovingImageType, MovingImageType>;
+  using MovingImagePyramidPointer = typename MovingImagePyramidType::Pointer;
 
   /** Type of the Transformation parameters This is the same type used to
    *  represent the search space of the optimization algorithm.
    */
-  typedef typename MetricType::TransformParametersType ParametersType;
+  using ParametersType = typename MetricType::TransformParametersType;
 
   /** Smart Pointer type to a DataObject. */
-  typedef typename DataObject::Pointer DataObjectPointer;
+  using DataObjectPointer = typename DataObject::Pointer;
 
   /** Method that initiates the registration. */
   virtual void
-  StartRegistration(void);
+  StartRegistration();
 
   /** Method to stop the registration. */
   virtual void
-  StopRegistration(void);
+  StopRegistration();
 
   /** Set/Get the Fixed image. */
   itkSetConstObjectMacro(FixedImage, FixedImageType);
@@ -227,7 +227,7 @@ public:
 
   /** Returns the transform resulting from the registration process. */
   const TransformOutputType *
-  GetOutput(void) const;
+  GetOutput() const;
 
   /** Make a DataObject of the correct type to be used as the specified
    * output.
@@ -239,7 +239,7 @@ public:
    * any of its cached ivars.
    */
   ModifiedTimeType
-  GetMTime(void) const override;
+  GetMTime() const override;
 
 protected:
   /** Constructor. */
@@ -256,7 +256,7 @@ protected:
    * the registration.
    */
   void
-  GenerateData(void) override;
+  GenerateData() override;
 
   /** Initialize by setting the interconnects between the components.
       This method is executed at every level of the pyramid with the
@@ -267,7 +267,7 @@ protected:
 
   /** Compute the size of the fixed region for each level of the pyramid. */
   virtual void
-  PreparePyramids(void);
+  PreparePyramids();
 
   /** Set the current level to be processed. */
   itkSetMacro(CurrentLevel, unsigned long);

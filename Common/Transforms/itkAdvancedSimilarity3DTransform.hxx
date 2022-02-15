@@ -35,8 +35,8 @@
 #define _itkAdvancedSimilarity3DTransform_hxx
 
 #include "itkAdvancedSimilarity3DTransform.h"
-#include "vnl/vnl_math.h"
-#include "vnl/vnl_det.h"
+#include <vnl/vnl_math.h>
+#include <vnl/vnl_det.h>
 
 namespace itk
 {
@@ -118,7 +118,7 @@ AdvancedSimilarity3DTransform<TScalarType>::SetMatrix(const MatrixType & matrix)
     itkExceptionMacro(<< "Attempting to set a non-orthogonal matrix (after removing scaling)");
   }
 
-  typedef AdvancedMatrixOffsetTransformBase<TScalarType, 3> Baseclass;
+  using Baseclass = AdvancedMatrixOffsetTransformBase<TScalarType, 3>;
   this->Baseclass::SetMatrix(matrix);
   this->PrecomputeJacobianOfSpatialJacobian();
 }
@@ -187,8 +187,8 @@ AdvancedSimilarity3DTransform<TScalarType>::SetParameters(const ParametersType &
 //
 
 template <class TScalarType>
-const typename AdvancedSimilarity3DTransform<TScalarType>::ParametersType &
-AdvancedSimilarity3DTransform<TScalarType>::GetParameters(void) const
+auto
+AdvancedSimilarity3DTransform<TScalarType>::GetParameters() const -> const ParametersType &
 {
   itkDebugMacro(<< "Getting parameters ");
 
@@ -268,7 +268,7 @@ AdvancedSimilarity3DTransform<TScalarType>::ComputeMatrix()
 /** Compute the matrix */
 template <class TScalarType>
 void
-AdvancedSimilarity3DTransform<TScalarType>::ComputeMatrixParameters(void)
+AdvancedSimilarity3DTransform<TScalarType>::ComputeMatrixParameters()
 {
   MatrixType matrix = this->GetMatrix();
 
@@ -286,7 +286,7 @@ AdvancedSimilarity3DTransform<TScalarType>::ComputeMatrixParameters(void)
 // Precompute Jacobian of Spatial Jacobian
 template <class TScalarType>
 void
-AdvancedSimilarity3DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian(void)
+AdvancedSimilarity3DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian()
 {
   if (ParametersDimension < 7)
   {
@@ -297,7 +297,7 @@ AdvancedSimilarity3DTransform<TScalarType>::PrecomputeJacobianOfSpatialJacobian(
   JacobianOfSpatialJacobianType & jsj = this->m_JacobianOfSpatialJacobian;
   jsj.resize(ParametersDimension);
 
-  typedef typename VersorType::ValueType ValueType;
+  using ValueType = typename VersorType::ValueType;
 
   // compute derivatives with respect to rotation
   const ValueType vx = this->GetVersor().GetX();

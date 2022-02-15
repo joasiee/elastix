@@ -76,14 +76,11 @@ typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureTyp
 TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
                                                                       const int              fosIndex) const
 {
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[fosIndex + 1];
   this->BeforeThreadedGetValueAndDerivative(parameters);
   this->LaunchGetValueThreaderCallback();
 
   MeasureType value = NumericTraits<MeasureType>::Zero;
   this->AfterThreadedGetValue(value);
-
-  this->m_CurrentSampleContainer = this->m_FOSImageSamples[0];
 
   return value;
 } // end GetValuePartial()
@@ -182,6 +179,14 @@ template <class TFixedImage, class TScalarType>
 void
 TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValuePartial(ThreadIdType threadId)
 {
+  int                      i, start, end;
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[this->m_CurrentFOSSet];
+  this->GetTasksForThread(threadId, start, end);
+
+  /** Create variables to store intermediate results. circumvent false sharing */
+  unsigned long numberOfPixelsCounted = 0;
+  MeasureType   measure = NumericTraits<MeasureType>::Zero;
+
   /** Create and initialize some variables. */
   SpatialHessianType           spatialHessian;
   JacobianOfSpatialHessianType jacobianOfSpatialHessian;
@@ -203,56 +208,47 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValuePar
   typename BSplineOrder3TransformType::Pointer dummy; // default-constructed (null)
   bool                                         transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
-  /** Get a handle to the sample container. */
-  ImageSampleContainerReferencePointer sampleContainer = this->m_CurrentSampleContainer;
-  const unsigned long                  sampleContainerSize = sampleContainer->Size();
-
-  /** Get the samples for this thread. */
-  const unsigned long nrOfSamplesPerThreads = static_cast<unsigned long>(
-    std::ceil(static_cast<double>(sampleContainerSize) / static_cast<double>(Self::GetNumberOfWorkUnits())));
-
-  unsigned long pos_begin = nrOfSamplesPerThreads * threadId;
-  unsigned long pos_end = nrOfSamplesPerThreads * (threadId + 1);
-  pos_begin = (pos_begin > sampleContainerSize) ? sampleContainerSize : pos_begin;
-  pos_end = (pos_end > sampleContainerSize) ? sampleContainerSize : pos_end;
-
-  /** Create iterator over the sample container. */
-  typename ImageSampleContainerReferenceType::ConstIterator fiter;
-  typename ImageSampleContainerReferenceType::ConstIterator fbegin = sampleContainer->Begin();
-  typename ImageSampleContainerReferenceType::ConstIterator fend = sampleContainer->Begin();
-  fbegin += (int)pos_begin;
-  fend += (int)pos_end;
-
-  /** Create variables to store intermediate results. circumvent false sharing */
-  unsigned long numberOfPixelsCounted = 0;
-  MeasureType   measure = NumericTraits<MeasureType>::Zero;
-
-  /** Loop over the fixed image to calculate the penalty term and its derivative. */
-  for (fiter = fbegin; fiter != fend; ++fiter)
+  // iterate over these subfunction samplers and calculate mean squared diffs
+  for (i = start; i < end; ++i)
   {
-    /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().get().m_ImageCoordinates;
-    numberOfPixelsCounted++;
+    this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
+    this->m_SubfunctionSamplers[fosPoints[i]]->Update();
+    ImageSampleContainerPointer sampleContainer = this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput();
+    const unsigned long         sampleContainerSize = sampleContainer->Size();
 
-    /** Get the spatial Hessian of the transformation at the current point.
-     * This is needed to compute the bending energy.
-     */
-    this->m_AdvancedTransform->GetJacobianOfSpatialHessian(
-      fixedPoint, spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices);
 
-    /** Prepare some stuff for the computation of the metric (derivative). */
-    FixedArray<InternalMatrixType, FixedImageDimension> A;
-    for (unsigned int k = 0; k < FixedImageDimension; ++k)
+    /** Create iterator over the sample container. */
+    typename ImageSampleContainerType::ConstIterator threader_fiter;
+    typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer->Begin();
+    typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer->End();
+
+    /** Loop over the fixed image samples to calculate the mean squares. */
+    for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
     {
-      A[k] = spatialHessian[k].GetVnlMatrix();
-    }
+      /** Read fixed coordinates and initialize some variables. */
+      const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+      numberOfPixelsCounted++;
 
-    /** Compute the contribution to the metric value of this point. */
-    for (unsigned int k = 0; k < FixedImageDimension; ++k)
-    {
-      measure += vnl_math::sqr(A[k].frobenius_norm());
+      /** Get the spatial Hessian of the transformation at the current point.
+       * This is needed to compute the bending energy.
+       */
+      this->m_AdvancedTransform->GetJacobianOfSpatialHessian(
+        fixedPoint, spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices);
+
+      /** Prepare some stuff for the computation of the metric (derivative). */
+      FixedArray<InternalMatrixType, FixedImageDimension> A;
+      for (unsigned int k = 0; k < FixedImageDimension; ++k)
+      {
+        A[k] = spatialHessian[k].GetVnlMatrix();
+      }
+
+      /** Compute the contribution to the metric value of this point. */
+      for (unsigned int k = 0; k < FixedImageDimension; ++k)
+      {
+        measure += vnl_math::sqr(A[k].frobenius_norm());
+      }
     }
-  } // end for loop over the image sample container
+  }
 
   /** Only update these variables at the end to prevent unnecessary "false sharing". */
   this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
@@ -344,16 +340,12 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValueSingleThrea
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-    MovingImagePointType        mappedPoint;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     if (sampleOk)
     {
@@ -468,21 +460,17 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValueAndDerivati
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-    MovingImagePointType        mappedPoint;
 
     /** Although the mapped point is not needed to compute the penalty term,
      * we compute in order to check if it maps inside the support region of
      * the B-spline and if it maps inside the moving image mask.
      */
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     if (sampleOk)
     {
@@ -702,21 +690,17 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValueAnd
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-    MovingImagePointType        mappedPoint;
 
     /** Although the mapped point is not needed to compute the penalty term,
      * we compute in order to check if it maps inside the support region of
      * the B-spline and if it maps inside the moving image mask.
      */
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     if (sampleOk)
     {
@@ -909,9 +893,9 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
 {
   itkDebugMacro("GetSelfHessian()");
 
-  typedef typename HessianType::row    RowType;
-  typedef typename RowType::iterator   RowIteratorType;
-  typedef typename HessianType::pair_t ElementType;
+  using RowType = typename HessianType::row;
+  using RowIteratorType = typename RowType::iterator;
+  using ElementType = typename HessianType::pair_t;
 
   /** Initialize some variables. */
   this->m_NumberOfPixelsCounted = 0;
@@ -923,13 +907,15 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
   /** Make sure the transform parameters are up to date. */
   // this->SetTransformParameters( parameters );
 
+  const auto numberOfParameters = this->GetNumberOfParameters();
+
   /** Prepare Hessian */
-  H.set_size(this->GetNumberOfParameters(), this->GetNumberOfParameters());
+  H.set_size(numberOfParameters, numberOfParameters);
   // H.Fill(0.0); //done by set_size for sparse matrix
   if (!this->m_AdvancedTransform->GetHasNonZeroJacobianOfSpatialHessian())
   {
     // H.fill_diagonal(1.0);
-    for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       H(i, i) = 1.0;
     }
@@ -937,7 +923,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
   }
 
   /** Set up grid sampler */
-  typename SelfHessianSamplerType::Pointer sampler = SelfHessianSamplerType::New();
+  auto sampler = SelfHessianSamplerType::New();
   sampler->SetInputImageRegion(this->GetImageSampler()->GetInputImageRegion());
   sampler->SetMask(this->GetImageSampler()->GetMask());
   sampler->SetInput(this->GetFixedImage());
@@ -957,21 +943,17 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-    MovingImagePointType        mappedPoint;
 
     /** Although the mapped point is not needed to compute the penalty term,
      * we compute in order to check if it maps inside the support region of
      * the B-spline and if it maps inside the moving image mask.
      */
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     if (sampleOk)
     {
@@ -1050,7 +1032,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
   if (this->m_NumberOfPixelsCounted > 0)
   {
     const double normal_sum = 1.0 / static_cast<double>(this->m_NumberOfPixelsCounted);
-    for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       H.scale_row(i, normal_sum);
     }
@@ -1058,7 +1040,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
   else
   {
     // H.fill_diagonal(1.0);
-    for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+    for (unsigned int i = 0; i < numberOfParameters; ++i)
     {
       H(i, i) = 1.0;
     }

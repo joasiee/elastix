@@ -87,8 +87,8 @@ ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::SetInput(cons
  */
 
 template <class TInputImage, class TOutputVectorContainer>
-const typename ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::InputImageType *
-ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GetInput(void)
+auto
+ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GetInput() -> const InputImageType *
 {
   return dynamic_cast<const InputImageType *>(this->ProcessObject::GetInput(0));
 } // end GetInput()
@@ -98,8 +98,8 @@ ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GetInput(void
  */
 
 template <class TInputImage, class TOutputVectorContainer>
-const typename ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::InputImageType *
-ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GetInput(unsigned int idx)
+auto
+ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GetInput(unsigned int idx) -> const InputImageType *
 {
   return dynamic_cast<const InputImageType *>(this->ProcessObject::GetInput(idx));
 } // end GetInput()
@@ -109,8 +109,8 @@ ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GetInput(unsi
  */
 
 template <class TInputImage, class TOutputVectorContainer>
-typename ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::OutputVectorContainerType *
-ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GetOutput(void)
+auto
+ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GetOutput() -> OutputVectorContainerType *
 {
   return dynamic_cast<OutputVectorContainerType *>(this->ProcessObject::GetOutput(0));
 } // end GetOutput()
@@ -199,7 +199,7 @@ ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::SplitRequeste
 
 template <class TInputImage, class TOutputVectorContainer>
 void
-ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GenerateData(void)
+ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::GenerateData()
 {
   // Call a method that can be overriden by a subclass to allocate
   // memory for the filter's outputs
@@ -241,8 +241,7 @@ ImageToVectorContainerFilter<TInputImage, TOutputVectorContainer>::ThreadedGener
   // The ExceptionMacro is not used because gcc warns that a
   // 'noreturn' function does return
   std::ostringstream message;
-  message << "itk::ERROR: " << this->GetNameOfClass() << "(" << this << "): "
-          << "Subclass should override this method!!!";
+  message << "itk::ERROR: " << this->GetNameOfClass() << "(" << this << "): Subclass should override this method!!!";
   ExceptionObject e_(__FILE__, __LINE__, message.str().c_str(), ITK_LOCATION);
   throw e_;
 

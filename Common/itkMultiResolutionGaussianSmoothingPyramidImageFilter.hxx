@@ -42,18 +42,10 @@
 #include "itkRecursiveGaussianImageFilter.h"
 #include "itkMacro.h"
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
-
-/*
- * Constructor
- */
-template <class TInputImage, class TOutputImage>
-MultiResolutionGaussianSmoothingPyramidImageFilter<TInputImage,
-                                                   TOutputImage>::MultiResolutionGaussianSmoothingPyramidImageFilter() =
-  default;
 
 /*
  * Set the multi-resolution schedule
@@ -97,19 +89,19 @@ MultiResolutionGaussianSmoothingPyramidImageFilter<TInputImage, TOutputImage>::G
   InputImageConstPointer inputPtr = this->GetInput();
 
   // Create caster and smoother  filters
-  typedef CastImageFilter<InputImageType, OutputImageType>               CasterType;
-  typedef RecursiveGaussianImageFilter<OutputImageType, OutputImageType> SmootherType;
-  typedef typename SmootherType::Pointer                                 SmootherPointer;
-  typedef typename ImageSource<OutputImageType>::Pointer                 BaseFilterPointer;
-  typedef FixedArray<SmootherPointer, ImageDimension>                    SmootherArrayType;
-  typedef FixedArray<BaseFilterPointer, ImageDimension>                  SmootherPointerArrayType;
-  typedef typename InputImageType::SpacingType                           SpacingType;
+  using CasterType = CastImageFilter<InputImageType, OutputImageType>;
+  using SmootherType = RecursiveGaussianImageFilter<OutputImageType, OutputImageType>;
+  using SmootherPointer = typename SmootherType::Pointer;
+  using BaseFilterPointer = typename ImageSource<OutputImageType>::Pointer;
+  using SmootherArrayType = FixedArray<SmootherPointer, ImageDimension>;
+  using SmootherPointerArrayType = FixedArray<BaseFilterPointer, ImageDimension>;
+  using SpacingType = typename InputImageType::SpacingType;
 
   /** Create smoother pointer array, this array contains pointers
    * to the filters for the different dimensions.
    */
-  typename CasterType::Pointer caster = CasterType::New();
-  SmootherArrayType            smootherArray;
+  auto              caster = CasterType::New();
+  SmootherArrayType smootherArray;
   for (unsigned int i = 0; i < ImageDimension; ++i)
   {
     smootherArray[i] = SmootherType::New();
@@ -224,7 +216,7 @@ void
 MultiResolutionGaussianSmoothingPyramidImageFilter<TInputImage, TOutputImage>::GenerateOutputInformation()
 {
   // call the supersuperclass's implementation of this method
-  typedef typename Superclass::Superclass SuperSuperclass;
+  using SuperSuperclass = typename Superclass::Superclass;
   SuperSuperclass::GenerateOutputInformation();
 
   // get pointers to the input and output
@@ -263,14 +255,14 @@ MultiResolutionGaussianSmoothingPyramidImageFilter<TInputImage, TOutputImage>::G
   DataObject * refOutput)
 {
   // call the supersuperclass's implementation of this method
-  typedef typename Superclass::Superclass SuperSuperclass;
+  using SuperSuperclass = typename Superclass::Superclass;
   SuperSuperclass::GenerateOutputRequestedRegion(refOutput);
 
   // find the index for this output
   unsigned int refLevel = refOutput->GetSourceOutputIndex();
 
   // compute baseIndex and baseSize
-  typedef typename OutputImageType::RegionType RegionType;
+  using RegionType = typename OutputImageType::RegionType;
 
   /** \todo: shouldn't this be a dynamic_cast? */
   TOutputImage * ptr = static_cast<TOutputImage *>(refOutput);
@@ -338,7 +330,7 @@ MultiResolutionGaussianSmoothingPyramidImageFilter<TInputImage, TOutputImage>::G
 {
   // call the supersuperclass's implementation of this method. This should
   // copy the output requested region to the input requested region
-  typedef typename Superclass::Superclass SuperSuperclass;
+  using SuperSuperclass = typename Superclass::Superclass;
   SuperSuperclass::GenerateInputRequestedRegion();
 
   // This filter needs all of the input, because it uses the

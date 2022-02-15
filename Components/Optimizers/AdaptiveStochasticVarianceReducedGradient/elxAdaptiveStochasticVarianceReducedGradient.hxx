@@ -89,7 +89,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AdaptiveStochasticVarianceR
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::BeforeRegistration(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::BeforeRegistration()
 {
   /** Add the target cell "stepsize" to IterationInfo. */
   this->AddTargetCellToIterationInfo("2:Metric");
@@ -114,7 +114,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::BeforeEachResolution(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
@@ -292,7 +292,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterEachIteration(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterEachIteration()
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->GetValue();
@@ -323,16 +323,16 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterEachResolution(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
   /**
-   * typedef enum {
+   * enum StopConditionType{
    *   MaximumNumberOfIterations,
    *   MetricError,
-   *   MinimumStepSize } StopConditionType;
+   *   MinimumStepSize };
    */
   std::string stopcondition;
 
@@ -380,12 +380,12 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterEachResolution(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterRegistration(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterRegistration()
 {
   /** Print the best metric value. */
 
   double bestValue = this->GetValue();
-  elxout << std::endl << "Final metric value  = " << bestValue << std::endl;
+  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
 
   elxout << "Settings of " << this->elxGetClassName() << " for all resolutions:" << std::endl;
   this->PrintSettingsVector(this->m_SettingsVector);
@@ -399,7 +399,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AfterRegistration(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::StartOptimization(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::StartOptimization()
 {
   /** Check if the entered scales are correct and != [ 1 1 1 ...]. */
   this->SetUseScales(false);
@@ -441,7 +441,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::StartOptimization(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::AdvanceOneStep(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::AdvanceOneStep()
 {
   itkDebugMacro("AdvancedOneStep");
 
@@ -471,7 +471,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AdvanceOneStep(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::StopOptimization(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::StopOptimization()
 {
   itkDebugMacro("StopOptimization");
 
@@ -486,7 +486,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::StopOptimization(void)
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::ResumeOptimization(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::ResumeOptimization()
 {
   itkDebugMacro("ResumeOptimization");
 
@@ -719,7 +719,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::MetricErrorResponse(itk::Ex
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimation(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimation()
 {
   /** Setup timers. */
   itk::TimeProbe timer1;
@@ -765,7 +765,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimatio
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimationOriginal(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimationOriginal()
 {
   itk::TimeProbe timer2, timer3;
 
@@ -782,16 +782,16 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimatio
   this->GetRegistration()->GetAsITKBaseType()->GetModifiableTransform()->SetParameters(this->GetCurrentPosition());
 
   /** Cast to advanced metric type. */
-  typedef typename ElastixType::MetricBaseType::AdvancedMetricType MetricType;
+  using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
   MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
   if (!testPtr)
   {
-    itkExceptionMacro(<< "ERROR: AdaptiveStochasticVarianceReducedGradient expects "
-                      << "the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(<< "ERROR: AdaptiveStochasticVarianceReducedGradient expects the metric to be of type "
+                         "AdvancedImageToImageMetric!");
   }
 
   /** Construct computeJacobianTerms to initialize the parameter estimation. */
-  typename ComputeJacobianTermsType::Pointer computeJacobianTerms = ComputeJacobianTermsType::New();
+  auto computeJacobianTerms = ComputeJacobianTermsType::New();
   computeJacobianTerms->SetFixedImage(testPtr->GetFixedImage());
   computeJacobianTerms->SetFixedImageRegion(testPtr->GetFixedImageRegion());
   computeJacobianTerms->SetFixedImageMask(testPtr->GetFixedImageMask());
@@ -909,7 +909,7 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimatio
 
 template <class TElastix>
 void
-AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimationUsingDisplacementDistribution(void)
+AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimationUsingDisplacementDistribution()
 {
   itk::TimeProbe timer4, timer5;
 
@@ -921,12 +921,12 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::AutomaticParameterEstimatio
   double       maxJJ = 0;
 
   /** Cast to advanced metric type. */
-  typedef typename ElastixType::MetricBaseType::AdvancedMetricType MetricType;
+  using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
   MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
   if (!testPtr)
   {
-    itkExceptionMacro(<< "ERROR: AdaptiveStochasticVarianceReducedGradient expects "
-                      << "the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(<< "ERROR: AdaptiveStochasticVarianceReducedGradient expects the metric to be of type "
+                         "AdvancedImageToImageMetric!");
   }
 
   /** Construct computeJacobianTerms to initialize the parameter estimation. */
@@ -1069,8 +1069,9 @@ AdaptiveStochasticVarianceReducedGradient<TElastix>::SampleGradients(const Param
           {
             if (this->GetUseAdaptiveStepSizes())
             {
-              xl::xout["warning"] << "WARNING: UseAdaptiveStepSizes is turned off, "
-                                  << "because UseRandomSampleRegion is set to \"true\"." << std::endl;
+              xl::xout["warning"]
+                << "WARNING: UseAdaptiveStepSizes is turned off, because UseRandomSampleRegion is set to \"true\"."
+                << std::endl;
               this->SetUseAdaptiveStepSizes(false);
             }
           }

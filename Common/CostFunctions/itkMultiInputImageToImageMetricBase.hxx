@@ -68,8 +68,7 @@
 /** Macro for getting objects. */
 #define itkImplementationGetObjectMacro(_name, _type)                                                                  \
   template <class TFixedImage, class TMovingImage>                                                                     \
-  typename MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::_type *                                        \
-    MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::Get##_name(unsigned int pos) const                    \
+  auto MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::Get##_name(unsigned int pos) const->_type *        \
   {                                                                                                                    \
     if (this->m_##_name##Vector.size() < pos + 1)                                                                      \
     {                                                                                                                  \
@@ -81,8 +80,7 @@
 /** Macro for getting const objects. */
 #define itkImplementationGetConstObjectMacro(_name, _type)                                                             \
   template <class TFixedImage, class TMovingImage>                                                                     \
-  const typename MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::_type *                                  \
-    MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::Get##_name(unsigned int pos) const                    \
+  auto MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::Get##_name(unsigned int pos) const->const _type *  \
   {                                                                                                                    \
     if (this->m_##_name##Vector.size() < pos + 1)                                                                      \
     {                                                                                                                  \
@@ -163,8 +161,9 @@ MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::SetFixedImageRegion
  */
 
 template <class TFixedImage, class TMovingImage>
-const typename MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::FixedImageRegionType &
+auto
 MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::GetFixedImageRegion(unsigned int pos) const
+  -> const FixedImageRegionType &
 {
   if (this->m_FixedImageRegionVector.size() < pos)
   {
@@ -182,7 +181,7 @@ MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::GetFixedImageRegion
 
 template <class TFixedImage, class TMovingImage>
 void
-MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::CheckForBSplineInterpolators(void)
+MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::CheckForBSplineInterpolators()
 {
   /** Check if the interpolators are of type BSplineInterpolateImageFunction.
    * If so, we can make use of its EvaluateDerivatives method.
@@ -218,7 +217,7 @@ MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::CheckForBSplineInte
 
 template <class TFixedImage, class TMovingImage>
 void
-MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::Initialize(void)
+MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::Initialize()
 {
   /** Connect the interpolators. */
   for (unsigned int i = 0; i < this->GetNumberOfInterpolators(); ++i)
@@ -247,7 +246,7 @@ MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::Initialize(void)
 
 template <class TFixedImage, class TMovingImage>
 void
-MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::InitializeImageSampler(void)
+MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>::InitializeImageSampler()
 {
   if (this->GetUseImageSampler())
   {

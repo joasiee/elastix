@@ -86,7 +86,7 @@ GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::GradientDiffere
 
 template <class TFixedImage, class TMovingImage>
 void
-GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void)
+GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
 {
   /** Initialise the base class */
   Superclass::Initialize();
@@ -116,8 +116,8 @@ GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::Initialize(void
   }
   else
   {
-    itkExceptionMacro(<< "ERROR: the NormalizedGradientCorrelationImageToImageMetric is currently "
-                      << "only suitable for 2D-3D registration.\n"
+    itkExceptionMacro(<< "ERROR: the NormalizedGradientCorrelationImageToImageMetric is currently only suitable for "
+                         "2D-3D registration.\n"
                       << "  Therefore it expects an interpolator of type RayCastInterpolator.");
   }
   this->m_TransformMovingImageFilter->SetInterpolator(this->m_Interpolator);
@@ -175,14 +175,14 @@ GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::PrintSelf(std::
 
 template <class TFixedImage, class TMovingImage>
 void
-GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeMovedGradientRange(void) const
+GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeMovedGradientRange() const
 {
   unsigned int           iDimension;
   MovedGradientPixelType gradient;
 
   for (iDimension = 0; iDimension < FixedImageDimension; ++iDimension)
   {
-    typedef itk::ImageRegionConstIteratorWithIndex<MovedGradientImageType> IteratorType;
+    using IteratorType = itk::ImageRegionConstIteratorWithIndex<MovedGradientImageType>;
 
     IteratorType iterate(m_MovedSobelFilters[iDimension]->GetOutput(), this->GetFixedImageRegion());
 
@@ -216,7 +216,7 @@ GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeMovedGra
  */
 template <class TFixedImage, class TMovingImage>
 void
-GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeVariance(void) const
+GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeVariance() const
 {
   unsigned int           iDimension;
   unsigned long          nPixels;
@@ -225,7 +225,7 @@ GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeVariance
 
   for (iDimension = 0; iDimension < FixedImageDimension; ++iDimension)
   {
-    typedef itk::ImageRegionConstIteratorWithIndex<FixedGradientImageType> IteratorType;
+    using IteratorType = itk::ImageRegionConstIteratorWithIndex<FixedGradientImageType>;
 
     IteratorType iterate(this->m_FixedSobelFilters[iDimension]->GetOutput(), this->GetFixedImageRegion());
 
@@ -336,10 +336,10 @@ GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeVariance
  */
 
 template <class TFixedImage, class TMovingImage>
-typename GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeMeasure(
   const TransformParametersType & parameters,
-  const double *                  subtractionFactor) const
+  const double *                  subtractionFactor) const -> MeasureType
 {
   /** Call non-thread-safe stuff, such as:
    *   this->SetTransformParameters( parameters );
@@ -381,11 +381,11 @@ GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeMeasure(
     FixedGradientPixelType fixedGradient;
     MovedGradientPixelType diff;
 
-    typedef itk::ImageRegionConstIteratorWithIndex<FixedGradientImageType> FixedIteratorType;
+    using FixedIteratorType = itk::ImageRegionConstIteratorWithIndex<FixedGradientImageType>;
 
     FixedIteratorType fixedIterator(this->m_FixedSobelFilters[iDimension]->GetOutput(), this->GetFixedImageRegion());
 
-    typedef itk::ImageRegionConstIteratorWithIndex<MovedGradientImageType> MovedIteratorType;
+    using MovedIteratorType = itk::ImageRegionConstIteratorWithIndex<MovedGradientImageType>;
 
     MovedIteratorType movedIterator(this->m_MovedSobelFilters[iDimension]->GetOutput(), this->GetFixedImageRegion());
 
@@ -444,9 +444,9 @@ GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::ComputeMeasure(
  */
 
 template <class TFixedImage, class TMovingImage>
-typename GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   unsigned int iFilter;
   unsigned int iDimension;

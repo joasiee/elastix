@@ -10,6 +10,10 @@ template <class TElastix>
 void
 GOMEA<TElastix>::BeforeRegistration(void)
 {
+  unsigned int randomSeed = 0;
+  this->GetConfiguration()->ReadParameter(randomSeed, "RandomSeed", 0, false);
+  this->SetRandomSeed(randomSeed);
+
   this->SetImageDimension(this->GetElastix()->GetFixedImage()->GetImageDimension());
 
   this->AddTargetCellToIterationInfo("2:Metric");

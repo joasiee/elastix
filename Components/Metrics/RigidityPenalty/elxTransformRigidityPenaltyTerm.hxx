@@ -32,19 +32,19 @@ namespace elastix
 
 template <class TElastix>
 void
-TransformRigidityPenalty<TElastix>::BeforeRegistration(void)
+TransformRigidityPenalty<TElastix>::BeforeRegistration()
 {
   /** Read the fixed rigidity image if desired. */
   std::string fixedRigidityImageName = "";
   this->GetConfiguration()->ReadParameter(
     fixedRigidityImageName, "FixedRigidityImageName", this->GetComponentLabel(), 0, -1, false);
 
-  typedef typename Superclass1::RigidityImageType              RigidityImageType;
-  typedef itk::ImageFileReader<RigidityImageType>              RigidityImageReaderType;
-  typename RigidityImageReaderType::Pointer                    fixedRigidityReader;
-  typedef itk::ChangeInformationImageFilter<RigidityImageType> ChangeInfoFilterType;
-  typedef typename ChangeInfoFilterType::Pointer               ChangeInfoFilterPointer;
-  typedef typename RigidityImageType::DirectionType            DirectionType;
+  using RigidityImageType = typename Superclass1::RigidityImageType;
+  using RigidityImageReaderType = itk::ImageFileReader<RigidityImageType>;
+  typename RigidityImageReaderType::Pointer fixedRigidityReader;
+  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<RigidityImageType>;
+  using ChangeInfoFilterPointer = typename ChangeInfoFilterType::Pointer;
+  using DirectionType = typename RigidityImageType::DirectionType;
 
   if (!fixedRigidityImageName.empty())
   {
@@ -137,10 +137,8 @@ TransformRigidityPenalty<TElastix>::BeforeRegistration(void)
   /** Important check: at least one rigidity image must be given. */
   if (fixedRigidityImageName.empty() && movingRigidityImageName.empty())
   {
-    xl::xout["warning"] << "WARNING: FixedRigidityImageName and "
-                        << "MovingRigidityImage are both not supplied.\n"
-                        << "  The rigidity penalty term is evaluated on entire input "
-                        << "transform domain." << std::endl;
+    xl::xout["warning"] << "WARNING: FixedRigidityImageName and MovingRigidityImage are both not supplied.\n"
+                        << "  The rigidity penalty term is evaluated on entire input transform domain." << std::endl;
   }
 
   /** Add target cells to IterationInfo. */
@@ -168,7 +166,7 @@ TransformRigidityPenalty<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-TransformRigidityPenalty<TElastix>::Initialize(void)
+TransformRigidityPenalty<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -189,7 +187,7 @@ TransformRigidityPenalty<TElastix>::Initialize(void)
 
 template <class TElastix>
 void
-TransformRigidityPenalty<TElastix>::BeforeEachResolution(void)
+TransformRigidityPenalty<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -269,7 +267,7 @@ TransformRigidityPenalty<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-TransformRigidityPenalty<TElastix>::AfterEachIteration(void)
+TransformRigidityPenalty<TElastix>::AfterEachIteration()
 {
   /** Print some information. */
   this->GetIterationInfoAt("Metric-LC") << this->GetLinearityConditionValue();

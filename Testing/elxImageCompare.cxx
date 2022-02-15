@@ -38,11 +38,11 @@
  */
 
 std::string
-GetHelpString(void)
+GetHelpString()
 {
   std::stringstream ss;
-  ss << "Usage:" << std::endl
-     << "elxImageCompare" << std::endl
+  ss << "Usage:\n"
+     << "elxImageCompare\n"
      << "  -test      image filename to test against baseline\n"
      << "  -base      baseline image filename\n"
      << "  [-t]       intensity difference threshold, default 0\n"
@@ -90,11 +90,11 @@ main(int argc, char ** argv)
   parser->GetCommandLineArgument("-a", allowedTolerance);
 
   // Read images
-  typedef itk::Image<double, ITK_TEST_DIMENSION_MAX> ImageType;
-  typedef itk::ImageFileReader<ImageType>            ReaderType;
+  using ImageType = itk::Image<double, ITK_TEST_DIMENSION_MAX>;
+  using ReaderType = itk::ImageFileReader<ImageType>;
 
   // Read the baseline file
-  ReaderType::Pointer baselineReader = ReaderType::New();
+  auto baselineReader = ReaderType::New();
   baselineReader->SetFileName(baselineImageFileName);
   try
   {
@@ -107,7 +107,7 @@ main(int argc, char ** argv)
   }
 
   // Read the file to test
-  ReaderType::Pointer testReader = ReaderType::New();
+  auto testReader = ReaderType::New();
   testReader->SetFileName(testImageFileName);
   try
   {
@@ -134,8 +134,8 @@ main(int argc, char ** argv)
   }
 
   // Now compare the two images
-  typedef itk::Testing::ComparisonImageFilter<ImageType, ImageType> ComparisonFilterType;
-  ComparisonFilterType::Pointer                                     comparisonFilter = ComparisonFilterType::New();
+  using ComparisonFilterType = itk::Testing::ComparisonImageFilter<ImageType, ImageType>;
+  auto comparisonFilter = ComparisonFilterType::New();
   comparisonFilter->SetTestInput(testReader->GetOutput());
   comparisonFilter->SetValidInput(baselineReader->GetOutput());
   comparisonFilter->SetDifferenceThreshold(diffThreshold);
@@ -164,8 +164,8 @@ main(int argc, char ** argv)
     diffImageFileName += "_DIFF";
     diffImageFileName += itksys::SystemTools::GetFilenameLastExtension(testImageFileName);
 
-    typedef itk::ImageFileWriter<ImageType> WriterType;
-    WriterType::Pointer                     writer = WriterType::New();
+    using WriterType = itk::ImageFileWriter<ImageType>;
+    auto writer = WriterType::New();
     writer->SetFileName(diffImageFileName);
     writer->SetInput(comparisonFilter->GetOutput());
     try

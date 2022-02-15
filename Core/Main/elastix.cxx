@@ -81,8 +81,8 @@ main(int argc, char ** argv)
                 << " version " << __VERSION__
 #  endif
 #endif
-                << "\nMemory address size: " << std::numeric_limits<std::size_t>::digits << "-bit"
-                << "\nCMake version: " << ELX_CMAKE_VERSION << std::endl;
+                << "\nMemory address size: " << std::numeric_limits<std::size_t>::digits
+                << "-bit\nCMake version: " << ELX_CMAKE_VERSION << std::endl;
       return 0;
     }
     else
@@ -93,13 +93,13 @@ main(int argc, char ** argv)
   }
 
   /** Some typedef's. */
-  typedef elx::ElastixMain                            ElastixMainType;
-  typedef ElastixMainType::ObjectPointer              ObjectPointer;
-  typedef ElastixMainType::DataObjectContainerPointer DataObjectContainerPointer;
-  typedef ElastixMainType::FlatDirectionCosinesType   FlatDirectionCosinesType;
+  using ElastixMainType = elx::ElastixMain;
+  using ObjectPointer = ElastixMainType::ObjectPointer;
+  using DataObjectContainerPointer = ElastixMainType::DataObjectContainerPointer;
+  using FlatDirectionCosinesType = ElastixMainType::FlatDirectionCosinesType;
 
-  typedef ElastixMainType::ArgumentMapType ArgumentMapType;
-  typedef ArgumentMapType::value_type      ArgumentMapEntryType;
+  using ArgumentMapType = ElastixMainType::ArgumentMapType;
+  using ArgumentMapEntryType = ArgumentMapType::value_type;
 
   /** Support Mevis Dicom Tiff (if selected in cmake) */
   RegisterMevisDicomTiff();
@@ -266,9 +266,7 @@ main(int argc, char ** argv)
     parameterFileList.pop();
 
     /** Print a start message. */
-    elxout << "-------------------------------------------------------------------------"
-           << "\n"
-           << std::endl;
+    elxout << "-------------------------------------------------------------------------\n" << std::endl;
     elxout << "Running elastix with parameter file " << i << ": \"" << parameterFileName << "\".\n" << std::endl;
 
     /** Declare a timer, start it and print the start time. */
@@ -308,9 +306,7 @@ main(int argc, char ** argv)
            << std::endl;
   } // end loop over registrations
 
-  elxout << "-------------------------------------------------------------------------"
-         << "\n"
-         << std::endl;
+  elxout << "-------------------------------------------------------------------------\n" << std::endl;
 
   /** Stop totaltimer and print it. */
   totaltimer.Stop();
@@ -338,7 +334,7 @@ main(int argc, char ** argv)
  */
 
 void
-PrintHelp(void)
+PrintHelp()
 {
   /** Print the version. */
   std::cout << "elastix version: " << ELASTIX_VERSION_STRING "\n\n";

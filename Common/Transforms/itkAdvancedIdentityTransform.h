@@ -38,7 +38,7 @@
 #include "itkPoint.h"
 #include "itkVector.h"
 #include "itkCovariantVector.h"
-#include "vnl/vnl_vector_fixed.h"
+#include <vnl/vnl_vector_fixed.h>
 #include "itkArray.h"
 #include "itkArray2D.h"
 #include "itkAdvancedTransform.h"
@@ -72,10 +72,10 @@ class ITK_TEMPLATE_EXPORT AdvancedIdentityTransform : public AdvancedTransform<T
 {
 public:
   /** Standard class typedefs. */
-  typedef AdvancedIdentityTransform                                Self;
-  typedef AdvancedTransform<TScalarType, NDimensions, NDimensions> Superclass;
-  typedef SmartPointer<Self>                                       Pointer;
-  typedef SmartPointer<const Self>                                 ConstPointer;
+  using Self = AdvancedIdentityTransform;
+  using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New method for creating an object using a factory. */
   itkNewMacro(Self);
@@ -89,7 +89,7 @@ public:
   itkStaticConstMacro(ParametersDimension, unsigned int, 1);
 
   /** Type of the input parameters. */
-  typedef TScalarType ScalarType;
+  using ScalarType = TScalarType;
 
   /** Type of the input parameters. */
   using typename Superclass::ParametersType;
@@ -100,25 +100,25 @@ public:
   using typename Superclass::JacobianType;
 
   /** Standard vector type for this class. */
-  typedef Vector<TScalarType, Self::InputSpaceDimension>  InputVectorType;
-  typedef Vector<TScalarType, Self::OutputSpaceDimension> OutputVectorType;
+  using InputVectorType = Vector<TScalarType, Self::InputSpaceDimension>;
+  using OutputVectorType = Vector<TScalarType, Self::OutputSpaceDimension>;
 
   /** Standard covariant vector type for this class */
-  typedef CovariantVector<TScalarType, Self::InputSpaceDimension>  InputCovariantVectorType;
-  typedef CovariantVector<TScalarType, Self::OutputSpaceDimension> OutputCovariantVectorType;
+  using InputCovariantVectorType = CovariantVector<TScalarType, Self::InputSpaceDimension>;
+  using OutputCovariantVectorType = CovariantVector<TScalarType, Self::OutputSpaceDimension>;
 
   /** Standard vnl_vector type for this class. */
-  typedef vnl_vector_fixed<TScalarType, Self::InputSpaceDimension>  InputVnlVectorType;
-  typedef vnl_vector_fixed<TScalarType, Self::OutputSpaceDimension> OutputVnlVectorType;
+  using InputVnlVectorType = vnl_vector_fixed<TScalarType, Self::InputSpaceDimension>;
+  using OutputVnlVectorType = vnl_vector_fixed<TScalarType, Self::OutputSpaceDimension>;
 
   /** Standard coordinate point type for this class */
-  typedef Point<TScalarType, Self::InputSpaceDimension>  InputPointType;
-  typedef Point<TScalarType, Self::OutputSpaceDimension> OutputPointType;
+  using InputPointType = Point<TScalarType, Self::InputSpaceDimension>;
+  using OutputPointType = Point<TScalarType, Self::OutputSpaceDimension>;
 
   /** Base inverse transform type. This type should not be changed to the
    * concrete inverse transform type or inheritance would be lost.*/
-  typedef typename Superclass::InverseTransformBaseType InverseTransformBaseType;
-  typedef typename InverseTransformBaseType::Pointer    InverseTransformBasePointer;
+  using InverseTransformBaseType = typename Superclass::InverseTransformBaseType;
+  using InverseTransformBasePointer = typename InverseTransformBaseType::Pointer;
 
   /** AdvancedTransform typedefs */
   using typename Superclass::NonZeroJacobianIndicesType;
@@ -161,12 +161,12 @@ public:
    * This is a NULL operation in the case of this particular transform.
      The method is provided only to comply with the interface of other transforms. */
   void
-  SetIdentity(void)
+  SetIdentity()
   {}
 
   /** Return an inverse of the identity transform - another identity transform. */
   InverseTransformBasePointer
-  GetInverseTransform(void) const override
+  GetInverseTransform() const override
   {
     return this->New().GetPointer();
   }
@@ -195,7 +195,7 @@ public:
 
   /** Get the Fixed Parameters. */
   const ParametersType &
-  GetFixedParameters(void) const override
+  GetFixedParameters() const override
   {
     return this->m_FixedParameters;
   }
@@ -208,7 +208,7 @@ public:
 
   /** Get the Parameters. */
   const ParametersType &
-  GetParameters(void) const override
+  GetParameters() const override
   {
     return this->m_Parameters;
   }

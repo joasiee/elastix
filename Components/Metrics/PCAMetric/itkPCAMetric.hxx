@@ -21,11 +21,11 @@
 #include "itkPCAMetric.h"
 
 #include "itkMersenneTwisterRandomVariateGenerator.h"
-#include "vnl/algo/vnl_matrix_update.h"
+#include <vnl/algo/vnl_matrix_update.h>
 #include "itkImage.h"
-#include "vnl/algo/vnl_svd.h"
-#include "vnl/vnl_trace.h"
-#include "vnl/algo/vnl_symmetric_eigensystem.h"
+#include <vnl/algo/vnl_svd.h>
+#include <vnl/vnl_trace.h>
+#include <vnl/algo/vnl_symmetric_eigensystem.h>
 #include <numeric>
 #include <fstream>
 
@@ -56,7 +56,7 @@ PCAMetric<TFixedImage, TMovingImage>::PCAMetric()
 
 template <class TFixedImage, class TMovingImage>
 void
-PCAMetric<TFixedImage, TMovingImage>::Initialize(void)
+PCAMetric<TFixedImage, TMovingImage>::Initialize()
 {
   /** Initialize transform, interpolator, etc. */
   Superclass::Initialize();
@@ -136,20 +136,17 @@ PCAMetric<TFixedImage, TMovingImage>::EvaluateTransformJacobianInnerProduct(
   const MovingImageDerivativeType & movingImageDerivative,
   DerivativeType &                  imageJacobian) const
 {
-  typedef typename TransformJacobianType::const_iterator JacobianIteratorType;
-  typedef typename DerivativeType::iterator              DerivativeIteratorType;
-  JacobianIteratorType                                   jac = jacobian.begin();
+  using JacobianIteratorType = typename TransformJacobianType::const_iterator;
+  JacobianIteratorType jac = jacobian.begin();
   imageJacobian.Fill(0.0);
-  const unsigned int sizeImageJacobian = imageJacobian.GetSize();
+
   for (unsigned int dim = 0; dim < FixedImageDimension; ++dim)
   {
-    const double           imDeriv = movingImageDerivative[dim];
-    DerivativeIteratorType imjac = imageJacobian.begin();
+    const double imDeriv = movingImageDerivative[dim];
 
-    for (unsigned int mu = 0; mu < sizeImageJacobian; ++mu)
+    for (auto & imageJacobianElement : imageJacobian)
     {
-      (*imjac) += (*jac) * imDeriv;
-      ++imjac;
+      imageJacobianElement += (*jac) * imDeriv;
       ++jac;
     }
   }
@@ -161,18 +158,18 @@ PCAMetric<TFixedImage, TMovingImage>::EvaluateTransformJacobianInnerProduct(
  */
 
 template <class TFixedImage, class TMovingImage>
-typename PCAMetric<TFixedImage, TMovingImage>::MeasureType
-PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters) const
+auto
+PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters) const -> MeasureType
 {
   itkDebugMacro("GetValue( " << parameters << " ) ");
   bool UseGetValueAndDerivative = false;
 
   if (UseGetValueAndDerivative)
   {
-    typedef typename DerivativeType::ValueType DerivativeValueType;
-    const unsigned int                         P = this->GetNumberOfParameters();
-    MeasureType                                dummymeasure = NumericTraits<MeasureType>::Zero;
-    DerivativeType                             dummyderivative = DerivativeType(P);
+    using DerivativeValueType = typename DerivativeType::ValueType;
+    const unsigned int P = this->GetNumberOfParameters();
+    MeasureType        dummymeasure = NumericTraits<MeasureType>::Zero;
+    DerivativeType     dummyderivative = DerivativeType(P);
     dummyderivative.Fill(NumericTraits<DerivativeValueType>::Zero);
 
     this->GetValueAndDerivative(parameters, dummymeasure, dummyderivative);
@@ -200,7 +197,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & p
   const unsigned int lastDimSize = this->GetFixedImage()->GetLargestPossibleRegion().GetSize(lastDim);
   const unsigned int numLastDimSamples = this->m_NumSamplesLastDimension;
 
-  typedef vnl_matrix<RealType> MatrixType;
+  using MatrixType = vnl_matrix<RealType>;
 
   /** Get real last dim samples. */
   const unsigned int realNumLastDimPositions = this->m_SampleLastDimensionRandomly
@@ -249,8 +246,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & p
     for (unsigned int d = 0; d < realNumLastDimPositions; ++d)
     {
       /** Initialize some variables. */
-      RealType             movingImageValue;
-      MovingImagePointType mappedPoint;
+      RealType movingImageValue;
 
       /** Set fixed point's last dimension to lastDimPosition. */
       voxelCoord[lastDim] = lastDimPositions[d];
@@ -258,14 +254,11 @@ PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & p
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
 
-      /** Transform point and check if it is inside the B-spline support region. */
-      bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+      /** Transform point. */
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-      /** Check if point is inside mask. */
-      if (sampleOk)
-      {
-        sampleOk = this->IsInsideMovingMask(mappedPoint);
-      }
+      /** Check if the point is inside the moving mask. */
+      bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
       if (sampleOk)
       {
@@ -419,8 +412,8 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformParam
 {
   itkDebugMacro("GetValueAndDerivative( " << parameters << " ) ");
   /** Define derivative and Jacobian types. */
-  typedef typename DerivativeType::ValueType        DerivativeValueType;
-  typedef typename TransformJacobianType::ValueType TransformJacobianValueType;
+  using DerivativeValueType = typename DerivativeType::ValueType;
+  using TransformJacobianValueType = typename TransformJacobianType::ValueType;
 
   /** Initialize some variables */
   const unsigned int P = this->GetNumberOfParameters();
@@ -446,8 +439,8 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformParam
   const unsigned int lastDimSize = this->GetFixedImage()->GetLargestPossibleRegion().GetSize(lastDim);
   const unsigned int numLastDimSamples = this->m_NumSamplesLastDimension;
 
-  typedef vnl_matrix<RealType>            MatrixType;
-  typedef vnl_matrix<DerivativeValueType> DerivativeMatrixType;
+  using MatrixType = vnl_matrix<RealType>;
+  using DerivativeMatrixType = vnl_matrix<DerivativeValueType>;
 
   std::vector<FixedImagePointType> SamplesOK;
 
@@ -498,8 +491,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformParam
     for (unsigned int d = 0; d < G; ++d)
     {
       /** Initialize some variables. */
-      RealType             movingImageValue;
-      MovingImagePointType mappedPoint;
+      RealType movingImageValue;
 
       /** Set fixed point's last dimension to lastDimPosition. */
       voxelCoord[lastDim] = lastDimPositions[d];
@@ -507,13 +499,11 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformParam
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
 
-      /** Transform point and check if it is inside the B-spline support region. */
-      bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
-      /** Check if point is inside mask. */
-      if (sampleOk)
-      {
-        sampleOk = this->IsInsideMovingMask(mappedPoint);
-      }
+      /** Transform point. */
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
+
+      /** Check if the point is inside the moving mask. */
+      bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
       if (sampleOk)
 
@@ -705,7 +695,6 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformParam
     {
       /** Initialize some variables. */
       RealType                  movingImageValue;
-      MovingImagePointType      mappedPoint;
       MovingImageDerivativeType movingImageDerivative;
 
       /** Set fixed point's last dimension to lastDimPosition. */
@@ -713,7 +702,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformParam
 
       /** Transform sampled point back to world coordinates. */
       this->GetFixedImage()->TransformContinuousIndexToPhysicalPoint(voxelCoord, fixedPoint);
-      this->TransformPoint(fixedPoint, mappedPoint);
+      const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
       this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
 

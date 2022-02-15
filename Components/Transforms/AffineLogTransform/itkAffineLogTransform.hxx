@@ -18,7 +18,7 @@
 #ifndef itkAffineLogTransform_hxx
 #define itkAffineLogTransform_hxx
 
-#include "vnl/vnl_matrix_exp.h"
+#include <vnl/vnl_matrix_exp.h>
 #include "itkMath.h"
 #include "itkAffineLogTransform.h"
 
@@ -110,8 +110,8 @@ AffineLogTransform<TScalarType, Dimension>::SetParameters(const ParametersType &
 
 // Get Parameters
 template <class TScalarType, unsigned int Dimension>
-const typename AffineLogTransform<TScalarType, Dimension>::ParametersType &
-AffineLogTransform<TScalarType, Dimension>::GetParameters(void) const
+auto
+AffineLogTransform<TScalarType, Dimension>::GetParameters() const -> const ParametersType &
 {
   unsigned int k = 0; // Dummy loop index
 
@@ -136,7 +136,7 @@ AffineLogTransform<TScalarType, Dimension>::GetParameters(void) const
 // SetIdentity
 template <class TScalarType, unsigned int Dimension>
 void
-AffineLogTransform<TScalarType, Dimension>::SetIdentity(void)
+AffineLogTransform<TScalarType, Dimension>::SetIdentity()
 {
   Superclass::SetIdentity();
   this->m_MatrixLogDomain.Fill(itk::NumericTraits<ScalarType>::Zero);
@@ -181,7 +181,7 @@ AffineLogTransform<TScalarType, Dimension>::GetJacobian(const InputPointType &  
 // Precompute Jacobian of Spatial Jacobian
 template <class TScalarType, unsigned int Dimension>
 void
-AffineLogTransform<TScalarType, Dimension>::PrecomputeJacobianOfSpatialJacobian(void)
+AffineLogTransform<TScalarType, Dimension>::PrecomputeJacobianOfSpatialJacobian()
 {
   unsigned int d = Dimension;
 

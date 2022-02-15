@@ -27,7 +27,7 @@
 #include "itkArray.h"
 #include "itkArray2D.h"
 #include "itkMersenneTwisterRandomVariateGenerator.h"
-#include "vnl/vnl_diag_matrix.h"
+#include <vnl/vnl_diag_matrix.h>
 
 namespace itk
 {
@@ -49,10 +49,10 @@ namespace itk
 class CMAEvolutionStrategyOptimizer : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
-  typedef CMAEvolutionStrategyOptimizer        Self;
-  typedef ScaledSingleValuedNonLinearOptimizer Superclass;
-  typedef SmartPointer<Self>                   Pointer;
-  typedef SmartPointer<const Self>             ConstPointer;
+  using Self = CMAEvolutionStrategyOptimizer;
+  using Superclass = ScaledSingleValuedNonLinearOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   itkNewMacro(Self);
   itkTypeMacro(CMAEvolutionStrategyOptimizer, ScaledSingleValuedNonLinearOptimizer);
@@ -64,7 +64,7 @@ public:
   using Superclass::MeasureType;
   using Superclass::ScalesType;
 
-  typedef enum
+  enum StopConditionType
   {
     MetricError,
     MaximumNumberOfIterations,
@@ -73,16 +73,16 @@ public:
     ValueTolerance,
     ZeroStepLength,
     Unknown
-  } StopConditionType;
+  };
 
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
   virtual void
-  ResumeOptimization(void);
+  ResumeOptimization();
 
   virtual void
-  StopOptimization(void);
+  StopOptimization();
 
   /** Get the current iteration number: */
   itkGetConstMacro(CurrentIteration, unsigned long);
@@ -105,7 +105,7 @@ public:
   /** This function is just for convenience, since many optimizers have such
    * a function. It return the current sigma times the current maximumD. */
   virtual double
-  GetCurrentStepLength(void) const
+  GetCurrentStepLength() const
   {
     return this->GetCurrentSigma() * this->GetCurrentMaximumD();
   }
@@ -223,16 +223,16 @@ public:
   itkGetConstMacro(ValueTolerance, double);
 
 protected:
-  typedef Array<double>               RecombinationWeightsType;
-  typedef vnl_diag_matrix<double>     EigenValueMatrixType;
-  typedef Array2D<double>             CovarianceMatrixType;
-  typedef std::vector<ParametersType> ParameterContainerType;
-  typedef std::deque<MeasureType>     MeasureHistoryType;
+  using RecombinationWeightsType = Array<double>;
+  using EigenValueMatrixType = vnl_diag_matrix<double>;
+  using CovarianceMatrixType = Array2D<double>;
+  using ParameterContainerType = std::vector<ParametersType>;
+  using MeasureHistoryType = std::deque<MeasureType>;
 
-  typedef std::pair<MeasureType, unsigned int> MeasureIndexPairType;
-  typedef std::vector<MeasureIndexPairType>    MeasureContainerType;
+  using MeasureIndexPairType = std::pair<MeasureType, unsigned int>;
+  using MeasureContainerType = std::vector<MeasureIndexPairType>;
 
-  typedef itk::Statistics::MersenneTwisterRandomVariateGenerator RandomGeneratorType;
+  using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
 
   /** The random number generator used to generate the offspring. */
   RandomGeneratorType::Pointer m_RandomGenerator{ RandomGeneratorType::GetInstance() };
@@ -338,7 +338,7 @@ protected:
    * \li m_ExpectationNormNormalDistribution
    * \li m_HistoryLength */
   virtual void
-  InitializeConstants(void);
+  InitializeConstants();
 
   /** Initialize the following 'progress' variables:
    * \li m_CurrentSigma
@@ -353,48 +353,48 @@ protected:
    * \li m_MeasureHistory
    * \li m_CurrentMaximumD, m_CurrentMinimumD */
   virtual void
-  InitializeProgressVariables(void);
+  InitializeProgressVariables();
 
   /** Initialize the covariance matrix and its eigen decomposition */
   virtual void
-  InitializeBCD(void);
+  InitializeBCD();
 
   /** GenerateOffspring: Fill m_SearchDirs, m_NormalizedSearchDirs,
    * and m_CostFunctionValues */
   virtual void
-  GenerateOffspring(void);
+  GenerateOffspring();
 
   /** Sort the m_CostFunctionValues vector and update m_MeasureHistory */
   virtual void
-  SortCostFunctionValues(void);
+  SortCostFunctionValues();
 
   /** Compute the m_CurrentPosition = m(g+1), m_CurrentValue, and m_CurrentScaledStep */
   virtual void
-  AdvanceOneStep(void);
+  AdvanceOneStep();
 
   /** Update m_ConjugateEvolutionPath */
   virtual void
-  UpdateConjugateEvolutionPath(void);
+  UpdateConjugateEvolutionPath();
 
   /** Update m_Heaviside */
   virtual void
-  UpdateHeaviside(void);
+  UpdateHeaviside();
 
   /** Update m_EvolutionPath */
   virtual void
-  UpdateEvolutionPath(void);
+  UpdateEvolutionPath();
 
   /** Update the covariance matrix C */
   virtual void
-  UpdateC(void);
+  UpdateC();
 
   /** Update the Sigma either by adaptation or using the predefined function */
   virtual void
-  UpdateSigma(void);
+  UpdateSigma();
 
   /** Update the eigen decomposition and m_CurrentMaximumD/m_CurrentMinimumD */
   virtual void
-  UpdateBD(void);
+  UpdateBD();
 
   /** Some checks, to be sure no numerical errors occur
    * \li Adjust too low/high deviation that otherwise would violate
@@ -406,7 +406,7 @@ protected:
    * \li Adjust step size in case of equal function values (flat fitness)
    * \li Adjust step size in case of equal best function values over history  */
   virtual void
-  FixNumericalErrors(void);
+  FixNumericalErrors();
 
   /** Check if convergence has occured:
    * \li Check if the maximum number of iterations will not be exceeded in the following iteration

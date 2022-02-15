@@ -91,11 +91,11 @@ class ITK_TEMPLATE_EXPORT QuasiNewtonLBFGS
 {
 public:
   /** Standard ITK.*/
-  typedef QuasiNewtonLBFGS              Self;
-  typedef QuasiNewtonLBFGSOptimizer     Superclass1;
-  typedef OptimizerBase<TElastix>       Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = QuasiNewtonLBFGS;
+  using Superclass1 = QuasiNewtonLBFGSOptimizer;
+  using Superclass2 = OptimizerBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -124,35 +124,35 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Extra typedefs */
-  typedef itk::MoreThuenteLineSearchOptimizer    LineOptimizerType;
-  typedef LineOptimizerType::Pointer             LineOptimizerPointer;
-  typedef itk::ReceptorMemberCommand<Self>       EventPassThroughType;
-  typedef typename EventPassThroughType::Pointer EventPassThroughPointer;
+  using LineOptimizerType = itk::MoreThuenteLineSearchOptimizer;
+  using LineOptimizerPointer = LineOptimizerType::Pointer;
+  using EventPassThroughType = itk::ReceptorMemberCommand<Self>;
+  using EventPassThroughPointer = typename EventPassThroughType::Pointer;
 
   /** Check if any scales are set, and set the UseScales flag on or off;
    * after that call the superclass' implementation */
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
   /** Methods to set parameters and print output at different stages
    * in the registration process.*/
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
   void
-  AfterEachResolution(void) override;
+  AfterEachResolution() override;
 
   void
-  AfterEachIteration(void) override;
+  AfterEachIteration() override;
 
   void
-  AfterRegistration(void) override;
+  AfterRegistration() override;
 
   itkGetConstMacro(StartLineSearch, bool);
 
@@ -164,12 +164,12 @@ protected:
 
   /** Convert the line search stop condition to a string */
   virtual std::string
-  GetLineSearchStopCondition(void) const;
+  GetLineSearchStopCondition() const;
 
   /** Generate a string, representing the phase of optimisation
    * (line search, main) */
   virtual std::string
-  DeterminePhase(void) const;
+  DeterminePhase() const;
 
   /** Reimplement the superclass. Calls the superclass' implementation
    * and checks if the MoreThuente line search routine has stopped with

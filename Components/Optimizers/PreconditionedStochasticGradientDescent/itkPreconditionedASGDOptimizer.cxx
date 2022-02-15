@@ -18,7 +18,7 @@
 
 #include "itkPreconditionedASGDOptimizer.h"
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 #include "itkSigmoidImageFilter.h"
 
 namespace itk
@@ -36,9 +36,9 @@ PreconditionedASGDOptimizer::PreconditionedASGDOptimizer() = default;
  */
 
 void
-PreconditionedASGDOptimizer::UpdateCurrentTime(void)
+PreconditionedASGDOptimizer::UpdateCurrentTime()
 {
-  typedef itk::Functor::Sigmoid<double, double> SigmoidType;
+  using SigmoidType = itk::Functor::Sigmoid<double, double>;
 
   if (this->m_StepSizeStrategy == "Adaptive")
   {

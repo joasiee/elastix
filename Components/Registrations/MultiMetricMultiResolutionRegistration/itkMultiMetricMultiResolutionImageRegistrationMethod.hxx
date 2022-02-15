@@ -21,7 +21,7 @@
 #include "itkMultiMetricMultiResolutionImageRegistrationMethod.h"
 
 #include "itkContinuousIndex.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 /** Macro that implements the set methods. */
 #define itkImplementationSetMacro(_name, _type)                                                                        \
@@ -47,8 +47,8 @@
 /** Macro that implements the get methods. */
 #define itkImplementationGetMacro(_name, _type1, _type2)                                                               \
   template <typename TFixedImage, typename TMovingImage>                                                               \
-  _type1 typename MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::_type2                 \
-    MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Get##_name(unsigned int pos) const   \
+  auto MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Get##_name(unsigned int pos)      \
+    const->_type1 _type2                                                                                               \
   {                                                                                                                    \
     if (pos >= this->GetNumberOf##_name##s())                                                                          \
     {                                                                                                                  \
@@ -98,9 +98,9 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage,
  */
 
 template <typename TFixedImage, typename TMovingImage>
-const typename MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::FixedImageRegionType &
+auto
 MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::GetFixedImageRegion(
-  unsigned int pos) const
+  unsigned int pos) const -> const FixedImageRegionType &
 {
   if (pos >= this->GetNumberOfFixedImageRegions())
   {
@@ -147,7 +147,7 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Se
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Initialize(void)
+MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Initialize()
 {
   this->CheckOnInitialize();
 
@@ -199,14 +199,14 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::In
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::PrepareAllPyramids(void)
+MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::PrepareAllPyramids()
 {
   this->CheckPyramids();
 
   /** Set up the fixed image pyramids and the fixed image region pyramids. */
-  typedef typename FixedImageRegionType::SizeType      SizeType;
-  typedef typename FixedImageRegionType::IndexType     IndexType;
-  typedef typename FixedImagePyramidType::ScheduleType ScheduleType;
+  using SizeType = typename FixedImageRegionType::SizeType;
+  using IndexType = typename FixedImageRegionType::IndexType;
+  using ScheduleType = typename FixedImagePyramidType::ScheduleType;
 
   this->m_FixedImageRegionPyramids.resize(this->GetNumberOfFixedImagePyramids());
   for (unsigned int i = 0; i < this->GetNumberOfFixedImagePyramids(); ++i)
@@ -256,11 +256,11 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Pr
       // Multiresolution pyramid, which does not use the same shrinking pattern.
       // Instead of copying the shrinking code, we compute image regions from
       // the result of the fixed image pyramid.
-      typedef typename FixedImageType::PointType                         PointType;
-      typedef typename PointType::CoordRepType                           CoordRepType;
-      typedef typename IndexType::IndexValueType                         IndexValueType;
-      typedef typename SizeType::SizeValueType                           SizeValueType;
-      typedef ContinuousIndex<CoordRepType, TFixedImage::ImageDimension> CIndexType;
+      using PointType = typename FixedImageType::PointType;
+      using CoordRepType = typename PointType::CoordRepType;
+      using IndexValueType = typename IndexType::IndexValueType;
+      using SizeValueType = typename SizeType::SizeValueType;
+      using CIndexType = ContinuousIndex<CoordRepType, TFixedImage::ImageDimension>;
 
       PointType inputStartPoint;
       PointType inputEndPoint;
@@ -341,7 +341,7 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Pr
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::GenerateData(void)
+MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::GenerateData()
 {
   this->m_Stop = false;
 
@@ -427,7 +427,7 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Ge
 
 template <typename TFixedImage, typename TMovingImage>
 ModifiedTimeType
-MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::GetMTime(void) const
+MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::GetMTime() const
 {
   ModifiedTimeType mtime = Superclass::GetMTime();
   ModifiedTimeType m;
@@ -496,7 +496,7 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Ge
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::CheckPyramids(void)
+MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::CheckPyramids()
 {
   /** Check if at least one of the following are provided. */
   if (this->GetFixedImage() == nullptr)
@@ -521,18 +521,15 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Ch
    */
   if (this->GetNumberOfFixedImagePyramids() < this->GetNumberOfFixedImages())
   {
-    itkExceptionMacro(<< "The number of fixed image pyramids should be >= "
-                      << "the number of fixed images");
+    itkExceptionMacro(<< "The number of fixed image pyramids should be >= the number of fixed images");
   }
   if (this->GetNumberOfMovingImagePyramids() < this->GetNumberOfMovingImages())
   {
-    itkExceptionMacro(<< "The number of moving image pyramids should be >= "
-                      << "the number of moving images");
+    itkExceptionMacro(<< "The number of moving image pyramids should be >= the number of moving images");
   }
   if (this->GetNumberOfFixedImageRegions() != this->GetNumberOfFixedImages())
   {
-    itkExceptionMacro(<< "The number of fixed image regions should equal "
-                      << "the number of fixed images");
+    itkExceptionMacro(<< "The number of fixed image regions should equal the number of fixed images");
   }
 
 } // end CheckPyramids()
@@ -544,7 +541,7 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Ch
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::CheckOnInitialize(void)
+MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::CheckOnInitialize()
 {
   /** Check if at least one of the following is present. */
   if (this->GetMetric() == nullptr)
@@ -568,50 +565,41 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Ch
   unsigned int nrOfMetrics = this->GetCombinationMetric()->GetNumberOfMetrics();
   if (this->GetNumberOfInterpolators() > nrOfMetrics)
   {
-    itkExceptionMacro(<< "NumberOfInterpolators can not exceed the "
-                      << "NumberOfMetrics in the CombinationMetric!");
+    itkExceptionMacro(<< "NumberOfInterpolators can not exceed the NumberOfMetrics in the CombinationMetric!");
   }
   if (this->GetNumberOfFixedImagePyramids() > nrOfMetrics)
   {
-    itkExceptionMacro(<< "NumberOfFixedImagePyramids can not exceed the "
-                      << "NumberOfMetrics in the CombinationMetric!");
+    itkExceptionMacro(<< "NumberOfFixedImagePyramids can not exceed the NumberOfMetrics in the CombinationMetric!");
   }
   if (this->GetNumberOfMovingImagePyramids() > nrOfMetrics)
   {
-    itkExceptionMacro(<< "NumberOfMovingImagePyramids can not exceed the "
-                      << "NumberOfMetrics in the CombinationMetric!");
+    itkExceptionMacro(<< "NumberOfMovingImagePyramids can not exceed the NumberOfMetrics in the CombinationMetric!");
   }
   if (this->GetNumberOfMovingImagePyramids() > this->GetNumberOfInterpolators())
   {
-    itkExceptionMacro(<< "NumberOfMovingImagePyramids can not exceed the "
-                      << "NumberOfInterpolators!");
+    itkExceptionMacro(<< "NumberOfMovingImagePyramids can not exceed the NumberOfInterpolators!");
   }
 
   /** For all components: ==nrofmetrics of ==1. */
   if ((this->GetNumberOfInterpolators() != 1) && (this->GetNumberOfInterpolators() != nrOfMetrics))
   {
-    itkExceptionMacro(<< "The NumberOfInterpolators should equal 1 "
-                      << "or equal the NumberOfMetrics");
+    itkExceptionMacro(<< "The NumberOfInterpolators should equal 1 or equal the NumberOfMetrics");
   }
   if ((this->GetNumberOfFixedImagePyramids() != 1) && (this->GetNumberOfFixedImagePyramids() != nrOfMetrics))
   {
-    itkExceptionMacro(<< "The NumberOfFixedImagePyramids should equal 1 "
-                      << "or equal the NumberOfMetrics");
+    itkExceptionMacro(<< "The NumberOfFixedImagePyramids should equal 1 or equal the NumberOfMetrics");
   }
   if ((this->GetNumberOfMovingImagePyramids() != 1) && (this->GetNumberOfMovingImagePyramids() != nrOfMetrics))
   {
-    itkExceptionMacro(<< "The NumberOfMovingImagePyramids should equal 1 "
-                      << "or equal the NumberOfMetrics");
+    itkExceptionMacro(<< "The NumberOfMovingImagePyramids should equal 1 or equal the NumberOfMetrics");
   }
   if ((this->GetNumberOfFixedImages() != 1) && (this->GetNumberOfFixedImages() != nrOfMetrics))
   {
-    itkExceptionMacro(<< "The NumberOfFixedImages should equal 1 "
-                      << "or equal the NumberOfMetrics");
+    itkExceptionMacro(<< "The NumberOfFixedImages should equal 1 or equal the NumberOfMetrics");
   }
   if ((this->GetNumberOfMovingImages() != 1) && (this->GetNumberOfMovingImages() != nrOfMetrics))
   {
-    itkExceptionMacro(<< "The NumberOfMovingImages should equal 1 "
-                      << "or equal the NumberOfMetrics");
+    itkExceptionMacro(<< "The NumberOfMovingImages should equal 1 or equal the NumberOfMetrics");
   }
 
 } // end CheckOnInitialize()

@@ -37,10 +37,10 @@ class ITK_TEMPLATE_EXPORT ELASTIXLIB_API ElastixFilter : public itk::ImageSource
 {
 public:
   /** Standard ITK typedefs. */
-  typedef ElastixFilter                 Self;
-  typedef itk::ImageSource<TFixedImage> Superclass;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = ElastixFilter;
+  using Superclass = itk::ImageSource<TFixedImage>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -49,42 +49,42 @@ public:
   itkTypeMacro(ElastixFilter, itk::ImageSource);
 
   /** Typedefs. */
-  typedef elastix::ElastixMain                      ElastixMainType;
-  typedef ElastixMainType::Pointer                  ElastixMainPointer;
-  typedef std::vector<ElastixMainPointer>           ElastixMainVectorType;
-  typedef ElastixMainType::ObjectPointer            ElastixMainObjectPointer;
-  typedef ElastixMainType::ArgumentMapType          ArgumentMapType;
-  typedef ArgumentMapType::value_type               ArgumentMapEntryType;
-  typedef ElastixMainType::FlatDirectionCosinesType FlatDirectionCosinesType;
+  using ElastixMainType = elastix::ElastixMain;
+  using ElastixMainPointer = ElastixMainType::Pointer;
+  using ElastixMainVectorType = std::vector<ElastixMainPointer>;
+  using ElastixMainObjectPointer = ElastixMainType::ObjectPointer;
+  using ArgumentMapType = ElastixMainType::ArgumentMapType;
+  using ArgumentMapEntryType = ArgumentMapType::value_type;
+  using FlatDirectionCosinesType = ElastixMainType::FlatDirectionCosinesType;
 
-  typedef ElastixMainType::DataObjectContainerType           DataObjectContainerType;
-  typedef ElastixMainType::DataObjectContainerPointer        DataObjectContainerPointer;
-  typedef DataObjectContainerType::Iterator                  DataObjectContainerIterator;
-  typedef itk::ProcessObject::DataObjectIdentifierType       DataObjectIdentifierType;
-  typedef itk::ProcessObject::DataObjectPointerArraySizeType DataObjectPointerArraySizeType;
-  typedef itk::ProcessObject::NameArray                      NameArrayType;
+  using DataObjectContainerType = ElastixMainType::DataObjectContainerType;
+  using DataObjectContainerPointer = ElastixMainType::DataObjectContainerPointer;
+  using DataObjectContainerIterator = DataObjectContainerType::Iterator;
+  using DataObjectIdentifierType = itk::ProcessObject::DataObjectIdentifierType;
+  using DataObjectPointerArraySizeType = itk::ProcessObject::DataObjectPointerArraySizeType;
+  using NameArrayType = itk::ProcessObject::NameArray;
 
-  typedef ParameterObject                               ParameterObjectType;
-  typedef ParameterObjectType::ParameterMapType         ParameterMapType;
-  typedef ParameterObjectType::ParameterMapVectorType   ParameterMapVectorType;
-  typedef ParameterObjectType::ParameterValueVectorType ParameterValueVectorType;
-  typedef ParameterObjectType::Pointer                  ParameterObjectPointer;
-  typedef ParameterObjectType::ConstPointer             ParameterObjectConstPointer;
+  using ParameterObjectType = ParameterObject;
+  using ParameterMapType = ParameterObjectType::ParameterMapType;
+  using ParameterMapVectorType = ParameterObjectType::ParameterMapVectorType;
+  using ParameterValueVectorType = ParameterObjectType::ParameterValueVectorType;
+  using ParameterObjectPointer = ParameterObjectType::Pointer;
+  using ParameterObjectConstPointer = ParameterObjectType::ConstPointer;
 
-  typedef typename TFixedImage::Pointer       FixedImagePointer;
-  typedef typename TFixedImage::ConstPointer  FixedImageConstPointer;
-  typedef typename TMovingImage::Pointer      MovingImagePointer;
-  typedef typename TMovingImage::ConstPointer MovingImageConstPointer;
+  using FixedImagePointer = typename TFixedImage::Pointer;
+  using FixedImageConstPointer = typename TFixedImage::ConstPointer;
+  using MovingImagePointer = typename TMovingImage::Pointer;
+  using MovingImageConstPointer = typename TMovingImage::ConstPointer;
 
   itkStaticConstMacro(FixedImageDimension, unsigned int, TFixedImage::ImageDimension);
   itkStaticConstMacro(MovingImageDimension, unsigned int, TMovingImage::ImageDimension);
 
-  typedef itk::Image<unsigned char, FixedImageDimension>  FixedMaskType;
-  typedef typename FixedMaskType::Pointer                 FixedMaskPointer;
-  typedef typename FixedMaskType::Pointer                 FixedMaskConstPointer;
-  typedef itk::Image<unsigned char, MovingImageDimension> MovingMaskType;
-  typedef typename MovingMaskType::Pointer                MovingMaskPointer;
-  typedef typename MovingMaskType::Pointer                MovingMaskConstPointer;
+  using FixedMaskType = itk::Image<unsigned char, FixedImageDimension>;
+  using FixedMaskPointer = typename FixedMaskType::Pointer;
+  using FixedMaskConstPointer = typename FixedMaskType::Pointer;
+  using MovingMaskType = itk::Image<unsigned char, MovingImageDimension>;
+  using MovingMaskPointer = typename MovingMaskType::Pointer;
+  using MovingMaskConstPointer = typename MovingMaskType::Pointer;
 
   /** Set/Add/Get/NumberOf fixed images. */
   virtual void
@@ -92,11 +92,11 @@ public:
   virtual void
   AddFixedImage(TFixedImage * fixedImage);
   FixedImageConstPointer
-  GetFixedImage(void) const;
+  GetFixedImage() const;
   FixedImageConstPointer
   GetFixedImage(const unsigned int index) const;
   unsigned int
-  GetNumberOfFixedImages(void) const;
+  GetNumberOfFixedImages() const;
 
   /** Set/Add/Get/NumberOf moving images. */
   virtual void
@@ -104,11 +104,11 @@ public:
   virtual void
   AddMovingImage(TMovingImage * movingImage);
   MovingImageConstPointer
-  GetMovingImage(void) const;
+  GetMovingImage() const;
   MovingImageConstPointer
   GetMovingImage(const unsigned int index) const;
   unsigned int
-  GetNumberOfMovingImages(void) const;
+  GetNumberOfMovingImages() const;
 
   /** Set/Add/Get/Remove/NumberOf fixed masks. */
   virtual void
@@ -116,13 +116,13 @@ public:
   virtual void
   SetFixedMask(FixedMaskType * fixedMask);
   FixedMaskConstPointer
-  GetFixedMask(void) const;
+  GetFixedMask() const;
   FixedMaskConstPointer
   GetFixedMask(const unsigned int index) const;
   void
-  RemoveFixedMask(void);
+  RemoveFixedMask();
   unsigned int
-  GetNumberOfFixedMasks(void) const;
+  GetNumberOfFixedMasks() const;
 
   /** Set/Add/Get/Remove/NumberOf moving masks. */
   virtual void
@@ -130,33 +130,33 @@ public:
   virtual void
   AddMovingMask(MovingMaskType * movingMask);
   MovingMaskConstPointer
-  GetMovingMask(void) const;
+  GetMovingMask() const;
   MovingMaskConstPointer
   GetMovingMask(const unsigned int index) const;
   virtual void
-  RemoveMovingMask(void);
+  RemoveMovingMask();
   unsigned int
-  GetNumberOfMovingMasks(void) const;
+  GetNumberOfMovingMasks() const;
 
   /** Set/Get parameter object.*/
   virtual void
   SetParameterObject(ParameterObjectType * parameterObject);
   ParameterObjectType *
-  GetParameterObject(void);
+  GetParameterObject();
   const ParameterObjectType *
-  GetParameterObject(void) const;
+  GetParameterObject() const;
 
   /** Get transform parameter object.*/
   ParameterObjectType *
-  GetTransformParameterObject(void);
+  GetTransformParameterObject();
   const ParameterObjectType *
-  GetTransformParameterObject(void) const;
+  GetTransformParameterObject() const;
 
   /** Set/Get/Remove initial transform parameter filename. */
   itkSetMacro(InitialTransformParameterFileName, std::string);
   itkGetConstMacro(InitialTransformParameterFileName, std::string);
   virtual void
-  RemoveInitialTransformParameterFileName(void)
+  RemoveInitialTransformParameterFileName()
   {
     this->SetInitialTransformParameterFileName("");
   }
@@ -165,7 +165,7 @@ public:
   itkSetMacro(FixedPointSetFileName, std::string);
   itkGetConstMacro(FixedPointSetFileName, std::string);
   void
-  RemoveFixedPointSetFileName(void)
+  RemoveFixedPointSetFileName()
   {
     this->SetFixedPointSetFileName("");
   }
@@ -174,7 +174,7 @@ public:
   itkSetMacro(MovingPointSetFileName, std::string);
   itkGetConstMacro(MovingPointSetFileName, std::string);
   void
-  RemoveMovingPointSetFileName(void)
+  RemoveMovingPointSetFileName()
   {
     this->SetMovingPointSetFileName("");
   }
@@ -194,7 +194,7 @@ public:
 
   itkGetConstMacro(LogFileName, std::string);
   void
-  RemoveLogFileName(void);
+  RemoveLogFileName();
 
   /** Log to std::cout on/off. */
   itkSetMacro(LogToConsole, bool);
@@ -208,7 +208,7 @@ public:
 
   /** Disables output to log and standard output. */
   void
-  DisableOutput(void)
+  DisableOutput()
   {
     m_EnableOutput = false;
   }
@@ -217,10 +217,10 @@ public:
   itkGetConstMacro(NumberOfThreads, int);
 
 protected:
-  ElastixFilter(void);
+  ElastixFilter();
 
   virtual void
-  GenerateData(void) override;
+  GenerateData() override;
 
 private:
   ElastixFilter(const Self &) = delete;

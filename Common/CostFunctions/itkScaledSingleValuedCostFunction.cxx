@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 #include "itkScaledSingleValuedCostFunction.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -165,7 +165,7 @@ ScaledSingleValuedCostFunction::GetValueAndDerivative(const ParametersType & par
  */
 
 unsigned int
-ScaledSingleValuedCostFunction::GetNumberOfParameters(void) const
+ScaledSingleValuedCostFunction::GetNumberOfParameters() const
 {
   if (this->m_UnscaledCostFunction.IsNull())
   {

@@ -20,17 +20,10 @@
 
 #include "itkAdvancedLinearInterpolateImageFunction.h"
 
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
-
-/**
- * ***************** Constructor ***********************
- */
-
-template <class TInputImage, class TCoordRep>
-AdvancedLinearInterpolateImageFunction<TInputImage, TCoordRep>::AdvancedLinearInterpolateImageFunction() = default;
 
 /**
  * ***************** EvaluateDerivativeAtContinuousIndex ***********************

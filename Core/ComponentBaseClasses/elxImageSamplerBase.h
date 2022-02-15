@@ -45,8 +45,8 @@ class ITK_TEMPLATE_EXPORT ImageSamplerBase : public BaseComponentSE<TElastix>
 {
 public:
   /** Standard ITK-stuff. */
-  typedef ImageSamplerBase          Self;
-  typedef BaseComponentSE<TElastix> Superclass;
+  using Self = ImageSamplerBase;
+  using Superclass = BaseComponentSE<TElastix>;
 
   /** Run-time type information (and related methods). */
   itkTypeMacro(ImageSamplerBase, BaseComponentSE);
@@ -60,14 +60,14 @@ public:
   using typename Superclass::RegistrationPointer;
 
   /** Other typedef's. */
-  typedef typename ElastixType::FixedImageType InputImageType;
+  using InputImageType = typename ElastixType::FixedImageType;
 
   /** ITKBaseType. */
-  typedef itk::ImageSamplerBase<InputImageType> ITKBaseType;
+  using ITKBaseType = itk::ImageSamplerBase<InputImageType>;
 
   /** Retrieves this object as ITKBaseType. */
   ITKBaseType *
-  GetAsITKBaseType(void)
+  GetAsITKBaseType()
   {
     return &(this->GetSelf());
   }
@@ -75,7 +75,7 @@ public:
 
   /** Retrieves this object as ITKBaseType, to use in const functions. */
   const ITKBaseType *
-  GetAsITKBaseType(void) const
+  GetAsITKBaseType() const
   {
     return &(this->GetSelf());
   }
@@ -86,7 +86,7 @@ public:
    * but the sampler is ignoring it.
    */
   void
-  BeforeEachResolutionBase(void) override;
+  BeforeEachResolutionBase() override;
 
 protected:
   /** The constructor. */

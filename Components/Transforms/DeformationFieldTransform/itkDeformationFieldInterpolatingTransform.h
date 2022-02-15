@@ -48,10 +48,10 @@ class ITK_TEMPLATE_EXPORT DeformationFieldInterpolatingTransform
 {
 public:
   /** Standard class typedefs. */
-  typedef DeformationFieldInterpolatingTransform                   Self;
-  typedef AdvancedTransform<TScalarType, NDimensions, NDimensions> Superclass;
-  typedef SmartPointer<Self>                                       Pointer;
-  typedef SmartPointer<const Self>                                 ConstPointer;
+  using Self = DeformationFieldInterpolatingTransform;
+  using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** New macro for creation of through the object factory.*/
   itkNewMacro(Self);
@@ -84,15 +84,15 @@ public:
 
   using typename Superclass::InternalMatrixType;
 
-  typedef TComponentType                                                    DeformationFieldComponentType;
-  typedef Vector<DeformationFieldComponentType, Self::OutputSpaceDimension> DeformationFieldVectorType;
-  typedef Image<DeformationFieldVectorType, Self::InputSpaceDimension>      DeformationFieldType;
-  typedef typename DeformationFieldType::Pointer                            DeformationFieldPointer;
+  using DeformationFieldComponentType = TComponentType;
+  using DeformationFieldVectorType = Vector<DeformationFieldComponentType, Self::OutputSpaceDimension>;
+  using DeformationFieldType = Image<DeformationFieldVectorType, Self::InputSpaceDimension>;
+  using DeformationFieldPointer = typename DeformationFieldType::Pointer;
 
-  typedef VectorInterpolateImageFunction<DeformationFieldType, ScalarType> DeformationFieldInterpolatorType;
-  typedef typename DeformationFieldInterpolatorType::Pointer               DeformationFieldInterpolatorPointer;
-  typedef VectorNearestNeighborInterpolateImageFunction<DeformationFieldType, ScalarType>
-    DefaultDeformationFieldInterpolatorType;
+  using DeformationFieldInterpolatorType = VectorInterpolateImageFunction<DeformationFieldType, ScalarType>;
+  using DeformationFieldInterpolatorPointer = typename DeformationFieldInterpolatorType::Pointer;
+  using DefaultDeformationFieldInterpolatorType =
+    VectorNearestNeighborInterpolateImageFunction<DeformationFieldType, ScalarType>;
 
   /** Set the transformation parameters is not supported.
    * Use SetDeformationField() instead
@@ -100,8 +100,7 @@ public:
   void
   SetParameters(const ParametersType &) override
   {
-    itkExceptionMacro(<< "ERROR: SetParameters() is not implemented "
-                      << "for DeformationFieldInterpolatingTransform.\n"
+    itkExceptionMacro(<< "ERROR: SetParameters() is not implemented for DeformationFieldInterpolatingTransform.\n"
                       << "Use SetDeformationField() instead.\n"
                       << "Note that this transform is NOT suited for image registration.\n"
                       << "Just use it as an (initial) fixed transform that is not optimized.");
@@ -118,7 +117,7 @@ public:
 
   /** Get the Fixed Parameters. */
   const ParametersType &
-  GetFixedParameters(void) const override
+  GetFixedParameters() const override
   {
     // This transform has no fixed parameters.
     return this->m_FixedParameters;
@@ -135,31 +134,31 @@ public:
   OutputVectorType
   TransformVector(const InputVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformVector(const InputVectorType &) is not implemented "
-                      << "for DeformationFieldInterpolatingTransform");
+    itkExceptionMacro(
+      << "TransformVector(const InputVectorType &) is not implemented for DeformationFieldInterpolatingTransform");
   }
 
 
   OutputVnlVectorType
   TransformVector(const InputVnlVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformVector(const InputVnlVectorType &) is not implemented "
-                      << "for DeformationFieldInterpolatingTransform");
+    itkExceptionMacro(
+      << "TransformVector(const InputVnlVectorType &) is not implemented for DeformationFieldInterpolatingTransform");
   }
 
 
   OutputCovariantVectorType
   TransformCovariantVector(const InputCovariantVectorType &) const override
   {
-    itkExceptionMacro(<< "TransformCovariantVector(const InputCovariantVectorType &) is not implemented "
-                      << "for DeformationFieldInterpolatingTransform");
+    itkExceptionMacro(<< "TransformCovariantVector(const InputCovariantVectorType &) is not implemented for "
+                         "DeformationFieldInterpolatingTransform");
   }
 
 
   /** Make this an identity transform ( the deformation field is replaced
    * by a zero deformation field */
   void
-  SetIdentity(void);
+  SetIdentity();
 
   /** Set/Get the deformation field that defines the displacements */
   virtual void
@@ -174,7 +173,7 @@ public:
   itkGetModifiableObjectMacro(DeformationFieldInterpolator, DeformationFieldInterpolatorType);
 
   bool
-  IsLinear(void) const override
+  IsLinear() const override
   {
     return false;
   }
@@ -243,11 +242,11 @@ public:
 
 protected:
   DeformationFieldInterpolatingTransform();
-  ~DeformationFieldInterpolatingTransform() override;
+  ~DeformationFieldInterpolatingTransform() override = default;
 
   /** Typedef which is used internally */
-  typedef typename DeformationFieldInterpolatorType::ContinuousIndexType InputContinuousIndexType;
-  typedef typename DeformationFieldInterpolatorType::OutputType          InterpolatorOutputType;
+  using InputContinuousIndexType = typename DeformationFieldInterpolatorType::ContinuousIndexType;
+  using InterpolatorOutputType = typename DeformationFieldInterpolatorType::OutputType;
 
   /** Print contents of an DeformationFieldInterpolatingTransform. */
   void

@@ -48,11 +48,11 @@ class ITK_TEMPLATE_EXPORT MultiResolutionRegistration
 {
 public:
   /** Standard ITK. */
-  typedef MultiResolutionRegistration                      Self;
-  typedef typename RegistrationBase<TElastix>::ITKBaseType Superclass1;
-  typedef RegistrationBase<TElastix>                       Superclass2;
-  typedef itk::SmartPointer<Self>                          Pointer;
-  typedef itk::SmartPointer<const Self>                    ConstPointer;
+  using Self = MultiResolutionRegistration;
+  using Superclass1 = typename RegistrationBase<TElastix>::ITKBaseType;
+  using Superclass2 = RegistrationBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -110,9 +110,9 @@ public:
   using typename Superclass2::ElastixPointer;
   using typename Superclass2::ConfigurationType;
   using typename Superclass2::ConfigurationPointer;
-  typedef typename Superclass2::RegistrationType RegistrationType;
+  using RegistrationType = typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
   using typename Superclass2::UseMaskErosionArrayType;
 
   /** Get the dimension of the fixed image. */
@@ -125,12 +125,12 @@ public:
    * \li Set the number of resolution levels.
    * \li Set the fixed image region. */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   /** Execute stuff before each resolution:
    * \li Update masks with an erosion. */
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
 protected:
   /** The constructor. */
@@ -155,7 +155,7 @@ protected:
 
   /** Read the components from m_Elastix and set them in the Registration class. */
   virtual void
-  SetComponents(void);
+  SetComponents();
 
 private:
   elxOverrideGetSelfMacro;

@@ -79,26 +79,23 @@ AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::EvaluateJac
   DerivativeType &                imageJacobian,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
 {
-  /** Obtain the Jacobian. */
-  JacobianType jacobian; //( SpaceDimension, );
+  /** Obtain the Jacobian. Using thread-local storage, so that both the allocation and the deallocation of the internal
+   * data occurs only once per thread, as it has appeared as a major performance bottleneck. */
+  thread_local JacobianType jacobian;
   this->GetJacobian(ipp, jacobian, nonZeroJacobianIndices);
 
   /** Perform a full multiplication. */
-  typedef typename JacobianType::const_iterator JacobianIteratorType;
-  typedef typename DerivativeType::iterator     DerivativeIteratorType;
-  JacobianIteratorType                          jac = jacobian.begin();
+  using JacobianIteratorType = typename JacobianType::const_iterator;
+  JacobianIteratorType jac = jacobian.begin();
   imageJacobian.Fill(0.0);
-  const unsigned int sizeImageJacobian = imageJacobian.GetSize();
 
   for (unsigned int dim = 0; dim < InputSpaceDimension; ++dim)
   {
-    const double           imDeriv = movingImageGradient[dim];
-    DerivativeIteratorType imjac = imageJacobian.begin();
+    const double imDeriv = movingImageGradient[dim];
 
-    for (unsigned int mu = 0; mu < sizeImageJacobian; ++mu)
+    for (auto & imageJacobianElement : imageJacobian)
     {
-      (*imjac) += (*jac) * imDeriv;
-      ++imjac;
+      imageJacobianElement += (*jac) * imDeriv;
       ++jac;
     }
   }
@@ -111,8 +108,9 @@ AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::EvaluateJac
  */
 
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-typename AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::NumberOfParametersType
-AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::GetNumberOfNonZeroJacobianIndices(void) const
+auto
+AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::GetNumberOfNonZeroJacobianIndices() const
+  -> NumberOfParametersType
 {
   return this->GetNumberOfParameters();
 

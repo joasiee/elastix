@@ -43,7 +43,7 @@ MeshFileReaderBase<TOutputMesh>::MeshFileReaderBase()
 
 template <class TOutputMesh>
 void
-MeshFileReaderBase<TOutputMesh>::GenerateOutputInformation(void)
+MeshFileReaderBase<TOutputMesh>::GenerateOutputInformation()
 {
   OutputMeshPointer output = this->GetOutput();
 
@@ -77,14 +77,15 @@ MeshFileReaderBase<TOutputMesh>::GenerateOutputInformation(void)
 
 template <class TOutputMesh>
 void
-MeshFileReaderBase<TOutputMesh>::TestFileExistanceAndReadability(void)
+MeshFileReaderBase<TOutputMesh>::TestFileExistanceAndReadability()
 {
   // Test if the file exists.
   if (!itksys::SystemTools::FileExists(this->m_FileName.c_str()))
   {
     MeshFileReaderException e(__FILE__, __LINE__);
     std::ostringstream      msg;
-    msg << "The file doesn't exists. " << std::endl << "Filename = " << this->m_FileName << std::endl;
+    msg << "The file doesn't exists. \n"
+        << "Filename = " << this->m_FileName << std::endl;
     e.SetDescription(msg.str().c_str());
     throw e;
     return;
@@ -97,7 +98,8 @@ MeshFileReaderBase<TOutputMesh>::TestFileExistanceAndReadability(void)
   {
     readTester.close();
     std::ostringstream msg;
-    msg << "The file couldn't be opened for reading. " << std::endl << "Filename: " << this->m_FileName << std::endl;
+    msg << "The file couldn't be opened for reading. \n"
+        << "Filename: " << this->m_FileName << std::endl;
     MeshFileReaderException e(__FILE__, __LINE__, msg.str().c_str(), ITK_LOCATION);
     throw e;
     return;

@@ -37,9 +37,9 @@ CorrespondingPointsEuclideanDistancePointMetric<TFixedPointSet,
  */
 
 template <class TFixedPointSet, class TMovingPointSet>
-typename CorrespondingPointsEuclideanDistancePointMetric<TFixedPointSet, TMovingPointSet>::MeasureType
+auto
 CorrespondingPointsEuclideanDistancePointMetric<TFixedPointSet, TMovingPointSet>::GetValue(
-  const TransformParametersType & parameters) const
+  const TransformParametersType & parameters) const -> MeasureType
 {
   /** Sanity checks. */
   FixedPointSetConstPointer fixedPointSet = this->GetFixedPointSet();
@@ -79,7 +79,7 @@ CorrespondingPointsEuclideanDistancePointMetric<TFixedPointSet, TMovingPointSet>
     // bool sampleOk = this->TransformPoint( fixedPoint, mappedPoint );
     mappedPoint = this->m_Transform->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
+    /** Check if the point is inside the moving mask. */
     bool sampleOk = true;
     if (sampleOk)
     {
@@ -196,7 +196,7 @@ CorrespondingPointsEuclideanDistancePointMetric<TFixedPointSet, TMovingPointSet>
     // bool sampleOk = this->TransformPoint( fixedPoint, mappedPoint );
     mappedPoint = this->m_Transform->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
+    /** Check if the point is inside the moving mask. */
     bool sampleOk = true;
     if (sampleOk)
     {

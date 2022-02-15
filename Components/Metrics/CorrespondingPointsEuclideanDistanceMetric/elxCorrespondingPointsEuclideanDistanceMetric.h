@@ -44,13 +44,13 @@ class ITK_TEMPLATE_EXPORT CorrespondingPointsEuclideanDistanceMetric
 {
 public:
   /** Standard ITK-stuff. */
-  typedef CorrespondingPointsEuclideanDistanceMetric Self;
-  typedef itk::CorrespondingPointsEuclideanDistancePointMetric<typename MetricBase<TElastix>::FixedPointSetType,
-                                                               typename MetricBase<TElastix>::MovingPointSetType>
-                                        Superclass1;
-  typedef MetricBase<TElastix>          Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = CorrespondingPointsEuclideanDistanceMetric;
+  using Superclass1 =
+    itk::CorrespondingPointsEuclideanDistancePointMetric<typename MetricBase<TElastix>::FixedPointSetType,
+                                                         typename MetricBase<TElastix>::MovingPointSetType>;
+  using Superclass2 = MetricBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -94,7 +94,7 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
   using typename Superclass2::FixedImageType;
   using typename Superclass2::MovingImageType;
 
@@ -107,14 +107,14 @@ public:
   /** Assuming fixed and moving pointsets are of equal type, which implicitly
    * assumes that the fixed and moving image are of the same type.
    */
-  typedef FixedPointSetType PointSetType;
-  typedef FixedImageType    ImageType;
+  using PointSetType = FixedPointSetType;
+  using ImageType = FixedImageType;
 
   /** Sets up a timer to measure the initialization time and calls the
    * Superclass' implementation.
    */
   void
-  Initialize(void) override;
+  Initialize() override;
 
   /**
    * Do some things before all:
@@ -122,14 +122,14 @@ public:
    *   This should be done in BeforeAllBase and not BeforeAll.
    */
   int
-  BeforeAllBase(void) override;
+  BeforeAllBase() override;
 
   /**
    * Do some things before registration:
    * \li Load and set the pointsets.
    */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   /** Function to read the corresponding points. */
   unsigned int
@@ -139,7 +139,7 @@ public:
 
   /** Overwrite to silence warning. */
   void
-  SelectNewSamples(void) override
+  SelectNewSamples() override
   {}
 
 protected:

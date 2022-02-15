@@ -35,10 +35,10 @@ class ITK_TEMPLATE_EXPORT ImageToVectorContainerFilter : public VectorContainerS
 {
 public:
   /** Standard ITK-stuff. */
-  typedef ImageToVectorContainerFilter                  Self;
-  typedef VectorContainerSource<TOutputVectorContainer> Superclass;
-  typedef SmartPointer<Self>                            Pointer;
-  typedef SmartPointer<const Self>                      ConstPointer;
+  using Self = ImageToVectorContainerFilter;
+  using Superclass = VectorContainerSource<TOutputVectorContainer>;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -52,11 +52,11 @@ public:
   using typename Superclass::OutputVectorContainerPointer;
 
   /** Some Image related typedefs. */
-  typedef TInputImage                           InputImageType;
-  typedef typename InputImageType::Pointer      InputImagePointer;
-  typedef typename InputImageType::ConstPointer InputImageConstPointer;
-  typedef typename InputImageType::RegionType   InputImageRegionType;
-  typedef typename InputImageType::PixelType    InputImagePixelType;
+  using InputImageType = TInputImage;
+  using InputImagePointer = typename InputImageType::Pointer;
+  using InputImageConstPointer = typename InputImageType::ConstPointer;
+  using InputImageRegionType = typename InputImageType::RegionType;
+  using InputImagePixelType = typename InputImageType::PixelType;
 
   /** Create a valid output. */
   DataObject::Pointer
@@ -72,7 +72,7 @@ public:
 
   /** Get the input image of this process object.  */
   const InputImageType *
-  GetInput(void);
+  GetInput();
 
   /** Get the input image of this process object.  */
   const InputImageType *
@@ -80,10 +80,10 @@ public:
 
   /** Get the output Mesh of this process object.  */
   OutputVectorContainerType *
-  GetOutput(void);
+  GetOutput();
 
   /** Prepare the output. */
-  // virtual void GenerateOutputInformation( void );
+  // virtual void GenerateOutputInformation();
 
   /** A version of GenerateData() specific for image processing
    * filters.  This implementation will split the processing across
@@ -101,7 +101,7 @@ public:
    *
    * \sa ThreadedGenerateData() */
   void
-  GenerateData(void) override;
+  GenerateData() override;
 
   /** If an imaging filter can be implemented as a multithreaded
    * algorithm, the filter will provide an implementation of
@@ -139,7 +139,7 @@ public:
    * Note that this flow of control is only available if a filter provides
    * a ThreadedGenerateData() method and NOT a GenerateData() method. */
   virtual void
-  BeforeThreadedGenerateData(void)
+  BeforeThreadedGenerateData()
   {}
 
   /** If an imaging filter needs to perform processing after all
@@ -153,7 +153,7 @@ public:
    * Note that this flow of control is only available if a filter provides
    * a ThreadedGenerateData() method and NOT a GenerateData() method. */
   virtual void
-  AfterThreadedGenerateData(void)
+  AfterThreadedGenerateData()
   {}
 
   /** Split the output's RequestedRegion into "numberOfSplits" pieces, returning

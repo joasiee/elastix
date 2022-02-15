@@ -21,8 +21,15 @@
 #include "elxInstallFunctions.h"
 #include "elxMacro.h"
 #include "elxInstallAllComponents.h"
+
+// ITKFactoryRegistration headers:
+#include <itkImageIOFactoryRegisterManager.h>
+#include <itkMeshIOFactoryRegisterManager.h>
+#include <itkTransformIOFactoryRegisterManager.h>
+
 #include <iostream>
 #include <string>
+#include <tuple>
 
 namespace elastix
 {
@@ -37,9 +44,9 @@ class _installsupportedimagesrecursively
 public:
   /** ElastixTypedef is defined in elxSupportedImageTypes.h, by means of the
    * the elxSupportedImageTypesMacro */
-  typedef ElastixTypedef<VIndex>                      ET;
-  typedef typename ET::ElastixType                    ElastixType;
-  typedef ComponentDatabase::ComponentDescriptionType ComponentDescriptionType;
+  using ET = ElastixTypedef<VIndex>;
+  using ElastixType = typename ET::ElastixType;
+  using ComponentDescriptionType = ComponentDatabase::ComponentDescriptionType;
 
   static int
   DO(const ComponentDescriptionType & name, ComponentDatabase * cdb)
@@ -62,7 +69,7 @@ template <>
 class _installsupportedimagesrecursively<NrOfSupportedImageTypes + 1>
 {
 public:
-  typedef ComponentDatabase::ComponentDescriptionType ComponentDescriptionType;
+  using ComponentDescriptionType = ComponentDatabase::ComponentDescriptionType;
   static int
   DO(const ComponentDescriptionType & /** name */, ComponentDatabase * /** cdb */)
   {
@@ -93,7 +100,7 @@ ComponentLoader::~ComponentLoader() = default;
  * *************** InstallSupportedImageTypes ********************
  */
 int
-ComponentLoader::InstallSupportedImageTypes(void)
+ComponentLoader::InstallSupportedImageTypes()
 {
   /**
    * Method: A recursive template was defined at the top of this file, that
@@ -124,8 +131,15 @@ ComponentLoader::InstallSupportedImageTypes(void)
  */
 
 int
-ComponentLoader::LoadComponents(void)
+ComponentLoader::LoadComponents()
 {
+  // Retrieve those IOFactoryRegisterManager instances, just to ensure that they are really constructed.
+  const volatile auto ioFactoryRegisterManagerInstances =
+    std::make_tuple(itk::ImageIOFactoryRegisterManagerInstance,
+                    itk::MeshIOFactoryRegisterManagerInstance,
+                    itk::TransformIOFactoryRegisterManagerInstance);
+  (void)ioFactoryRegisterManagerInstances;
+
   int installReturnCode = 0;
 
   /** Generate the mapping between indices and image types */

@@ -61,8 +61,9 @@ DisplacementMagnitudePenaltyTerm< TFixedImage, TScalarType >
  */
 
 template <class TFixedImage, class TScalarType>
-typename DisplacementMagnitudePenaltyTerm<TFixedImage, TScalarType>::MeasureType
+auto
 DisplacementMagnitudePenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const
+  -> MeasureType
 {
   /** Initialize some variables. */
   this->m_NumberOfPixelsCounted = 0;
@@ -85,16 +86,12 @@ DisplacementMagnitudePenaltyTerm<TFixedImage, TScalarType>::GetValue(const Param
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-    MovingImagePointType        mappedPoint;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    const bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     if (sampleOk)
     {
@@ -149,7 +146,7 @@ DisplacementMagnitudePenaltyTerm<TFixedImage, TScalarType>::GetValueAndDerivativ
                                                                                   MeasureType &          value,
                                                                                   DerivativeType & derivative) const
 {
-  typedef typename MovingImagePointType::VectorType VectorType;
+  using VectorType = typename MovingImagePointType::VectorType;
 
   /** Create and initialize some variables. */
   this->m_NumberOfPixelsCounted = 0;
@@ -191,16 +188,12 @@ DisplacementMagnitudePenaltyTerm<TFixedImage, TScalarType>::GetValueAndDerivativ
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-    MovingImagePointType        mappedPoint;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Check if point is inside mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    /** Check if the point is inside the moving mask. */
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     if (sampleOk)
     {

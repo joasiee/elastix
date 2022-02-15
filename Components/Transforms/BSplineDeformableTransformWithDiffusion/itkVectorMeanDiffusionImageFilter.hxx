@@ -108,7 +108,7 @@ VectorMeanDiffusionImageFilter<TInputImage, TGrayValueImage>::GenerateInputReque
 
 template <class TInputImage, class TGrayValueImage>
 void
-VectorMeanDiffusionImageFilter<TInputImage, TGrayValueImage>::GenerateData(void)
+VectorMeanDiffusionImageFilter<TInputImage, TGrayValueImage>::GenerateData()
 {
   // \todo to avoid all the copying we can create a vector of
   // outputs of size this->GetNumberOfIterations(). The last
@@ -133,7 +133,7 @@ VectorMeanDiffusionImageFilter<TInputImage, TGrayValueImage>::GenerateData(void)
   /** Allocate output. */
   typename InputImageType::ConstPointer input(this->GetInput());
   typename InputImageType::Pointer      output(this->GetOutput());
-  typename InputImageType::Pointer      outputtmp = InputImageType::New();
+  auto                                  outputtmp = InputImageType::New();
   output->SetRegions(input->GetLargestPossibleRegion());
 
   try
@@ -222,7 +222,7 @@ VectorMeanDiffusionImageFilter<TInputImage, TGrayValueImage>::GenerateData(void)
         /** Initialize the sum to 0. */
         for (j = 0; j < InputImageDimension; ++j)
         {
-          sum[j] = NumericTraits<double>::Zero;
+          sum[j] = 0.0;
         }
 
         /** Initialize sumc. */
@@ -339,7 +339,7 @@ VectorMeanDiffusionImageFilter<TInputImage, TGrayValueImage>::SetGrayValueImage(
 
 template <class TInputImage, class TGrayValueImage>
 void
-VectorMeanDiffusionImageFilter<TInputImage, TGrayValueImage>::FilterGrayValueImage(void)
+VectorMeanDiffusionImageFilter<TInputImage, TGrayValueImage>::FilterGrayValueImage()
 {
   /** This functions rescales the intensities of the input
    * this->m_GrayValueImage between 0 and 1, and converts it to

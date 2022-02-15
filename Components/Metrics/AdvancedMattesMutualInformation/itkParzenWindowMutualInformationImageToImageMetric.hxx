@@ -22,10 +22,10 @@
 
 #include "itkImageLinearConstIteratorWithIndex.h"
 #include "itkImageScanlineConstIterator.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 #include "itkMatrix.h"
-#include "vnl/vnl_inverse.h"
-#include "vnl/vnl_det.h"
+#include <vnl/vnl_inverse.h>
+#include <vnl/vnl_det.h>
 
 #ifdef ELASTIX_USE_OPENMP
 #  include <omp.h>
@@ -55,7 +55,7 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage,
 
 template <class TFixedImage, class TMovingImage>
 void
-ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::InitializeHistograms(void)
+ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::InitializeHistograms()
 {
   /** Call Superclass implementation. */
   this->Superclass::InitializeHistograms();
@@ -74,9 +74,9 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Init
  */
 
 template <class TFixedImage, class TMovingImage>
-typename ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+auto
 ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const ParametersType & parameters) const
+  const ParametersType & parameters) const -> MeasureType
 {
   /** Construct the JointPDF and Alpha. */
   this->ComputePDFs(parameters);
@@ -91,8 +91,8 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   /** Compute the metric by double summation over histogram. */
 
   /** Setup iterators */
-  typedef ImageLinearConstIteratorWithIndex<JointPDFType> JointPDFIteratorType;
-  typedef typename MarginalPDFType::const_iterator        MarginalPDFIteratorType;
+  using JointPDFIteratorType = ImageLinearConstIteratorWithIndex<JointPDFType>;
+  using MarginalPDFIteratorType = typename MarginalPDFType::const_iterator;
 
   JointPDFIteratorType jointPDFit(this->m_JointPDF, this->m_JointPDF->GetLargestPossibleRegion());
   jointPDFit.SetDirection(0);
@@ -154,7 +154,7 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   /** Initialize some variables. */
   value = NumericTraits<MeasureType>::Zero;
   derivative = DerivativeType(this->GetNumberOfParameters());
-  derivative.Fill(NumericTraits<double>::ZeroValue());
+  derivative.Fill(0.0);
 
   /** Construct the JointPDF, JointPDFDerivatives, Alpha and its derivatives. */
   this->ComputePDFsAndPDFDerivatives(parameters);
@@ -169,10 +169,10 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   /** Compute the metric and derivatives by double summation over histogram. */
 
   /** Setup iterators .*/
-  typedef ImageLinearConstIteratorWithIndex<JointPDFType>            JointPDFIteratorType;
-  typedef ImageLinearConstIteratorWithIndex<JointPDFDerivativesType> JointPDFDerivativesIteratorType;
-  typedef typename MarginalPDFType::const_iterator                   MarginalPDFIteratorType;
-  typedef typename DerivativeType::iterator                          DerivativeIteratorType;
+  using JointPDFIteratorType = ImageLinearConstIteratorWithIndex<JointPDFType>;
+  using JointPDFDerivativesIteratorType = ImageLinearConstIteratorWithIndex<JointPDFDerivativesType>;
+  using MarginalPDFIteratorType = typename MarginalPDFType::const_iterator;
+  using DerivativeIteratorType = typename DerivativeType::iterator;
 
   JointPDFIteratorType jointPDFit(this->m_JointPDF, this->m_JointPDF->GetLargestPossibleRegion());
   jointPDFit.SetDirection(0);
@@ -289,7 +289,7 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Comp
   NonZeroJacobianIndicesType   nzji = NonZeroJacobianIndicesType(nnzji);
   DerivativeType               imageJacobian(nzji.size());
   TransformJacobianType        jacobian;
-  derivative.Fill(NumericTraits<double>::ZeroValue());
+  derivative.Fill(0.0);
 
   /** Declare and allocate arrays for Jacobian preconditioning. */
   DerivativeType jacobianPreconditioner, preconditioningDivisor;
@@ -315,23 +315,20 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Comp
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
     MovingImageDerivativeType   movingImageDerivative;
-    MovingImagePointType        mappedPoint;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
     /** Check if the point is inside the moving mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value, its derivative, and check
      * if the point is inside the moving image buffer.
      */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      sampleOk =
+        this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
     }
 
     if (sampleOk)
@@ -474,23 +471,20 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Thre
     const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
     RealType                    movingImageValue;
     MovingImageDerivativeType   movingImageDerivative;
-    MovingImagePointType        mappedPoint;
 
-    /** Transform point and check if it is inside the B-spline support region. */
-    bool sampleOk = this->TransformPoint(fixedPoint, mappedPoint);
+    /** Transform point. */
+    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
 
     /** Check if the point is inside the moving mask. */
-    if (sampleOk)
-    {
-      sampleOk = this->IsInsideMovingMask(mappedPoint);
-    }
+    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
 
     /** Compute the moving image value, its derivative, and check
      * if the point is inside the moving image buffer.
      */
     if (sampleOk)
     {
-      sampleOk = this->EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, &movingImageDerivative);
+      sampleOk = this->FastEvaluateMovingImageValueAndDerivative(
+        mappedPoint, movingImageValue, &movingImageDerivative, threadId);
     }
 
     if (sampleOk)
@@ -644,8 +638,7 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Comp
 template <class TFixedImage, class TMovingImage>
 void
 ParzenWindowMutualInformationImageToImageMetric<TFixedImage,
-                                                TMovingImage>::LaunchComputeDerivativeLowMemoryThreaderCallback(void)
-  const
+                                                TMovingImage>::LaunchComputeDerivativeLowMemoryThreaderCallback() const
 {
   /** Setup threader. */
   this->m_Threader->SetSingleMethod(
@@ -668,8 +661,8 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Comp
   double & MI) const
 {
   /** Setup iterators. */
-  typedef ImageScanlineConstIterator<JointPDFType> JointPDFIteratorType;
-  typedef typename MarginalPDFType::const_iterator MarginalPDFIteratorType;
+  using JointPDFIteratorType = ImageScanlineConstIterator<JointPDFType>;
+  using MarginalPDFIteratorType = typename MarginalPDFType::const_iterator;
 
   JointPDFIteratorType          jointPDFit(this->m_JointPDF, this->m_JointPDF->GetLargestPossibleRegion());
   MarginalPDFIteratorType       fixedPDFit = this->m_FixedImageMarginalPDF.begin();
@@ -797,11 +790,13 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Upda
     }
   }
 
+  const auto numberOfParameters = this->GetNumberOfParameters();
+
   /** Now compute derivative -= sum * imageJacobian. */
-  if (nzji.size() == this->GetNumberOfParameters())
+  if (nzji.size() == numberOfParameters)
   {
     /** Loop over all Jacobians. */
-    for (unsigned int mu = 0; mu < this->GetNumberOfParameters(); ++mu)
+    for (unsigned int mu = 0; mu < numberOfParameters; ++mu)
     {
       derivative[mu] += static_cast<DerivativeValueType>(imageJacobian[mu] * sum);
     }
@@ -833,7 +828,7 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   /** Initialize some variables. */
   value = NumericTraits<MeasureType>::Zero;
   derivative = DerivativeType(this->GetNumberOfParameters());
-  derivative.Fill(NumericTraits<double>::ZeroValue());
+  derivative.Fill(0.0);
 
   /** Construct the JointPDF, JointPDFDerivatives, Alpha and its derivatives. */
   this->ComputePDFsAndIncrementalPDFs(parameters);
@@ -854,12 +849,12 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   /** Compute the metric and derivatives by double summation over histogram. */
 
   /** Setup iterators */
-  typedef ImageLinearConstIteratorWithIndex<JointPDFType>               JointPDFIteratorType;
-  typedef ImageLinearConstIteratorWithIndex<JointPDFDerivativesType>    IncrementalJointPDFIteratorType;
-  typedef typename MarginalPDFType::const_iterator                      MarginalPDFIteratorType;
-  typedef ImageLinearConstIteratorWithIndex<IncrementalMarginalPDFType> IncrementalMarginalPDFIteratorType;
-  typedef typename DerivativeType::iterator                             DerivativeIteratorType;
-  typedef typename DerivativeType::const_iterator                       DerivativeConstIteratorType;
+  using JointPDFIteratorType = ImageLinearConstIteratorWithIndex<JointPDFType>;
+  using IncrementalJointPDFIteratorType = ImageLinearConstIteratorWithIndex<JointPDFDerivativesType>;
+  using MarginalPDFIteratorType = typename MarginalPDFType::const_iterator;
+  using IncrementalMarginalPDFIteratorType = ImageLinearConstIteratorWithIndex<IncrementalMarginalPDFType>;
+  using DerivativeIteratorType = typename DerivativeType::iterator;
+  using DerivativeConstIteratorType = typename DerivativeType::const_iterator;
 
   JointPDFIteratorType jointPDFit(this->m_JointPDF, this->m_JointPDF->GetLargestPossibleRegion());
   jointPDFit.GoToBegin();
@@ -1026,10 +1021,10 @@ ParzenWindowMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::Comp
   DerivativeType &                   preconditioner,
   DerivativeType &                   divisor) const
 {
-  typedef typename TransformJacobianType::ValueType                  TransformJacobianValueType;
-  const unsigned int                                                 M = nzji.size();
-  typedef Matrix<double, MovingImageDimension, MovingImageDimension> MatrixType;
-  MatrixType                                                         jacjact;
+  using TransformJacobianValueType = typename TransformJacobianType::ValueType;
+  const unsigned int M = nzji.size();
+  using MatrixType = Matrix<double, MovingImageDimension, MovingImageDimension>;
+  MatrixType jacjact;
 
   /** Compute jac * jac' */
   for (unsigned int drow = 0; drow < MovingImageDimension; ++drow)

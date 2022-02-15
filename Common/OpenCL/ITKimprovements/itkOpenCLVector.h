@@ -53,7 +53,7 @@ class ITK_TEMPLATE_EXPORT OpenCLVector : public OpenCLVectorBase
 {
 public:
   /** Standard class typedefs. */
-  typedef OpenCLVector Self;
+  using Self = OpenCLVector;
 
   /** Creates a null OpenCL vector.
    * \sa IsNull() */
@@ -154,7 +154,7 @@ operator<<(std::basic_ostream<charT, traits> & strm, const OpenCLVector<dataType
 
   const char indent = ' ';
 
-  strm << "OpenCLVector" << std::endl << indent << "Size: " << vector.GetSize() << std::endl;
+  strm << "OpenCLVector\n" << indent << "Size: " << vector.GetSize() << std::endl;
 
   strm << std::endl;
 

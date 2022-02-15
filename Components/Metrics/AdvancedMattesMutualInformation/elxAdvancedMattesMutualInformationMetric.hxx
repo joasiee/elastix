@@ -23,7 +23,7 @@
 #include "itkHardLimiterFunction.h"
 #include "itkExponentialLimiterFunction.h"
 #include <string>
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 #include "itkTimeProbe.h"
 
 namespace elastix
@@ -50,7 +50,7 @@ AdvancedMattesMutualInformationMetric<TElastix>::AdvancedMattesMutualInformation
 
 template <class TElastix>
 void
-AdvancedMattesMutualInformationMetric<TElastix>::Initialize(void)
+AdvancedMattesMutualInformationMetric<TElastix>::Initialize()
 {
   itk::TimeProbe timer;
   timer.Start();
@@ -68,7 +68,7 @@ AdvancedMattesMutualInformationMetric<TElastix>::Initialize(void)
 
 template <class TElastix>
 void
-AdvancedMattesMutualInformationMetric<TElastix>::BeforeEachResolution(void)
+AdvancedMattesMutualInformationMetric<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = (this->m_Registration->GetAsITKBaseType())->GetCurrentLevel();
@@ -90,8 +90,8 @@ AdvancedMattesMutualInformationMetric<TElastix>::BeforeEachResolution(void)
   this->SetNumberOfMovingHistogramBins(numberOfMovingHistogramBins);
 
   /** Set limiters. */
-  typedef itk::HardLimiterFunction<RealType, FixedImageDimension>         FixedLimiterType;
-  typedef itk::ExponentialLimiterFunction<RealType, MovingImageDimension> MovingLimiterType;
+  using FixedLimiterType = itk::HardLimiterFunction<RealType, FixedImageDimension>;
+  using MovingLimiterType = itk::ExponentialLimiterFunction<RealType, MovingImageDimension>;
   this->SetFixedImageLimiter(FixedLimiterType::New());
   this->SetMovingImageLimiter(MovingLimiterType::New());
 
@@ -155,7 +155,7 @@ AdvancedMattesMutualInformationMetric<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-AdvancedMattesMutualInformationMetric<TElastix>::AfterEachIteration(void)
+AdvancedMattesMutualInformationMetric<TElastix>::AfterEachIteration()
 {
   if (this->GetUseFiniteDifferenceDerivative())
   {

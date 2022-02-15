@@ -57,13 +57,13 @@ class ITK_TEMPLATE_EXPORT MultiResolutionRegistrationWithFeatures
 {
 public:
   /** Standard ITK: Self */
-  typedef MultiResolutionRegistrationWithFeatures Self;
-  typedef itk::MultiResolutionImageRegistrationMethodWithFeatures<typename RegistrationBase<TElastix>::FixedImageType,
-                                                                  typename RegistrationBase<TElastix>::MovingImageType>
-                                        Superclass1;
-  typedef RegistrationBase<TElastix>    Superclass2;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = MultiResolutionRegistrationWithFeatures;
+  using Superclass1 =
+    itk::MultiResolutionImageRegistrationMethodWithFeatures<typename RegistrationBase<TElastix>::FixedImageType,
+                                                            typename RegistrationBase<TElastix>::MovingImageType>;
+  using Superclass2 = RegistrationBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -126,9 +126,9 @@ public:
   using typename Superclass2::ElastixPointer;
   using typename Superclass2::ConfigurationType;
   using typename Superclass2::ConfigurationPointer;
-  typedef typename Superclass2::RegistrationType RegistrationType;
+  using RegistrationType = typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
   using typename Superclass2::UseMaskErosionArrayType;
 
   /** Get the dimension of the fixed image. */
@@ -144,14 +144,14 @@ public:
    * \li Add the sub metric columns to the iteration info object.
    */
   void
-  BeforeRegistration(void) override;
+  BeforeRegistration() override;
 
   /** Execute stuff before each resolution:
    * \li Update masks with an erosion.
    * \li Set the metric weights.
    */
   void
-  BeforeEachResolution(void) override;
+  BeforeEachResolution() override;
 
 protected:
   /** The constructor. */
@@ -180,15 +180,15 @@ protected:
 
   /** Read the components from m_Elastix and set them in the Registration class. */
   virtual void
-  GetAndSetComponents(void);
+  GetAndSetComponents();
 
   /** Set the fixed image regions. */
   virtual void
-  GetAndSetFixedImageRegions(void);
+  GetAndSetFixedImageRegions();
 
   /** Create and set the fixed image interpolators. */
   virtual void
-  GetAndSetFixedImageInterpolators(void);
+  GetAndSetFixedImageInterpolators();
 
 private:
   elxOverrideGetSelfMacro;

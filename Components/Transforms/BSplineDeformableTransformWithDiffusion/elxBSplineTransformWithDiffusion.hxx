@@ -79,7 +79,7 @@ BSplineTransformWithDiffusion<TElastix>::BSplineTransformWithDiffusion()
 
 template <class TElastix>
 void
-BSplineTransformWithDiffusion<TElastix>::BeforeRegistration(void)
+BSplineTransformWithDiffusion<TElastix>::BeforeRegistration()
 {
   /** Set initial transform parameters to a 1x1x1 grid, with deformation (0,0,0).
    * In the method BeforeEachResolution() this will be replaced by the right grid size.
@@ -313,12 +313,11 @@ BSplineTransformWithDiffusion<TElastix>::BeforeRegistration(void)
   }
   else
   {
-    xl::xout["error"] << "ERROR: So what are you using for the GrayValueImage," << std::endl
+    xl::xout["error"] << "ERROR: So what are you using for the GrayValueImage,\n"
                       << "either a threshold or a segmentation, make a choice!" << std::endl;
 
     /** Create and throw an exception. */
-    itkExceptionMacro(<< "ERROR: Difficulty determining how to create the "
-                      << "GrayValueImage. Check your parameter file.");
+    itkExceptionMacro(<< "ERROR: Difficulty determining how to create the GrayValueImage. Check your parameter file.");
   }
 
   /** Set the interpolator. */
@@ -356,7 +355,7 @@ BSplineTransformWithDiffusion<TElastix>::BeforeRegistration(void)
   }
 
   /** Get the default pixel value. */
-  float defaultPixelValueForGVI = itk::NumericTraits<float>::Zero;
+  float defaultPixelValueForGVI = 0.0f;
   if (this->m_UseMovingSegmentation && !this->m_ThresholdBool)
   {
     this->m_Configuration->ReadParameter(defaultPixelValueForGVI, "DefaultPixelValueForGVI", 0);
@@ -400,7 +399,7 @@ BSplineTransformWithDiffusion<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-BSplineTransformWithDiffusion<TElastix>::BeforeEachResolution(void)
+BSplineTransformWithDiffusion<TElastix>::BeforeEachResolution()
 {
   /** What is the current resolution level? */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
@@ -448,7 +447,7 @@ BSplineTransformWithDiffusion<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-BSplineTransformWithDiffusion<TElastix>::AfterEachIteration(void)
+BSplineTransformWithDiffusion<TElastix>::AfterEachIteration()
 {
   /** Declare boolean. */
   bool DiffusionNow = false;
@@ -555,7 +554,7 @@ BSplineTransformWithDiffusion<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-BSplineTransformWithDiffusion<TElastix>::AfterRegistration(void)
+BSplineTransformWithDiffusion<TElastix>::AfterRegistration()
 {
   /** Destruct some member variables that are not necessary to keep in
    * memory. Only those variables needed for the transform parameters
@@ -680,14 +679,14 @@ BSplineTransformWithDiffusion<TElastix>::SetInitialGrid(bool upsampleGridOption)
 
 template <class TElastix>
 void
-BSplineTransformWithDiffusion<TElastix>::IncreaseScale(void)
+BSplineTransformWithDiffusion<TElastix>::IncreaseScale()
 {
   /** Typedefs. */
-  typedef itk::ResampleImageFilter<ImageType, ImageType>             UpsampleFilterType;
-  typedef itk::IdentityTransform<CoordRepType, SpaceDimension>       IdentityTransformType;
-  typedef itk::BSplineResampleImageFunction<ImageType, CoordRepType> CoefficientUpsampleFunctionType;
-  typedef itk::BSplineDecompositionImageFilter<ImageType, ImageType> DecompositionFilterType;
-  typedef itk::ImageRegionConstIterator<ImageType>                   IteratorType;
+  using UpsampleFilterType = itk::ResampleImageFilter<ImageType, ImageType>;
+  using IdentityTransformType = itk::IdentityTransform<CoordRepType, SpaceDimension>;
+  using CoefficientUpsampleFunctionType = itk::BSplineResampleImageFunction<ImageType, CoordRepType>;
+  using DecompositionFilterType = itk::BSplineDecompositionImageFilter<ImageType, ImageType>;
+  using IteratorType = itk::ImageRegionConstIterator<ImageType>;
 
   /** The current region/spacing settings of the grid. */
   RegionType gridregionLow = this->m_BSplineTransform->GetGridRegion();
@@ -771,10 +770,10 @@ BSplineTransformWithDiffusion<TElastix>::IncreaseScale(void)
      * DeformableRegistration6.cxx .
      */
 
-    typename UpsampleFilterType::Pointer              upsampler = UpsampleFilterType::New();
-    typename IdentityTransformType::Pointer           identity = IdentityTransformType::New();
-    typename CoefficientUpsampleFunctionType::Pointer coeffUpsampleFunction = CoefficientUpsampleFunctionType::New();
-    typename DecompositionFilterType::Pointer         decompositionFilter = DecompositionFilterType::New();
+    auto upsampler = UpsampleFilterType::New();
+    auto identity = IdentityTransformType::New();
+    auto coeffUpsampleFunction = CoefficientUpsampleFunctionType::New();
+    auto decompositionFilter = DecompositionFilterType::New();
 
     upsampler->SetInterpolator(coeffUpsampleFunction);
     upsampler->SetTransform(identity);
@@ -834,7 +833,7 @@ BSplineTransformWithDiffusion<TElastix>::IncreaseScale(void)
 
 template <class TElastix>
 void
-BSplineTransformWithDiffusion<TElastix>::ReadFromFile(void)
+BSplineTransformWithDiffusion<TElastix>::ReadFromFile()
 {
   /** Task 1 - Get and Set the DeformationField Image. */
 
@@ -845,13 +844,13 @@ BSplineTransformWithDiffusion<TElastix>::ReadFromFile(void)
   /** Error checking ... */
   if (fileName.empty())
   {
-    xl::xout["error"] << "ERROR: DeformationFieldFileName not specified." << std::endl
+    xl::xout["error"] << "ERROR: DeformationFieldFileName not specified.\n"
                       << "Unable to read and set the transform parameters." << std::endl;
     // \todo quit program nicely or throw an exception
   }
 
   /** Read in the deformationField image. */
-  typename VectorReaderType::Pointer vectorReader = VectorReaderType::New();
+  auto vectorReader = VectorReaderType::New();
   vectorReader->SetFileName(fileName.c_str());
 
   /** Do the reading. */
@@ -978,10 +977,10 @@ BSplineTransformWithDiffusion<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 void
-BSplineTransformWithDiffusion<TElastix>::WriteDerivedTransformDataToFile(void) const
+BSplineTransformWithDiffusion<TElastix>::WriteDerivedTransformDataToFile() const
 {
   /** Write the deformation field image. */
-  typename DeformationFieldWriterType::Pointer writer = DeformationFieldWriterType::New();
+  auto writer = DeformationFieldWriterType::New();
   writer->SetFileName(TransformIO::MakeDeformationFieldFileName(*this));
   writer->SetInput(this->m_DiffusedField);
 
@@ -1010,7 +1009,7 @@ BSplineTransformWithDiffusion<TElastix>::WriteDerivedTransformDataToFile(void) c
 
 template <class TElastix>
 auto
-BSplineTransformWithDiffusion<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+BSplineTransformWithDiffusion<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   const auto & itkTransform = *m_BSplineTransform;
   const auto   gridRegion = itkTransform.GetGridRegion();
@@ -1033,7 +1032,7 @@ BSplineTransformWithDiffusion<TElastix>::CreateDerivedTransformParametersMap(voi
 
 template <class TElastix>
 void
-BSplineTransformWithDiffusion<TElastix>::DiffuseDeformationField(void)
+BSplineTransformWithDiffusion<TElastix>::DiffuseDeformationField()
 {
   /** This function does:
    * 1) Calculate current deformation field.
@@ -1055,7 +1054,7 @@ BSplineTransformWithDiffusion<TElastix>::DiffuseDeformationField(void)
   /** First, create a dummyImage with the right region info, so
    * that the TransformIndexToPhysicalPoint-functions will be right.
    */
-  typename DummyImageType::Pointer dummyImage = DummyImageType::New();
+  auto dummyImage = DummyImageType::New();
   dummyImage->SetRegions(this->m_DeformationRegion);
   dummyImage->SetOrigin(this->m_DeformationOrigin);
   dummyImage->SetSpacing(this->m_DeformationSpacing);
@@ -1280,7 +1279,7 @@ BSplineTransformWithDiffusion<TElastix>::DiffuseDeformationField(void)
 
     /** Write the deformationFieldImage. */
     makeFileName1 << begin.str() << "deformationField" << end.str();
-    typename DeformationFieldWriterType::Pointer deformationFieldWriter = DeformationFieldWriterType::New();
+    auto deformationFieldWriter = DeformationFieldWriterType::New();
     deformationFieldWriter->SetFileName(makeFileName1.str().c_str());
     deformationFieldWriter->SetInput(this->m_DeformationField);
 
@@ -1303,7 +1302,7 @@ BSplineTransformWithDiffusion<TElastix>::DiffuseDeformationField(void)
     /** Write the GrayValueImage. */
     std::ostringstream makeFileName2("");
     makeFileName2 << begin.str() << "GrayValueImage" << end.str();
-    typename GrayValueImageWriterType::Pointer grayValueImageWriter = GrayValueImageWriterType::New();
+    auto grayValueImageWriter = GrayValueImageWriterType::New();
     grayValueImageWriter->SetFileName(makeFileName2.str().c_str());
     if (this->m_AlsoFixed || this->m_UseFixedSegmentation)
     {
@@ -1333,7 +1332,7 @@ BSplineTransformWithDiffusion<TElastix>::DiffuseDeformationField(void)
     /** Write the diffusedFieldImage. */
     std::ostringstream makeFileName3("");
     makeFileName3 << begin.str() << "diffusedField" << end.str();
-    typename DeformationFieldWriterType::Pointer diffusedFieldWriter = DeformationFieldWriterType::New();
+    auto diffusedFieldWriter = DeformationFieldWriterType::New();
     diffusedFieldWriter->SetFileName(makeFileName3.str().c_str());
     diffusedFieldWriter->SetInput(this->m_DiffusedField);
 

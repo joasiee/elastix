@@ -48,7 +48,7 @@ AdvancedAffineTransformElastix<TElastix>::AdvancedAffineTransformElastix()
 
 template <class TElastix>
 void
-AdvancedAffineTransformElastix<TElastix>::BeforeRegistration(void)
+AdvancedAffineTransformElastix<TElastix>::BeforeRegistration()
 {
   /** Total time. */
   itk::TimeProbe timer1;
@@ -73,7 +73,7 @@ AdvancedAffineTransformElastix<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-AdvancedAffineTransformElastix<TElastix>::ReadFromFile(void)
+AdvancedAffineTransformElastix<TElastix>::ReadFromFile()
 {
   const auto itkParameterValues =
     this->m_Configuration->template RetrieveValuesOfParameter<double>("ITKTransformParameters");
@@ -107,8 +107,7 @@ AdvancedAffineTransformElastix<TElastix>::ReadFromFile(void)
   {
     if (itkFixedParameterValues == nullptr)
     {
-      xl::xout["error"] << "ERROR: No center of rotation is specified in the "
-                        << "transform parameter file" << std::endl;
+      xl::xout["error"] << "ERROR: No center of rotation is specified in the transform parameter file" << std::endl;
       itkExceptionMacro(<< "Transform parameter file is corrupt.")
     }
   }
@@ -128,7 +127,7 @@ AdvancedAffineTransformElastix<TElastix>::ReadFromFile(void)
 
 template <class TElastix>
 auto
-AdvancedAffineTransformElastix<TElastix>::CreateDerivedTransformParametersMap(void) const -> ParameterMapType
+AdvancedAffineTransformElastix<TElastix>::CreateDerivedTransformParametersMap() const -> ParameterMapType
 {
   return { { "CenterOfRotationPoint", Conversion::ToVectorOfStrings(m_AffineTransform->GetCenter()) } };
 
@@ -141,7 +140,7 @@ AdvancedAffineTransformElastix<TElastix>::CreateDerivedTransformParametersMap(vo
 
 template <class TElastix>
 void
-AdvancedAffineTransformElastix<TElastix>::InitializeTransform(void)
+AdvancedAffineTransformElastix<TElastix>::InitializeTransform()
 {
   /** Set all parameters to zero (no rotations, no translation). */
   this->m_AffineTransform->SetIdentity();
@@ -186,8 +185,8 @@ AdvancedAffineTransformElastix<TElastix>::InitializeTransform(void)
 
   if (centerGivenAsPoint)
   {
-    typedef itk::ContinuousIndex<double, SpaceDimension> ContinuousIndexType;
-    ContinuousIndexType                                  cindex;
+    using ContinuousIndexType = itk::ContinuousIndex<double, SpaceDimension>;
+    ContinuousIndexType cindex;
     CORPointInImage =
       this->m_Registration->GetAsITKBaseType()->GetFixedImage()->TransformPhysicalPointToContinuousIndex(
         centerOfRotationPoint, cindex);
@@ -196,15 +195,13 @@ AdvancedAffineTransformElastix<TElastix>::InitializeTransform(void)
   /** Give a warning if necessary. */
   if (!CORIndexInImage && centerGivenAsIndex)
   {
-    xl::xout["warning"] << "WARNING: Center of Rotation (index) is not "
-                        << "within image boundaries!" << std::endl;
+    xl::xout["warning"] << "WARNING: Center of Rotation (index) is not within image boundaries!" << std::endl;
   }
 
   /** Give a warning if necessary. */
   if (!CORPointInImage && centerGivenAsPoint && !centerGivenAsIndex)
   {
-    xl::xout["warning"] << "WARNING: Center of Rotation (point) is not "
-                        << "within image boundaries!" << std::endl;
+    xl::xout["warning"] << "WARNING: Center of Rotation (point) is not within image boundaries!" << std::endl;
   }
 
   /** Check if user wants automatic transform initialization; false by default.
@@ -271,8 +268,8 @@ AdvancedAffineTransformElastix<TElastix>::InitializeTransform(void)
       if (SpaceDimension < 3)
       {
         /** Check if dimension is 3D or higher. **/
-        itkExceptionMacro(<< "ERROR: The GeometryTop intialization method does not make sense for"
-                          << " 2D images. Use only for 3D or higher dimensional images.");
+        itkExceptionMacro(<< "ERROR: The GeometryTop intialization method does not make sense for 2D images. Use only "
+                             "for 3D or higher dimensional images.");
       }
 
       transformInitializer->GeometryTopOn();
@@ -329,11 +326,11 @@ AdvancedAffineTransformElastix<TElastix>::InitializeTransform(void)
 
 template <class TElastix>
 void
-AdvancedAffineTransformElastix<TElastix>::SetScales(void)
+AdvancedAffineTransformElastix<TElastix>::SetScales()
 {
   /** Create the new scales. */
-  const NumberOfParametersType N = this->GetNumberOfParameters();
-  ScalesType                   newscales(N);
+  const NumberOfParametersType numberOfParameters = this->GetNumberOfParameters();
+  ScalesType                   newscales(numberOfParameters);
   newscales.Fill(1.0);
 
   /** Check if automatic scales estimation is desired. */
@@ -409,10 +406,10 @@ AdvancedAffineTransformElastix<TElastix>::SetScales(void)
         newscales[i] = scale;
       }
     }
-    else if (count == this->GetNumberOfParameters())
+    else if (count == numberOfParameters)
     {
       /** In this case the third option is used. */
-      for (unsigned int i = 0; i < this->GetNumberOfParameters(); ++i)
+      for (unsigned int i = 0; i < numberOfParameters; ++i)
       {
         this->m_Configuration->ReadParameter(newscales[i], "Scales", i);
       }
@@ -423,8 +420,7 @@ AdvancedAffineTransformElastix<TElastix>::SetScales(void)
        * An error is thrown, because using erroneous scales in the optimizer
        * can give unpredictable results.
        */
-      itkExceptionMacro(<< "ERROR: The Scales-option in the parameter-file"
-                        << " has not been set properly.");
+      itkExceptionMacro(<< "ERROR: The Scales-option in the parameter-file has not been set properly.");
     }
 
   } // end else: no automaticScalesEstimation

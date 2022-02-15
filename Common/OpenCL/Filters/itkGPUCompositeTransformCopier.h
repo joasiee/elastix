@@ -39,10 +39,10 @@ namespace itk
  *   itkStaticConstMacro( Support3D, bool, true );
  *  };
  *
- *  typedef typelist::MakeTypeList< short, float >::Type OCLImageTypes;
- *  typedef itk::CompositeTransform< float, 3 > TransformType;
- *  typedef itk::GPUCompositeTransformCopier< OCLImageTypes, OCLImageDims, TransformType, float > CopierType;
- *  CopierType::Pointer copier = CopierType::New();
+ *  using OCLImageTypes = typelist::MakeTypeList< short, float >::Type;
+ *  using TransformType = itk::CompositeTransform< float, 3 >;
+ *  using CopierType = itk::GPUCompositeTransformCopier< OCLImageTypes, OCLImageDims, TransformType, float >;
+ *  auto copier = CopierType::New();
  *  copier->SetInputTransform(CPUTransform);
  *  copier->Update();
  *  TransformType::Pointer GPUTransform = copier->GetModifiableOutput();
@@ -68,10 +68,10 @@ class ITK_TEMPLATE_EXPORT GPUCompositeTransformCopier : public Object
 {
 public:
   /** Standard class typedefs. */
-  typedef GPUCompositeTransformCopier Self;
-  typedef Object                      Superclass;
-  typedef SmartPointer<Self>          Pointer;
-  typedef SmartPointer<const Self>    ConstPointer;
+  using Self = GPUCompositeTransformCopier;
+  using Superclass = Object;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -80,11 +80,11 @@ public:
   itkTypeMacro(GPUCompositeTransformCopier, Object);
 
   /** Type CPU definitions for the transform. */
-  typedef TCompositeTransform                               CPUCompositeTransformType;
-  typedef typename CPUCompositeTransformType::ConstPointer  CPUCompositeTransformConstPointer;
-  typedef typename CPUCompositeTransformType::TransformType CPUTransformType;
-  typedef typename CPUTransformType::Pointer                CPUTransformPointer;
-  typedef typename CPUCompositeTransformType::ScalarType    CPUScalarType;
+  using CPUCompositeTransformType = TCompositeTransform;
+  using CPUCompositeTransformConstPointer = typename CPUCompositeTransformType::ConstPointer;
+  using CPUTransformType = typename CPUCompositeTransformType::TransformType;
+  using CPUTransformPointer = typename CPUTransformType::Pointer;
+  using CPUScalarType = typename CPUCompositeTransformType::ScalarType;
 
   /** Dimension of the domain space.
    * TCompositeTransform::InputDimension and TCompositeTransform::OutputDimension
@@ -92,14 +92,14 @@ public:
   itkStaticConstMacro(SpaceDimension, unsigned int, CPUCompositeTransformType::InputDimension);
 
   /** Type GPU definitions for the transform. */
-  typedef TOutputTransformPrecisionType                     GPUScalarType;
-  typedef CompositeTransform<GPUScalarType, SpaceDimension> GPUCompositeTransformType;
-  typedef typename GPUCompositeTransformType::Pointer       GPUCompositeTransformPointer;
+  using GPUScalarType = TOutputTransformPrecisionType;
+  using GPUCompositeTransformType = CompositeTransform<GPUScalarType, SpaceDimension>;
+  using GPUCompositeTransformPointer = typename GPUCompositeTransformType::Pointer;
 
   /** Type definitions for the transform copier. */
-  typedef GPUTransformCopier<TTypeList, NDimensions, CPUTransformType, GPUScalarType> GPUTransformCopierType;
-  typedef typename GPUTransformCopierType::Pointer                                    GPUTransformCopierPointer;
-  typedef typename GPUTransformCopierType::GPUTransformPointer                        GPUOutputTransformPointer;
+  using GPUTransformCopierType = GPUTransformCopier<TTypeList, NDimensions, CPUTransformType, GPUScalarType>;
+  using GPUTransformCopierPointer = typename GPUTransformCopierType::Pointer;
+  using GPUOutputTransformPointer = typename GPUTransformCopierType::GPUTransformPointer;
 
   /** Get/Set the input transform. */
   itkSetConstObjectMacro(InputTransform, CPUCompositeTransformType);
@@ -120,7 +120,7 @@ public:
 
   /** Update method. */
   void
-  Update(void);
+  Update();
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   // Begin concept checking

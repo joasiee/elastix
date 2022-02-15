@@ -73,8 +73,9 @@ ListSampleCArray<TMeasurementVector, TInternalValue>::GetMeasurementVector(Insta
  */
 
 template <class TMeasurementVector, class TInternalValue>
-const typename ListSampleCArray<TMeasurementVector, TInternalValue>::MeasurementVectorType &
+auto
 ListSampleCArray<TMeasurementVector, TInternalValue>::GetMeasurementVector(InstanceIdentifier id) const
+  -> const MeasurementVectorType &
 {
   if (id < this->m_InternalContainerSize)
   {
@@ -179,7 +180,7 @@ ListSampleCArray<TMeasurementVector, TInternalValue>::SetActualSize(unsigned lon
 
 template <class TMeasurementVector, class TInternalValue>
 unsigned long
-ListSampleCArray<TMeasurementVector, TInternalValue>::GetActualSize(void)
+ListSampleCArray<TMeasurementVector, TInternalValue>::GetActualSize()
 {
   return this->m_ActualSize;
 } // end GetActualSize()
@@ -191,7 +192,7 @@ ListSampleCArray<TMeasurementVector, TInternalValue>::GetActualSize(void)
 
 template <class TMeasurementVector, class TInternalValue>
 void
-ListSampleCArray<TMeasurementVector, TInternalValue>::Clear(void)
+ListSampleCArray<TMeasurementVector, TInternalValue>::Clear()
 {
   this->Resize(0);
 } // end Clear()
@@ -220,7 +221,7 @@ ListSampleCArray<TMeasurementVector, TInternalValue>::AllocateInternalContainer(
 
 template <class TMeasurementVector, class TInternalValue>
 void
-ListSampleCArray<TMeasurementVector, TInternalValue>::DeallocateInternalContainer(void)
+ListSampleCArray<TMeasurementVector, TInternalValue>::DeallocateInternalContainer()
 {
   if (this->m_InternalContainer)
   {
@@ -236,8 +237,8 @@ ListSampleCArray<TMeasurementVector, TInternalValue>::DeallocateInternalContaine
  */
 
 template <class TMeasurementVector, class TInternalValue>
-typename ListSampleCArray<TMeasurementVector, TInternalValue>::AbsoluteFrequencyType
-ListSampleCArray<TMeasurementVector, TInternalValue>::GetFrequency(InstanceIdentifier id) const
+auto
+ListSampleCArray<TMeasurementVector, TInternalValue>::GetFrequency(InstanceIdentifier id) const -> AbsoluteFrequencyType
 {
   if (id < this->m_InternalContainerSize)
   {

@@ -183,7 +183,7 @@ ElastixMain::ElastixMain()
  */
 
 const ComponentDatabase &
-ElastixMain::GetComponentDatabase(void)
+ElastixMain::GetComponentDatabase()
 {
   // Improved thread-safety by using C++11 "magic statics".
   static const auto componentDatabase = [] {
@@ -231,8 +231,7 @@ ElastixMain::EnterCommandLineArguments(const ArgumentMapType & argmap)
   int dummy = this->m_Configuration->Initialize(argmap);
   if (dummy)
   {
-    xl::xout["error"] << "ERROR: Something went wrong during initialization "
-                      << "of the configuration object." << std::endl;
+    xl::xout["error"] << "ERROR: Something went wrong during initialization of the configuration object." << std::endl;
   }
 
 } // end EnterCommandLineParameters()
@@ -294,7 +293,7 @@ ElastixMain::EnterCommandLineArguments(const ArgumentMapType & argmap, const std
  */
 
 int
-ElastixMain::Run(void)
+ElastixMain::Run()
 {
 
   /** Set process properties. */
@@ -338,7 +337,7 @@ ElastixMain::Run(void)
   {
     /** Report and disable the GPU by releasing the context. */
     elxout << errorMessage << std::endl;
-    elxout << "  OpenCL processing in elastix is disabled." << std::endl << std::endl;
+    elxout << "  OpenCL processing in elastix is disabled.\n" << std::endl;
 
     itk::OpenCLContext::Pointer context = itk::OpenCLContext::GetInstance();
     context->Release();
@@ -487,7 +486,7 @@ ElastixMain::Run(const ArgumentMapType & argmap, const ParameterMapType & inputM
  */
 
 int
-ElastixMain::InitDBIndex(void)
+ElastixMain::InitDBIndex()
 {
   /** Only do something when the configuration object wasn't initialized yet. */
   if (this->m_Configuration->IsInitialized())
@@ -549,7 +548,7 @@ ElastixMain::InitDBIndex(void)
                               << "  The parameter file says:     " << fixDimParameterFile << "\n"
                               << "  The fixed image header says: " << this->m_FixedImageDimension << "\n"
                               << "  Note that from elastix 4.6 the parameter file definition \"FixedImageDimension\" "
-                              << "is not needed anymore.\n  Please remove this entry from your parameter file."
+                                 "is not needed anymore.\n  Please remove this entry from your parameter file."
                               << std::endl;
             return 1;
           }
@@ -626,7 +625,7 @@ ElastixMain::InitDBIndex(void)
                               << "  The parameter file says:      " << movDimParameterFile << "\n"
                               << "  The moving image header says: " << this->m_MovingImageDimension << "\n"
                               << "  Note that from elastix 4.6 the parameter file definition \"MovingImageDimension\" "
-                              << "is not needed anymore.\n  Please remove this entry from your parameter file."
+                                 "is not needed anymore.\n  Please remove this entry from your parameter file."
                               << std::endl;
             return 1;
           }
@@ -690,7 +689,7 @@ ElastixMain::SetElastixLevel(unsigned int level)
  */
 
 unsigned int
-ElastixMain::GetElastixLevel(void)
+ElastixMain::GetElastixLevel()
 {
   /** Call GetElastixLevel from MyConfiguration. */
   return this->m_Configuration->GetElastixLevel();
@@ -716,7 +715,7 @@ ElastixMain::SetTotalNumberOfElastixLevels(unsigned int levels)
  */
 
 unsigned int
-ElastixMain::GetTotalNumberOfElastixLevels(void)
+ElastixMain::GetTotalNumberOfElastixLevels()
 {
   /** Call GetTotalNumberOfElastixLevels from MyConfiguration. */
   return this->m_Configuration->GetTotalNumberOfElastixLevels();
@@ -729,7 +728,7 @@ ElastixMain::GetTotalNumberOfElastixLevels(void)
  */
 
 ElastixMain::ElastixBaseType &
-ElastixMain::GetElastixBase(void) const
+ElastixMain::GetElastixBase() const
 {
   /** Convert ElastixAsObject to a pointer to an ElastixBaseType. */
   const auto testpointer = dynamic_cast<ElastixBaseType *>(this->m_Elastix.GetPointer());
@@ -852,7 +851,7 @@ ElastixMain::CreateComponents(const std::string &              key,
  */
 
 void
-ElastixMain::SetProcessPriority(void) const
+ElastixMain::SetProcessPriority() const
 {
   /** If wanted, set the priority of this process high or below normal. */
   std::string processPriority = this->m_Configuration->GetCommandLineArgument("-priority");
@@ -900,7 +899,7 @@ ElastixMain::SetProcessPriority(void) const
  */
 
 void
-ElastixMain::SetMaximumNumberOfThreads(void) const
+ElastixMain::SetMaximumNumberOfThreads() const
 {
   /** Get the number of threads from the command line. */
   std::string maximumNumberOfThreadsString = this->m_Configuration->GetCommandLineArgument("-threads");
@@ -930,7 +929,7 @@ ElastixMain::SetOriginalFixedImageDirectionFlat(const FlatDirectionCosinesType &
  */
 
 const ElastixMain::FlatDirectionCosinesType &
-ElastixMain::GetOriginalFixedImageDirectionFlat(void) const
+ElastixMain::GetOriginalFixedImageDirectionFlat() const
 {
   return this->m_OriginalFixedImageDirection;
 } // end GetOriginalFixedImageDirectionFlat()
@@ -941,7 +940,7 @@ ElastixMain::GetOriginalFixedImageDirectionFlat(void) const
  */
 
 ElastixMain::ParameterMapType
-ElastixMain::GetTransformParametersMap(void) const
+ElastixMain::GetTransformParametersMap() const
 {
   return this->m_TransformParametersMap;
 } // end GetTransformParametersMap()
@@ -957,13 +956,13 @@ ElastixMain::GetImageInformationFromFile(const std::string & filename, ImageDime
   if (!filename.empty())
   {
     /** Dummy image type. */
-    const unsigned int                                 DummyDimension = 3;
-    typedef short                                      DummyPixelType;
-    typedef itk::Image<DummyPixelType, DummyDimension> DummyImageType;
+    const unsigned int DummyDimension = 3;
+    using DummyPixelType = short;
+    using DummyImageType = itk::Image<DummyPixelType, DummyDimension>;
 
     /** Create a testReader. */
-    typedef itk::ImageFileReader<DummyImageType> ReaderType;
-    ReaderType::Pointer                          testReader = ReaderType::New();
+    using ReaderType = itk::ImageFileReader<DummyImageType>;
+    auto testReader = ReaderType::New();
     testReader->SetFileName(filename);
 
     /** Generate all information. */

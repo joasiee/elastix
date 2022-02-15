@@ -78,7 +78,7 @@ AdaGrad<TElastix>::AdaGrad()
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::BeforeRegistration(void)
+AdaGrad<TElastix>::BeforeRegistration()
 {
   /** Add the target cell "stepsize" to IterationInfo. */
   this->AddTargetCellToIterationInfo("2:Metric");
@@ -105,7 +105,7 @@ AdaGrad<TElastix>::BeforeRegistration(void)
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::BeforeEachResolution(void)
+AdaGrad<TElastix>::BeforeEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
@@ -284,7 +284,7 @@ AdaGrad<TElastix>::BeforeEachResolution(void)
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::AfterEachIteration(void)
+AdaGrad<TElastix>::AfterEachIteration()
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->GetValue();
@@ -318,16 +318,16 @@ AdaGrad<TElastix>::AfterEachIteration(void)
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::AfterEachResolution(void)
+AdaGrad<TElastix>::AfterEachResolution()
 {
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
   /**
-   * typedef enum {
+   * enum StopConditionType {
    *   MaximumNumberOfIterations,
    *   MetricError,
-   *   MinimumStepSize } StopConditionType;
+   *   MinimumStepSize } ;
    */
   std::string stopcondition;
 
@@ -378,11 +378,11 @@ AdaGrad<TElastix>::AfterEachResolution(void)
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::AfterRegistration(void)
+AdaGrad<TElastix>::AfterRegistration()
 {
   /** Print the best metric value. */
   double bestValue = this->GetValue();
-  elxout << std::endl << "Final metric value  = " << bestValue << std::endl;
+  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
 
   elxout << "Settings of " << this->elxGetClassName() << " for all resolutions:" << std::endl;
   this->PrintSettingsVector(this->m_SettingsVector);
@@ -396,7 +396,7 @@ AdaGrad<TElastix>::AfterRegistration(void)
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::StartOptimization(void)
+AdaGrad<TElastix>::StartOptimization()
 {
   /** As this optimizer estimates the scales itself, no other scales are used. */
   this->SetUseScales(false);
@@ -413,7 +413,7 @@ AdaGrad<TElastix>::StartOptimization(void)
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::AdvanceOneStep(void)
+AdaGrad<TElastix>::AdvanceOneStep()
 {
   /** Get space dimension. */
   const unsigned int spaceDimension = this->GetScaledCostFunction()->GetNumberOfParameters();
@@ -453,7 +453,7 @@ AdaGrad<TElastix>::AdvanceOneStep(void)
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::ResumeOptimization(void)
+AdaGrad<TElastix>::ResumeOptimization()
 {
   /** The following code relies on the fact that all components have been set up and
    * that the initial position has been set, so must be called in this function.
@@ -507,7 +507,7 @@ AdaGrad<TElastix>::MetricErrorResponse(itk::ExceptionObject & err)
 
 template <class TElastix>
 void
-AdaGrad<TElastix>::AutomaticPreconditionerEstimation(void)
+AdaGrad<TElastix>::AutomaticPreconditionerEstimation()
 {
   /** Total time. */
   itk::TimeProbe timer, timer4;
@@ -527,12 +527,11 @@ AdaGrad<TElastix>::AutomaticPreconditionerEstimation(void)
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
   /** Cast to advanced metric type. */
-  typedef typename ElastixType::MetricBaseType::AdvancedMetricType MetricType;
+  using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
   MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
   if (!testPtr)
   {
-    itkExceptionMacro(<< "ERROR: VoxelWiseASGD expects "
-                      << "the metric to be of type AdvancedImageToImageMetric!");
+    itkExceptionMacro(<< "ERROR: VoxelWiseASGD expects the metric to be of type AdvancedImageToImageMetric!");
   }
 
   /** Getting pointers to the samplers. */
@@ -746,8 +745,9 @@ AdaGrad<TElastix>::SampleGradients(const ParametersType & mu0, double perturbati
           {
             if (this->m_StepSizeStrategy == "Adaptive")
             {
-              xl::xout["warning"] << "WARNING: StepSizeStrategy is set to Constant, "
-                                  << "because UseRandomSampleRegion is set to \"true\"." << std::endl;
+              xl::xout["warning"]
+                << "WARNING: StepSizeStrategy is set to Constant, because UseRandomSampleRegion is set to \"true\"."
+                << std::endl;
               this->m_StepSizeStrategy = "Constant";
             }
           }

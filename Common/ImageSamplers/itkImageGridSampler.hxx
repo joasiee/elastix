@@ -61,7 +61,7 @@ ImageGridSampler<TInputImage>::SetSampleGridSpacing(const SampleGridSpacingType 
 
 template <class TInputImage>
 void
-ImageGridSampler<TInputImage>::GenerateData(void)
+ImageGridSampler<TInputImage>::GenerateData()
 {
   /** Get handles to the input image, output sample container, and the mask. */
   InputImageConstPointer                     inputImage = this->GetInput();
@@ -72,8 +72,8 @@ ImageGridSampler<TInputImage>::GenerateData(void)
   sampleContainer->Initialize();
 
   /** Set up a region iterator within the user specified image region. */
-  typedef ImageRegionConstIteratorWithIndex<InputImageType> InputImageIterator;
-  InputImageIterator                                        iter(inputImage, this->GetCroppedInputImageRegion());
+  using InputImageIterator = ImageRegionConstIteratorWithIndex<InputImageType>;
+  InputImageIterator iter(inputImage, this->GetCroppedInputImageRegion());
 
   /** Take into account the possibility of a smaller bounding box around the mask */
   this->SetNumberOfSamples(this->m_RequestedNumberOfSamples);
@@ -234,8 +234,7 @@ ImageGridSampler<TInputImage>::SetNumberOfSamples(unsigned long nrofsamples)
   /** This function assumes that the input has been set. */
   if (!this->GetInput())
   {
-    itkExceptionMacro(<< "ERROR: only call the function SetNumberOfSamples() "
-                      << "after the input has been set.");
+    itkExceptionMacro(<< "ERROR: only call the function SetNumberOfSamples() after the input has been set.");
   }
 
   /** Compute an isotropic grid spacing (in voxels),

@@ -35,7 +35,7 @@
 #define itkBSplineKernelFunction2_h
 
 #include "itkKernelFunctionBase2.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -60,9 +60,9 @@ class ITK_TEMPLATE_EXPORT BSplineKernelFunction2 : public KernelFunctionBase2<do
 {
 public:
   /** Standard class typedefs. */
-  typedef BSplineKernelFunction2      Self;
-  typedef KernelFunctionBase2<double> Superclass;
-  typedef SmartPointer<Self>          Pointer;
+  using Self = BSplineKernelFunction2;
+  using Superclass = KernelFunctionBase2<double>;
+  using Pointer = SmartPointer<Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -74,13 +74,32 @@ public:
   itkStaticConstMacro(SplineOrder, unsigned int, VSplineOrder);
 
   /** Store weights for the entire support. */
-  typedef FixedArray<double, Self::SplineOrder + 1> WeightArrayType;
+  using WeightArrayType = FixedArray<double, VSplineOrder + 1>;
+
+  /** Evaluate the function at one point. Faster than the corresponding public `Evaluate` member function, because it is
+   * static (whereas this `Evaluate` member function is virtual). */
+  static double
+  FastEvaluate(const double u)
+  {
+    return Self::Evaluate(Dispatch<VSplineOrder>(), u);
+  }
+
+
+  /** Evaluate the function at the entire support. This is slightly faster, since no if's are needed. It is also faster
+   * than the corresponding public `Evaluate` member function, because it is static (whereas this `Evaluate` member
+   * function is virtual). */
+  static void
+  FastEvaluate(const double u, double * const weights)
+  {
+    Self::Evaluate(Dispatch<VSplineOrder>(), u, weights);
+  }
+
 
   /** Evaluate the function at one point. */
   inline double
   Evaluate(const double & u) const override
   {
-    return this->Evaluate(Dispatch<VSplineOrder>(), u);
+    return Self::FastEvaluate(u);
   }
 
 
@@ -90,7 +109,7 @@ public:
   inline void
   Evaluate(const double & u, double * weights) const override
   {
-    this->Evaluate(Dispatch<VSplineOrder>(), u, weights);
+    Self::FastEvaluate(u, weights);
   }
 
 
@@ -112,10 +131,8 @@ private:
   operator=(const Self &) = delete;
 
   /** Structures to control overloaded versions of Evaluate */
-  struct DispatchBase
-  {};
   template <unsigned int>
-  struct ITK_TEMPLATE_EXPORT Dispatch : DispatchBase
+  struct ITK_TEMPLATE_EXPORT Dispatch
   {};
 
   /** *****************************************************
@@ -123,14 +140,14 @@ private:
    */
 
   /** Zeroth order spline. */
-  inline double
-  Evaluate(const Dispatch<0> &, const double & u) const
+  inline static double
+  Evaluate(const Dispatch<0> &, const double & u)
   {
     const double absValue = std::abs(u);
 
     if (absValue < 0.5)
     {
-      return NumericTraits<double>::OneValue();
+      return 1.0;
     }
     else if (absValue == 0.5)
     {
@@ -138,31 +155,31 @@ private:
     }
     else
     {
-      return NumericTraits<double>::ZeroValue();
+      return 0.0;
     }
   }
 
 
   /** First order spline */
-  inline double
-  Evaluate(const Dispatch<1> &, const double & u) const
+  inline static double
+  Evaluate(const Dispatch<1> &, const double & u)
   {
     const double absValue = std::abs(u);
 
     if (absValue < 1.0)
     {
-      return NumericTraits<double>::OneValue() - absValue;
+      return 1.0 - absValue;
     }
     else
     {
-      return NumericTraits<double>::ZeroValue();
+      return 0.0;
     }
   }
 
 
   /** Second order spline. */
-  inline double
-  Evaluate(const Dispatch<2> &, const double & u) const
+  inline static double
+  Evaluate(const Dispatch<2> &, const double & u)
   {
     const double absValue = std::abs(u);
 
@@ -176,14 +193,14 @@ private:
     }
     else
     {
-      return NumericTraits<double>::ZeroValue();
+      return 0.0;
     }
   }
 
 
   /** Third order spline. */
-  inline double
-  Evaluate(const Dispatch<3> &, const double & u) const
+  inline static double
+  Evaluate(const Dispatch<3> &, const double & u)
   {
     const double absValue = std::abs(u);
     const double sqrValue = u * u;
@@ -198,17 +215,8 @@ private:
     }
     else
     {
-      return NumericTraits<double>::ZeroValue();
+      return 0.0;
     }
-  }
-
-
-  /** Unimplemented spline order. */
-  inline double
-  Evaluate(const DispatchBase &, const double &) const
-  {
-    itkExceptionMacro(<< "Evaluate not implemented for spline order " << SplineOrder);
-    return 0.0;
   }
 
 
@@ -217,14 +225,14 @@ private:
    */
 
   /** Zeroth order spline. */
-  inline void
-  Evaluate(const Dispatch<0> &, const double & u, double * weights) const
+  inline static void
+  Evaluate(const Dispatch<0> &, const double & u, double * weights)
   {
     const double absValue = std::abs(u);
 
     if (absValue < 0.5)
     {
-      weights[0] = NumericTraits<double>::OneValue();
+      weights[0] = 1.0;
     }
     else if (absValue == 0.5)
     {
@@ -232,25 +240,25 @@ private:
     }
     else
     {
-      weights[0] = NumericTraits<double>::ZeroValue();
+      weights[0] = 0.0;
     }
   }
 
 
   /** First order spline */
-  inline void
-  Evaluate(const Dispatch<1> &, const double & u, double * weights) const
+  inline static void
+  Evaluate(const Dispatch<1> &, const double & u, double * weights)
   {
     const double absValue = std::abs(u);
 
-    weights[0] = NumericTraits<double>::OneValue() - absValue;
+    weights[0] = 1.0 - absValue;
     weights[1] = absValue;
   }
 
 
   /** Second order spline. */
-  inline void
-  Evaluate(const Dispatch<2> &, const double & u, double * weights) const
+  inline static void
+  Evaluate(const Dispatch<2> &, const double & u, double * weights)
   {
     const double absValue = std::abs(u);
     const double sqrValue = u * u;
@@ -262,8 +270,8 @@ private:
 
 
   /**  Third order spline. */
-  inline void
-  Evaluate(const Dispatch<3> &, const double & u, double * weights) const
+  inline static void
+  Evaluate(const Dispatch<3> &, const double & u, double * weights)
   {
     const double absValue = std::abs(u);
     const double sqrValue = u * u;
@@ -276,15 +284,6 @@ private:
     weights[1] = (-5.0 + 21.0 * absValue - 15.0 * sqrValue + 3.0 * uuu) * onesixth;
     weights[2] = (4.0 - 12.0 * absValue + 12.0 * sqrValue - 3.0 * uuu) * onesixth;
     weights[3] = (-1.0 + 3.0 * absValue - 3.0 * sqrValue + uuu) * onesixth;
-  }
-
-
-  /** Unimplemented spline order. */
-  inline double
-  Evaluate(const DispatchBase &, const double &, double *) const
-  {
-    itkExceptionMacro(<< "Evaluate not implemented for spline order " << SplineOrder);
-    return 0.0;
   }
 };
 

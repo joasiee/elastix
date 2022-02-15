@@ -75,11 +75,11 @@ class ITK_TEMPLATE_EXPORT PreconditionedGradientDescent
 {
 public:
   /** Standard ITK.*/
-  typedef PreconditionedGradientDescent                            Self;
-  typedef AdaptiveStochasticPreconditionedGradientDescentOptimizer Superclass1;
-  typedef OptimizerBase<TElastix>                                  Superclass2;
-  typedef itk::SmartPointer<Self>                                  Pointer;
-  typedef itk::SmartPointer<const Self>                            ConstPointer;
+  using Self = PreconditionedGradientDescent;
+  using Superclass1 = AdaptiveStochasticPreconditionedGradientDescentOptimizer;
+  using Superclass2 = OptimizerBase<TElastix>;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -105,7 +105,7 @@ public:
   using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
   using typename Superclass2::RegistrationPointer;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Typedef for the ParametersType. */
   using typename Superclass1::ParametersType;
@@ -119,21 +119,21 @@ public:
    * progress information can be printed.
    */
   virtual void
-  BeforeRegistration(void);
+  BeforeRegistration();
   virtual void
-  BeforeEachResolution(void);
+  BeforeEachResolution();
   virtual void
-  AfterEachResolution(void);
+  AfterEachResolution();
   virtual void
-  AfterEachIteration(void);
+  AfterEachIteration();
   virtual void
-  AfterRegistration(void);
+  AfterRegistration();
 
   /** Check if any scales are set, and set the UseScales flag on or off;
    * after that call the superclass' implementation.
    */
   virtual void
-  StartOptimization(void);
+  StartOptimization();
 
   /** Stop optimization and pass on exception. */
   virtual void
@@ -173,32 +173,32 @@ public:
    * After that call Superclass' implementation.
    */
   virtual void
-  ResumeOptimization(void);
+  ResumeOptimization();
 
 protected:
   struct SettingsType
   {
     double a, A, alpha, fmax, fmin, omega;
   };
-  typedef typename std::vector<SettingsType> SettingsVectorType;
+  using SettingsVectorType = typename std::vector<SettingsType>;
 
   /** Other protected typedefs */
-  typedef itk::Statistics::MersenneTwisterRandomVariateGenerator RandomGeneratorType;
-  typedef typename RandomGeneratorType::Pointer                  RandomGeneratorPointer;
-  typedef ProgressCommand                                        ProgressCommandType;
-  typedef typename ProgressCommand::Pointer                      ProgressCommandPointer;
+  using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
+  using RandomGeneratorPointer = typename RandomGeneratorType::Pointer;
+  using ProgressCommandType = ProgressCommand;
+  using ProgressCommandPointer = typename ProgressCommand::Pointer;
 
   /** Samplers: */
-  typedef typename RegistrationType::FixedImageType          FixedImageType;
-  typedef typename RegistrationType::MovingImageType         MovingImageType;
-  typedef itk::ImageSamplerBase<FixedImageType>              ImageSamplerBaseType;
-  typedef typename ImageSamplerBaseType::Pointer             ImageSamplerBasePointer;
-  typedef itk::ImageRandomSamplerBase<FixedImageType>        ImageRandomSamplerBaseType;
-  typedef typename ImageRandomSamplerBaseType::Pointer       ImageRandomSamplerBasePointer;
-  typedef itk::ImageRandomCoordinateSampler<FixedImageType>  ImageRandomCoordinateSamplerType;
-  typedef typename ImageRandomCoordinateSamplerType::Pointer ImageRandomCoordinateSamplerPointer;
-  typedef itk::ImageGridSampler<FixedImageType>              ImageGridSamplerType;
-  typedef typename ImageGridSamplerType::Pointer             ImageGridSamplerPointer;
+  using FixedImageType = typename RegistrationType::FixedImageType;
+  using MovingImageType = typename RegistrationType::MovingImageType;
+  using ImageSamplerBaseType = itk::ImageSamplerBase<FixedImageType>;
+  using ImageSamplerBasePointer = typename ImageSamplerBaseType::Pointer;
+  using ImageRandomSamplerBaseType = itk::ImageRandomSamplerBase<FixedImageType>;
+  using ImageRandomSamplerBasePointer = typename ImageRandomSamplerBaseType::Pointer;
+  using ImageRandomCoordinateSamplerType = itk::ImageRandomCoordinateSampler<FixedImageType>;
+  using ImageRandomCoordinateSamplerPointer = typename ImageRandomCoordinateSamplerType::Pointer;
+  using ImageGridSamplerType = itk::ImageGridSampler<FixedImageType>;
+  using ImageGridSamplerPointer = typename ImageGridSamplerType::Pointer;
 
   PreconditionedGradientDescent();
   virtual ~PreconditionedGradientDescent(){};
@@ -215,7 +215,7 @@ protected:
 
   /** Get the SelfHessian from the metric and submit as Precondition matrix */
   virtual void
-  SetSelfHessian(void);
+  SetSelfHessian();
 
   /** Print the contents of the settings vector to elxout. */
   virtual void
@@ -225,7 +225,7 @@ protected:
    * SP_a, SP_alpha (=1), SigmoidMin, SigmoidMax (=1), and SigmoidScale.
    */
   virtual void
-  AutomaticParameterEstimation(void);
+  AutomaticParameterEstimation();
 
   /** Measure some derivatives, exact and approximated. Returns
    * the sigma1 and sigma2.

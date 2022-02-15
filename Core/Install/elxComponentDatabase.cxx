@@ -140,14 +140,14 @@ ComponentDatabase::GetIndex(const PixelTypeDescriptionType & fixedPixelType,
   if (found == end(IndexMap))
   {
     xl::xout["error"] << "ERROR:\n"
-                      << "  FixedImageType:  " << fixedDimension << "D " << fixedPixelType << std::endl
-                      << "  MovingImageType: " << movingDimension << "D " << movingPixelType << std::endl
+                      << "  FixedImageType:  " << fixedDimension << "D " << fixedPixelType << '\n'
+                      << "  MovingImageType: " << movingDimension << "D " << movingPixelType << '\n'
                       << "  elastix was not compiled with this combination of ImageTypes!\n"
                       << "  You have two options to solve this:\n"
                       << "  1. Add the combination to the CMake parameters ELASTIX_IMAGE_nD_PIXELTYPES and "
-                      << "ELASTIX_IMAGE_DIMENSIONS, re-cmake and re-compile.\n"
+                         "ELASTIX_IMAGE_DIMENSIONS, re-cmake and re-compile.\n"
                       << "  2. Change the parameters FixedInternalImagePixelType and/or MovingInternalImagePixelType "
-                      << "in the elastix parameter file.\n"
+                         "in the elastix parameter file.\n"
                       << std::endl;
     return 0;
   }

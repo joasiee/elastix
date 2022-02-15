@@ -54,10 +54,10 @@ class StochasticGradientDescentOptimizer : public ScaledSingleValuedNonLinearOpt
 {
 public:
   /** Standard class typedefs. */
-  typedef StochasticGradientDescentOptimizer   Self;
-  typedef ScaledSingleValuedNonLinearOptimizer Superclass;
-  typedef SmartPointer<Self>                   Pointer;
-  typedef SmartPointer<const Self>             ConstPointer;
+  using Self = StochasticGradientDescentOptimizer;
+  using Superclass = ScaledSingleValuedNonLinearOptimizer;
+  using Pointer = SmartPointer<Self>;
+  using ConstPointer = SmartPointer<const Self>;
 
   /** Method for creation through the object factory. */
   itkNewMacro(Self);
@@ -77,7 +77,7 @@ public:
   /** Codes of stopping conditions
    * The MinimumStepSize stopcondition never occurs, but may
    * be implemented in inheriting classes */
-  typedef enum
+  enum StopConditionType
   {
     MaximumNumberOfIterations,
     MetricError,
@@ -85,20 +85,20 @@ public:
     InvalidDiagonalMatrix,
     GradientMagnitudeTolerance,
     LineSearchError,
-  } StopConditionType;
+  };
 
   /** Advance one step following the gradient direction. */
   virtual void
-  AdvanceOneStep(void);
+  AdvanceOneStep();
 
   /** Start optimization. */
   void
-  StartOptimization(void) override;
+  StartOptimization() override;
 
   /** Resume previously stopped optimization with current parameters
    * \sa StopOptimization. */
   virtual void
-  ResumeOptimization(void);
+  ResumeOptimization();
 
   /** Stop optimisation and pass on exception. */
   virtual void
@@ -107,7 +107,7 @@ public:
   /** Stop optimization.
    * \sa ResumeOptimization */
   virtual void
-  StopOptimization(void);
+  StopOptimization();
 
   /** Set the learning rate. */
   itkSetMacro(LearningRate, double);
@@ -176,8 +176,8 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Typedefs for multi-threading. */
-  typedef itk::PlatformMultiThreader ThreaderType;
-  typedef ThreaderType::WorkUnitInfo ThreadInfoType;
+  using ThreaderType = itk::PlatformMultiThreader;
+  using ThreadInfoType = ThreaderType::WorkUnitInfo;
 
   // made protected so subclass can access
   double                m_Value{ 0.0 };

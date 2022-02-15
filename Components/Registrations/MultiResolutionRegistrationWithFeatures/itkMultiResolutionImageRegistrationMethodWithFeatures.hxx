@@ -21,7 +21,7 @@
 #include "itkMultiResolutionImageRegistrationMethodWithFeatures.h"
 
 #include "itkContinuousIndex.h"
-#include "vnl/vnl_math.h"
+#include <vnl/vnl_math.h>
 
 namespace itk
 {
@@ -32,7 +32,7 @@ namespace itk
 
 template <typename TFixedImage, typename TMovingImage>
 void
-MultiResolutionImageRegistrationMethodWithFeatures<TFixedImage, TMovingImage>::CheckPyramids(void)
+MultiResolutionImageRegistrationMethodWithFeatures<TFixedImage, TMovingImage>::CheckPyramids()
 {
   /** Check if at least one of the following are provided. */
   if (this->GetFixedImage() == nullptr)

@@ -38,7 +38,7 @@ namespace elastix
  * as follows:
  *
  * \code
- *   ProgressCommandType::Pointer command = ProgressCommandType::New();
+ *   auto command = ProgressCommandType::New();
  *   command->ConnectObserver( filterpointer );
  *   command->SetStartString( "  Progress: " );
  *   command->SetEndString( "%" );
@@ -56,7 +56,7 @@ namespace elastix
  * that the progress message should be printed with. For example
  *
  * \code
- *   ProgressCommandType::Pointer command = ProgressCommandType::New();
+ *   auto command = ProgressCommandType::New();
  *   command->SetUpdateFrequency( maxnrofvoxels, 100 );
  *   command->SetStartString( "  Progress: " );
  *   command->SetEndString( "%" );
@@ -71,7 +71,7 @@ namespace elastix
  * \li The last possibility is to directly use the PrintProgress function:
  *
  * \code
- *   ProgressCommandType::Pointer command = ProgressCommandType::New();
+ *   auto command = ProgressCommandType::New();
  *   command->SetStartString( "  Progress: " );
  *   command->SetEndString( "%" );
  *   elxout << "Reading, casting, writing..."
@@ -91,18 +91,18 @@ class ProgressCommand : public itk::Command
 {
 public:
   /** Smart pointer declaration methods. */
-  typedef ProgressCommand               Self;
-  typedef itk::Command                  Superclass;
-  typedef itk::SmartPointer<Self>       Pointer;
-  typedef itk::SmartPointer<const Self> ConstPointer;
+  using Self = ProgressCommand;
+  using Superclass = itk::Command;
+  using Pointer = itk::SmartPointer<Self>;
+  using ConstPointer = itk::SmartPointer<const Self>;
 
   /** Standard ITK stuff. */
   itkTypeMacro(ProgressCommand, Command);
   itkNewMacro(Self);
 
   /** Typedef's. */
-  typedef itk::ProcessObject         ProcessObjectType;
-  typedef ProcessObjectType::Pointer ProcessObjectPointer;
+  using ProcessObjectType = itk::ProcessObject;
+  using ProcessObjectPointer = ProcessObjectType::Pointer;
 
   /** Define when to print the progress. */
   virtual void
