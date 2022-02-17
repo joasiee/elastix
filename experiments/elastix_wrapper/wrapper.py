@@ -4,6 +4,8 @@ import subprocess
 import logging
 
 from typing import Any, Dict
+
+import wandb
 from elastix_wrapper import TimeoutException, time_limit
 from elastix_wrapper.parameters import Collection, Parameters
 from elastix_wrapper.watchdog import Watchdog
@@ -36,6 +38,10 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
 
     logger.info("Run finished successfully.")
     wd.stop()
+    
+    if watch:
+        wandb.save(str((run_dir / "*").resolve()), base_path=str(run_dir.parents[0].resolve()))
+        wandb.save(str((run_dir / "out" / "*").resolve()), base_path=str(run_dir.parents[0].resolve()))
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
@@ -56,9 +62,9 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 if __name__ == "__main__":
     params = (
-        Parameters(mesh_size=5, sampler="Full", downsampling_f=8)
-        .gomea(fos=-6, partial_evals=True)
-        .instance(Collection.EMPIRE, 16)
+        Parameters(mesh_size=8, sampler="Full", downsampling_f=2)
+        .gomea()
+        .instance(Collection.EXAMPLES, 1)
         .stopping_criteria(iterations=10)
     )
     run(params, Path("output/" + str(params)), False)
