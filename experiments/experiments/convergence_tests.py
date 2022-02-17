@@ -7,7 +7,7 @@ import wandb
 import elastix_wrapper.wrapper as wrapper
 from elastix_wrapper.parameters import Collection, Parameters
 
-instances = [16, 23, 17, 13, 6, 26, 5]
+instances = [16, 23, 17, 13, 6]
 
 for instance in instances:
     params = Parameters(mesh_size=8).gomea(fos=-6, partial_evals=True).stopping_criteria(iterations=50).instance(Collection.EMPIRE, instance)
