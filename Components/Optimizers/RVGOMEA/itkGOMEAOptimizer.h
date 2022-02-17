@@ -136,13 +136,14 @@ protected:
   GOMEAOptimizer();
   ~GOMEAOptimizer() override = default;
 
-  void SetRandomSeed(int seed)
+  void
+  SetRandomSeed(int seed)
   {
     GOMEA::random_seed = static_cast<int64_t>(seed);
   }
 
-  unsigned long               m_NumberOfEvaluations{ 0L };
-  unsigned long               m_CurrentIteration{ 0L };
+  unsigned long     m_NumberOfEvaluations{ 0L };
+  unsigned long     m_CurrentIteration{ 0L };
   StopConditionType m_StopCondition{ Unknown };
   MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
   unsigned int      m_NrOfParameters;
@@ -286,14 +287,14 @@ private:
   double eta_ams{ 1.0 };
   double eta_cov{ 1.0 };
 
-  int m_MaxNumberOfPopulations{ 1 };
-  int m_BasePopulationSize{ 0 };
+  int           m_MaxNumberOfPopulations{ 1 };
+  int           m_BasePopulationSize{ 0 };
   unsigned long m_MaximumNumberOfIterations{ 100L };
   unsigned long m_MaxNumberOfEvaluations{ 0L };
-  int m_MaxNoImprovementStretch{ 0 };
-  int m_FosElementSize{ -1 };
-  int number_of_subgenerations_per_population_factor{ 8 };
-  int number_of_populations{ 0 };
+  int           m_MaxNoImprovementStretch{ 0 };
+  int           m_FosElementSize{ -1 };
+  int           number_of_subgenerations_per_population_factor{ 8 };
+  int           number_of_populations{ 0 };
 
   bool m_PartialEvaluations{ false };
   bool m_WriteOutput{ false };
