@@ -70,12 +70,8 @@ OptimizerBase<TElastix>::BeforeEachResolutionBase()
 
   /** Check if after every iteration a new sample set should be created. */
   this->m_NewSamplesEveryIteration = false;
-  bool partialEvals = false;
-  this->m_Configuration->ReadParameter(partialEvals, "PartialEvaluations", "", level, 0, true);
-  if (!partialEvals) // with partial evals samples need to stay consistent for each subfunction
-    this->GetConfiguration()->ReadParameter(
-      this->m_NewSamplesEveryIteration, "NewSamplesEveryIteration", this->GetComponentLabel(), level, 0);
-
+  this->GetConfiguration()->ReadParameter(
+    this->m_NewSamplesEveryIteration, "NewSamplesEveryIteration", this->GetComponentLabel(), level, 0);
 } // end BeforeEachResolutionBase()
 
 

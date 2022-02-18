@@ -15,7 +15,7 @@
 (DefaultPixelValue 0)
 (Metric "AdvancedMeanSquares")
 (FitnessVarianceTolerance 0)
-(ImageSampler "RandomCoordinate")
+(ImageSampler "Full")
 (SamplingPercentage 0.3)
 (Optimizer "GOMEA")
 (FinalGridSpacingInVoxels 10 10)

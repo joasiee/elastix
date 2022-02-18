@@ -131,7 +131,7 @@ public:
   /** The moving image dimension. */
   itkStaticConstMacro(MovingImageDimension, unsigned int, MovingImageType::ImageDimension);
 
-  itkStaticConstMacro(MissedPixelPenalty, unsigned int, 256);
+  itkStaticConstMacro(MissedPixelPenalty, unsigned int, 512);
 
   /** Get the value for single valued optimizers. */
   virtual MeasureType

@@ -17,10 +17,10 @@ GOMEA<TElastix>::BeforeRegistration(void)
   this->SetImageDimension(this->GetElastix()->GetFixedImage()->GetImageDimension());
 
   this->AddTargetCellToIterationInfo("2:Metric");
-  this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
-
   this->AddTargetCellToIterationInfo("3:Evaluations");
-  this->GetIterationInfoAt("3:Evaluations") << std::showpoint << std::fixed;
+
+  this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("3:Evaluations") << std::setw(10);
 }
 
 template <class TElastix>
@@ -29,7 +29,7 @@ GOMEA<TElastix>::AfterEachIteration(void)
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->m_CurrentValue;
-  this->GetIterationInfoAt("3:Evaluations") << this->m_NumberOfEvaluations;
+  this->GetIterationInfoAt("3:Evaluations") << this->m_NumberOfEvaluations << std::setw(10);
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
@@ -60,8 +60,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
 
   /** Set FosElementSize.*/
   int fosElementSize = -1;
-  this->m_Configuration->ReadParameter(
-    fosElementSize, "FosElementSize", this->GetComponentLabel(), level, 0);
+  this->m_Configuration->ReadParameter(fosElementSize, "FosElementSize", this->GetComponentLabel(), level, 0);
   this->SetFosElementSize(fosElementSize);
 
   /** Set MaxImprovementNoStretch.*/
@@ -105,8 +104,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
 
   /** Set PartialEvaluations*/
   bool partialEvaluations = false;
-  this->m_Configuration->ReadParameter(
-    partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
+  this->m_Configuration->ReadParameter(partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
   this->SetPartialEvaluations(partialEvaluations);
 }
 

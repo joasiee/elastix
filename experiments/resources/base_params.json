@@ -15,5 +15,6 @@
     "FinalBSplineInterpolationOrder": 3,
     "DefaultPixelValue": 0,
     "WriteResultImageAfterEachResolution": "true",
-    "WriteResultImage": "false"
+    "WriteResultImage": "true",
+    "NewSamplesEveryIteration": "true"
 }
