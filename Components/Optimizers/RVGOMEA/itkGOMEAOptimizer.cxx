@@ -1420,7 +1420,7 @@ GOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index, i
       }
       else
       {
-        result = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index] * z;
+        result = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Upper>() * z;
         for (i = 0; i < num_indices; i++)
           result[i] += mean_vectors[population_index][indices[i]];
       }
@@ -1739,7 +1739,7 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
   }
   else
   {
-    z = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>() * x_min_mu;
+    z = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Upper>() * x_min_mu;
 
     for (i = 0; i < num_indices; i++)
     {
