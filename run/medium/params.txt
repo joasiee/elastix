@@ -20,7 +20,7 @@
 (NumberOfResolutions 1)
 
 // ********** Transform
-(FinalGridSpacingInVoxels 30)
+(FinalGridSpacingInVoxels 80)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
@@ -29,6 +29,7 @@
 (MaximumNumberOfIterations 5)
 (PartialEvaluations "true")
 (FosElementSize -6)
+(BasePopulationSize 10)
 
 // ********** Several
 (WriteResultImage "true")
@@ -38,7 +39,7 @@
 // ********** ImageSampler
 (ImageSampler "Random")
 (NumberOfSpatialSamples 10000)
-(SamplingPercentage 0.05)
+(SamplingPercentage 0.01)
 
 
 // ********** Interpolator and Resampler

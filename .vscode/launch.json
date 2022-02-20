@@ -18,8 +18,6 @@
                 "params.txt",
                 "-out",
                 "dir",
-                "-mts",
-                "true"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/medium",
@@ -48,8 +46,6 @@
                 "params.txt",
                 "-out",
                 "dir",
-                "-mts",
-                "true"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/trivial",
@@ -83,8 +79,6 @@
                 "params.txt",
                 "-out",
                 "dir",
-                "-mts",
-                "true"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/trivial-mm",
@@ -118,8 +112,6 @@
                 "params.txt",
                 "-out",
                 "dir",
-                "-mts",
-                "true"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/easy",
