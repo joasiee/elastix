@@ -32,6 +32,10 @@ endif()
 
 find_package(Boost)
 
+if(DEFINED ENV{ITK_HOME})
+  set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE} CACHE STRING "")
+endif()
+
 # Find ITK.
 find_package( ITK 5.2.0 REQUIRED COMPONENTS
     ITKCommon
