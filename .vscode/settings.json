@@ -76,7 +76,6 @@
         "variant": "cpp"
     },
     "cmake.configureArgs": [
-        "-C${workspaceFolder}/CMakeDefaultCache.txt",
-        "-DCMAKE_BUILD_TYPE:STRING=${buildType}"
+        "-C${workspaceFolder}/CMakeDefaultCache.txt"
     ]
 }
