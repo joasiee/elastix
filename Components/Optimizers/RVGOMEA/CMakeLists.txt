@@ -12,7 +12,13 @@ ADD_ELXCOMPONENT(GOMEA
 )
 
 set(BLA_VENDOR OpenBLAS)
+
 find_package(BLAS REQUIRED)
 find_package(Boost 1.70.0 REQUIRED)
+find_package(blaze REQUIRED)
 
-target_link_libraries(GOMEA ${BLAS_LIBRARIES} Boost::boost)
+target_link_libraries(GOMEA
+  BLAS::BLAS
+  Boost::boost
+  blaze::blaze
+)
