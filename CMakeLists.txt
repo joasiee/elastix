@@ -30,10 +30,8 @@ if(ELASTIX_USE_OPENCL)
   list(APPEND _GPU_depends ITKGPUCommon)
 endif()
 
-find_package(Boost)
-
 if(DEFINED ENV{ITK_HOME})
-  set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE} CACHE STRING "")
+  set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE})
 endif()
 
 # Find ITK.

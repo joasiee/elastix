@@ -11,6 +11,8 @@ ADD_ELXCOMPONENT(GOMEA
   util/Tools.cxx
 )
 
+set(BLA_VENDOR OpenBLAS)
 find_package(BLAS REQUIRED)
+find_package(Boost 1.70.0 REQUIRED)
 
-target_link_libraries(GOMEA ${BLAS_LIBRARIES})
+target_link_libraries(GOMEA ${BLAS_LIBRARIES} Boost::boost)
