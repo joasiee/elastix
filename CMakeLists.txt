@@ -32,6 +32,7 @@ endif()
 
 if(DEFINED ENV{ITK_HOME})
   set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE})
+  set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE} CACHE STRING "")
 endif()
 
 # Find ITK.

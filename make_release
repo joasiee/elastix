@@ -1,0 +1,55 @@
+#!/bin/bash
+
+if [[ $UID != 0 ]]; then
+    echo "Please run this script with sudo:"
+    echo "sudo $0 $*"
+    exit 1
+fi
+
+if command -v apt &> /dev/null
+then
+    sudo apt update && sudo apt install wget cmake build-essential ninja-build -y
+fi
+
+if command -v pacman &> /dev/null
+then
+    sudo pacman -Syu --noconfirm wget cmake ninja base-devel -y
+fi
+
+cd "$(dirname "$0")"
+rm -rf build && rm -rf temp
+
+CMAKE_BUILD_TYPE=Release
+WORKING_DIR=$PWD/temp
+mkdir -p $WORKING_DIR
+
+# Configure and install openBLAS
+cd $WORKING_DIR
+git clone https://github.com/xianyi/OpenBLAS.git && cd OpenBLAS
+make DYNAMIC_ARCH=1 USE_OPENMP=1 && make PREFIX=/usr/local install
+
+# Configure and install Eigen3
+cd $WORKING_DIR
+git clone https://gitlab.com/libeigen/eigen.git && cd eigen
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE -G Unix Makefiles
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target install
+
+# Configure and install Boost
+cd $WORKING_DIR
+wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2
+tar --bzip2 -xf boost_1_78_0.tar.bz2 && cd boost_1_78_0
+./bootstrap.sh && ./b2 install
+
+# Configure and install ITK
+cd $WORKING_DIR
+git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout rv_gomea_integration
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE -G Ninja
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target all
+export ITK_HOME=$PWD
+
+# Configure and install elastix
+cd "$(dirname "$0")"
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE -G Ninja
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target all
+
+rm -rf temp
