@@ -30,8 +30,9 @@ make DYNAMIC_ARCH=1 USE_OPENMP=1 && make PREFIX=/usr/local install
 
 # Configure and install Eigen3
 cd $WORKING_DIR
-git clone https://gitlab.com/libeigen/eigen.git && cd eigen
-cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE -G Unix Makefiles
+wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
+tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE -G Ninja
 cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target install
 
 # Configure and install Boost
