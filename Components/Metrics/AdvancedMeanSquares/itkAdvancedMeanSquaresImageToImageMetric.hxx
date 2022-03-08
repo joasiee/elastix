@@ -241,9 +241,8 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
                                                                            const int fosIndex) const
 {
-  this->m_CurrentFOSSet = fosIndex + 1;
   this->BeforeThreadedGetValueAndDerivative(parameters);
-  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[this->m_CurrentFOSSet];
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixelsMissed = 0;

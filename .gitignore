@@ -51,3 +51,5 @@ random_seed.dat
 
 .env
 *.pyc
+
+temp

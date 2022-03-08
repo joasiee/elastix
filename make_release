@@ -13,7 +13,7 @@ fi
 
 if command -v pacman &> /dev/null
 then
-    sudo pacman -Syu --noconfirm wget cmake ninja base-devel -y
+    sudo pacman -Su --noconfirm wget cmake ninja base-devel
 fi
 
 cd "$(dirname "$0")"

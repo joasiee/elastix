@@ -130,21 +130,6 @@ public:
   MeasureType
   GetValue(const ParametersType & parameters, const int fosIndex) const override;
 
-  /** Get value for each thread. */
-  inline void
-  ThreadedGetValue(ThreadIdType threadID) override;
-
-  /** Get value for each thread. */
-  inline void
-  ThreadedGetValuePartial(ThreadIdType threadID) override;
-
-  /** Gather the values from all threads */
-  inline void
-  AfterThreadedGetValue(MeasureType & value) const override;
-
-  virtual MeasureType
-  GetValueSingleThreaded(const ParametersType & parameters) const;
-
   /** Get the penalty term derivative. */
   void
   GetDerivative(const ParametersType & parameters, DerivativeType & derivative) const override;

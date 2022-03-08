@@ -47,12 +47,7 @@ template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
 TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const
 {
-  RealType measure = NumericTraits<RealType>::Zero;
-
-  if (!this->m_UseMultiThread)
-  {
-    return this->GetValueSingleThreaded(parameters);
-  }
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
 
   if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
   {
@@ -61,38 +56,6 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
-  this->LaunchGetValueThreaderCallback();
-  this->AfterThreadedGetValue(measure);
-
-  return measure;
-}
-
-/**
- * ******************* GetValuePartial *******************
- */
-
-template <class TFixedImage, class TScalarType>
-typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
-                                                                      const int              fosIndex) const
-{
-  this->BeforeThreadedGetValueAndDerivative(parameters);
-  this->LaunchGetValueThreaderCallback();
-
-  MeasureType value = NumericTraits<MeasureType>::Zero;
-  this->AfterThreadedGetValue(value);
-
-  return value;
-} // end GetValuePartial()
-
-/**
- * ******************* ThreadedGetValue *******************
- */
-
-template <class TFixedImage, class TScalarType>
-void
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValue(ThreadIdType threadId)
-{
   /** Create and initialize some variables. */
   SpatialHessianType           spatialHessian;
   JacobianOfSpatialHessianType jacobianOfSpatialHessian;
@@ -106,7 +69,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValue(Th
   if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian() &&
       !this->m_AdvancedTransform->GetHasNonZeroJacobianOfSpatialHessian())
   {
-    return;
+    return measure;
   }
   // TODO: This is only required once! and not every iteration.
 
@@ -115,35 +78,15 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValue(Th
   bool                                         transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
   /** Get a handle to the sample container. */
-  ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
-  const unsigned long         sampleContainerSize = sampleContainer->Size();
+  ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
+  const unsigned long        sampleContainerSize = sampleContainer.Size();
 
-  /** Get the samples for this thread. */
-  const unsigned long nrOfSamplesPerThreads = static_cast<unsigned long>(
-    std::ceil(static_cast<double>(sampleContainerSize) / static_cast<double>(Self::GetNumberOfWorkUnits())));
-
-  unsigned long pos_begin = nrOfSamplesPerThreads * threadId;
-  unsigned long pos_end = nrOfSamplesPerThreads * (threadId + 1);
-  pos_begin = (pos_begin > sampleContainerSize) ? sampleContainerSize : pos_begin;
-  pos_end = (pos_end > sampleContainerSize) ? sampleContainerSize : pos_end;
-
-  /** Create iterator over the sample container. */
-  typename ImageSampleContainerType::ConstIterator fiter;
-  typename ImageSampleContainerType::ConstIterator fbegin = sampleContainer->Begin();
-  typename ImageSampleContainerType::ConstIterator fend = sampleContainer->Begin();
-  fbegin += (int)pos_begin;
-  fend += (int)pos_end;
-
-  /** Create variables to store intermediate results. circumvent false sharing */
-  unsigned long numberOfPixelsCounted = 0;
-  MeasureType   measure = NumericTraits<MeasureType>::Zero;
-
-  /** Loop over the fixed image to calculate the penalty term and its derivative. */
-  for (fiter = fbegin; fiter != fend; ++fiter)
+/** Loop over the fixed image to calculate the penalty term and its derivative. */
+#pragma omp parallel for reduction(+ : measure)
+  for (int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-    numberOfPixelsCounted++;
+    const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
 
     /** Get the spatial Hessian of the transformation at the current point.
      * This is needed to compute the bending energy.
@@ -165,27 +108,29 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValue(Th
     }
   } // end for loop over the image sample container
 
-  /** Only update these variables at the end to prevent unnecessary "false sharing". */
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value = measure;
+  measure /= static_cast<RealType>(this->GetNumberOfFixedImageSamples());
 
-} // end ThreadedGetValue()
+  return measure;
+}
 
 /**
- * ******************* ThreadedGetValuePartial *******************
+ * ******************* GetValuePartial *******************
  */
 
 template <class TFixedImage, class TScalarType>
-void
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValuePartial(ThreadIdType threadId)
+typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
+TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
+                                                                      const int              fosIndex) const
 {
-  int                      i, start, end;
-  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[this->m_CurrentFOSSet];
-  this->GetTasksForThread(threadId, start, end);
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
 
-  /** Create variables to store intermediate results. circumvent false sharing */
-  unsigned long numberOfPixelsCounted = 0;
-  MeasureType   measure = NumericTraits<MeasureType>::Zero;
+  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
+  {
+    return static_cast<MeasureType>(measure);
+  }
+  this->BeforeThreadedGetValueAndDerivative(parameters);
+
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
 
   /** Create and initialize some variables. */
   SpatialHessianType           spatialHessian;
@@ -200,7 +145,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValuePar
   if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian() &&
       !this->m_AdvancedTransform->GetHasNonZeroJacobianOfSpatialHessian())
   {
-    return;
+    return measure;
   }
   // TODO: This is only required once! and not every iteration.
 
@@ -208,26 +153,26 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValuePar
   typename BSplineOrder3TransformType::Pointer dummy; // default-constructed (null)
   bool                                         transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
-  // iterate over these subfunction samplers and calculate mean squared diffs
-  for (i = start; i < end; ++i)
+// iterate over these subfunction samplers and calculate mean squared diffs
+#pragma omp parallel for reduction(+ : measure)
+  for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
     this->m_SubfunctionSamplers[fosPoints[i]]->Update();
-    ImageSampleContainerPointer sampleContainer = this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput();
-    const unsigned long         sampleContainerSize = sampleContainer->Size();
+    ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
+    const unsigned long        sampleContainerSize = sampleContainer.Size();
 
 
     /** Create iterator over the sample container. */
     typename ImageSampleContainerType::ConstIterator threader_fiter;
-    typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer->Begin();
-    typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer->End();
+    typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
+    typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
 
     /** Loop over the fixed image samples to calculate the mean squares. */
     for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
     {
       /** Read fixed coordinates and initialize some variables. */
       const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
-      numberOfPixelsCounted++;
 
       /** Get the spatial Hessian of the transformation at the current point.
        * This is needed to compute the bending energy.
@@ -250,132 +195,10 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValuePar
     }
   }
 
-  /** Only update these variables at the end to prevent unnecessary "false sharing". */
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_Value = measure;
+  measure /= static_cast<RealType>(this->GetNumberOfFixedImageSamples());
 
-} // end ThreadedGetValuePartial()
-
-/**
- * ******************* AfterThreadedGetValue *******************
- */
-
-template <class TFixedImage, class TScalarType>
-void
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::AfterThreadedGetValue(MeasureType & value) const
-{
-  const ThreadIdType numberOfThreads = Self::GetNumberOfWorkUnits();
-
-  /** Accumulate the number of pixels. */
-  this->m_NumberOfPixelsCounted = 0;
-  for (ThreadIdType i = 0; i < numberOfThreads; ++i)
-  {
-    this->m_NumberOfPixelsCounted += this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted;
-
-    /** Reset this variable for the next iteration. */
-    this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted = 0;
-  }
-
-  /** Check if enough samples were valid. */
-  // ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
-  // this->CheckNumberOfSamples(this->m_CurrentSampleContainer->Size(), this->m_NumberOfPixelsCounted);
-
-  /** Accumulate and normalize values. */
-  for (ThreadIdType i = 0; i < numberOfThreads; ++i)
-  {
-    value += this->m_GetValueAndDerivativePerThreadVariables[i].st_Value;
-
-    /** Reset this variable for the next iteration. */
-    this->m_GetValueAndDerivativePerThreadVariables[i].st_Value = NumericTraits<MeasureType>::Zero;
-  }
-  value /= static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-} // end AfterThreadedGetValue()
-
-
-/**
- * ****************** GetValueSingleThreaded *******************************
- */
-
-template <class TFixedImage, class TScalarType>
-typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValueSingleThreaded(
-  const ParametersType & parameters) const
-{
-  /** Initialize some variables. */
-  this->m_NumberOfPixelsCounted = 0;
-  RealType           measure = NumericTraits<RealType>::Zero;
-  SpatialHessianType spatialHessian;
-
-  /** Check if the SpatialHessian is nonzero. */
-  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
-  {
-    return static_cast<MeasureType>(measure);
-  }
-
-  /** Call non-thread-safe stuff, such as:
-   *   this->SetTransformParameters( parameters );
-   *   this->GetImageSampler()->Update();
-   * Because of these calls GetValueAndDerivative itself is not thread-safe,
-   * so cannot be called multiple times simultaneously.
-   * This is however needed in the CombinationImageToImageMetric.
-   * In that case, you need to:
-   * - switch the use of this function to on, using m_UseMetricSingleThreaded = true
-   * - call BeforeThreadedGetValueAndDerivative once (single-threaded) before
-   *   calling GetValueAndDerivative
-   * - switch the use of this function to off, using m_UseMetricSingleThreaded = false
-   * - Now you can call GetValueAndDerivative multi-threaded.
-   */
-  this->BeforeThreadedGetValueAndDerivative(parameters);
-
-  /** Get a handle to the sample container. */
-  ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
-
-  /** Create iterator over the sample container. */
-  typename ImageSampleContainerType::ConstIterator fiter;
-  typename ImageSampleContainerType::ConstIterator fbegin = sampleContainer->Begin();
-  typename ImageSampleContainerType::ConstIterator fend = sampleContainer->End();
-
-  /** Loop over the fixed image samples to calculate the penalty term. */
-  for (fiter = fbegin; fiter != fend; ++fiter)
-  {
-    /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
-
-    /** Transform point. */
-    const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
-
-    /** Check if the point is inside the moving mask. */
-    bool sampleOk = this->IsInsideMovingMask(mappedPoint);
-
-    if (sampleOk)
-    {
-      this->m_NumberOfPixelsCounted++;
-
-      /** Get the spatial Hessian of the transformation at the current point.
-       * This is needed to compute the bending energy.
-       */
-      this->m_AdvancedTransform->GetSpatialHessian(fixedPoint, spatialHessian);
-
-      /** Compute the contribution of this point. */
-      for (unsigned int k = 0; k < FixedImageDimension; ++k)
-      {
-        measure += vnl_math::sqr(spatialHessian[k].GetVnlMatrix().frobenius_norm());
-      }
-
-    } // end if sampleOk
-
-  } // end for loop over the image sample container
-
-  /** Check if enough samples were valid. */
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
-
-  /** Update measure value. */
-  measure /= static_cast<RealType>(this->m_NumberOfPixelsCounted);
-
-  /** Return the value. */
-  return static_cast<MeasureType>(measure);
-
-} // end GetValueSingleThreaded()
+  return measure;
+} // end GetValuePartial()
 
 
 /**

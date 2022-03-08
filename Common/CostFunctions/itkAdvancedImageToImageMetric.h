@@ -364,7 +364,6 @@ protected:
    */
   typedef typename ImageSampleContainerType::Element ImageSampleType;
   mutable ImageSamplerPointer                        m_ImageSampler{ nullptr };
-  mutable int                                        m_CurrentFOSSet{ 0 };
   std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
   std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   double                                             m_SamplingPercentage{ 0.05 };

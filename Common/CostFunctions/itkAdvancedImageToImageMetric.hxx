@@ -950,7 +950,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     totalSamples += subfunctionSampler->GetOutput()->Size();
   }
   this->SetNumberOfFixedImageSamples(totalSamples);
-  this->m_CurrentFOSSet = 0;
 }
 
 template <class TFixedImage, class TMovingImage>
