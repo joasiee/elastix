@@ -19,9 +19,11 @@
 #define itkAdvancedImageToImageMetric_h
 
 #include <functional>
+#include <thread>
+#include <vnl/vnl_sparse_matrix.h>
+#include <memory> // For unique_ptr.
 
 #include "itkImageToImageMetric.h"
-
 #include "itkImageSamplerBase.h"
 #include "itkGradientImageFilter.h"
 #include "itkBSplineInterpolateImageFunction.h"
@@ -31,17 +33,10 @@
 #include "itkLimiterFunctionBase.h"
 #include "itkFixedArray.h"
 #include "itkAdvancedTransform.h"
-#include <vnl/vnl_sparse_matrix.h>
-
 #include "itkImageMaskSpatialObject.h"
-
-// Needed for checking for B-spline for faster implementation
 #include "itkAdvancedBSplineDeformableTransform.h"
 #include "itkAdvancedCombinationTransform.h"
-
 #include "itkPlatformMultiThreader.h"
-
-#include <memory> // For unique_ptr.
 
 namespace itk
 {

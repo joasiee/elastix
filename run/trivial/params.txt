@@ -14,6 +14,7 @@
 (FinalBSplineInterpolationOrder 3)
 (DefaultPixelValue 0)
 (Metric "AdvancedMeanSquares")
+(UseNormalization "true")
 (FitnessVarianceTolerance 0)
 (ImageSampler "RandomCoordinate")
 (SamplingPercentage 0.3)

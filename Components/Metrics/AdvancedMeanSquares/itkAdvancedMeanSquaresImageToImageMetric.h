@@ -133,10 +133,6 @@ public:
 
   itkStaticConstMacro(MissedPixelPenalty, unsigned int, 512);
 
-  /** Get the value for single valued optimizers. */
-  virtual MeasureType
-  GetValueSingleThreaded(const TransformParametersType & parameters) const;
-
   MeasureType
   GetValue(const TransformParametersType & parameters) const override;
 
@@ -227,6 +223,7 @@ protected:
   using SelfHessianSamplerType = ImageGridSampler<FixedImageType>;
 
   double m_NormalizationFactor;
+  double m_MissedPixelPenalty;
 
   /** Compute a pixel's contribution to the measure and derivatives;
    * Called by GetValueAndDerivative(). */
@@ -244,18 +241,6 @@ protected:
   UpdateSelfHessianTerms(const DerivativeType &             imageJacobian,
                          const NonZeroJacobianIndicesType & nzji,
                          HessianType &                      H) const;
-
-  /** Get value for each thread. */
-  inline void
-  ThreadedGetValue(ThreadIdType threadID) override;
-
-  /** Get value for each thread. */
-  inline void
-  ThreadedGetValuePartial(ThreadIdType threadID) override;
-
-  /** Gather the values from all threads. */
-  inline void
-  AfterThreadedGetValue(MeasureType & value) const override;
 
   /** Get value and derivatives for each thread. */
   inline void

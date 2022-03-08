@@ -16,5 +16,6 @@
     "DefaultPixelValue": 0,
     "WriteResultImageAfterEachResolution": "true",
     "WriteResultImage": "true",
-    "NewSamplesEveryIteration": "true"
+    "NewSamplesEveryIteration": "true",
+    "UseNormalization": "true"
 }

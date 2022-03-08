@@ -51,7 +51,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AdvancedImageToImageMetri
 #ifdef ELASTIX_USE_OPENMP
   this->m_UseOpenMP = true;
 
-  const int nthreads = static_cast<int>(Self::GetNumberOfWorkUnits());
+  const int nthreads = static_cast<int>(std::thread::hardware_concurrency());
   omp_set_num_threads(nthreads);
 #else
   this->m_UseOpenMP = false;
