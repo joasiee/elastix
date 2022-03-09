@@ -26,10 +26,10 @@
 
 
 // ********** Optimizer
-(MaximumNumberOfIterations 5)
-(PartialEvaluations "true")
-(FosElementSize -6)
-(BasePopulationSize 10)
+(MaximumNumberOfIterations 3)
+//(PartialEvaluations "true")
+//(FosElementSize -6)
+//(BasePopulationSize 10)
 
 // ********** Several
 (WriteResultImage "true")
@@ -37,8 +37,8 @@
 
 
 // ********** ImageSampler
-(ImageSampler "Random")
-(NumberOfSpatialSamples 10000)
+(ImageSampler "RandomCoordinate")
+(NumberOfSpatialSamples 50000)
 (SamplingPercentage 0.01)
 
 

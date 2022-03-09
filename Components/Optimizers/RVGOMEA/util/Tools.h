@@ -44,6 +44,7 @@
 #include <sys/time.h>
 #include <eigen3/Eigen/Dense>
 #include <cblas.h>
+#include <lapack.h>
 
 using Eigen::MatrixXd;
 
@@ -55,16 +56,8 @@ namespace GOMEA
 {
 void *
 Malloc(long size);
-double **
-matrixNew(int n, int m);
-int
-linpackDCHDC(double a[], int lda, int p, double work[], int ipvt[]);
 void
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n);
-int
-linpackDTRDI(double t[], int ldt, int n);
-double **
-matrixLowerTriangularInverse(double ** matrix, int n);
 int *
 mergeSort(double * array, int array_size);
 void

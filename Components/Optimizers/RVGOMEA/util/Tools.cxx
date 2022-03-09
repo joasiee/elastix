@@ -69,99 +69,6 @@ Malloc(long size)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-= Section Matrix -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 /**
- * Creates a new matrix with dimensions n x m.
- */
-double **
-matrixNew(int n, int m)
-{
-  int       i;
-  double ** result;
-
-  result = (double **)malloc(n * (sizeof(double *)));
-  for (i = 0; i < n; i++)
-    result[i] = (double *)malloc(m * (sizeof(double)));
-
-  return (result);
-}
-
-/**
- * LINPACK subroutine.
- */
-int
-linpackDCHDC(double a[], int lda, int p, double work[], int ipvt[])
-{
-  int    info, j, jp, k, l, maxl, pl, pu;
-  double maxdia, temp;
-
-  pl = 1;
-  pu = 0;
-  info = p;
-  for (k = 1; k <= p; k++)
-  {
-    maxdia = a[k - 1 + (k - 1) * lda];
-    maxl = k;
-    if (pl <= k && k < pu)
-    {
-      for (l = k + 1; l <= pu; l++)
-      {
-        if (maxdia < a[l - 1 + (l - 1) * lda])
-        {
-          maxdia = a[l - 1 + (l - 1) * lda];
-          maxl = l;
-        }
-      }
-    }
-
-    if (maxdia <= 0.0)
-    {
-      info = k - 1;
-
-      return (info);
-    }
-
-    if (k != maxl)
-    {
-      cblas_dswap(k - 1, a + 0 + (k - 1) * lda, 1, a + 0 + (maxl - 1) * lda, 1);
-
-      a[maxl - 1 + (maxl - 1) * lda] = a[k - 1 + (k - 1) * lda];
-      a[k - 1 + (k - 1) * lda] = maxdia;
-      jp = ipvt[maxl - 1];
-      ipvt[maxl - 1] = ipvt[k - 1];
-      ipvt[k - 1] = jp;
-    }
-    work[k - 1] = sqrt(a[k - 1 + (k - 1) * lda]);
-    a[k - 1 + (k - 1) * lda] = work[k - 1];
-
-    for (j = k + 1; j <= p; j++)
-    {
-      if (k != maxl)
-      {
-        if (j < maxl)
-        {
-          temp = a[k - 1 + (j - 1) * lda];
-          a[k - 1 + (j - 1) * lda] = a[j - 1 + (maxl - 1) * lda];
-          a[j - 1 + (maxl - 1) * lda] = temp;
-        }
-        else if (maxl < j)
-        {
-          temp = a[k - 1 + (j - 1) * lda];
-          a[k - 1 + (j - 1) * lda] = a[maxl - 1 + (j - 1) * lda];
-          a[maxl - 1 + (j - 1) * lda] = temp;
-        }
-      }
-      a[k - 1 + (j - 1) * lda] = a[k - 1 + (j - 1) * lda] / work[k - 1];
-      work[j - 1] = a[k - 1 + (j - 1) * lda];
-      temp = -a[k - 1 + (j - 1) * lda];
-
-      cblas_daxpy(j - k, temp, work + k, 1, a + k + (j - 1) * lda, 1);
-    }
-  }
-
-  return (info);
-}
-
-
-/**
  * Computes the lower-triangle Cholesky Decomposition
  * of a square, symmetric and positive-definite matrix.
  * Subroutines from LINPACK and BLAS are used.
@@ -169,98 +76,17 @@ linpackDCHDC(double a[], int lda, int p, double work[], int ipvt[])
 void
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 {
-  int      i, j, k, info, *ipvt;
-  double * work;
+  const char uplo{'U'};
+  int      info;
 
-  work = (double *)Malloc(n * sizeof(double));
-  ipvt = (int *)Malloc(n * sizeof(int));
   result.triangularView<Eigen::Upper>() = matrix.triangularView<Eigen::Upper>();
-
-  info = linpackDCHDC(result.data(), n, n, work, ipvt);
+  LAPACK_dpotrf(&uplo, &n, result.data(), &n, &info);
 
   if (info != n) /* Matrix is not positive definite */
   {
     result.fill(0.0);
     result.diagonal() = matrix.diagonal().array().sqrt();
   }
-
-  free(ipvt);
-  free(work);
-}
-
-/**
- * LINPACK subroutine.
- */
-int
-linpackDTRDI(double t[], int ldt, int n)
-{
-  int    j, k, info;
-  double temp;
-
-  info = 0;
-  for (k = n; 1 <= k; k--)
-  {
-    if (t[k - 1 + (k - 1) * ldt] == 0.0)
-    {
-      info = k;
-      break;
-    }
-
-    t[k - 1 + (k - 1) * ldt] = 1.0 / t[k - 1 + (k - 1) * ldt];
-    temp = -t[k - 1 + (k - 1) * ldt];
-
-    if (k != n)
-    {
-      cblas_dscal(n - k, temp, t + k + (k - 1) * ldt, 1);
-    }
-
-    for (j = 1; j <= k - 1; j++)
-    {
-      temp = t[k - 1 + (j - 1) * ldt];
-      t[k - 1 + (j - 1) * ldt] = 0.0;
-      cblas_daxpy(n - k + 1, temp, t + k - 1 + (k - 1) * ldt, 1, t + k - 1 + (j - 1) * ldt, 1);
-    }
-  }
-
-  return (info);
-}
-
-/**
- * Computes the inverse of a matrix that is of
- * lower triangular form.
- */
-double **
-matrixLowerTriangularInverse(double ** matrix, int n)
-{
-  int     i, j, k;
-  double *t, **result;
-
-  t = (double *)Malloc(n * n * sizeof(double));
-
-  k = 0;
-  for (i = 0; i < n; i++)
-  {
-    for (j = 0; j < n; j++)
-    {
-      t[k] = matrix[j][i];
-      k++;
-    }
-  }
-
-  result = matrixNew(n, n);
-  k = 0;
-  for (i = 0; i < n; i++)
-  {
-    for (j = 0; j < n; j++)
-    {
-      result[j][i] = i > j ? 0.0 : t[k];
-      k++;
-    }
-  }
-
-  free(t);
-
-  return (result);
 }
 
 
