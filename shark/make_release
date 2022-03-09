@@ -3,7 +3,7 @@
 #SBATCH --partition=all
 #SBATCH -Jbuild_release_exec_elastix
 #SBATCH -N1
-#SBATCH --mem=16G
+#SBATCH --mem-per-cpu=16G
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=j.mulder4@lumc.nl
 
