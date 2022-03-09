@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --account=RESEARCHLUMC/jmulder6
+#
 #SBATCH --partition=all
-#SBATCH -Jbuild_release_exec_elastix
-#SBATCH -N1
-#SBATCH --mem-per-cpu=16G
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=j.mulder4@lumc.nl
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=16G
+#SBATCH --time=10-00:00:00
+#SBATCH -o "make_release.out"
 
 echo "Current working directory is `pwd`"
 
