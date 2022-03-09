@@ -28,7 +28,7 @@ class Parameters:
         self,
         metric: str = "AdvancedMeanSquares",
         sampler: str = "RandomCoordinate",
-        sampling_p: float = 0.1,
+        sampling_p: float = 0.05,
         downsampling_f: int = 3,
         mesh_size: List[int] | int = 12,
         seed: int = None,
@@ -218,5 +218,5 @@ class Parameters:
         return res
 
 if __name__ == "__main__":
-    params = Parameters(downsampling_f=2, mesh_size=5).gomea().multi_resolution().instance(Collection.EMPIRE, 16)
+    params = Parameters(downsampling_f=5, mesh_size=8).gomea().multi_resolution().instance(Collection.EMPIRE, 17)
     params.write(Path())
