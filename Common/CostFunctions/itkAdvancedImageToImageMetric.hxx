@@ -944,6 +944,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     extractFilter->SetRegionOfInterest(region);
 
     subfunctionSampler->SetInput(extractFilter->GetOutput());
+    subfunctionSampler->SetMask(this->m_ImageSampler->GetMask());
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
     subfunctionSampler->Update();
     this->m_SubfunctionSamplers.push_back(subfunctionSampler);
