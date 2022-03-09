@@ -24,7 +24,7 @@ mkdir -p $INSTALL_DIR
 # Configure and install openBLAS
 cd $WORKING_DIR
 git clone https://github.com/xianyi/OpenBLAS.git && cd OpenBLAS
-make DYNAMIC_ARCH=1 USE_OPENMP=1 && make PREFIX=$INSTALL_DIR install
+make NO_LAPACK=0 USE_THREAD=0 USE_LOCKING=1 && make PREFIX=$INSTALL_DIR install
 
 # Configure and install Eigen3
 cd $WORKING_DIR

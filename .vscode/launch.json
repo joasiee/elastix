@@ -45,7 +45,7 @@
                 "-p",
                 "params.txt",
                 "-out",
-                "dir",
+                "dir"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/trivial",

@@ -46,13 +46,14 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AdvancedImageToImageMetri
    * blurred, to have a consistent 'image model'.
    */
   this->SetComputeGradient(false);
+  const int nthreads = static_cast<int>(std::thread::hardware_concurrency());
+  this->SetNumberOfWorkUnits(nthreads);
 
   /** OpenMP related. Switch to on when available */
 #ifdef ELASTIX_USE_OPENMP
   this->m_UseOpenMP = true;
-
-  const int nthreads = static_cast<int>(std::thread::hardware_concurrency());
   omp_set_num_threads(nthreads);
+  this->m_Threader = nullptr;
 #else
   this->m_UseOpenMP = false;
 #endif
@@ -109,6 +110,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
   this->CheckForBSplineTransform();
 
   /** Initialize some threading related parameters. */
+  #ifndef ELASTIX_USE_OPENMP
   if (this->m_UseMultiThread)
   {
     this->InitializeThreadingParameters();
@@ -122,6 +124,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolator);
     setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolatorFloat);
   }
+  #endif
 
 } // end Initialize()
 
