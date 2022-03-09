@@ -1,0 +1,50 @@
+#!/bin/bash
+#SBATCH -J build_release_exec_elastix
+#SBATCH -N 1
+#SBATCH --mem-per-cpu=16G
+
+echo "Current working directory is `pwd`"
+
+module purge > /dev/null 2>&1
+module load system/gcc/11.2.0
+module load tools/cmake/3.19.2
+
+cd "$(dirname "$0")" && cd ..
+rm -rf build && rm -rf temp
+
+CMAKE_BUILD_TYPE=Release
+WORKING_DIR=$PWD/temp
+INSTALL_DIR=$WORKING_DIR/install
+mkdir -p $INSTALL_DIR
+
+# Configure and install openBLAS
+cd $WORKING_DIR
+git clone https://github.com/xianyi/OpenBLAS.git && cd OpenBLAS
+make DYNAMIC_ARCH=1 USE_OPENMP=1 && make PREFIX=$INSTALL_DIR install
+
+# Configure and install Eigen3
+cd $WORKING_DIR
+wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
+tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_INSTALL_PREFIX:STRING=$INSTALL_DIR -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target install
+
+# Configure and install Boost
+cd $WORKING_DIR
+wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2
+tar --bzip2 -xf boost_1_78_0.tar.bz2 && cd boost_1_78_0
+./bootstrap.sh --prefix=$INSTALL_DIR && ./b2 install
+
+# Configure and install ITK
+cd $WORKING_DIR
+git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout rv_gomea_integration
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target all
+export ITK_HOME=$PWD
+
+# Configure and install elastix
+cd "$(dirname "$0")" && cd ..
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target all
+
+rm -rf temp
