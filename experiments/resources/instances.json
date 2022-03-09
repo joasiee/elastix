@@ -1,10 +1,12 @@
 {
     "EMPIRE": {
         "folder": "empire",
-        "extension": "mhd"
+        "extension": "mhd",
+        "masks": true
     },
     "EXAMPLES": {
         "folder": "examples",
-        "extension": "png"
+        "extension": "png",
+        "masks": false
     }
 }

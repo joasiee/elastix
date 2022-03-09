@@ -32,7 +32,7 @@ class Parameters:
         downsampling_f: int = 3,
         mesh_size: List[int] | int = 12,
         seed: int = None,
-        write_fixed = False
+        write_img_rs = False
     ) -> None:
         with BASE_PARAMS_PATH.open() as f:
             self.params: Dict[str, Any] = json.loads(f.read())
@@ -42,17 +42,18 @@ class Parameters:
         self["MeshSize"] = mesh_size
         self["RandomSeed"] = seed
         self.downsampling_f = downsampling_f
-        self["WritePyramidImagesAfterEachResolution"] = write_fixed
+        self["WritePyramidImagesAfterEachResolution"] = write_img_rs
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
         folder = INSTANCES_CONFIG[collection.value]["folder"]
         extension = INSTANCES_CONFIG[collection.value]["extension"]
-        fixed = Path(folder, f"{instance:02}_Fixed.{extension}")
-        moving = Path(folder, f"{instance:02}_Moving.{extension}")
+        fixed = f"{instance:02}_Fixed.{extension}"
+        moving = f"{instance:02}_Moving.{extension}"
         self["Collection"] = collection
         self["Instance"] = instance
-        self.fixed_path = INSTANCES_SRC.joinpath(fixed)
-        self.moving_path = INSTANCES_SRC.joinpath(moving)
+        self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
+        self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed if INSTANCES_CONFIG[collection.value]["masks"] else None
+        self.moving_path = INSTANCES_SRC / folder / "scans" / moving
         return self.calc_voxel_params()
 
     def multi_metric(
@@ -219,4 +220,4 @@ class Parameters:
 
 if __name__ == "__main__":
     params = Parameters(downsampling_f=5, mesh_size=8).gomea().multi_resolution().instance(Collection.EMPIRE, 17)
-    params.write(Path())
+    print(str(params.fixedmask_path))
