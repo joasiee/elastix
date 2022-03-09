@@ -249,7 +249,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for reduction(+ : measure, numberOfPixelsMissed)
+#pragma omp parallel for schedule(dynamic) reduction(+ : measure, numberOfPixelsMissed)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));

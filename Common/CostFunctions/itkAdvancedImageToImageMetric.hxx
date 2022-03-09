@@ -109,8 +109,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
   /** Check if the transform is a B-spline transform. */
   this->CheckForBSplineTransform();
 
-  /** Initialize some threading related parameters. */
-  #ifndef ELASTIX_USE_OPENMP
+/** Initialize some threading related parameters. */
+#ifndef ELASTIX_USE_OPENMP
   if (this->m_UseMultiThread)
   {
     this->InitializeThreadingParameters();
@@ -124,7 +124,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolator);
     setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolatorFloat);
   }
-  #endif
+#endif
 
 } // end Initialize()
 
@@ -949,7 +949,15 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     subfunctionSampler->SetInput(extractFilter->GetOutput());
     subfunctionSampler->SetMask(this->m_ImageSampler->GetMask());
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
-    subfunctionSampler->Update();
+    try
+    {
+      subfunctionSampler->Update();
+    }
+    catch (const ExceptionObject & e)
+    {
+      subfunctionSampler->SetNumberOfSamples(0); // TODO: quick fix for when subregion is not confined in bounding box of mask
+    }
+
     this->m_SubfunctionSamplers.push_back(subfunctionSampler);
     totalSamples += subfunctionSampler->GetOutput()->Size();
   }
