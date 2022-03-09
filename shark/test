@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+#SBATCH --partition=all
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=16G
+#SBATCH --time=10-00:00:00
+#SBATCH -o "make_release.out"
+
+echo "Current working directory is `pwd`"
