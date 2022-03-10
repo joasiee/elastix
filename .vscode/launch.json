@@ -5,6 +5,36 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "empire-16",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/bin/elastix",
+            "args": [
+                "-f",
+                "scans/16_Fixed.mhd",
+                "-fMask",
+                "masks/16_Fixed.mhd",
+                "-m",
+                "scans/16_Moving.mhd",
+                "-p",
+                "params.txt",
+                "-out",
+                "out",
+            ],
+            "stopAtEntry": false,
+            "cwd": "/home/joasiee/instances/empire",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "medium",
             "type": "cppdbg",
             "request": "launch",

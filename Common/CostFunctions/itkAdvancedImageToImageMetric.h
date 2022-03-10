@@ -368,8 +368,6 @@ protected:
   std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   double                                             m_SamplingPercentage{ 0.05 };
   FOS                                                m_FOS{ 0 };
-  typedef void (AdvancedImageToImageMetric::*ThreadedFn)(ThreadIdType threadId);
-  ThreadedFn m_ThreadedGetValueFn = &AdvancedImageToImageMetric::ThreadedGetValue;
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };
@@ -405,11 +403,6 @@ protected:
   /** Multi-threaded version of GetValue(). */
   virtual inline void
   ThreadedGetValue(ThreadIdType threadID)
-  {}
-
-  /** Multi-threaded version of GetValue(). */
-  virtual inline void
-  ThreadedGetValuePartial(ThreadIdType threadID)
   {}
 
   /** Finalize multi-threaded metric computation. */

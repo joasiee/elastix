@@ -373,7 +373,7 @@ ImageSamplerBase<TInputImage>::CropInputImageRegion()
     boundingBoxRegion.SetSize(size);
 
     /** Compute the intersection. */
-    bool cropped = this->m_CroppedInputImageRegion.Crop(boundingBoxRegion);
+    bool cropped = this->CropRegion(this->m_CroppedInputImageRegion);
 
     /** If the cropping return false, then the intersection is empty.
      * In this case m_CroppedInputImageRegion is unchanged,
@@ -386,6 +386,73 @@ ImageSamplerBase<TInputImage>::CropInputImageRegion()
   }
 
 } // end CropInputImageRegion()
+
+/**
+ * ******************* GetBoundingBoxRegionForMask *******************
+ */
+template <class TInputImage>
+bool
+ImageSamplerBase<TInputImage>::CropRegion(InputImageRegionType & region)
+{
+  if (!this->m_Mask.IsNull())
+  {
+    /** Get a handle to the input image. */
+    InputImageConstPointer inputImage = this->GetInput();
+    if (!inputImage)
+    {
+      return false;
+    }
+
+    this->UpdateAllMasks();
+
+    /** Get the indices of the bounding box extremes, based on the first mask.
+     * Note that the bounding box is defined in terms of the mask
+     * spacing and origin, and that we need a region in terms
+     * of the inputImage indices.
+     */
+
+    using BoundingBoxType = typename MaskType::BoundingBoxType;
+    using PointsContainerType = typename BoundingBoxType::PointsContainer;
+    typename BoundingBoxType::ConstPointer bb = this->m_Mask->GetMyBoundingBoxInWorldSpace();
+    auto                                   bbIndex = BoundingBoxType::New();
+    const PointsContainerType *            cornersWorld = bb->GetPoints();
+    auto                                   cornersIndex = PointsContainerType::New();
+    cornersIndex->Reserve(cornersWorld->Size());
+    typename PointsContainerType::const_iterator itCW = cornersWorld->begin();
+    typename PointsContainerType::iterator       itCI = cornersIndex->begin();
+    using CIndexType = itk::ContinuousIndex<InputImagePointValueType, InputImageDimension>;
+    CIndexType cindex;
+    while (itCW != cornersWorld->end())
+    {
+      inputImage->TransformPhysicalPointToContinuousIndex(*itCW, cindex);
+      *itCI = cindex;
+      itCI++;
+      itCW++;
+    }
+    bbIndex->SetPoints(cornersIndex);
+    bbIndex->ComputeBoundingBox();
+
+    /** Create a bounding box region. */
+    InputImageIndexType minIndex, maxIndex;
+    using IndexValueType = typename InputImageIndexType::IndexValueType;
+    InputImageSizeType   size;
+    InputImageRegionType boundingBoxRegion;
+    for (unsigned int i = 0; i < InputImageDimension; ++i)
+    {
+      /** apply ceil/floor for max/min resp. to be sure that
+       * the bounding box is not too small */
+      maxIndex[i] = static_cast<IndexValueType>(std::ceil(bbIndex->GetMaximum()[i]));
+      minIndex[i] = static_cast<IndexValueType>(std::floor(bbIndex->GetMinimum()[i]));
+      size[i] = maxIndex[i] - minIndex[i] + 1;
+    }
+    boundingBoxRegion.SetIndex(minIndex);
+    boundingBoxRegion.SetSize(size);
+
+    /** Compute the intersection. */
+    return region.Crop(boundingBoxRegion);
+  }
+  return true;
+} // end GetBoundingBoxRegionForMask()
 
 
 /**

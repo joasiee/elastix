@@ -928,40 +928,38 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   int i;
 
   this->GetRegionsForFOS(sets, set_length, length);
-  this->m_ThreadedGetValueFn = &AdvancedImageToImageMetric::ThreadedGetValuePartial;
 
-  int           n_cpoints = this->m_BSplineFOSRegions.size();
+  int           n_regions = this->m_BSplineFOSRegions.size();
   unsigned long totalSamples = 0L;
 
   this->m_SubfunctionSamplers.clear();
-  this->m_SubfunctionSamplers.reserve(n_cpoints);
+  this->m_SubfunctionSamplers.reserve(n_regions);
 
-  for (i = 0; i < n_cpoints; ++i)
+  for (i = 0; i < n_regions; ++i)
   {
-    ImageSamplerPointer              subfunctionSampler = this->m_ImageSampler->Clone();
-    ImageSamplerInputImageRegionType region = this->m_BSplineFOSRegions[i];
+    ImageSamplerInputImageRegionType & region = this->m_BSplineFOSRegions[i];
+    if (!this->m_ImageSampler->CropRegion(region))
+    {
+      this->m_SubfunctionSamplers.push_back(nullptr);
+      continue;
+    }
+
+    ImageSamplerPointer subfunctionSampler = this->m_ImageSampler->Clone();
 
     using ExtractFilterType = itk::RegionOfInterestImageFilter<TFixedImage, TFixedImage>;
     typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
     extractFilter->SetInput(this->m_ImageSampler->GetInput());
     extractFilter->SetRegionOfInterest(region);
-
+    
     subfunctionSampler->SetInput(extractFilter->GetOutput());
-    subfunctionSampler->SetMask(this->m_ImageSampler->GetMask());
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
-    try
-    {
-      subfunctionSampler->Update();
-    }
-    catch (const ExceptionObject & e)
-    {
-      subfunctionSampler->SetNumberOfSamples(0); // TODO: quick fix for when subregion is not confined in bounding box of mask
-    }
+    subfunctionSampler->Update();
+    totalSamples += subfunctionSampler->GetOutput()->Size();
 
     this->m_SubfunctionSamplers.push_back(subfunctionSampler);
-    totalSamples += subfunctionSampler->GetOutput()->Size();
   }
   this->SetNumberOfFixedImageSamples(totalSamples);
+  this->SetUseImageSampler(false);
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1002,6 +1000,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplinePointsRegions.resize(length + 1);
 
+  std::vector<bool> regionWithinMask(coeffRegionCropped.GetNumberOfPixels(), false);
+
   // iterate over these control points and calculate fixed image pixel region
   ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(wrappedImage, coeffRegionCropped);
   i = 0;
@@ -1020,15 +1020,20 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
       this->m_BSplineFOSRegions[i].SetSize(d, sizingIndex - imageIndex[d]);
     }
     this->m_BSplineFOSRegions[i].SetIndex(imageIndex);
+
+    if (this->m_ImageSampler->CropRegion(this->m_BSplineFOSRegions[i]))
+    {
+      regionWithinMask[i] = true;
+      this->m_BSplinePointsRegions[0].push_back(i);
+    }
+
     cpointOffsetMap[offset] = i;
-    this->m_BSplinePointsRegions[0].push_back(i);
     ++coeffImageIterator;
     ++i;
   }
 
   // assign fixed image regions to control points which affect them and vice versa.
   std::vector<bool> pointAdded(this->m_BSplineFOSRegions.size(), false);
-  std::vector<bool> pointAddedRegion(length, false);
 
   // for each fos set j:
   for (j = 0; j < (unsigned)length; ++j)
@@ -1063,18 +1068,13 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
         offset = cpointOffsetMap[offset];
 
         // add region to mapping from fos sets to regions if not added yet.
-        if (!pointAdded[offset])
+        if (!pointAdded[offset] && regionWithinMask[offset])
         {
           this->m_BSplinePointsRegions[j + 1].push_back(offset);
+          this->m_BSplineRegionsToFosSets[offset].push_back(j);
           pointAdded[offset] = true;
         }
 
-        // add fos set to mapping from regions to fos sets if not added yet.
-        if (!pointAddedRegion[j])
-        {
-          this->m_BSplineRegionsToFosSets[offset].push_back(j);
-          pointAddedRegion[j] = true;
-        }
         ++imageIterator;
       }
     }

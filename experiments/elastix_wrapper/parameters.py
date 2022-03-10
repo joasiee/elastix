@@ -106,6 +106,8 @@ class Parameters:
         pop_size: List[int] | int = None,
         partial_evals: bool = None,
     ) -> Parameters:
+        if partial_evals:
+            self["NewSamplesEveryIteration"] = "false"
         return self.optimizer(
             "GOMEA",
             {

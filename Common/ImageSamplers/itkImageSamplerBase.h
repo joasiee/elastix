@@ -111,6 +111,8 @@ public:
     return this->GetMask(0);
   }
 
+  bool
+  CropRegion(InputImageRegionType & region);
 
   /** Set the number of masks. */
   virtual void
