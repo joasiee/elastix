@@ -53,7 +53,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AdvancedImageToImageMetri
 #ifdef ELASTIX_USE_OPENMP
   this->m_UseOpenMP = true;
   omp_set_num_threads(nthreads);
-  this->m_Threader = nullptr;
 #else
   this->m_UseOpenMP = false;
 #endif
@@ -109,8 +108,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
   /** Check if the transform is a B-spline transform. */
   this->CheckForBSplineTransform();
 
-/** Initialize some threading related parameters. */
-#ifndef ELASTIX_USE_OPENMP
+  /** Initialize some threading related parameters. */
   if (this->m_UseMultiThread)
   {
     this->InitializeThreadingParameters();
@@ -124,7 +122,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolator);
     setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolatorFloat);
   }
-#endif
 
 } // end Initialize()
 
@@ -950,7 +947,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
     extractFilter->SetInput(this->m_ImageSampler->GetInput());
     extractFilter->SetRegionOfInterest(region);
-    
+
     subfunctionSampler->SetInput(extractFilter->GetOutput());
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
     subfunctionSampler->Update();
