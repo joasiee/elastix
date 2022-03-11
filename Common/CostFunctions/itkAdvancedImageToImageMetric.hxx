@@ -614,7 +614,12 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueA
     }   // end if gradient
     else
     {
+#ifdef ELASTIX_USE_OPENMP
+      int threadid = static_cast<unsigned int>(omp_get_thread_num());
+      movingImageValue = this->m_BSplineInterpolator->EvaluateAtContinuousIndex(cindex, threadid);
+#else
       movingImageValue = this->m_Interpolator->EvaluateAtContinuousIndex(cindex);
+#endif
     }
   } // end if sampleOk
 
@@ -945,7 +950,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
 
     using ExtractFilterType = itk::RegionOfInterestImageFilter<TFixedImage, TFixedImage>;
     typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-    extractFilter->SetInput(this->m_ImageSampler->GetInput());
+    extractFilter->SetInput(this->GetFixedImage());
     extractFilter->SetRegionOfInterest(region);
 
     subfunctionSampler->SetInput(extractFilter->GetOutput());

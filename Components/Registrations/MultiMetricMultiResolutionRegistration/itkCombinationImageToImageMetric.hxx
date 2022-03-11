@@ -691,6 +691,8 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   /** Initialise. */
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
+  this->BeforeThreadedInit(parameters);
+
   /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
@@ -701,6 +703,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
     /** Compute ... */
     this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters);
     timer.Stop();
+    this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
 
     /** and combine. */
     measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
@@ -720,17 +723,23 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
                                                                    const int              fosIndex) const
 {
   /** Initialise. */
-  MeasureType              measure = NumericTraits<MeasureType>::Zero;
-  std::vector<MeasureType> tmpValues(this->m_NumberOfMetrics);
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
+
+  this->BeforeThreadedInit(parameters);
 
   /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
+    itk::TimeProbe timer;
+    timer.Start();
+
     /** Compute ... */
-    tmpValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex);
+    this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex);
+    timer.Stop();
+    this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
 
     /** and combine. */
-    measure += this->m_MetricWeights[i] * tmpValues[i];
+    measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
   }
 
   /** Return a value. */
@@ -797,23 +806,14 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetDerivative(const Pa
 
 } // end GetDerivative()
 
-
 /**
- * ********************* GetValueAndDerivative ****************************
+ * ********************* BeforeThreadedInit ****************************
  */
 
 template <class TFixedImage, class TMovingImage>
 void
-CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(const ParametersType & parameters,
-                                                                                MeasureType &          value,
-                                                                                DerivativeType &       derivative) const
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::BeforeThreadedInit(const ParametersType & parameters) const
 {
-  /** Declare timer. */
-  itk::TimeProbe timer;
-
-  /** This function must be called before the multi-threaded code.
-   * It calls all the non thread-safe stuff.
-   */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     ImageMetricType *    testPtr1 = dynamic_cast<ImageMetricType *>(this->GetMetric(i));
@@ -831,6 +831,26 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(
       testPtr2->SetUseMetricSingleThreaded(false);
     }
   }
+} // end BeforeThreadedInit()
+
+
+/**
+ * ********************* GetValueAndDerivative ****************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDerivative(const ParametersType & parameters,
+                                                                                MeasureType &          value,
+                                                                                DerivativeType &       derivative) const
+{
+  /** Declare timer. */
+  itk::TimeProbe timer;
+
+  /** This function must be called before the multi-threaded code.
+   * It calls all the non thread-safe stuff.
+   */
+  this->BeforeThreadedInit(parameters);
 
   /** Initialize some threading related parameters. */
   this->InitializeThreadingParameters();

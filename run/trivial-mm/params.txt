@@ -9,10 +9,10 @@
 (Registration "MultiMetricMultiResolutionRegistration")
 (FixedImagePyramid "FixedRecursiveImagePyramid" "FixedRecursiveImagePyramid")
 (MovingImagePyramid "MovingRecursiveImagePyramid" "MovingRecursiveImagePyramid")
-(Interpolator "LinearInterpolator" "LinearInterpolator")
+(Interpolator "BSplineInterpolator" "BSplineInterpolator")
 (Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
 (Metric0Weight 1.0)
-(Metric1Weight 100.0)
+(Metric1Weight 1.0)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
@@ -22,33 +22,31 @@
 // ********** Pyramid
 
 // Total number of resolutions
-(NumberOfResolutions 3)
+(NumberOfResolutions 2)
 
 // ********** Transform
 
-(FinalGridSpacingInPhysicalUnits 10.0)
+(FinalGridSpacingInVoxels 10 10)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 
 // ********** Optimizer
 
-(MaximumNumberOfIterations 10)
+(MaximumNumberOfIterations 20)
 (PartialEvaluations "true")
 (FosElementSize -6)
-(BasePopulationSize 30)
+(BasePopulationSize 50)
 
 // ********** Several
 
 (WriteResultImage "true")
-(ShowExactMetricValue "false")
+(UseNormalization "true")
 
 
 // ********** ImageSampler
-
-//Number of spatial samples used to compute the mutual information in each resolution level:
 (ImageSampler "RandomCoordinate" "RandomCoordinate")
-(SamplingPercentage 0.5)
+(SamplingPercentage 0.2)
 
 
 // ********** Interpolator and Resampler

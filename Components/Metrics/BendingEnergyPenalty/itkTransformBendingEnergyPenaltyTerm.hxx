@@ -75,14 +75,14 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
 
   /** Check if this transform is a B-spline transform. */
   typename BSplineOrder3TransformType::Pointer dummy; // default-constructed (null)
-  bool                                         transformIsBSpline = this->CheckForBSplineTransform2(dummy);
+  const bool                                   transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
 
 /** Loop over the fixed image to calculate the penalty term and its derivative. */
-#pragma omp parallel for reduction(+ : measure)
+#pragma omp parallel for reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices)
   for (int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
@@ -128,6 +128,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
   {
     return static_cast<MeasureType>(measure);
   }
+
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
@@ -151,10 +152,10 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
 
   /** Check if this transform is a B-spline transform. */
   typename BSplineOrder3TransformType::Pointer dummy; // default-constructed (null)
-  bool                                         transformIsBSpline = this->CheckForBSplineTransform2(dummy);
+  const bool                                   transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for schedule(dynamic) reduction(+ : measure)
+#pragma omp parallel for schedule(dynamic) reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));

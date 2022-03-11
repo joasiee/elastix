@@ -477,6 +477,9 @@ private:
   void
   InitializeThreadingParameters() const override;
 
+  void
+  BeforeThreadedInit(const ParametersType & parameters) const;
+
   /** Compute the current metric weight, given the user selected
    * strategy and derivative magnitude.
    */
