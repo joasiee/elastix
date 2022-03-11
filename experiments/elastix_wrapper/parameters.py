@@ -32,7 +32,7 @@ class Parameters:
         downsampling_f: int = 3,
         mesh_size: List[int] | int = 12,
         seed: int = None,
-        write_img_rs = False
+        write_img = False
     ) -> None:
         with BASE_PARAMS_PATH.open() as f:
             self.params: Dict[str, Any] = json.loads(f.read())
@@ -42,7 +42,7 @@ class Parameters:
         self["MeshSize"] = mesh_size
         self["RandomSeed"] = seed
         self.downsampling_f = downsampling_f
-        self["WritePyramidImagesAfterEachResolution"] = write_img_rs
+        self["WriteResultImage"] = write_img
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
         folder = INSTANCES_CONFIG[collection.value]["folder"]

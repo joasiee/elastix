@@ -14,7 +14,6 @@
     "BSplineInterpolationOrder": 1,
     "FinalBSplineInterpolationOrder": 3,
     "DefaultPixelValue": 0,
-    "WriteResultImage": "true",
     "NewSamplesEveryIteration": "true",
     "UseNormalization": "true"
 }

@@ -14,7 +14,7 @@ downsampling_f = 5
 
 for instance in instances:
     params = Parameters(mesh_size=8, downsampling_f=downsampling_f).gomea(
-        fos=-6, partial_evals=True).stopping_criteria(iterations=50).instance(Collection.EMPIRE, instance)
+        fos=-6, partial_evals=True).stopping_criteria(iterations=100).instance(Collection.EMPIRE, instance)
     run = wandb.init(project="convergence_tests",
                      name=str(params), reinit=True)
     wandb.config.instance = instance
