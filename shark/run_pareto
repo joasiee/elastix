@@ -9,3 +9,4 @@
 module purge > /dev/null 2>&1
 module load system/gcc/11.2.0
 
+python 
