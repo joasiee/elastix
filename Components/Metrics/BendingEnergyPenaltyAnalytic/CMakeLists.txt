@@ -1,0 +1,9 @@
+
+ADD_ELXCOMPONENT( TransformBendingEnergyPenaltyAnalytic
+ elxTransformBendingEnergyPenaltyTermAnalytic.h
+ elxTransformBendingEnergyPenaltyTermAnalytic.hxx
+ elxTransformBendingEnergyPenaltyTermAnalytic.cxx
+ itkTransformBendingEnergyPenaltyTermAnalytic.h
+ itkTransformBendingEnergyPenaltyTermAnalytic.hxx
+)
+
