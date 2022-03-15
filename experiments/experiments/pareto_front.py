@@ -18,7 +18,7 @@ iterations_g = [25, 80]
 iterations_a = [10000, 1000000]
 max_time = 5000
 
-GOMEA = False
+GOMEA = bool(int(sys.argv[1]))
 
 for instance in instances:
     for weight0 in np.arange(0.1, 1.1, 0.1):
