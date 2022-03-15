@@ -2,9 +2,9 @@
 #
 #SBATCH --partition=all
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
+#SBATCH --cpus-per-task=24
 #SBATCH --mem=12G
-#SBATCH -o "make_release.out"
+#SBATCH --time=04:00:00
 
 echo "Current working directory is `pwd`"
 
@@ -50,5 +50,3 @@ export ITK_HOME=$PWD
 cd $ELASTIX_DIR
 cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
 cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target all
-
-rm -rf temp
