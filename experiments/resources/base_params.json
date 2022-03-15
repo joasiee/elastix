@@ -15,5 +15,6 @@
     "FinalBSplineInterpolationOrder": 3,
     "DefaultPixelValue": 0,
     "NewSamplesEveryIteration": "true",
-    "UseNormalization": "true"
+    "UseNormalization": "true",
+    "WriteTransformParametersEachResolution": "true"
 }
