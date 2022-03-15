@@ -41,7 +41,7 @@ class Parameters:
         self["SamplingPercentage"] = sampling_p
         self["MeshSize"] = mesh_size
         self["RandomSeed"] = seed
-        self.downsampling_f = downsampling_f
+        self["DownsamplingFactor"] = downsampling_f
         self["WriteResultImage"] = write_img
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
@@ -126,8 +126,8 @@ class Parameters:
         if "ImagePyramidSchedule" not in self.params:
             self["ImagePyramidSchedule"] = [2**n for n in range(n_res, -1, -1) for _ in range(dim)]
         
-        self["ImagePyramidSchedule"] = [int(f * self.downsampling_f) for f in self["ImagePyramidSchedule"]]
-        self["NumberOfSpatialSamples"] = [int(n / self.downsampling_f**dim) for n in self["NumberOfSpatialSamples"]]
+        self["ImagePyramidSchedule"] = [int(f * self["DownsamplingFactor"]) for f in self["ImagePyramidSchedule"]]
+        self["NumberOfSpatialSamples"] = [int(n / self["DownsamplingFactor"]**dim) for n in self["NumberOfSpatialSamples"]]
 
     def write(self, dir: Path) -> None:
         self.prune()

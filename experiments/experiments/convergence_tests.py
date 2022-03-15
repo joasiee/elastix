@@ -18,12 +18,7 @@ for instance in instances:
         fos=-6, partial_evals=True).multi_metric().multi_resolution(n=2).stopping_criteria(iterations=iterations).instance(Collection.EMPIRE, instance)
     run = wandb.init(project="convergence_tests",
                      name=str(params), reinit=True)
-    wandb.config.instance = instance
-    wandb.config.downsampling = downsampling_f
-    wandb.config["multi_metric"] = True
-    wandb.config["resolutions"] = 2
-    wandb.config["iterations"] = iterations
-    wandb.config["partial_evaluations"] = True
-    wandb.config["fos_setting"] = -6
+    params.prune()
+    wandb.config.update(params.params)
     wrapper.run(params, Path("output") / wandb.run.project / wandb.run.name)
     run.finish()
