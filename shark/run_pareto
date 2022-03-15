@@ -1,0 +1,11 @@
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=36
+#SBATCH --mem=8G
+#SBATCH --time=10-00:00:00
+#SBATCH -D $HOME/projects/elastix/experiments
+#SBATCH --mail-type=ALL
+#SBATCH --mail-type=END
+
+module purge > /dev/null 2>&1
+module load system/gcc/11.2.0
+
