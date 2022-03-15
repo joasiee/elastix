@@ -8,7 +8,7 @@
             "name": "empire-16",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/bin/elastix",
+            "program": "${workspaceFolder}/build/RelWithDebInfo/bin/elastix",
             "args": [
                 "-f",
                 "scans/16_Fixed.mhd",
@@ -19,10 +19,10 @@
                 "-p",
                 "params.txt",
                 "-out",
-                "out",
+                "out"
             ],
             "stopAtEntry": false,
-            "cwd": "/home/joasiee/instances/empire",
+            "cwd": "/home/joasiee/Documents/thesis/empire",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
