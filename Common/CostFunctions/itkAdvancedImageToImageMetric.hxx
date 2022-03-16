@@ -46,13 +46,10 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AdvancedImageToImageMetri
    * blurred, to have a consistent 'image model'.
    */
   this->SetComputeGradient(false);
-  const int nthreads = static_cast<int>(std::thread::hardware_concurrency());
-  this->SetNumberOfWorkUnits(nthreads);
 
   /** OpenMP related. Switch to on when available */
 #ifdef ELASTIX_USE_OPENMP
   this->m_UseOpenMP = true;
-  omp_set_num_threads(nthreads);
 #else
   this->m_UseOpenMP = false;
 #endif
