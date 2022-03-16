@@ -3,6 +3,6 @@
 instances=(16 23 17 13 6)
 
 for i in ${instances[@]}; do
-  export INSTANCE_NR=i
+  export INSTANCE_NR=$i
   sbatch run_pareto
 done
