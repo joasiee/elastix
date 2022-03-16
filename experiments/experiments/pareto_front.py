@@ -15,7 +15,7 @@ instances = [16, 23, 17, 13, 6]
 downsampling_f = 4
 sched = [1.5, 1.5, 1.5, 1, 1, 1]
 iterations_g = [25, 80]
-iterations_a = [10000, 1000000]
+iterations_a = [400000, 10000000]
 max_time = 5000
 
 GOMEA = bool(int(sys.argv[1]))
@@ -32,7 +32,7 @@ for instance in instances:
                 params.gomea(fos=-6, partial_evals=True).stopping_criteria(max_time_s=max_time, iterations=iterations_g)
             else:
                 params.optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(max_time_s=max_time, iterations=iterations_a)
-            run = wandb.init(project="convergence_tests",
+            run = wandb.init(project="pareto_front",
                             name=str(params), reinit=True)
             params.prune()
             wandb.config.update(params.params)
