@@ -12,4 +12,4 @@ module purge > /dev/null 2>&1
 module load system/gcc/11.2.0
 module add system/python/3.8.1
 
-.venv/bin/python experiments/pareto_front.py 1
+.venv/bin/python experiments/pareto_front.py 1 $INSTANCE_NR

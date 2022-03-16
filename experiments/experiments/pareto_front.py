@@ -11,7 +11,7 @@ import numpy as np
 
 
 mesh_size = 8
-instances = [16, 23, 17, 13, 6]
+instances = [16, 23, 17, 13, 6] if len(sys.argv) == 1 else [int(sys.argv[2])]
 downsampling_f = 4
 sched = [1.5, 1.5, 1.5, 1, 1, 1]
 iterations_g = [25, 80]
