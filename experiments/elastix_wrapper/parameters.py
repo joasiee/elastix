@@ -32,7 +32,7 @@ class Parameters:
         downsampling_f: int = 3,
         mesh_size: List[int] | int = 12,
         seed: int = None,
-        write_img = False
+        write_img=False
     ) -> None:
         with BASE_PARAMS_PATH.open() as f:
             self.params: Dict[str, Any] = json.loads(f.read())
@@ -45,15 +45,9 @@ class Parameters:
         self["WriteResultImage"] = write_img
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
-        folder = INSTANCES_CONFIG[collection.value]["folder"]
-        extension = INSTANCES_CONFIG[collection.value]["extension"]
-        fixed = f"{instance:02}_Fixed.{extension}"
-        moving = f"{instance:02}_Moving.{extension}"
         self["Collection"] = collection
         self["Instance"] = instance
-        self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
-        self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed if INSTANCES_CONFIG[collection.value]["masks"] else None
-        self.moving_path = INSTANCES_SRC / folder / "scans" / moving
+        self.set_paths()
         return self.calc_voxel_params()
 
     def multi_metric(
@@ -124,10 +118,13 @@ class Parameters:
         dim = len(self.get_voxel_dimensions())
         n_res = self["NumberOfResolutions"] - 1
         if "ImagePyramidSchedule" not in self.params:
-            self["ImagePyramidSchedule"] = [2**n for n in range(n_res, -1, -1) for _ in range(dim)]
-        
-        self["ImagePyramidSchedule"] = [int(f * self["DownsamplingFactor"]) for f in self["ImagePyramidSchedule"]]
-        self["NumberOfSpatialSamples"] = [int(n / self["DownsamplingFactor"]**dim) for n in self["NumberOfSpatialSamples"]]
+            self["ImagePyramidSchedule"] = [
+                2**n for n in range(n_res, -1, -1) for _ in range(dim)]
+
+        self["ImagePyramidSchedule"] = [
+            int(f * self["DownsamplingFactor"]) for f in self["ImagePyramidSchedule"]]
+        self["NumberOfSpatialSamples"] = [
+            int(n / self["DownsamplingFactor"]**dim) for n in self["NumberOfSpatialSamples"]]
 
     def write(self, dir: Path) -> None:
         self.prune()
@@ -141,7 +138,8 @@ class Parameters:
     def calc_voxel_params(self) -> Parameters:
         voxel_dims = self.get_voxel_dimensions()
         if not isinstance(self["MeshSize"], List):
-            self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
+            self["MeshSize"] = [self["MeshSize"]
+                                for _ in range(len(voxel_dims))]
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
@@ -151,9 +149,9 @@ class Parameters:
                 total_samples[n] *= int(voxel_dim / div)
                 div /= 2
 
-
         self["FinalGridSpacingInVoxels"] = voxel_spacings
-        self["NumberOfSpatialSamples"] = [int(x * self["SamplingPercentage"]) for x in total_samples]
+        self["NumberOfSpatialSamples"] = [
+            int(x * self["SamplingPercentage"]) for x in total_samples]
         return self
 
     def get_voxel_dimensions(self) -> List[int]:
@@ -166,6 +164,18 @@ class Parameters:
         else:
             raise Exception(
                 "Unknown how to extract dimensions from filetype.")
+
+    def set_paths(self):
+        collection = self["Collection"]
+        instance = self["Instance"]
+        extension = INSTANCES_CONFIG[collection.value]["extension"]
+        folder = INSTANCES_CONFIG[collection.value]["folder"]
+        fixed = f"{instance:02}_Fixed.{extension}"
+        moving = f"{instance:02}_Moving.{extension}"
+        self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
+        self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
+            fixed if INSTANCES_CONFIG[collection.value]["masks"] else None
+        self.moving_path = INSTANCES_SRC / folder / "scans" / moving
 
     def __getitem__(self, key) -> Any:
         return self.params[key]
@@ -220,6 +230,8 @@ class Parameters:
                 return res
         return res
 
+
 if __name__ == "__main__":
-    params = Parameters(downsampling_f=5, mesh_size=8).gomea().multi_resolution().instance(Collection.EMPIRE, 17)
-    print(str(params.fixedmask_path))
+    params = Parameters(downsampling_f=5, mesh_size=8).gomea(
+    ).multi_resolution().instance(Collection.EMPIRE, 17)
+    print(json.dumps(params.params))
