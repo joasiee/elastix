@@ -66,5 +66,5 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         )
 
 if __name__ == "__main__":
-    params = Parameters(mesh_size=8, downsampling_f=4).optimizer("AdaptiveStochasticGradientDescent").multi_metric().multi_resolution(n=2, p_sched=[1.5, 1.5, 1.5, 1, 1, 1], g_sched=[1.5, 1.5, 1.5, 1, 1, 1]).stopping_criteria(iterations=20).instance(Collection.EMPIRE, 16)
-    run(params, Path("output/" + str(params)), False)
+    params = Parameters(mesh_size=8, downsampling_f=4).optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(iterations=1000).instance(Collection.EMPIRE, 16)
+    run(params, Path("output/" + str(params)), True)
