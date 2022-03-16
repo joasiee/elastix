@@ -1,5 +1,5 @@
 #!/bin/bash
 #
-#SBATCH --ntasks=5
+#SBATCH --nodes=5
 
 echo Current node id: $SLURM_NODEID
