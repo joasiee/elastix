@@ -41,7 +41,7 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
     
     if watch:
         wandb.save(str((run_dir / "*").resolve()), base_path=str(run_dir.parents[0].resolve()))
-        wandb.save(str((run_dir / "out" / "*").resolve()), base_path=str(run_dir.parents[0].resolve()))
+        wandb.save(str((run_dir / "out" / "TransformParameters*").resolve()), base_path=str(run_dir.parents[0].resolve()))
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
