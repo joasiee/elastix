@@ -17,8 +17,8 @@ mesh_size = 8
 instances = [16, 23, 17, 13, 6] if len(sys.argv) == 2 else [int(sys.argv[2])]
 downsampling_f = 4
 sched = [1.5, 1.5, 1.5, 1, 1, 1]
-iterations_g = [30, 100]
-iterations_a = [400000, 10000000]
+iterations_g = [33, 100]
+iterations_a = [100000, 300000]
 max_time = 7200
 
 GOMEA = bool(int(sys.argv[1]))
