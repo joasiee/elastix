@@ -64,7 +64,9 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
             "-m",
             str(params.moving_path),
             "-out",
-            str(out_dir)
+            str(out_dir),
+            "-threads",
+            os.environ["OMP_NUM_THREADS"]
         ]
         if params.fixedmask_path:
             args += ["-fMask", str(params.fixedmask_path)]
