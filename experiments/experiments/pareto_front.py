@@ -29,6 +29,9 @@ entity, project = "joasiee", "pareto_front"
 for instance in instances:
     for weight0 in np.arange(0.01, 1.01, 0.01):
         for weight1 in np.arange(0.01, 1.01, 0.01):
+            weight0 = np.around(weight0, 2)
+            weight1 = np.around(weight1, 2)
+            
             #check if already done
             filters = {"state": {"$in": ["finished", "running"]}, "config.Metric0Weight": float(weight0), "config.Metric1Weight": float(weight1), "config.Optimizer": optimizer, "config.Instance": instance}
             api = wandb.Api()
