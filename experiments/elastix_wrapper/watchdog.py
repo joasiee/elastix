@@ -38,7 +38,7 @@ class Watchdog(threading.Thread):
         r = 0
 
         while not self._stop_event.is_set():
-            time.sleep(0.5)
+            time.sleep(0.1)
             
             if not os.path.exists(file_names[r]):
                 continue
