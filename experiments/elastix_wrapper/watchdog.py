@@ -59,5 +59,5 @@ class Watchdog(threading.Thread):
                     wandb.log(scalars)
 
     def stop(self):
-        time.sleep(1.0)
+        time.sleep(5.0)
         self._stop_event.set()

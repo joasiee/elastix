@@ -10,4 +10,3 @@ from elastix_wrapper.parameters import Collection, Parameters
 params = Parameters(downsampling_f=1, sampler="Full").optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(iterations=10000).instance(Collection.EXAMPLES, 1)
 run = wandb.init(project="wandb_test", name=str(params))
 wrapper.run(params, Path("output") / wandb.run.project / wandb.run.name)
-run.finish()

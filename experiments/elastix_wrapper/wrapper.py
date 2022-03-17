@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import shutil
 import subprocess
 import logging
 
@@ -7,11 +8,14 @@ from typing import Any, Dict
 
 import wandb
 from elastix_wrapper import TimeoutException, time_limit
+from elastix_wrapper.fileutil import get_dir_size
 from elastix_wrapper.parameters import Collection, Parameters
 from elastix_wrapper.watchdog import Watchdog
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
+MAX_DIR_SIZE = 5e6
+
 
 def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]:
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -38,24 +42,30 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
 
     logger.info("Run finished successfully.")
     wd.stop()
-    
+
     if watch:
-        wandb.save(str((run_dir / "*").resolve()), base_path=str(run_dir.parents[0].resolve()))
-        wandb.save(str((run_dir / "out" / "TransformParameters*").resolve()), base_path=str(run_dir.parents[0].resolve()))
+        wandb.save(str((run_dir / "*").resolve()),
+                   base_path=str(run_dir.parents[0].resolve()))
+        wandb.save(str((run_dir / "out" / "TransformParameters*").resolve()),
+                   base_path=str(run_dir.parents[0].resolve()))
+        wandb.finish()
+        if get_dir_size(run_dir) > MAX_DIR_SIZE:
+            shutil.rmtree(run_dir)
+
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
         args = [
-                ELASTIX,
-                "-p",
-                str(params_file),
-                "-f",
-                str(params.fixed_path),
-                "-m",
-                str(params.moving_path),
-                "-out",
-                str(out_dir)
-            ]
+            ELASTIX,
+            "-p",
+            str(params_file),
+            "-f",
+            str(params.fixed_path),
+            "-m",
+            str(params.moving_path),
+            "-out",
+            str(out_dir)
+        ]
         if params.fixedmask_path:
             args += ["-fMask", str(params.fixedmask_path)]
         subprocess.run(
@@ -65,6 +75,8 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
             stderr=subprocess.STDOUT
         )
 
+
 if __name__ == "__main__":
-    params = Parameters(mesh_size=8, downsampling_f=4).optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(iterations=1000).instance(Collection.EMPIRE, 16)
+    params = Parameters(mesh_size=8, downsampling_f=4).optimizer(
+        "AdaptiveStochasticGradientDescent").stopping_criteria(iterations=1000).instance(Collection.EMPIRE, 16)
     run(params, Path("output/" + str(params)), False)
