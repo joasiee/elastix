@@ -38,7 +38,7 @@ for instance in instances:
 
             params = (Parameters.from_base(mesh_size=mesh_size, downsampling_f=downsampling_f)
                     .multi_metric(weight0=weight0, weight1=weight1)
-                    .multi_resolution(n=2, p_sched=sched, g_sched=sched)
+                    .multi_resolution(n=2, p_sched=sched)
                     .instance(Collection.EMPIRE, instance)
                     )
             if GOMEA:
