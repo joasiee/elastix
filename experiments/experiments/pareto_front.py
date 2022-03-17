@@ -20,6 +20,7 @@ sched = [1.5, 1.5, 1.5, 1, 1, 1]
 iterations_g = [33, 100]
 iterations_a = [100000, 300000]
 max_time = 7200
+seed = 18926
 
 GOMEA = bool(int(sys.argv[1]))
 optimizer = "GOMEA" if GOMEA else "AdaptiveStochasticGradientDescent"
@@ -36,7 +37,7 @@ for instance in instances:
                 logger.info(f"Skipping run with {filters}")
                 continue
 
-            params = (Parameters.from_base(mesh_size=mesh_size, downsampling_f=downsampling_f)
+            params = (Parameters.from_base(mesh_size=mesh_size, downsampling_f=downsampling_f, seed=seed)
                     .multi_metric(weight0=weight0, weight1=weight1)
                     .multi_resolution(n=2, p_sched=sched)
                     .instance(Collection.EMPIRE, instance)
