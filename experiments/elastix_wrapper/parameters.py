@@ -26,26 +26,37 @@ class Collection(str, Enum):
 class Parameters:
     def __init__(
         self,
-        metric: str = "AdvancedMeanSquares",
-        sampler: str = "RandomCoordinate",
-        sampling_p: float = 0.05,
-        downsampling_f: int = 3,
-        mesh_size: List[int] | int = 12,
-        seed: int = None,
-        write_img=False
+        params
     ) -> None:
+        self.params = params
+
+    @classmethod
+    def from_base(cls,
+                  metric: str = "AdvancedMeanSquares",
+                  sampler: str = "RandomCoordinate",
+                  sampling_p: float = 0.05,
+                  downsampling_f: int = 3,
+                  mesh_size: List[int] | int = 12,
+                  seed: int = None,
+                  write_img=False):
         with BASE_PARAMS_PATH.open() as f:
-            self.params: Dict[str, Any] = json.loads(f.read())
-        self["Metric"] = metric
-        self["ImageSampler"] = sampler
-        self["SamplingPercentage"] = sampling_p
-        self["MeshSize"] = mesh_size
-        self["RandomSeed"] = seed
-        self["DownsamplingFactor"] = downsampling_f
-        self["WriteResultImage"] = write_img
+            params: Dict[str, Any] = json.loads(f.read())
+        params["Metric"] = metric
+        params["ImageSampler"] = sampler
+        params["SamplingPercentage"] = sampling_p
+        params["MeshSize"] = mesh_size
+        params["RandomSeed"] = seed
+        params["DownsamplingFactor"] = downsampling_f
+        params["WriteResultImage"] = write_img
+        return cls(params)
+
+    @classmethod
+    def from_json(cls, jsondump):
+        params = json.loads(jsondump)
+        return cls(params)
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
-        self["Collection"] = collection
+        self["Collection"] = collection.value
         self["Instance"] = instance
         self.set_paths()
         return self.calc_voxel_params()
@@ -155,7 +166,7 @@ class Parameters:
         return self
 
     def get_voxel_dimensions(self) -> List[int]:
-        extension = INSTANCES_CONFIG[self["Collection"].value]["extension"]
+        extension = INSTANCES_CONFIG[self["Collection"]]["extension"]
         if extension == 'mhd':
             return Parameters.read_mhd(self.fixed_path)["DimSize"]
         elif extension == 'png':
@@ -168,13 +179,13 @@ class Parameters:
     def set_paths(self):
         collection = self["Collection"]
         instance = self["Instance"]
-        extension = INSTANCES_CONFIG[collection.value]["extension"]
-        folder = INSTANCES_CONFIG[collection.value]["folder"]
+        extension = INSTANCES_CONFIG[collection]["extension"]
+        folder = INSTANCES_CONFIG[collection]["folder"]
         fixed = f"{instance:02}_Fixed.{extension}"
         moving = f"{instance:02}_Moving.{extension}"
         self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
         self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
-            fixed if INSTANCES_CONFIG[collection.value]["masks"] else None
+            fixed if INSTANCES_CONFIG[collection]["masks"] else None
         self.moving_path = INSTANCES_SRC / folder / "scans" / moving
 
     def __getitem__(self, key) -> Any:
@@ -232,6 +243,8 @@ class Parameters:
 
 
 if __name__ == "__main__":
-    params = Parameters(downsampling_f=5, mesh_size=8).gomea(
+    params = Parameters.from_base(downsampling_f=5, mesh_size=8).gomea(
     ).multi_resolution().instance(Collection.EMPIRE, 17)
-    print(json.dumps(params.params))
+    params2 = Parameters.from_json(json.dumps(params.params))
+    params2.set_paths()
+    params2.write(Path())
