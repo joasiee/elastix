@@ -17,17 +17,17 @@ mesh_size = 8
 instances = [16, 23, 17, 13, 6] if len(sys.argv) == 2 else [int(sys.argv[2])]
 downsampling_f = 4
 sched = [1.5, 1.5, 1.5, 1, 1, 1]
-iterations_g = [25, 80]
+iterations_g = [30, 100]
 iterations_a = [400000, 10000000]
-max_time = 5000
+max_time = 7200
 
 GOMEA = bool(int(sys.argv[1]))
 optimizer = "GOMEA" if GOMEA else "AdaptiveStochasticGradientDescent"
 entity, project = "joasiee", "pareto_front"
 
 for instance in instances:
-    for weight0 in np.arange(0.1, 1.1, 0.1):
-        for weight1 in np.arange(1, 11, 1):
+    for weight0 in np.arange(0.01, 1.01, 0.01):
+        for weight1 in np.arange(0.01, 1.01, 0.01):
             #check if already done
             filters = {"state": {"$in": ["finished", "running"]}, "config.Metric0Weight": float(weight0), "config.Metric1Weight": int(weight1), "config.Optimizer": optimizer, "config.Instance": instance}
             api = wandb.Api()

@@ -34,7 +34,7 @@ class Parameters:
     def from_base(cls,
                   metric: str = "AdvancedMeanSquares",
                   sampler: str = "RandomCoordinate",
-                  sampling_p: float = 0.05,
+                  sampling_p: float = 0.02,
                   downsampling_f: int = 3,
                   mesh_size: List[int] | int = 12,
                   seed: int = None,
