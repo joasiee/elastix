@@ -14,4 +14,4 @@ module add system/python/3.8.1
 
 export OMP_NUM_THREADS=16
 
-.venv/bin/python experiments/pareto_front.py 1 $INSTANCE_NR
+.venv/bin/python experiments/pareto_front.py $GOMEA $INSTANCE_NR
