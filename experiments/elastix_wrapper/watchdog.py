@@ -1,10 +1,8 @@
 import re
 import threading
 import time
-from more_itertools import first
 import wandb
 import os
-import pandas as pd
 
 
 class Watchdog(threading.Thread):
