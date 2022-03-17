@@ -29,7 +29,7 @@ for instance in instances:
     for weight0 in np.arange(0.1, 1.1, 0.1):
         for weight1 in np.arange(1, 11, 1):
             #check if already done
-            filters = {"config.Metric0Weight": float(weight0), "config.Metric1Weight": int(weight1), "config.Optimizer": optimizer, "config.Instance": instance}
+            filters = {"state": {"$in": ["finished", "running"]}, "config.Metric0Weight": float(weight0), "config.Metric1Weight": int(weight1), "config.Optimizer": optimizer, "config.Instance": instance}
             api = wandb.Api()
             runs = api.runs(entity + "/" + project, filters=filters)
             if len(runs) > 0:

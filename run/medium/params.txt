@@ -27,9 +27,9 @@
 
 // ********** Optimizer
 (MaximumNumberOfIterations 3)
-(PartialEvaluations "true")
-(FosElementSize -6)
-(BasePopulationSize 30)
+//(PartialEvaluations "true")
+//(FosElementSize -6)
+//(BasePopulationSize 30)
 
 // ********** Several
 (WriteResultImage "true")

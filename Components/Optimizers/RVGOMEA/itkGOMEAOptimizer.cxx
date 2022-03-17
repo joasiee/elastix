@@ -1217,7 +1217,7 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
 
   MeasureType obj_val_new = this->GetValue(populations[population_index][individual_index], fos_index);
   *obj_val = objective_values[population_index][individual_index] - *obj_val_partial + obj_val_new;
-  
+
   // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1);
   // if (abs(obj_val_full - *obj_val) > 1e-3)
   //   std::cout << "WTF" << std::endl;
@@ -1420,7 +1420,8 @@ GOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index, i
       }
       else
       {
-        result = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Upper>() * z;
+        result =
+          decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Upper>() * z;
         for (i = 0; i < num_indices; i++)
           result[i] += mean_vectors[population_index][indices[i]];
       }
@@ -1722,7 +1723,7 @@ double
 GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parameters, int FOS_index)
 {
   int      i, *indices, num_indices;
-  double result;
+  double   result;
   VectorXd x_min_mu, z;
 
   indices = linkage_model[population_index]->sets[FOS_index];
@@ -1739,7 +1740,8 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
   }
   else
   {
-    z = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Upper>() * x_min_mu;
+    z =
+      decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Upper>() * x_min_mu;
 
     for (i = 0; i < num_indices; i++)
     {
@@ -1864,7 +1866,9 @@ GOMEAOptimizer::runAllPopulations()
     }
 
     this->generationalStepAllPopulations();
-    this->GetValue(this->GetCurrentPosition(), -1); // needed for correct multi metric iteration output
+    this->m_PartialEvaluations
+      ? this->GetValue(this->GetCurrentPosition(), -1)
+      : this->GetValue(this->GetCurrentPosition()); // needed for correct multi metric iteration output
     m_CurrentIteration++;
     this->IterationWriteOutput();
     this->InvokeEvent(IterationEvent());
