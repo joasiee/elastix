@@ -5,6 +5,7 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --mem=16G
 #SBATCH --time=04:00:00
+#SBATCH -D /home/jmulder6/projects/elastix
 
 echo "Current working directory is `pwd`"
 
@@ -12,7 +13,6 @@ module purge > /dev/null 2>&1
 module load system/gcc/11.2.0
 module load tools/cmake/3.19.2
 
-cd ..
 ELASTIX_DIR=$PWD
 rm -rf build && rm -rf temp
 
