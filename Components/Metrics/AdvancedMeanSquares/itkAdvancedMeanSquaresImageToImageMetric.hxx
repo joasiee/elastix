@@ -226,7 +226,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
   measure += static_cast<RealType>(numberOfPixelsMissed * this->m_MissedPixelPenalty);
   measure *= this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-  this->m_MissedPixelsMean(numberOfPixelsMissed);
+  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize));
 
   return measure;
 } // end GetValue()
@@ -246,17 +246,19 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
 
   /** Create variables to store intermediate results. circumvent false sharing */
+  unsigned long numberOfPixels = 0;
   unsigned long numberOfPixelsMissed = 0;
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for schedule(dynamic) reduction(+ : measure, numberOfPixelsMissed)
+#pragma omp parallel for schedule(dynamic) reduction(+ : measure, numberOfPixels, numberOfPixelsMissed)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
     this->m_SubfunctionSamplers[fosPoints[i]]->Update();
     ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
     const unsigned long        sampleContainerSize = sampleContainer.Size();
+    numberOfPixels += sampleContainerSize * this->GetSamplingPercentage();
 
     /** Create iterator over the sample container. */
     typename ImageSampleContainerType::ConstIterator threader_fiter;
@@ -294,7 +296,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 
   measure += static_cast<RealType>(numberOfPixelsMissed * this->m_MissedPixelPenalty);
   measure *= this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-  this->m_MissedPixelsMean(numberOfPixelsMissed);
+  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(numberOfPixels));
 
   return measure;
 } // end GetValuePartial()
