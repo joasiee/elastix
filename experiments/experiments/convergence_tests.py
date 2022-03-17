@@ -21,4 +21,3 @@ for instance in instances:
     params.prune()
     wandb.config.update(params.params)
     wrapper.run(params, Path("output") / wandb.run.project / wandb.run.name)
-    run.finish()
