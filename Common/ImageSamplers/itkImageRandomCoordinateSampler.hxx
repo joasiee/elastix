@@ -38,6 +38,8 @@ ImageRandomCoordinateSampler<TInputImage>::ImageRandomCoordinateSampler()
 
   /** Setup random generator. */
   this->m_RandomGenerator = RandomGeneratorType::New();
+  int seed = RandomGeneratorType::GetInstance()->GetSeed();
+  this->m_RandomGenerator->SetSeed(seed);
 
   this->m_UseRandomSampleRegion = false;
   this->m_SampleRegionSize.Fill(1.0);

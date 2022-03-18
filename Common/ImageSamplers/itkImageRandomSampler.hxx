@@ -51,7 +51,9 @@ ImageRandomSampler<TInputImage>::GenerateData()
 
   /** Setup a random iterator over the input image. */
   using RandomIteratorType = ImageRandomConstIteratorWithIndex<InputImageType>;
+  using RandomGeneratorType = typename Statistics::MersenneTwisterRandomVariateGenerator; 
   RandomIteratorType randIter(inputImage, this->GetCroppedInputImageRegion());
+  randIter.ReinitializeSeed(RandomGeneratorType::GetInstance()->GetSeed());
 
   // reinit seed if requested
   if (this->m_ReinitSeed)

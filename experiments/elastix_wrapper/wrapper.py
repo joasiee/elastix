@@ -77,5 +77,5 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 
 if __name__ == "__main__":
-    params = Parameters.from_base(mesh_size=8, downsampling_f=4).gomea(fos=-6, partial_evals=True).stopping_criteria(iterations=1000).instance(Collection.EMPIRE, 16)
+    params = Parameters.from_base(mesh_size=8, downsampling_f=4, seed=1212).optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(iterations=100).instance(Collection.EMPIRE, 16)
     run(params, Path("output/" + str(params)), False)
