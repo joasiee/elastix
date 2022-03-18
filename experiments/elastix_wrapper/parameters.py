@@ -53,7 +53,7 @@ class Parameters:
     @classmethod
     def from_json(cls, jsondump):
         params = json.loads(jsondump)
-        return cls(params)
+        return cls(params).set_paths()
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
         self["Collection"] = collection.value
@@ -187,6 +187,7 @@ class Parameters:
         self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
             fixed if INSTANCES_CONFIG[collection]["masks"] else None
         self.moving_path = INSTANCES_SRC / folder / "scans" / moving
+        return self
 
     def __getitem__(self, key) -> Any:
         return self.params[key]
@@ -246,5 +247,4 @@ if __name__ == "__main__":
     params = Parameters.from_base(downsampling_f=5, mesh_size=8).gomea(
     ).multi_resolution().instance(Collection.EMPIRE, 17)
     params2 = Parameters.from_json(json.dumps(params.params))
-    params2.set_paths()
-    params2.write(Path())
+    
