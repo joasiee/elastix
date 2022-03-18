@@ -14,8 +14,6 @@ from elastix_wrapper.watchdog import Watchdog
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
-MAX_DIR_SIZE = 5e6
-
 
 def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]:
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -48,10 +46,10 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
                    base_path=str(run_dir.parents[0].resolve()))
         wandb.save(str((run_dir / "out" / "TransformParameters*").resolve()),
                    base_path=str(run_dir.parents[0].resolve()))
+        wandb_dir = Path(wandb.run.dir)
         wandb.finish()
-        if get_dir_size(run_dir) > MAX_DIR_SIZE:
-            shutil.rmtree(run_dir)
-
+        shutil.rmtree(run_dir.absolute())
+        shutil.rmtree(wandb_dir.parent.absolute())
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
