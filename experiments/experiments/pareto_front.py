@@ -28,7 +28,7 @@ entity, project = "joasiee", "pareto_front"
 
 for instance in instances:
     for weight0 in np.arange(0.01, 0.11, 0.01):
-        for weight1 in np.arange(0.01, 0.42, 0.02):
+        for weight1 in np.arange(0.02, 0.42, 0.02):
             weight0 = np.around(weight0, 2)
             weight1 = np.around(weight1, 2)
             
