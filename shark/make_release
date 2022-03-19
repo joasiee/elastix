@@ -23,14 +23,14 @@ mkdir -p $INSTALL_DIR
 
 # Configure and install openBLAS
 cd $WORKING_DIR
-if [[ ! -d "OpenBLAS" ]]; then
+if [[ ! -d $INSTALL_DIR ]]; then
     git clone https://github.com/xianyi/OpenBLAS.git && cd OpenBLAS
     make NO_LAPACK=0 USE_THREAD=0 USE_LOCKING=1 DYNAMIC_ARCH=1 -j16 && make PREFIX=$INSTALL_DIR install
 fi
 
 # Configure and install Eigen3
 cd $WORKING_DIR
-if [[ ! -d "eigen-3.4.0" ]]; then
+if [[ ! -d $INSTALL_DIR ]]; then
     wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
     tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
     cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_INSTALL_PREFIX:STRING=$INSTALL_DIR -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
@@ -39,7 +39,7 @@ fi
 
 # Configure and install Boost
 cd $WORKING_DIR
-if [[ ! -d "boost_1_78_0" ]]; then
+if [[ ! -d $INSTALL_DIR ]]; then
     wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2
     tar --bzip2 -xf boost_1_78_0.tar.bz2 && cd boost_1_78_0
     ./bootstrap.sh --prefix=$INSTALL_DIR && ./b2 install -j16
@@ -47,7 +47,7 @@ fi
 
 # Configure and install ITK
 cd $WORKING_DIR
-if [[ ! -d "ITK" ]]; then
+if [[ ! -d $INSTALL_DIR ]]; then
     git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout rv_gomea_integration
     cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
     cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 16 --config $CMAKE_BUILD_TYPE --target all
