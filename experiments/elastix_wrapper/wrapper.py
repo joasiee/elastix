@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 import os
 import shutil
@@ -9,7 +8,6 @@ from typing import Any, Dict
 
 import wandb
 from elastix_wrapper import TimeoutException, time_limit
-from elastix_wrapper.fileutil import get_dir_size
 from elastix_wrapper.parameters import Collection, Parameters
 from elastix_wrapper.watchdog import Watchdog
 

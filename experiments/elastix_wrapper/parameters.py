@@ -35,7 +35,6 @@ class Parameters:
                   metric: str = "AdvancedMeanSquares",
                   sampler: str = "RandomCoordinate",
                   sampling_p: float = 0.02,
-                  downsampling_f: int = 3,
                   mesh_size: List[int] | int = 12,
                   seed: int = None,
                   write_img=False):
@@ -46,7 +45,6 @@ class Parameters:
         params["SamplingPercentage"] = sampling_p
         params["MeshSize"] = mesh_size
         params["RandomSeed"] = seed
-        params["DownsamplingFactor"] = downsampling_f
         params["WriteResultImage"] = write_img
         return cls(params)
 
@@ -125,21 +123,8 @@ class Parameters:
     def prune(self):
         self.params = {k: v for k, v in self.params.items() if v is not None}
 
-    def downsample(self):
-        dim = len(self.get_voxel_dimensions())
-        n_res = self["NumberOfResolutions"] - 1
-        if "ImagePyramidSchedule" not in self.params:
-            self["ImagePyramidSchedule"] = [
-                2**n for n in range(n_res, -1, -1) for _ in range(dim)]
-
-        self["ImagePyramidSchedule"] = [
-            int(f * self["DownsamplingFactor"]) for f in self["ImagePyramidSchedule"]]
-        self["NumberOfSpatialSamples"] = [
-            int(n / self["DownsamplingFactor"]**dim) for n in self["NumberOfSpatialSamples"]]
-
     def write(self, dir: Path) -> None:
         self.prune()
-        self.downsample()
         out_file = dir.joinpath(Path("params.txt"))
         with open(str(out_file), "w+") as f:
             for key, value in self.params.items():
@@ -151,14 +136,15 @@ class Parameters:
         if not isinstance(self["MeshSize"], List):
             self["MeshSize"] = [self["MeshSize"]
                                 for _ in range(len(voxel_dims))]
+        if not self["ImagePyramidSchedule"]:
+            self["ImagePyramidSchedule"] = [
+                2**n for n in range(self["NumberOfResolutions"] - 1, -1, -1) for _ in range(len(voxel_dims))]
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
             voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
-            div = 2**(len(total_samples)-1)
             for n in range(len(total_samples)):
-                total_samples[n] *= int(voxel_dim / div)
-                div /= 2
+                total_samples[n] *= int(voxel_dim / self["ImagePyramidSchedule"][n*len(voxel_dims)+i])
 
         self["FinalGridSpacingInVoxels"] = voxel_spacings
         self["NumberOfSpatialSamples"] = [
@@ -244,7 +230,6 @@ class Parameters:
 
 
 if __name__ == "__main__":
-    params = Parameters.from_base(downsampling_f=5, mesh_size=8).gomea(
-    ).multi_resolution().instance(Collection.EMPIRE, 17)
-    params2 = Parameters.from_json(json.dumps(params.params))
-    
+    params = Parameters.from_base(mesh_size=8).gomea(
+    ).multi_resolution(2, p_sched=[4, 4, 4, 3, 3, 3]).multi_metric().instance(Collection.EMPIRE, 23)
+    params.write(Path())
