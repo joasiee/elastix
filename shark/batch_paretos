@@ -1,9 +1,10 @@
 #!/bin/bash
 
-instances=(16 23 17 13 6)
 export GOMEA=$1
+export INSTANCE_NR=$2
 
-for i in ${instances[@]}; do
-  export INSTANCE_NR=$i
+for i in {1..15}
+do
   sbatch run_pareto
+  sleep 45
 done
