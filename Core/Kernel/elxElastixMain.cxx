@@ -29,7 +29,6 @@
 
 #include "elxMacro.h"
 #include "itkPlatformMultiThreader.h"
-#include "itkMersenneTwisterRandomVariateGenerator.h"
 
 #ifdef ELASTIX_USE_OPENCL
 #  include "itkOpenCLContext.h"
@@ -352,17 +351,6 @@ ElastixMain::Run()
   /** Set some information in the ElastixBase. */
   elastixBase.SetConfiguration(this->m_Configuration);
   elastixBase.SetDBIndex(this->m_DBIndex);
-
-  /** Set the random seed. Use 121212 as a default, which is the same as
-   * the default in the MersenneTwister code.
-   * Use silent parameter file readout, to avoid annoying warning when
-   * starting elastix */
-  using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
-  using SeedType = RandomGeneratorType::IntegerType;
-  unsigned int randomSeed = 121212;
-  this->GetConfiguration()->ReadParameter(randomSeed, "RandomSeed", 0, false);
-  RandomGeneratorType::Pointer randomGenerator = RandomGeneratorType::GetInstance();
-  randomGenerator->SetSeed(static_cast<SeedType>(randomSeed));
 
   /** Populate the component containers. ImageSampler is not mandatory.
    * No defaults are specified for ImageSampler, Metric, Transform
