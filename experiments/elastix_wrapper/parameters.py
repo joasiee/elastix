@@ -136,7 +136,7 @@ class Parameters:
         if not isinstance(self["MeshSize"], List):
             self["MeshSize"] = [self["MeshSize"]
                                 for _ in range(len(voxel_dims))]
-        if not self["ImagePyramidSchedule"]:
+        if "ImagePyramidSchedule" not in self.params or not self["ImagePyramidSchedule"]:
             self["ImagePyramidSchedule"] = [
                 2**n for n in range(self["NumberOfResolutions"] - 1, -1, -1) for _ in range(len(voxel_dims))]
         voxel_spacings = []
