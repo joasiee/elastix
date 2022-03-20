@@ -71,11 +71,11 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         subprocess.run(
             args,
             check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT
+            # stdout=subprocess.DEVNULL,
+            # stderr=subprocess.STDOUT
         )
 
 
 if __name__ == "__main__":
-    params = Parameters.from_base(write_img=True).optimizer("AdaptiveStochasticGradientDescent").multi_resolution(1, p_sched=[3, 3, 3]).stopping_criteria(3).instance(Collection.EMPIRE, 1)
+    params = Parameters.from_base(write_img=True).optimizer("AdaptiveStochasticGradientDescent").multi_resolution(1, p_sched=[3, 3, 3]).stopping_criteria(3).instance(Collection.EMPIRE, 7)
     run(params, Path("output/" + str(params)), False)

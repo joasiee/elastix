@@ -7,7 +7,7 @@ from experiments.experiment import Experiment, ExperimentQueue
 logger = logging.getLogger("ParetoFront")
 expqueue = ExperimentQueue()
 
-instances = [16, 23, 17, 13, 6]
+instances = [1, 4, 7, 8, 10, 14, 15, 18, 20, 21, 28]
 
 def wandb_test():
     project = "wandb_test"
@@ -24,7 +24,7 @@ def convergence_tests():
         params = (Parameters.from_base(mesh_size=8)
                   .gomea(fos=-6, partial_evals=True)
                   .multi_metric()
-                  .multi_resolution(n=3, p_sched=sched)
+                  .multi_resolution(n=3, p_sched=sched, g_sched=sched)
                   .stopping_criteria(iterations=iterations)
                   .instance(Collection.EMPIRE, instance))
 
@@ -68,4 +68,4 @@ def pareto_front(instance, gomea, n=200):
 
 
 if __name__ == "__main__":
-    wandb_test()
+    pareto_front()
