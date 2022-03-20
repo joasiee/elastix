@@ -226,7 +226,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
   measure += static_cast<RealType>(numberOfPixelsMissed * this->m_MissedPixelPenalty);
   measure *= this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize));
+  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) * 100.0);
 
   return measure;
 } // end GetValue()
@@ -296,7 +296,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 
   measure += static_cast<RealType>(numberOfPixelsMissed * this->m_MissedPixelPenalty);
   measure *= this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(numberOfPixels));
+  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(numberOfPixels) * 100.0);
 
   return measure;
 } // end GetValuePartial()
