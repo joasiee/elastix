@@ -46,4 +46,4 @@ export ITK_HOME=$PWD
 # Configure and install elastix
 cd $ELASTIX_DIR
 cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 16 --config $CMAKE_BUILD_TYPE --target all
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 16 --config $CMAKE_BUILD_TYPE --target elastix_exe
