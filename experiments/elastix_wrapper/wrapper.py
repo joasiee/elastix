@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import shutil
 import subprocess
 import logging
 
@@ -13,6 +14,7 @@ from elastix_wrapper.watchdog import Watchdog
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
 
+
 def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]:
     run_dir.mkdir(parents=True, exist_ok=True)
     params_file = params.write(run_dir)
@@ -23,12 +25,12 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
     if watch:
         wd.start()
 
-    logger.info(f"Starting elastix for: {str(params)}.")
+    logger.info(f"Running elastix in: {str(run_dir)}")
     try:
         execute_elastix(params_file, out_dir, params)
     except subprocess.CalledProcessError as err:
         logger.error(
-            f"Something went wrong while running elastix with params: {str(params)}: {str(err)}")
+            f"Something went wrong while running elastix at: {str(run_dir)}: {str(err)}")
         return
     except TimeoutException:
         logger.info(
@@ -38,31 +40,49 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
 
     logger.info("Run finished successfully.")
     wd.stop()
-    
+
     if watch:
-        wandb.save(str((run_dir / "*").resolve()), base_path=str(run_dir.parents[0].resolve()))
-        wandb.save(str((run_dir / "out" / "*").resolve()), base_path=str(run_dir.parents[0].resolve()))
+        wandb.save(str((run_dir / "*").resolve()),
+                   base_path=str(run_dir.parents[0].resolve()))
+        wandb.save(str((run_dir / "out" / "TransformParameters*").resolve()),
+                   base_path=str(run_dir.parents[0].resolve()))
+        wandb_dir = Path(wandb.run.dir)
+        wandb.finish()
+        shutil.rmtree(run_dir.absolute())
+        shutil.rmtree(wandb_dir.parent.absolute())
+
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
         args = [
-                ELASTIX,
-                "-p",
-                str(params_file),
-                "-f",
-                str(params.fixed_path),
-                "-m",
-                str(params.moving_path),
-                "-out",
-                str(out_dir)
-            ]
+            ELASTIX,
+            "-p",
+            str(params_file),
+            "-f",
+            str(params.fixed_path),
+            "-m",
+            str(params.moving_path),
+            "-out",
+            str(out_dir),
+            "-threads",
+            os.environ["OMP_NUM_THREADS"]
+        ]
         if params.fixedmask_path:
             args += ["-fMask", str(params.fixedmask_path)]
         subprocess.run(
             args,
-            check=True
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT
         )
 
+
 if __name__ == "__main__":
-    params = Parameters(mesh_size=8, downsampling_f=5).gomea(partial_evals=True, fos=-6).stopping_criteria(iterations=20).instance(Collection.EMPIRE, 16)
+    params = (Parameters.from_base(write_img=True, mesh_size=8, seed=320)
+              .optimizer("AdaptiveStochasticGradientDescent")
+              .multi_resolution(4, p_sched=[7,7,7,6,6,6,5,5,5,4,4,4])
+              .multi_metric(weight0=0.1)
+              .stopping_criteria(iterations=[1000, 1000, 500, 300])
+              .instance(Collection.EMPIRE, 7)
+              )
     run(params, Path("output/" + str(params)), False)

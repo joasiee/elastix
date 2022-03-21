@@ -26,34 +26,37 @@ class Collection(str, Enum):
 class Parameters:
     def __init__(
         self,
-        metric: str = "AdvancedMeanSquares",
-        sampler: str = "RandomCoordinate",
-        sampling_p: float = 0.05,
-        downsampling_f: int = 3,
-        mesh_size: List[int] | int = 12,
-        seed: int = None,
-        write_img = False
+        params
     ) -> None:
+        self.params = params
+
+    @classmethod
+    def from_base(cls,
+                  metric: str = "AdvancedMeanSquares",
+                  sampler: str = "RandomCoordinate",
+                  sampling_p: float = 0.02,
+                  mesh_size: List[int] | int = 12,
+                  seed: int = None,
+                  write_img=False):
         with BASE_PARAMS_PATH.open() as f:
-            self.params: Dict[str, Any] = json.loads(f.read())
-        self["Metric"] = metric
-        self["ImageSampler"] = sampler
-        self["SamplingPercentage"] = sampling_p
-        self["MeshSize"] = mesh_size
-        self["RandomSeed"] = seed
-        self.downsampling_f = downsampling_f
-        self["WriteResultImage"] = write_img
+            params: Dict[str, Any] = json.loads(f.read())
+        params["Metric"] = metric
+        params["ImageSampler"] = sampler
+        params["SamplingPercentage"] = sampling_p
+        params["MeshSize"] = mesh_size
+        params["RandomSeed"] = seed
+        params["WriteResultImage"] = write_img
+        return cls(params)
+
+    @classmethod
+    def from_json(cls, jsondump):
+        params = json.loads(jsondump)
+        return cls(params).set_paths()
 
     def instance(self, collection: Collection, instance: int) -> Parameters:
-        folder = INSTANCES_CONFIG[collection.value]["folder"]
-        extension = INSTANCES_CONFIG[collection.value]["extension"]
-        fixed = f"{instance:02}_Fixed.{extension}"
-        moving = f"{instance:02}_Moving.{extension}"
-        self["Collection"] = collection
+        self["Collection"] = collection.value
         self["Instance"] = instance
-        self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
-        self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed if INSTANCES_CONFIG[collection.value]["masks"] else None
-        self.moving_path = INSTANCES_SRC / folder / "scans" / moving
+        self.set_paths()
         return self.calc_voxel_params()
 
     def multi_metric(
@@ -74,11 +77,9 @@ class Parameters:
         return self
 
     def multi_resolution(
-        self, n: int = 3, p_sched: List[int] = None, g_sched: List[float] = None
-    ) -> Parameters:
+            self, n: int = 3, p_sched: List[int] = None) -> Parameters:
         self["NumberOfResolutions"] = n
         self["ImagePyramidSchedule"] = p_sched
-        self["GridSpacingSchedule"] = g_sched
         return self
 
     def optimizer(self, optim: str, params: Dict[str, Any] = None) -> Parameters:
@@ -120,18 +121,8 @@ class Parameters:
     def prune(self):
         self.params = {k: v for k, v in self.params.items() if v is not None}
 
-    def downsample(self):
-        dim = len(self.get_voxel_dimensions())
-        n_res = self["NumberOfResolutions"] - 1
-        if "ImagePyramidSchedule" not in self.params:
-            self["ImagePyramidSchedule"] = [2**n for n in range(n_res, -1, -1) for _ in range(dim)]
-        
-        self["ImagePyramidSchedule"] = [int(f * self.downsampling_f) for f in self["ImagePyramidSchedule"]]
-        self["NumberOfSpatialSamples"] = [int(n / self.downsampling_f**dim) for n in self["NumberOfSpatialSamples"]]
-
     def write(self, dir: Path) -> None:
         self.prune()
-        self.downsample()
         out_file = dir.joinpath(Path("params.txt"))
         with open(str(out_file), "w+") as f:
             for key, value in self.params.items():
@@ -141,23 +132,27 @@ class Parameters:
     def calc_voxel_params(self) -> Parameters:
         voxel_dims = self.get_voxel_dimensions()
         if not isinstance(self["MeshSize"], List):
-            self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
+            self["MeshSize"] = [self["MeshSize"]
+                                for _ in range(len(voxel_dims))]
+        if "ImagePyramidSchedule" not in self.params or not self["ImagePyramidSchedule"]:
+            self["ImagePyramidSchedule"] = [
+                2**n for n in range(self["NumberOfResolutions"] - 1, -1, -1) for _ in range(len(voxel_dims))]
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
-            voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
-            div = 2**(len(total_samples)-1)
+            voxel_spacings.append(ceil(voxel_dim / self["ImagePyramidSchedule"][(
+                len(total_samples)-1)*len(voxel_dims)+i] / self["MeshSize"][i]))
             for n in range(len(total_samples)):
-                total_samples[n] *= int(voxel_dim / div)
-                div /= 2
-
+                total_samples[n] *= int(voxel_dim /
+                                        self["ImagePyramidSchedule"][n*len(voxel_dims)+i])
 
         self["FinalGridSpacingInVoxels"] = voxel_spacings
-        self["NumberOfSpatialSamples"] = [int(x * self["SamplingPercentage"]) for x in total_samples]
+        self["NumberOfSpatialSamples"] = [
+            int(x * self["SamplingPercentage"]) for x in total_samples]
         return self
 
     def get_voxel_dimensions(self) -> List[int]:
-        extension = INSTANCES_CONFIG[self["Collection"].value]["extension"]
+        extension = INSTANCES_CONFIG[self["Collection"]]["extension"]
         if extension == 'mhd':
             return Parameters.read_mhd(self.fixed_path)["DimSize"]
         elif extension == 'png':
@@ -166,6 +161,19 @@ class Parameters:
         else:
             raise Exception(
                 "Unknown how to extract dimensions from filetype.")
+
+    def set_paths(self):
+        collection = self["Collection"]
+        instance = self["Instance"]
+        extension = INSTANCES_CONFIG[collection]["extension"]
+        folder = INSTANCES_CONFIG[collection]["folder"]
+        fixed = f"{instance:02}_Fixed.{extension}"
+        moving = f"{instance:02}_Moving.{extension}"
+        self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
+        self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
+            fixed if INSTANCES_CONFIG[collection]["masks"] else None
+        self.moving_path = INSTANCES_SRC / folder / "scans" / moving
+        return self
 
     def __getitem__(self, key) -> Any:
         return self.params[key]
@@ -220,6 +228,9 @@ class Parameters:
                 return res
         return res
 
+
 if __name__ == "__main__":
-    params = Parameters(downsampling_f=5, mesh_size=8).gomea().multi_resolution().instance(Collection.EMPIRE, 17)
-    print(str(params.fixedmask_path))
+    sched = [9, 9, 9, 6, 6, 6, 5, 5, 5, 4, 4, 4]
+    params = Parameters.from_base(mesh_size=10).gomea(
+    ).multi_resolution(4, p_sched=sched).multi_metric().instance(Collection.EMPIRE, 7)
+    params.write(Path())

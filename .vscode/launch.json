@@ -8,7 +8,7 @@
             "name": "empire-16",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/RelWithDebInfo/bin/elastix",
+            "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
                 "-f",
                 "scans/16_Fixed.mhd",
@@ -19,7 +19,9 @@
                 "-p",
                 "params.txt",
                 "-out",
-                "out"
+                "out",
+                "-threads",
+                "$OMP_NUM_THREADS"
             ],
             "stopAtEntry": false,
             "cwd": "/home/joasiee/Documents/thesis/empire",
@@ -48,6 +50,8 @@
                 "params.txt",
                 "-out",
                 "dir",
+                "-threads",
+                "$OMP_NUM_THREADS"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/medium",
@@ -75,7 +79,9 @@
                 "-p",
                 "params.txt",
                 "-out",
-                "dir"
+                "dir",
+                "-threads",
+                "$OMP_NUM_THREADS"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/trivial",
@@ -109,6 +115,8 @@
                 "params.txt",
                 "-out",
                 "dir",
+                "-threads",
+                "$OMP_NUM_THREADS"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/trivial-mm",
@@ -142,6 +150,8 @@
                 "params.txt",
                 "-out",
                 "dir",
+                "-threads",
+                "$OMP_NUM_THREADS"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/easy",

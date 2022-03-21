@@ -344,10 +344,13 @@ ElastixBase::BeforeAllBase()
    * starting elastix */
   using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
   using SeedType = RandomGeneratorType::IntegerType;
-  unsigned int randomSeed = 121212;
-  this->GetConfiguration()->ReadParameter(randomSeed, "RandomSeed", 0, false);
-  RandomGeneratorType::Pointer randomGenerator = RandomGeneratorType::GetInstance();
-  randomGenerator->SetSeed(static_cast<SeedType>(randomSeed));
+  unsigned int randomSeed = 0;
+  if (this->GetConfiguration()->ReadParameter(randomSeed, "RandomSeed", 0, false))
+  {
+    RandomGeneratorType::Pointer randomGenerator = RandomGeneratorType::GetInstance();
+    randomGenerator->SetSeed(static_cast<SeedType>(randomSeed));
+  }
+  
 
   /** Return a value. */
   return returndummy;

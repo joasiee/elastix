@@ -2,53 +2,56 @@
 #
 #SBATCH --partition=all
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=12G
-#SBATCH -o "make_release.out"
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=16G
+#SBATCH --time=04:00:00
+#SBATCH -D /home/jmulder6/projects/elastix
+#SBATCH -o /home/jmulder6/projects/elastix/shark/make_release-%j.out
 
 echo "Current working directory is `pwd`"
 
 module purge > /dev/null 2>&1
 module load system/gcc/11.2.0
 module load tools/cmake/3.19.2
+module load library/boost/1.72.0/gcc-8.3.1
+module load library/blas/0.3.13/gcc-8.3.1
+module load library/lapack/3.9.0/gcc-8.3.1
 
-cd ..
+
 ELASTIX_DIR=$PWD
-rm -rf build && rm -rf temp
-
 CMAKE_BUILD_TYPE=Release
 WORKING_DIR=$PWD/temp
 INSTALL_DIR=$WORKING_DIR/install
 mkdir -p $INSTALL_DIR
+export ITK_HOME=$WORKING_DIR/ITK
 
-# Configure and install openBLAS
-cd $WORKING_DIR
-git clone https://github.com/xianyi/OpenBLAS.git && cd OpenBLAS
-make NO_LAPACK=0 USE_THREAD=0 USE_LOCKING=1 DYNAMIC_ARCH=1 && make PREFIX=$INSTALL_DIR install
+if [ $REBUILD_ALL_COMPONENTS -eq 1 ]
+then
 
-# Configure and install Eigen3
-cd $WORKING_DIR
-wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
-tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
-cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_INSTALL_PREFIX:STRING=$INSTALL_DIR -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target install
+    # Configure and install openBLAS
+    cd $WORKING_DIR
+    git clone https://github.com/xianyi/OpenBLAS.git && cd OpenBLAS
+    make NO_LAPACK=0 USE_THREAD=0 USE_LOCKING=1 DYNAMIC_ARCH=1 -j16 && make PREFIX=$INSTALL_DIR install
 
-# Configure and install Boost
-cd $WORKING_DIR
-wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.bz2
-tar --bzip2 -xf boost_1_78_0.tar.bz2 && cd boost_1_78_0
-./bootstrap.sh --prefix=$INSTALL_DIR && ./b2 install
+    cd $WORKING_DIR
+    rm -rf OpenBLAS
 
-# Configure and install ITK
-cd $WORKING_DIR
-git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout rv_gomea_integration
-cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target all
-export ITK_HOME=$PWD
+    # Configure and install Eigen3
+    wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
+    tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
+    cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_INSTALL_PREFIX:STRING=$INSTALL_DIR -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
+    cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 16 --config $CMAKE_BUILD_TYPE --target install
+
+    cd $WORKING_DIR
+    rm eigen-3.4.0.tar.bz2 && rm -rf eigen-3.4.0
+
+    # Configure and install ITK
+    git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout rv_gomea_integration
+    cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
+    cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 16 --config $CMAKE_BUILD_TYPE --target all
+fi
 
 # Configure and install elastix
 cd $ELASTIX_DIR
 cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target all
-
-rm -rf temp
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 16 --config $CMAKE_BUILD_TYPE --target elastix_exe

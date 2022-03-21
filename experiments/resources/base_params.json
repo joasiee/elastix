@@ -16,5 +16,6 @@
     "DefaultPixelValue": 0,
     "NewSamplesEveryIteration": "true",
     "UseNormalization": "true",
-    "WriteTransformParametersEachResolution": "true"
+    "WriteTransformParametersEachResolution": "true",
+    "ErodeMask": "false"
 }

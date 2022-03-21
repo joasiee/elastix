@@ -3,7 +3,6 @@ import threading
 import time
 import wandb
 import os
-import pandas as pd
 
 
 class Watchdog(threading.Thread):
@@ -16,6 +15,20 @@ class Watchdog(threading.Thread):
         self.out_dir = out_dir
         self.n_resolutions = n_resolutions
 
+    @staticmethod
+    def read_file(filename):
+        with open(filename, "rb") as file:
+            first_line, last_line = None, None
+            try:
+                first_line = file.readline().decode().split()
+                file.seek(-2, os.SEEK_END)
+                while file.read(1) != b'\n':
+                    file.seek(-2, os.SEEK_CUR)
+                last_line = file.readline().decode().split()
+            except OSError:
+                pass
+            return first_line, last_line
+
     def run(self):
         line_counts = [0 for _ in range(self.n_resolutions)]
         file_names = [
@@ -23,33 +36,26 @@ class Watchdog(threading.Thread):
         r = 0
 
         while not self._stop_event.is_set():
-            time.sleep(0.1)
+            time.sleep(0.05)
+            
             if not os.path.exists(file_names[r]):
                 continue
 
-            try:
-                resolution_results = pd.read_csv(
-                    file_names[r], sep="	").to_dict()
-            except pd.errors.EmptyDataError:
-                continue
+            headers, last_line = Watchdog.read_file(file_names[r])
+            if headers and last_line and len(headers) == len(last_line):
+                uptodate = line_counts[r] == int(last_line[0])
 
-            headers = list(resolution_results.keys())[1:]
-            values = [list(v.values())
-                      for v in resolution_results.values()][1:]
+                if r < self.n_resolutions - 1 and os.path.exists(file_names[r+1]) and uptodate:
+                    r += 1
 
-            len_values = len(values[0])
-            len_diff = len_values - line_counts[r]
-            line_counts[r] = len_values
-            for line in range(len_values-len_diff, len_values):
-                scalars = {}
-                for index, header in enumerate(headers):
-                    header = re.sub(r'\d:', '', header).lower()
-                    scalars[f"R{r}/"+header] = values[index][line]
-                wandb.log(scalars)
-
-            if r < self.n_resolutions - 1 and os.path.exists(file_names[r+1]):
-                r += 1
+                if not uptodate:
+                    line_counts[r] = int(last_line[0])
+                    scalars = {}
+                    for index, header in enumerate(headers[1:]):
+                        header = re.sub(r'\d:', '', header).lower()
+                        scalars[f"R{r}/"+header] = float(last_line[index+1])
+                    wandb.log(scalars)
 
     def stop(self):
-        time.sleep(1.0)
+        time.sleep(5.0)
         self._stop_event.set()
