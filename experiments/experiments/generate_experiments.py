@@ -39,36 +39,31 @@ def convergence_tests():
 
 
 def pareto_front(instance: int, gomea: bool, n: int = 200):
-    mesh_size = 8
-    sched = [5, 5, 5, 3, 3, 3]
-    iterations_g = [50, 150]
-    iterations_a = [100000, 300000]
-    project = "pareto_front"
-    optimizer = "GOMEA" if gomea else "AdaptiveStochasticGradientDescent"
+    sched = [6, 6, 6, 5, 5, 5, 4, 4, 4]
+    iterations_g = [100, 50, 30]
+    iterations_a = [1000, 500, 300]
+    project = "pareto_front_sampling"
+    rseed = 12378842
 
     for _ in range(n):
         weight0 = np.around(np.random.uniform(0.001, 0.101), 3)
         weight1 = np.around(np.random.uniform(0.001, 1.001), 2)
 
-        params = (Parameters.from_base(mesh_size=mesh_size)
+        params = (Parameters.from_base(mesh_size=8, seed=rseed)
+                  .multi_resolution(3, p_sched=sched)
                   .multi_metric(weight0=weight0, weight1=weight1)
-                  .multi_resolution(n=2, p_sched=sched)
-                  .instance(Collection.EMPIRE, instance)
-                  )
+                  .instance(Collection.EMPIRE, instance))
+
         if gomea:
             params.gomea(
                 fos=-6, partial_evals=True).stopping_criteria(iterations=iterations_g)
         else:
-            params.optimizer(optimizer).stopping_criteria(
+            params.optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(
                 iterations=iterations_a)
 
-        experiment = Experiment(project, params.params)
-        if experiment.already_done(["Metric0Weight", "Metric1Weight"]):
-            logger.info(f"{weight0}-{weight1} exists, not submitting as job")
-            continue
-
+        experiment = Experiment(project, params)
         expqueue.push(experiment)
 
 
 if __name__ == "__main__":
-    pareto_front(7, False, 1)
+    pareto_front(7, False, 200)

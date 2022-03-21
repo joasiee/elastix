@@ -1,5 +1,6 @@
 import json
-from typing import Any, Dict, List
+from pathlib import Path
+from typing import List
 import redis
 from dotenv import load_dotenv
 import os

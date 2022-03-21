@@ -14,6 +14,5 @@ while exp_queue.peek():
     experiment = exp_queue.pop()
     run = wandb.init(project=experiment.project,
                      name=str(experiment.params), reinit=True)
-    experiment.params.prune()
     wandb.config.update(experiment.params.params)
     wrapper.run(experiment.params, Path("output") / wandb.run.project / wandb.run.name)
