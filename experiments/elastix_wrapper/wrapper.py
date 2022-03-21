@@ -72,8 +72,8 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         subprocess.run(
             args,
             check=True,
-            # stdout=subprocess.DEVNULL,
-            # stderr=subprocess.STDOUT
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT
         )
 
 
