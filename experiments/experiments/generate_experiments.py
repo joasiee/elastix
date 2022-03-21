@@ -1,6 +1,6 @@
 import logging
+import random
 from typing import List
-import uuid
 import numpy as np
 
 from elastix_wrapper.parameters import Collection, Parameters
@@ -42,7 +42,7 @@ def pareto_front(instance: int, gomea: bool, reps: int = 5) -> List[Experiment]:
     iterations_g = [30, 50, 125]
     iterations_a = [2000, 2000, 3000]
     project = "pareto_front"
-    seeds = [uuid.uuid1().int >> 100 for _ in range(reps)]
+    seeds = [int((random.random() + 0.01) * 100000) for _ in range(reps)]
 
     weight0 = np.around(np.random.uniform(0.001, 0.201), 3)
     weight1 = np.around(np.random.uniform(0.001, 1.001), 2)
@@ -68,4 +68,4 @@ def pareto_front(instance: int, gomea: bool, reps: int = 5) -> List[Experiment]:
 
 
 if __name__ == "__main__":
-    pareto_front(7, False, 200)
+    pareto_front(7, False)
