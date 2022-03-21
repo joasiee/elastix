@@ -18,7 +18,7 @@ entity, project = "joasiee", "pareto_front_sampling"
 
 sched = [6, 6, 6, 5, 5, 5, 4, 4, 4]
 iterations_g = [100, 50, 30]
-iterations_a = [1000, 500, 300]
+iterations_a = [3000, 2000, 1000]
 project = "pareto_front_sampling"
 rseed = 12378842
 
