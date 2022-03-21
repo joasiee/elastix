@@ -1,4 +1,6 @@
 import logging
+from typing import List
+import uuid
 import numpy as np
 
 from elastix_wrapper.parameters import Collection, Parameters
@@ -15,41 +17,40 @@ def wandb_test():
     params = Parameters.from_base(sampler="RandomCoordinate", sampling_p=0.2).gomea(
     ).stopping_criteria(iterations=100).instance(Collection.EXAMPLES, 1)
     experiment = Experiment(project, params)
-    expqueue.push(experiment)
+    return experiment
 
 
-def convergence_tests():
+def convergence_tests(instance: int):
     project = "convergence_tests"
     iterations = [50, 50, 150]
     sched = [5, 5, 5, 4, 4, 4, 3, 3, 3]
+    params = (Parameters.from_base(mesh_size=8)
+              .gomea(fos=-6, partial_evals=True)
+              .multi_metric()
+              .multi_resolution(n=3, p_sched=sched, g_sched=sched)
+              .stopping_criteria(iterations=iterations)
+              .instance(Collection.EMPIRE, instance))
 
-    for instance in instances:
-        params = (Parameters.from_base(mesh_size=8)
-                  .gomea(fos=-6, partial_evals=True)
-                  .multi_metric()
-                  .multi_resolution(n=3, p_sched=sched, g_sched=sched)
-                  .stopping_criteria(iterations=iterations)
-                  .instance(Collection.EMPIRE, instance))
-
-        experiment = Experiment(project, params.params)
-        if experiment.already_done():
-            continue
-
-        expqueue.push(experiment)
+    experiment = Experiment(project, params)
+    if experiment.already_done():
+        return None
+    return experiment
 
 
-def pareto_front(instance: int, gomea: bool, n: int = 200):
+def pareto_front(instance: int, gomea: bool, reps: int = 10) -> List[Experiment]:
     sched = [6, 6, 6, 5, 5, 5, 4, 4, 4]
     iterations_g = [100, 50, 30]
-    iterations_a = [1000, 500, 300]
-    project = "pareto_front_sampling"
-    rseed = 12378842
+    iterations_a = [3000, 2000, 1000]
+    project = "pareto_front"
+    seeds = [uuid.uuid1().int >> 100 for _ in range(reps)]
 
-    for _ in range(n):
-        weight0 = np.around(np.random.uniform(0.001, 0.101), 3)
-        weight1 = np.around(np.random.uniform(0.001, 1.001), 2)
+    weight0 = np.around(np.random.uniform(0.001, 0.201), 3)
+    weight1 = np.around(np.random.uniform(0.001, 1.001), 2)
 
-        params = (Parameters.from_base(mesh_size=8, seed=rseed)
+    experiments = []
+
+    for seed in seeds:
+        params = (Parameters.from_base(mesh_size=8, seed=seed)
                   .multi_resolution(3, p_sched=sched)
                   .multi_metric(weight0=weight0, weight1=weight1)
                   .instance(Collection.EMPIRE, instance))
@@ -61,8 +62,9 @@ def pareto_front(instance: int, gomea: bool, n: int = 200):
             params.optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(
                 iterations=iterations_a)
 
-        experiment = Experiment(project, params)
-        expqueue.push(experiment)
+        experiments.append(Experiment(project, params))
+
+    return experiments
 
 
 if __name__ == "__main__":

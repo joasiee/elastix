@@ -1,47 +1,26 @@
 import sys
 from pathlib import Path
-import uuid
+import wandb
+import logging
 
 path_root = Path(__file__).parents[1]
 sys.path.append(str(path_root))
 
-from elastix_wrapper.parameters import Collection, Parameters
 import elastix_wrapper.wrapper as wrapper
-import wandb
-import numpy as np
-import logging
+from experiments.generate_experiments import pareto_front
 
 logger = logging.getLogger("ParetoFront")
 
 GOMEA = bool(int(sys.argv[1]))
 instance = int(sys.argv[2])
-entity, project = "joasiee", "pareto_front_sampling"
+jobs_per = 20
 
-sched = [6, 6, 6, 5, 5, 5, 4, 4, 4]
-iterations_g = [100, 50, 30]
-iterations_a = [3000, 2000, 1000]
-project = "pareto_front"
-seeds = [uuid.uuid1().int >> 100 for _ in range(10)]
 
-for _ in range(20):
-    weight0 = np.around(np.random.uniform(0.001, 0.201), 3)
-    weight1 = np.around(np.random.uniform(0.001, 1.001), 2)
-
-    for seed in seeds:
-        params = (Parameters.from_base(mesh_size=8, seed=seed)
-                    .multi_resolution(3, p_sched=sched)
-                    .multi_metric(weight0=weight0, weight1=weight1)
-                    .instance(Collection.EMPIRE, instance))
-
-        if GOMEA:
-            params.gomea(
-                fos=-6, partial_evals=True).stopping_criteria(iterations=iterations_g)
-        else:
-            params.optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(
-                iterations=iterations_a)
-
-        run = wandb.init(project=project,
-                            name=str(params), reinit=True)
+for _ in range(jobs_per):
+    for experiment in pareto_front(instance, GOMEA):
+        params = experiment.params
+        run = wandb.init(project=experiment.project,
+                        name=str(params), reinit=True)
         params.prune()
         wandb.config.update(params.params)
         wrapper.run(params, Path("output") / wandb.run.project / wandb.run.name)
