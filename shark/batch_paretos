@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export GOMEA=$1
+export INSTANCE_NR=$2
+
+for i in {1..15}
+do
+  sbatch run_pareto
+  sleep 45
+done
