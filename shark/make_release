@@ -13,7 +13,7 @@ echo "Current working directory is `pwd`"
 module purge > /dev/null 2>&1
 module load system/gcc/11.2.0
 module load tools/cmake/3.19.2
-library/boost/1.72.0/gcc-8.3.1
+module load library/boost/1.72.0/gcc-8.3.1
 
 ELASTIX_DIR=$PWD
 
