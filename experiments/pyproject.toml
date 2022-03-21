@@ -17,6 +17,7 @@ nibabel = "^3.2.1"
 wandb = "^0.12.10"
 matplotlib = "^3.5.1"
 redis = "^4.1.4"
+optuna = "^2.10.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

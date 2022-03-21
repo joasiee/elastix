@@ -16,7 +16,7 @@ logger = logging.getLogger("Wrapper")
 
 
 def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]:
-    run_dir.mkdir(parents=True, exist_ok=True)
+    run_dir.mkdir(parents=True)
     params_file = params.write(run_dir)
     out_dir = run_dir.joinpath(Path("out"))
     os.mkdir(out_dir)

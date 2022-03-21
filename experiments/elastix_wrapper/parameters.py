@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from math import ceil
 import os
-import time
+import uuid
 from PIL import Image
 from enum import Enum
 from pathlib import Path
@@ -29,6 +29,7 @@ class Parameters:
         params
     ) -> None:
         self.params = params
+        self.id = uuid.uuid1()
 
     @classmethod
     def from_base(cls,
@@ -182,7 +183,7 @@ class Parameters:
         self.params[key] = value
 
     def __str__(self) -> str:
-        return f"{int(time.time())}_{self['Collection']}_{self['Instance']}_{self['Optimizer']}".lower()
+        return f"{self['Collection']}_{self['Instance']}_{self['Optimizer']}_{self.id}".lower()
 
     def n_param(self, param: str, n: int = 2) -> List[str]:
         self[param] = [self[param] for i in range(n)]
