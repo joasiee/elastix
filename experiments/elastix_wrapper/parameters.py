@@ -77,9 +77,10 @@ class Parameters:
         return self
 
     def multi_resolution(
-            self, n: int = 3, p_sched: List[int] = None) -> Parameters:
+            self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None) -> Parameters:
         self["NumberOfResolutions"] = n
         self["ImagePyramidSchedule"] = p_sched
+        self["GridSpacingSchedule"] = g_sched
         return self
 
     def optimizer(self, optim: str, params: Dict[str, Any] = None) -> Parameters:
@@ -140,8 +141,7 @@ class Parameters:
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
-            voxel_spacings.append(ceil(voxel_dim / self["ImagePyramidSchedule"][(
-                len(total_samples)-1)*len(voxel_dims)+i] / self["MeshSize"][i]))
+            voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             for n in range(len(total_samples)):
                 total_samples[n] *= int(voxel_dim /
                                         self["ImagePyramidSchedule"][n*len(voxel_dims)+i])

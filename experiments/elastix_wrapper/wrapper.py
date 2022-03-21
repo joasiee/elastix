@@ -72,17 +72,17 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         subprocess.run(
             args,
             check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT
+            # stdout=subprocess.DEVNULL,
+            # stderr=subprocess.STDOUT
         )
 
 
 if __name__ == "__main__":
     params = (Parameters.from_base(write_img=True, mesh_size=8, seed=320)
-              .optimizer("AdaptiveStochasticGradientDescent")
-              .multi_resolution(4, p_sched=[7,7,7,6,6,6,5,5,5,4,4,4])
-              .multi_metric(weight0=0.1)
-              .stopping_criteria(iterations=[1000, 1000, 500, 300])
+              .gomea(fos=-6, partial_evals=True)
+              .multi_resolution(3, p_sched=[6, 6, 6, 5, 5, 5, 4, 4, 4])
+              .multi_metric()
+              .stopping_criteria(iterations=[1, 1, 1])
               .instance(Collection.EMPIRE, 7)
               )
     run(params, Path("output/" + str(params)), False)

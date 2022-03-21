@@ -37,7 +37,7 @@ def convergence_tests(instance: int):
     return experiment
 
 
-def pareto_front(instance: int, gomea: bool, reps: int = 10) -> List[Experiment]:
+def pareto_front(instance: int, gomea: bool, reps: int = 5) -> List[Experiment]:
     sched = [6, 6, 6, 5, 5, 5, 4, 4, 4]
     iterations_g = [100, 50, 30]
     iterations_a = [3000, 2000, 1000]
