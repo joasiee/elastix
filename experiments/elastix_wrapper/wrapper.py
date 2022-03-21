@@ -80,7 +80,7 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 if __name__ == "__main__":
     params = (Parameters.from_base(write_img=True, mesh_size=8, seed=320)
               .gomea(fos=-6, partial_evals=True)
-              .multi_resolution(3, p_sched=[6, 6, 6, 5, 5, 5, 4, 4, 4])
+              .multi_resolution(3, p_sched=[7, 7, 7, 6, 6, 6, 5, 5, 5])
               .multi_metric()
               .stopping_criteria(iterations=[1, 1, 1])
               .instance(Collection.EMPIRE, 7)
