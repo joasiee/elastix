@@ -77,7 +77,7 @@ class Parameters:
         return self
 
     def multi_resolution(
-        self, n: int = 3, p_sched: List[int] = None) -> Parameters:
+            self, n: int = 3, p_sched: List[int] = None) -> Parameters:
         self["NumberOfResolutions"] = n
         self["ImagePyramidSchedule"] = p_sched
         return self
@@ -140,9 +140,11 @@ class Parameters:
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
-            voxel_spacings.append(ceil(voxel_dim / self["ImagePyramidSchedule"][(len(total_samples)-1)*len(voxel_dims)+i] / self["MeshSize"][i]))
+            voxel_spacings.append(ceil(voxel_dim / self["ImagePyramidSchedule"][(
+                len(total_samples)-1)*len(voxel_dims)+i] / self["MeshSize"][i]))
             for n in range(len(total_samples)):
-                total_samples[n] *= int(voxel_dim / self["ImagePyramidSchedule"][n*len(voxel_dims)+i])
+                total_samples[n] *= int(voxel_dim /
+                                        self["ImagePyramidSchedule"][n*len(voxel_dims)+i])
 
         self["FinalGridSpacingInVoxels"] = voxel_spacings
         self["NumberOfSpatialSamples"] = [
@@ -228,7 +230,7 @@ class Parameters:
 
 
 if __name__ == "__main__":
-    sched = [6, 6, 6, 5, 5, 5, 4, 4, 4]
-    params = Parameters.from_base(mesh_size=8).gomea(
-    ).multi_resolution(3, p_sched=sched).multi_metric().instance(Collection.EMPIRE, 7)
+    sched = [9, 9, 9, 6, 6, 6, 5, 5, 5, 4, 4, 4]
+    params = Parameters.from_base(mesh_size=10).gomea(
+    ).multi_resolution(4, p_sched=sched).multi_metric().instance(Collection.EMPIRE, 7)
     params.write(Path())

@@ -78,11 +78,11 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 
 if __name__ == "__main__":
-    params = (Parameters.from_base(write_img=True, mesh_size=10, seed=15320)
+    params = (Parameters.from_base(write_img=True, mesh_size=8, seed=320)
               .optimizer("AdaptiveStochasticGradientDescent")
-              .multi_resolution(4, p_sched=[8, 8, 8, 6, 6, 6, 5, 5, 5, 4, 4, 4])
+              .multi_resolution(4, p_sched=[7,7,7,6,6,6,5,5,5,4,4,4])
               .multi_metric(weight0=0.1)
-              .stopping_criteria(iterations=[1000, 500, 500, 200])
+              .stopping_criteria(iterations=[1000, 1000, 500, 300])
               .instance(Collection.EMPIRE, 7)
               )
     run(params, Path("output/" + str(params)), False)
