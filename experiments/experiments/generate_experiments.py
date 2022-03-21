@@ -39,8 +39,8 @@ def convergence_tests(instance: int):
 
 def pareto_front(instance: int, gomea: bool, reps: int = 5) -> List[Experiment]:
     sched = [7, 7, 7, 6, 6, 6, 5, 5, 5]
-    iterations_g = [100, 50, 30]
-    iterations_a = [3000, 2000, 1000]
+    iterations_g = [30, 50, 125]
+    iterations_a = [2000, 2000, 3000]
     project = "pareto_front"
     seeds = [uuid.uuid1().int >> 100 for _ in range(reps)]
 
