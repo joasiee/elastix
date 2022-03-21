@@ -23,7 +23,7 @@ def wandb_test():
 def convergence_tests(instance: int):
     project = "convergence_tests"
     iterations = [50, 50, 150]
-    sched = [5, 5, 5, 4, 4, 4, 3, 3, 3]
+    sched = [6, 6, 6, 5, 5, 5, 4, 4, 4]
     params = (Parameters.from_base(mesh_size=8)
               .gomea(fos=-6, partial_evals=True)
               .multi_metric()
@@ -38,7 +38,7 @@ def convergence_tests(instance: int):
 
 
 def pareto_front(instance: int, gomea: bool, reps: int = 5) -> List[Experiment]:
-    sched = [6, 6, 6, 5, 5, 5, 4, 4, 4]
+    sched = [7, 7, 7, 6, 6, 6, 5, 5, 5]
     iterations_g = [100, 50, 30]
     iterations_a = [3000, 2000, 1000]
     project = "pareto_front"
