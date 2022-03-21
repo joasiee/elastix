@@ -22,7 +22,7 @@ INSTALL_DIR=$WORKING_DIR/install
 mkdir -p $INSTALL_DIR
 export ITK_HOME=$WORKING_DIR/ITK
 
-if [ $REBUILD_ALL_COMPONENTS ]
+if [ $REBUILD_ALL_COMPONENTS -eq 1 ]
 then
 
     # Configure and install openBLAS
