@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-import sched
 import shutil
 import subprocess
 import logging
@@ -15,6 +14,7 @@ from elastix_wrapper.watchdog import Watchdog
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
 
+
 def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]:
     run_dir.mkdir(parents=True, exist_ok=True)
     params_file = params.write(run_dir)
@@ -25,12 +25,12 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
     if watch:
         wd.start()
 
-    logger.info(f"Starting elastix for: {str(params)}.")
+    logger.info(f"Running elastix in: {str(run_dir)}")
     try:
         execute_elastix(params_file, out_dir, params)
     except subprocess.CalledProcessError as err:
         logger.error(
-            f"Something went wrong while running elastix with params: {str(params)}: {str(err)}")
+            f"Something went wrong while running elastix at: {str(run_dir)}: {str(err)}")
         return
     except TimeoutException:
         logger.info(
@@ -50,6 +50,7 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
         wandb.finish()
         shutil.rmtree(run_dir.absolute())
         shutil.rmtree(wandb_dir.parent.absolute())
+
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
@@ -71,11 +72,17 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         subprocess.run(
             args,
             check=True,
-            # stdout=subprocess.DEVNULL,
-            # stderr=subprocess.STDOUT
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.STDOUT
         )
 
 
 if __name__ == "__main__":
-    params = Parameters.from_base(write_img=True).optimizer("AdaptiveStochasticGradientDescent").multi_resolution(1, p_sched=[3, 3, 3]).stopping_criteria(3).instance(Collection.EMPIRE, 7)
+    params = (Parameters.from_base(write_img=True, mesh_size=10, seed=15320)
+              .optimizer("AdaptiveStochasticGradientDescent")
+              .multi_resolution(4, p_sched=[8, 8, 8, 6, 6, 6, 5, 5, 5, 4, 4, 4])
+              .multi_metric(weight0=0.1)
+              .stopping_criteria(iterations=[1000, 500, 500, 200])
+              .instance(Collection.EMPIRE, 7)
+              )
     run(params, Path("output/" + str(params)), False)

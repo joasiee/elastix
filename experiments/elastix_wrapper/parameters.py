@@ -46,7 +46,6 @@ class Parameters:
         params["MeshSize"] = mesh_size
         params["RandomSeed"] = seed
         params["WriteResultImage"] = write_img
-        params["WritePyramidImagesAfterEachResolution"] = write_img
         return cls(params)
 
     @classmethod

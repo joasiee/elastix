@@ -9,11 +9,14 @@ expqueue = ExperimentQueue()
 
 instances = [1, 4, 7, 8, 10, 14, 15, 18, 20, 21, 28]
 
+
 def wandb_test():
     project = "wandb_test"
-    params = Parameters.from_base(sampler="RandomCoordinate", sampling_p=0.2).gomea().stopping_criteria(iterations=100).instance(Collection.EXAMPLES, 1)
+    params = Parameters.from_base(sampler="RandomCoordinate", sampling_p=0.2).gomea(
+    ).stopping_criteria(iterations=100).instance(Collection.EXAMPLES, 1)
     experiment = Experiment(project, params)
     expqueue.push(experiment)
+
 
 def convergence_tests():
     project = "convergence_tests"
@@ -35,7 +38,7 @@ def convergence_tests():
         expqueue.push(experiment)
 
 
-def pareto_front(instance, gomea, n=200):
+def pareto_front(instance: int, gomea: bool, n: int = 200):
     mesh_size = 8
     sched = [5, 5, 5, 3, 3, 3]
     iterations_g = [50, 150]
@@ -48,13 +51,13 @@ def pareto_front(instance, gomea, n=200):
         weight1 = np.around(np.random.uniform(0.001, 1.001), 2)
 
         params = (Parameters.from_base(mesh_size=mesh_size)
-                    .multi_metric(weight0=weight0, weight1=weight1)
-                    .multi_resolution(n=2, p_sched=sched)
-                    .instance(Collection.EMPIRE, instance)
-                    )
+                  .multi_metric(weight0=weight0, weight1=weight1)
+                  .multi_resolution(n=2, p_sched=sched)
+                  .instance(Collection.EMPIRE, instance)
+                  )
         if gomea:
-                params.gomea(
-                    fos=-6, partial_evals=True).stopping_criteria(iterations=iterations_g)
+            params.gomea(
+                fos=-6, partial_evals=True).stopping_criteria(iterations=iterations_g)
         else:
             params.optimizer(optimizer).stopping_criteria(
                 iterations=iterations_a)
@@ -68,4 +71,4 @@ def pareto_front(instance, gomea, n=200):
 
 
 if __name__ == "__main__":
-    pareto_front()
+    pareto_front(7, False, 1)
