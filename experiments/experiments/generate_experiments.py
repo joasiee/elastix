@@ -1,13 +1,13 @@
 import logging
 from typing import List
 import numpy as np
+import random
 
 from elastix_wrapper.parameters import Collection, Parameters
-from experiments.experiment import Experiment
+from experiments.experiment import Experiment, ExperimentQueue
 
 logger = logging.getLogger("ParetoFront")
 instances = [1, 4, 7, 8, 10, 14, 15, 18, 20, 21, 28]
-seeds = [40800, 26630, 41915, 58715, 63988, 47809, 73594, 19112, 38953, 89687]
 
 def wandb_test():
     project = "wandb_test"
@@ -46,11 +46,10 @@ def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Expe
     project = "pareto_front"
 
     for _ in range(n):
-        weight0 = np.around(np.random.uniform(0.001, 0.101), 2)
-        weight1 = np.around(np.random.uniform(0.001, 1.01), 2)
+        weight0 = np.around(np.random.uniform(0.01, 0.11), 2)
+        weight1 = np.around(np.random.uniform(0.01, 1.01), 2)
 
-        for i in range(reps):
-            seed = seeds[i]
+        for seed in [int(random.random()*1e5) for _ in range(reps)]:
             params = (
                 Parameters.from_base(mesh_size=8, seed=seed)
                 .multi_resolution(3, p_sched=sched)
@@ -72,5 +71,6 @@ def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Expe
 
 
 if __name__ == "__main__":
-    for exp in pareto_front(7, False, 5, 5):
-        print(exp.params)
+    queue = ExperimentQueue()
+    for exp in pareto_front(7, False, 80, 5):
+        queue.push(exp)

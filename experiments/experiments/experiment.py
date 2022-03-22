@@ -56,6 +56,7 @@ class ExperimentQueue:
         self.sshserver = SSHTunnelForwarder(
             os.environ["REDIS_HOST"],
             ssh_username="root",
+            ssh_password="C.o.o.l.j00l!",
             remote_bind_address=('127.0.0.1', 6379)
         )
         self.sshserver.start()
@@ -82,4 +83,5 @@ class ExperimentQueue:
 
 if __name__ == "__main__":
     expq = ExperimentQueue()
+    expq.clear()
     print(expq.size())
