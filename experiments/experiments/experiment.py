@@ -82,5 +82,4 @@ class ExperimentQueue:
 
 if __name__ == "__main__":
     expq = ExperimentQueue()
-    expq.clear()
     print(expq.size())

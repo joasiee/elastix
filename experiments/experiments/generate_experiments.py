@@ -3,13 +3,11 @@ from typing import List
 import numpy as np
 
 from elastix_wrapper.parameters import Collection, Parameters
-from experiments.experiment import Experiment, ExperimentQueue
+from experiments.experiment import Experiment
 
 logger = logging.getLogger("ParetoFront")
 instances = [1, 4, 7, 8, 10, 14, 15, 18, 20, 21, 28]
 seeds = [40800, 26630, 41915, 58715, 63988, 47809, 73594, 19112, 38953, 89687]
-expqueue = ExperimentQueue()
-
 
 def wandb_test():
     project = "wandb_test"
@@ -38,7 +36,7 @@ def convergence_tests(instance: int):
 
     experiment = Experiment(project, params)
     if not experiment.already_done():
-        expqueue.push(experiment)
+        return experiment
 
 
 def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Experiment]:
@@ -47,7 +45,7 @@ def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Expe
     iterations_a = [2000, 2000, 3000]
     project = "pareto_front"
 
-    for _ in range(int(n / reps)):
+    for _ in range(n):
         weight0 = np.around(np.random.uniform(0.001, 0.101), 2)
         weight1 = np.around(np.random.uniform(0.001, 1.01), 2)
 
@@ -68,9 +66,11 @@ def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Expe
                 params.optimizer("AdaptiveStochasticGradientDescent").stopping_criteria(
                     iterations=iterations_a
                 )
-
-            expqueue.push(Experiment(project, params))
+            
+            experiment = Experiment(project, params)
+            yield experiment
 
 
 if __name__ == "__main__":
-    pareto_front(7, False, 400)
+    for exp in pareto_front(7, False, 5, 5):
+        print(exp.params)
