@@ -76,6 +76,9 @@ class ExperimentQueue:
     def size(self) -> int:
         return self.client.llen(ExperimentQueue.queue_id)
 
+    def clear(self) -> None:
+        self.client.delete(ExperimentQueue.queue_id)
+
 
 if __name__ == "__main__":
     expq = ExperimentQueue()
