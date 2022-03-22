@@ -56,7 +56,8 @@ class ExperimentQueue:
         self.sshserver = SSHTunnelForwarder(
             os.environ["REDIS_HOST"],
             ssh_username="root",
-            remote_bind_address=('127.0.0.1', 6379)
+            remote_bind_address=('127.0.0.1', 6379),
+            local_bind_address=('0.0.0.0', 8080)
         )
         self.sshserver.start()
         self.local_port = self.sshserver.local_bind_port
