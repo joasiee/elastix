@@ -1,9 +1,8 @@
-fail_fast: true
 repos:
   - repo: local
     hooks:
       - id: system
         name: Requirements
-        entry: poetry export --format=requirements.txt --without-hashes --output=requirements.txt
+        entry: bash -c 'cd experiments && poetry export --format=requirements.txt --without-hashes --output=requirements.txt'
         pass_filenames: false
         language: system

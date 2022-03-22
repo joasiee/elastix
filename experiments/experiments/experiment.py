@@ -1,10 +1,10 @@
 import json
-from pathlib import Path
 from typing import List
 import redis
 from dotenv import load_dotenv
 import os
 import wandb
+from sshtunnel import SSHTunnelForwarder
 
 from elastix_wrapper.parameters import Parameters
 
@@ -49,8 +49,17 @@ class ExperimentQueue:
 
     def __init__(self) -> None:
         load_dotenv()
-        self.client = redis.Redis(
-            host=os.environ["REDIS_HOST"], port=6379, password=os.environ["REDIS_PWD"], username="joasiee", db=0)
+        self.ssh_forwarding_enable()
+        self.client = redis.Redis(host="localhost", port=self.local_port, db=0)
+
+    def ssh_forwarding_enable(self):
+        self.sshserver = SSHTunnelForwarder(
+            os.environ["REDIS_HOST"],
+            ssh_username="root",
+            remote_bind_address=('127.0.0.1', 6379)
+        )
+        self.sshserver.start()
+        self.local_port = self.sshserver.local_bind_port
 
     def push(self, experiment: Experiment) -> None:
         self.client.rpush(ExperimentQueue.queue_id, experiment.to_json())
@@ -64,7 +73,10 @@ class ExperimentQueue:
     def peek(self) -> Experiment:
         return self.client.lrange(ExperimentQueue.queue_id, 0, 0)
 
+    def size(self) -> int:
+        return self.client.llen(ExperimentQueue.queue_id)
+
 
 if __name__ == "__main__":
     expq = ExperimentQueue()
-    print(expq.pop())
+    print(expq.size())

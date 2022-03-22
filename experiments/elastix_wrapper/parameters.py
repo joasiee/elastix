@@ -164,16 +164,17 @@ class Parameters:
                 "Unknown how to extract dimensions from filetype.")
 
     def set_paths(self):
-        collection = self["Collection"]
-        instance = self["Instance"]
-        extension = INSTANCES_CONFIG[collection]["extension"]
-        folder = INSTANCES_CONFIG[collection]["folder"]
-        fixed = f"{instance:02}_Fixed.{extension}"
-        moving = f"{instance:02}_Moving.{extension}"
-        self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
-        self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
-            fixed if INSTANCES_CONFIG[collection]["masks"] else None
-        self.moving_path = INSTANCES_SRC / folder / "scans" / moving
+        if "Collection" in self.params and "Instance" in self.params:
+            collection = self["Collection"]
+            instance = self["Instance"]
+            extension = INSTANCES_CONFIG[collection]["extension"]
+            folder = INSTANCES_CONFIG[collection]["folder"]
+            fixed = f"{instance:02}_Fixed.{extension}"
+            moving = f"{instance:02}_Moving.{extension}"
+            self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
+            self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
+                fixed if INSTANCES_CONFIG[collection]["masks"] else None
+            self.moving_path = INSTANCES_SRC / folder / "scans" / moving
         return self
 
     def __getitem__(self, key) -> Any:

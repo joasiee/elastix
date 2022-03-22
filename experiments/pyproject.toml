@@ -6,27 +6,15 @@ authors = ["Joas Mulder <joasmulder@hotmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-ipykernel = "^6.7.0"
-pymongo = "^4.0.1"
+numpy = "^1.22.3"
+Pillow = "^9.0.1"
+wandb = "^0.12.11"
 python-dotenv = "^0.19.2"
-Pillow = "^9.0.0"
-numpy = "^1.22.1"
-nbformat = "^5.1.3"
-tinydb = "^4.6.1"
-nibabel = "^3.2.1"
-wandb = "^0.12.10"
-matplotlib = "^3.5.1"
 redis = "^4.1.4"
-optuna = "^2.10.0"
-
+sshtunnel = "^0.4.0"
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
-autopep8 = "^1.6.0"
-poetry-githooks = "^2.0.0"
+pre-commit = "^2.17.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.githooks]
-pre-commit = "poetry export -f requirements.txt --output requirements.txt --without-hashes"

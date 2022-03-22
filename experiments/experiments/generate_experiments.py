@@ -7,8 +7,6 @@ from elastix_wrapper.parameters import Collection, Parameters
 from experiments.experiment import Experiment, ExperimentQueue
 
 logger = logging.getLogger("ParetoFront")
-expqueue = ExperimentQueue()
-
 instances = [1, 4, 7, 8, 10, 14, 15, 18, 20, 21, 28]
 
 
@@ -44,7 +42,7 @@ def pareto_front(instance: int, gomea: bool, reps: int = 5) -> List[Experiment]:
     project = "pareto_front"
     seeds = [int((random.random() + 0.01) * 100000) for _ in range(reps)]
 
-    weight0 = np.around(np.random.uniform(0.001, 0.201), 3)
+    weight0 = np.around(np.random.uniform(0.001, 0.101), 3)
     weight1 = np.around(np.random.uniform(0.001, 1.001), 2)
 
     experiments = []
@@ -68,4 +66,7 @@ def pareto_front(instance: int, gomea: bool, reps: int = 5) -> List[Experiment]:
 
 
 if __name__ == "__main__":
-    pareto_front(7, False)
+    expqueue = ExperimentQueue()
+    for _ in range(40):
+        for experiment in pareto_front(7, False):
+            expqueue.push(experiment)
