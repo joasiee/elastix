@@ -47,10 +47,10 @@ def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Expe
     iterations_a = [2000, 2000, 3000]
     project = "pareto_front"
 
-    weight0 = np.around(np.random.uniform(0.001, 0.101), 3)
-    weight1 = np.around(np.random.uniform(0.001, 1.001), 2)
+    for _ in range(int(n / reps)):
+        weight0 = np.around(np.random.uniform(0.001, 0.101), 2)
+        weight1 = np.around(np.random.uniform(0.001, 1.01), 2)
 
-    for _ in range(int(n/reps)):
         for i in range(reps):
             seed = seeds[i]
             params = (
@@ -72,6 +72,5 @@ def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Expe
             expqueue.push(Experiment(project, params))
 
 
-
 if __name__ == "__main__":
-   pareto_front(7, False, 400)
+    pareto_front(7, False, 400)
