@@ -43,10 +43,10 @@ def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Expe
     sched = [7, 7, 7, 6, 6, 6, 5, 5, 5]
     iterations_g = [30, 50, 125]
     iterations_a = [2000, 2000, 3000]
-    project = "pareto_front4"
+    project = "pareto_front"
 
     for weight0 in np.arange(0.01, 0.06, 0.01):
-        for weight1 in np.arange(0.15, 1.65, 0.15):
+        for weight1 in np.arange(0.5, 5.5, 0.5):
             weight0 = np.around(weight0, 2)
             weight1 = np.around(weight1, 2)
 
