@@ -19,7 +19,6 @@
 #include <Core/elxVersionMacros.h>
 #include "elxConversion.h"
 #include <sstream>
-#include "itkMersenneTwisterRandomVariateGenerator.h"
 
 namespace elastix
 {
@@ -338,18 +337,18 @@ ElastixBase::BeforeAllBase()
                         << std::endl;
   }
 
-  /** Set the random seed. Use 121212 as a default, which is the same as
-   * the default in the MersenneTwister code.
-   * Use silent parameter file readout, to avoid annoying warning when
-   * starting elastix */
-  using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
-  using SeedType = RandomGeneratorType::IntegerType;
-  unsigned int randomSeed = 0;
-  if (this->GetConfiguration()->ReadParameter(randomSeed, "RandomSeed", 0, false))
-  {
-    RandomGeneratorType::Pointer randomGenerator = RandomGeneratorType::GetInstance();
-    randomGenerator->SetSeed(static_cast<SeedType>(randomSeed));
-  }
+  // /** Set the random seed. Use 121212 as a default, which is the same as
+  //  * the default in the MersenneTwister code.
+  //  * Use silent parameter file readout, to avoid annoying warning when
+  //  * starting elastix */
+  // using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
+  // using SeedType = RandomGeneratorType::IntegerType;
+  // unsigned int randomSeed = 0;
+  // if (this->GetConfiguration()->ReadParameter(randomSeed, "RandomSeed", 0, false))
+  // {
+  //   RandomGeneratorType::Pointer randomGenerator = RandomGeneratorType::GetInstance();
+  //   randomGenerator->SetSeed(static_cast<SeedType>(randomSeed));
+  // }
   
 
   /** Return a value. */

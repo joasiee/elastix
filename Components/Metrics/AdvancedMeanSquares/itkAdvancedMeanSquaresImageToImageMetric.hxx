@@ -224,9 +224,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
     measure += diff * diff;
   }
 
-  measure += static_cast<RealType>(numberOfPixelsMissed * this->m_MissedPixelPenalty);
+  measure += static_cast<RealType>(numberOfPixelsMissed) * this->m_MissedPixelPenalty;
   measure *= this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) * 100.0);
+  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) *
+                           100.0);
 
   return measure;
 } // end GetValue()
@@ -244,6 +245,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
+  // const int                chunkSize = static_cast<int>(
+  //   std::ceil(static_cast<double>(fosPoints.size()) / static_cast<double>(Self::GetNumberOfWorkUnits()) / 2.0));
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixels = 0;
@@ -251,14 +254,14 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for schedule(dynamic) reduction(+ : measure, numberOfPixels, numberOfPixelsMissed)
+#pragma omp parallel for schedule(static) reduction(+ : measure, numberOfPixels, numberOfPixelsMissed)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
     this->m_SubfunctionSamplers[fosPoints[i]]->Update();
     ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
     const unsigned long        sampleContainerSize = sampleContainer.Size();
-    numberOfPixels += sampleContainerSize * this->GetSamplingPercentage();
+    numberOfPixels += sampleContainerSize;
 
     /** Create iterator over the sample container. */
     typename ImageSampleContainerType::ConstIterator threader_fiter;
@@ -294,7 +297,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     }
   }
 
-  measure += static_cast<RealType>(numberOfPixelsMissed * this->m_MissedPixelPenalty);
+  measure += static_cast<RealType>(numberOfPixelsMissed) * this->m_MissedPixelPenalty;
   measure *= this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
   this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(numberOfPixels) * 100.0);
 

@@ -30,11 +30,11 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
         execute_elastix(params_file, out_dir, params)
     except subprocess.CalledProcessError as err:
         logger.error(
-            f"Something went wrong while running elastix at: {str(run_dir)}: {str(err)}")
+            f"Something went wrong while running elastix at: {str(run_dir)}: {str(err)}"
+        )
         return
     except TimeoutException:
-        logger.info(
-            f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
+        logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
 
@@ -42,10 +42,13 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
     wd.stop()
 
     if watch:
-        wandb.save(str((run_dir / "*").resolve()),
-                   base_path=str(run_dir.parents[0].resolve()))
-        wandb.save(str((run_dir / "out" / "TransformParameters*").resolve()),
-                   base_path=str(run_dir.parents[0].resolve()))
+        wandb.save(
+            str((run_dir / "*").resolve()), base_path=str(run_dir.parents[0].resolve())
+        )
+        wandb.save(
+            str((run_dir / "out" / "TransformParameters*").resolve()),
+            base_path=str(run_dir.parents[0].resolve()),
+        )
         wandb_dir = Path(wandb.run.dir)
         wandb.finish()
         shutil.rmtree(run_dir.absolute())
@@ -65,24 +68,24 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
             "-out",
             str(out_dir),
             "-threads",
-            os.environ["OMP_NUM_THREADS"]
+            os.environ["OMP_NUM_THREADS"],
         ]
         if params.fixedmask_path:
             args += ["-fMask", str(params.fixedmask_path)]
         subprocess.run(
-            args,
-            check=True,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.STDOUT
+            args, check=True
         )
 
 
 if __name__ == "__main__":
-    params = (Parameters.from_base(write_img=True, mesh_size=8, seed=320)
-              .gomea(fos=-6, partial_evals=True)
-              .multi_resolution(3, p_sched=[7, 7, 7, 6, 6, 6, 5, 5, 5])
-              .multi_metric()
-              .stopping_criteria(iterations=[1, 1, 1])
-              .instance(Collection.EMPIRE, 7)
-              )
+    sched = [7, 7, 7, 6, 6, 6]
+    iterations_g = [30, 50]
+    iterations_a = [2000, 2000, 3000]
+    params = (
+        Parameters.from_base(mesh_size=8, seed=1523)
+        .multi_resolution(2, p_sched=sched)
+        .optimizer("AdaptiveStochasticGradientDescent")
+        .instance(Collection.EMPIRE, 7)
+        .stopping_criteria(iterations=iterations_a)
+    )
     run(params, Path("output/" + str(params)), False)

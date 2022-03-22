@@ -74,7 +74,8 @@
         "ranges": "cpp",
         "typeindex": "cpp",
         "variant": "cpp",
-        "dense": "cpp"
+        "dense": "cpp",
+        "codecvt": "cpp"
     },
     "cmake.configureArgs": [
         "-C${workspaceFolder}/CMakeDefaultCache.txt"
