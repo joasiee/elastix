@@ -25,7 +25,7 @@
 (RandomSeed 1523)
 (WriteResultImage "false")
 (ImagePyramidSchedule 7 7 7 6 6 6)
-(Optimizer "GOMEA")
+(Optimizer "AdaptiveStochasticGradientDescent")
 (FosElementSize -6)
 (PartialEvaluations "true")
 (Collection "EMPIRE")

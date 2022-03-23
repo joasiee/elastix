@@ -79,13 +79,14 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 if __name__ == "__main__":
     sched = [7, 7, 7, 6, 6, 6, 5, 5, 5]
-    iterations_g = [30, 50]
+    iterations_g = [50, 50, 150]
     iterations_a = [2000, 2000, 3000]
     params = (
         Parameters.from_base(mesh_size=8, seed=1523)
         .multi_resolution(3, p_sched=sched)
+        .multi_metric()
         .gomea(fos=-6, partial_evals=True)
         .instance(Collection.EMPIRE, 7)
-        .stopping_criteria(iterations=iterations_a)
+        .stopping_criteria(iterations=iterations_g)
     )
     run(params, Path("output/" + str(params)), False)
