@@ -29,6 +29,7 @@
 
 #include "elxMacro.h"
 #include "itkPlatformMultiThreader.h"
+#include "itkThreadPool.h"
 #include "itkMersenneTwisterRandomVariateGenerator.h"
 
 

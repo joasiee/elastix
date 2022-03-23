@@ -73,18 +73,18 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         if params.fixedmask_path:
             args += ["-fMask", str(params.fixedmask_path)]
         subprocess.run(
-            args, check=True
+            args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
         )
 
 
 if __name__ == "__main__":
-    sched = [7, 7, 7, 6, 6, 6]
+    sched = [7, 7, 7, 6, 6, 6, 5, 5, 5]
     iterations_g = [30, 50]
     iterations_a = [2000, 2000, 3000]
     params = (
         Parameters.from_base(mesh_size=8, seed=1523)
-        .multi_resolution(2, p_sched=sched)
-        .optimizer("AdaptiveStochasticGradientDescent")
+        .multi_resolution(3, p_sched=sched)
+        .gomea(fos=-6, partial_evals=True)
         .instance(Collection.EMPIRE, 7)
         .stopping_criteria(iterations=iterations_a)
     )
