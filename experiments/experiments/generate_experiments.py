@@ -41,7 +41,7 @@ def convergence_tests(instance: int):
 
 def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Experiment]:
     sched = [7, 7, 7, 6, 6, 6, 5, 5, 5]
-    iterations_g = [30, 50, 125]
+    iterations_g = [40, 40, 100]
     iterations_a = [2000, 2000, 3000]
     project = "pareto_front"
 
@@ -73,5 +73,5 @@ def pareto_front(instance: int, gomea: bool, n: int, reps: int = 5) -> List[Expe
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for exp in pareto_front(7, False, 50, 5):
+    for exp in pareto_front(7, True, 50, 5):
         queue.push(exp)
