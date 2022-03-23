@@ -21,7 +21,7 @@
                 "-out",
                 "${workspaceFolder}/run/empire/out",
                 "-threads",
-                "4"
+                "$OMP_NUM_THREADS"
             ],
             "stopAtEntry": false,
             "cwd": "/home/joasiee/Documents/instances/empire",
@@ -81,7 +81,7 @@
                 "-out",
                 "dir",
                 "-threads",
-                "4"
+                "$OMP_NUM_THREADS"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/trivial",
