@@ -8,7 +8,7 @@
             "name": "empire-7",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Release/bin/elastix",
+            "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
                 "-f",
                 "scans/07_Fixed.mhd",

@@ -19,7 +19,6 @@
 #define elxRandomCoordinateSampler_hxx
 
 #include "elxRandomCoordinateSampler.h"
-#include "itkLinearInterpolateImageFunction.h"
 
 namespace elastix
 {
@@ -46,13 +45,12 @@ RandomCoordinateSampler<TElastix>::BeforeEachResolution()
     splineOrder, "FixedImageBSplineInterpolationOrder", this->GetComponentLabel(), level, 0);
   if (splineOrder == 1)
   {
-    using LinearInterpolatorType = itk::LinearInterpolateImageFunction<InputImageType, CoordRepType>;
-    auto fixedImageLinearInterpolator = LinearInterpolatorType::New();
+    auto fixedImageLinearInterpolator = DefaultInterpolatorType::New();
     this->SetInterpolator(fixedImageLinearInterpolator);
   }
   else
   {
-    auto fixedImageBSplineInterpolator = DefaultInterpolatorType::New();
+    auto fixedImageBSplineInterpolator = BSplineInterpolatorType::New();
     fixedImageBSplineInterpolator->SetSplineOrder(splineOrder);
     this->SetInterpolator(fixedImageBSplineInterpolator);
   }

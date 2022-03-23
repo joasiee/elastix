@@ -21,6 +21,7 @@
 #include "itkImageRandomSamplerBase.h"
 #include "itkInterpolateImageFunction.h"
 #include "itkBSplineInterpolateImageFunction.h"
+#include "itkLinearInterpolateImageFunction.h"
 #include "itkMersenneTwisterRandomVariateGenerator.h"
 
 namespace itk
@@ -80,7 +81,8 @@ public:
   using CoordRepType = double;
   using InterpolatorType = InterpolateImageFunction<InputImageType, CoordRepType>;
   using InterpolatorPointer = typename InterpolatorType::Pointer;
-  using DefaultInterpolatorType = BSplineInterpolateImageFunction<InputImageType, CoordRepType, double>;
+  using BSplineInterpolatorType = BSplineInterpolateImageFunction<InputImageType, CoordRepType, double>;
+  using DefaultInterpolatorType = LinearInterpolateImageFunction<InputImageType, CoordRepType>;
 
   /** The random number generator used to generate random coordinates. */
   using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;

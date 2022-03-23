@@ -17,5 +17,6 @@
     "NewSamplesEveryIteration": "true",
     "UseNormalization": "true",
     "WriteTransformParametersEachResolution": "true",
-    "ErodeMask": "false"
+    "ErodeMask": "false",
+    "FixedImageBSplineInterpolationOrder": 1
 }
