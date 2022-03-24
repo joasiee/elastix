@@ -31,35 +31,18 @@ void
 GOMEAOptimizer::PrintSelf(std::ostream & os, Indent indent) const
 {
   os << indent << this->GetNameOfClass() << ":" << std::endl;
-  this->PrintSettings(os, indent.GetNextIndent());
-  this->PrintProgress(os, indent.GetNextIndent());
 }
 
 void
-GOMEAOptimizer::PrintSettings(std::ostream & os, Indent indent) const
+GOMEAOptimizer::PrintSettings(std::stringstream & output) const
 {
-  Indent indent1 = indent.GetNextIndent();
-  os << indent << "Settings: " << std::endl;
-  os << indent1 << "FOS setting: " << m_FosElementSize << std::endl;
-  os << indent1 << "Nr. of parameters: " << m_NrOfParameters << std::endl;
-  os << indent1 << "Tau: " << m_Tau << std::endl;
-  os << indent1 << "Number of populations: " << m_MaxNumberOfPopulations << std::endl;
-  os << indent1 << "Population size: " << m_BasePopulationSize << std::endl;
-}
-
-void
-GOMEAOptimizer::PrintProgress(std::ostream & os, Indent indent, bool concise) const
-{
-  Indent indent1 = indent.GetNextIndent();
-  os << indent << "Progress: " << std::endl;
-  os << indent1 << "NumberOfIterations: " << m_CurrentIteration << std::endl;
-  os << indent1 << "NumberOfEvaluations: " << m_NumberOfEvaluations << std::endl;
-  os << indent1 << "Value: " << m_CurrentValue << std::endl;
-  if (!concise)
-  {
-    os << indent1 << "Parameters: " << this->GetCurrentPosition() << std::endl;
-    os << indent1 << "StopCondition: " << this->GetStopConditionDescription() << std::endl;
-  }
+  Indent indent = *itk::Indent::New();
+  output << indent << "Settings: " << std::endl;
+  output << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << std::endl;
+  output << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << std::endl;
+  output << indent.GetNextIndent() << "Tau: " << m_Tau << std::endl;
+  output << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << std::endl;
+  output << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << std::endl;
 }
 
 void
@@ -72,7 +55,6 @@ void
 GOMEAOptimizer::StartOptimization()
 {
   itkDebugMacro("StartOptimization");
-
   this->m_NrOfParameters = this->GetCostFunction()->GetNumberOfParameters();
   this->SetCurrentPosition(this->GetInitialPosition());
   this->m_CurrentIteration = 0;
@@ -81,7 +63,6 @@ GOMEAOptimizer::StartOptimization()
   this->m_StopCondition = Unknown;
   this->number_of_populations = 0;
   this->initialize();
-
   this->ResumeOptimization();
 }
 
@@ -1907,7 +1888,6 @@ GOMEAOptimizer::GetStopConditionDescription() const
 void
 GOMEAOptimizer::run(void)
 {
-  this->PrintSettings(std::cout, *itk::Indent::New());
   this->runAllPopulations();
   this->ezilaitini();
   this->StopOptimization();

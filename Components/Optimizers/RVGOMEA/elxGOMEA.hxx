@@ -113,6 +113,9 @@ void
 GOMEA<TElastix>::AfterEachResolution(void)
 {
   std::string stopcondition;
+  std::stringstream settings;
+  this->PrintSettings(settings);
+  elxout << settings.str();
 
   switch (this->GetStopCondition())
   {

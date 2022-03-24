@@ -127,10 +127,7 @@ public:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   void
-  PrintSettings(std::ostream & os, Indent indent) const;
-
-  void
-  PrintProgress(std::ostream & os, Indent indent, bool concise = true) const;
+  PrintSettings(std::stringstream & output) const;
 
 protected:
   GOMEAOptimizer();
