@@ -1,8 +1,8 @@
 #!/bin/bash
 #
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=8G
+#SBATCH --cpus-per-task=12
+#SBATCH --mem=4G
 #SBATCH --time=10-00:00:00
 #SBATCH -D /home/jmulder6/projects/elastix/experiments
 #SBATCH -o "output/slurm/pareto_front-%j.out"
@@ -11,6 +11,6 @@
 module purge > /dev/null 2>&1
 module load system/gcc/11.2.0
 
-export OMP_NUM_THREADS=16
+export OMP_NUM_THREADS=12
 
 .venv/bin/python experiments/run_experiments.py
