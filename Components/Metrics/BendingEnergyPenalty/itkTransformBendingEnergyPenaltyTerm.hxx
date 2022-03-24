@@ -155,7 +155,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
   const bool                                   transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for schedule(dynamic) reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices)
+#pragma omp parallel for reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));

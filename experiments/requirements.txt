@@ -37,5 +37,6 @@ sshtunnel==0.4.0
 termcolor==1.1.0; python_full_version >= "3.6.2" and python_full_version < "4.0.0" and python_version >= "3.6"
 urllib3==1.26.9; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.6.0" and python_version < "4" and python_version >= "3.6"
 wandb==0.12.11; python_version >= "3.6"
+wcwidth==0.2.5
 wrapt==1.14.0; python_version >= "3.6" and python_full_version < "3.0.0" or python_full_version >= "3.5.0" and python_version >= "3.6"
 yaspin==2.1.0; python_full_version >= "3.6.2" and python_full_version < "4.0.0" and python_version >= "3.6"
