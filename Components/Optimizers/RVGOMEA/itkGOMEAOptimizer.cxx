@@ -1192,12 +1192,6 @@ void
 GOMEAOptimizer::costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val)
 {
   *obj_val = this->m_PartialEvaluations ? this->GetValue(*parameters, -1) : this->GetValue(*parameters);
-
-  if (*obj_val < m_CurrentValue)
-  {
-    m_CurrentValue = *obj_val;
-    this->SetCurrentPosition(*parameters);
-  }
   ++m_NumberOfEvaluations;
   this->Modified();
 }
@@ -1222,11 +1216,6 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
   // if (abs(obj_val_full - *obj_val) > 1e-3)
   //   std::cout << "WTF" << std::endl;
 
-  if (*obj_val < m_CurrentValue)
-  {
-    m_CurrentValue = *obj_val;
-    this->SetCurrentPosition(populations[population_index][individual_index]);
-  }
   ++m_NumberOfEvaluations;
   this->Modified();
 }
@@ -1752,6 +1741,14 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
 
   return (result);
 }
+
+void
+GOMEAOptimizer::UpdatePosition(int population_index)
+{
+  this->SetCurrentPosition(mean_vectors[population_index]);
+  m_CurrentValue =
+    m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
+}
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=- Section Ezilaitini -=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1866,13 +1863,14 @@ GOMEAOptimizer::runAllPopulations()
     }
 
     this->generationalStepAllPopulations();
-    this->m_PartialEvaluations
-      ? this->GetValue(this->GetCurrentPosition(), -1)
-      : this->GetValue(this->GetCurrentPosition()); // needed for correct multi metric iteration output
+    this->UpdatePosition(number_of_populations - 1);
     m_CurrentIteration++;
     this->IterationWriteOutput();
     this->InvokeEvent(IterationEvent());
   }
+  this->SetCurrentPosition(selections[number_of_populations - 1][0]);
+  this->m_CurrentValue =
+    m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
 }
 
 const std::string

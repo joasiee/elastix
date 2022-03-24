@@ -150,8 +150,7 @@ void
 GOMEA<TElastix>::AfterRegistration(void)
 {
   /** Print the best metric value */
-  double bestValue = this->GetCurrentValue();
-  elxout << std::endl << "Final metric value  = " << bestValue << std::endl;
+  elxout << std::endl << "Final metric value  = " << this->GetCurrentValue() << std::endl;
 }
 
 } // namespace elastix

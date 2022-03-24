@@ -24,7 +24,7 @@
                 "$OMP_NUM_THREADS"
             ],
             "stopAtEntry": false,
-            "cwd": "/home/joasiee/Documents/instances/empire",
+            "cwd": "/home/joasiee/instances/empire",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

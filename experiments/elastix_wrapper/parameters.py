@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from math import ceil
 import os
+import time
 import uuid
 from PIL import Image
 from enum import Enum
@@ -29,13 +30,13 @@ class Parameters:
         params
     ) -> None:
         self.params = params
-        self.id = uuid.uuid1()
+        self.id = [str(int(time.time())), str(uuid.uuid1())[:8]]
 
     @classmethod
     def from_base(cls,
                   metric: str = "AdvancedMeanSquares",
                   sampler: str = "RandomCoordinate",
-                  sampling_p: float = 0.02,
+                  sampling_p: float = 0.03,
                   mesh_size: List[int] | int = 12,
                   seed: int = None,
                   write_img=False):
@@ -184,7 +185,7 @@ class Parameters:
         self.params[key] = value
 
     def __str__(self) -> str:
-        return f"{self['Collection']}_{self['Instance']}_{self['Optimizer']}_{self.id}".lower()
+        return f"{self.id[0]}_{self['Collection']}_{self['Instance']}_{self['Optimizer']}_{self.id[1]}".lower()
 
     def n_param(self, param: str, n: int = 2) -> List[str]:
         self[param] = [self[param] for i in range(n)]

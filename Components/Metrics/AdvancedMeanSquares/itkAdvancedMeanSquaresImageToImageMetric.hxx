@@ -245,8 +245,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
-  // const int                chunkSize = static_cast<int>(
-  //   std::ceil(static_cast<double>(fosPoints.size()) / static_cast<double>(Self::GetNumberOfWorkUnits()) / 2.0));
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixels = 0;
@@ -254,7 +252,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for schedule(static) reduction(+ : measure, numberOfPixels, numberOfPixelsMissed)
+#pragma omp parallel for reduction(+ : measure, numberOfPixels, numberOfPixelsMissed)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));

@@ -276,6 +276,8 @@ private:
   IterationWriteOutput();
   void
   ezilaitini(void);
+  void
+  UpdatePosition(int population_index);
 
   mutable std::ostringstream m_StopConditionDescription;
 
