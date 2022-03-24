@@ -24,7 +24,7 @@ class Experiment:
     def from_json(cls, jsondump):
         pyjson = json.loads(jsondump)
         params = Parameters(pyjson["params"]).set_paths()
-        return cls(pyjson["project"], params)
+        return cls(params, pyjson["project"])
 
     def already_done(self, keys: List[str]):
         keys += ["Optimizer", "Instance"]
