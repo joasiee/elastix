@@ -1,11 +1,12 @@
 import json
+from pathlib import Path
 from typing import List
 import redis
 from dotenv import load_dotenv
 import os
 import wandb
 from sshtunnel import SSHTunnelForwarder
-
+from elastix_wrapper import wrapper
 from elastix_wrapper.parameters import Parameters
 
 WANDB_ENTITY = "joasiee"
@@ -14,7 +15,7 @@ WANDB_ENTITY = "joasiee"
 class Experiment:
     __slots__ = ["project", "params"]
 
-    def __init__(self, project: str, params: Parameters) -> None:
+    def __init__(self, params: Parameters, project: str = None) -> None:
         params.prune()
         self.project = project
         self.params = params
@@ -79,8 +80,14 @@ class ExperimentQueue:
     def clear(self) -> None:
         self.client.delete(ExperimentQueue.queue_id)
 
+def run_experiment(experiment: Experiment):
+    wandb.init(project=experiment.project,
+                     name=str(experiment.params), reinit=True)
+    wandb.config.update(experiment.params.params)
+    wrapper.run(experiment.params, Path("output") / wandb.run.project / wandb.run.name)
+
 
 if __name__ == "__main__":
     expq = ExperimentQueue()
-    # expq.clear()
-    print(expq.peek())
+    expq.clear()
+    print(expq.size())

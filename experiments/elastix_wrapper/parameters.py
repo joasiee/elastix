@@ -36,7 +36,7 @@ class Parameters:
     def from_base(cls,
                   metric: str = "AdvancedMeanSquares",
                   sampler: str = "RandomCoordinate",
-                  sampling_p: float = 0.03,
+                  sampling_p: float = 0.02,
                   mesh_size: List[int] | int = 12,
                   seed: int = None,
                   write_img=False):
@@ -48,6 +48,7 @@ class Parameters:
         params["MeshSize"] = mesh_size
         params["RandomSeed"] = seed
         params["WriteResultImage"] = write_img
+        params["WritePyramidImagesAfterEachResolution"] = write_img
         return cls(params)
 
     @classmethod
@@ -120,6 +121,9 @@ class Parameters:
                 "PartialEvaluations": partial_evals,
             },
         )
+
+    def asgd(self):
+        return self.optimizer("AdaptiveStochasticGradientDescent")
 
     def prune(self):
         self.params = {k: v for k, v in self.params.items() if v is not None}
