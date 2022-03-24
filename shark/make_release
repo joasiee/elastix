@@ -47,10 +47,10 @@ then
 
     # Configure and install ITK
     git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout rv_gomea_integration
-    cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
 fi
 
 cd $WORKING_DIR/ITK
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
 cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 16 --config $CMAKE_BUILD_TYPE --target all
 
 # Configure and install elastix
