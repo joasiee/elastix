@@ -802,9 +802,11 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValueThreaderCallback(
   ThreadIdType     threadID = infoStruct->WorkUnitID;
 
   MultiThreaderParameterType * temp = static_cast<MultiThreaderParameterType *>(infoStruct->UserData);
-  std::invoke(temp->st_Metric->m_ThreadedGetValueFn, temp->st_Metric, threadID);
+
+  temp->st_Metric->ThreadedGetValue(threadID);
 
   return itk::ITK_THREAD_RETURN_DEFAULT_VALUE;
+
 } // end GetValueThreaderCallback()
 
 

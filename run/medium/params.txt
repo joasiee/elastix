@@ -7,7 +7,7 @@
 (Interpolator "LinearInterpolator")
 (Metric "AdvancedMeanSquares")
 (UseNormalization "true")
-(Optimizer "AdaptiveStochasticGradientDescent")
+(Optimizer "GOMEA")
 (ResampleInterpolator "FinalBSplineInterpolator")
 (BSplineInterpolationOrder 1)
 (FinalBSplineInterpolationOrder 3)
@@ -18,7 +18,7 @@
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
-(MaximumNumberOfIterations 100)
+(MaximumNumberOfIterations 5)
 //(PartialEvaluations "true")
 //(FosElementSize -6)
 
