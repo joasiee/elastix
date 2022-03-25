@@ -20,23 +20,9 @@
 
 #include "itkRecursiveBSplineTransform.h"
 
-#include "itkRecursiveBSplineTransformImplementation.h"
-
 
 namespace itk
 {
-
-/**
- * ********************* Constructor ****************************
- */
-
-template <typename TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
-RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::RecursiveBSplineTransform()
-  : Superclass()
-{
-  this->m_RecursiveBSplineWeightFunction = RecursiveBSplineWeightFunctionType::New();
-} // end Constructor()
-
 
 /**
  * ********************* TransformPoint ****************************
@@ -47,15 +33,10 @@ auto
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(const InputPointType & point) const
   -> OutputPointType
 {
-  /** Define some constants. */
-  const unsigned int numberOfWeights = RecursiveBSplineWeightFunctionType::NumberOfWeights;
-
   /** Initialize output point. */
   OutputPointType outputPoint;
 
   /** Allocate weights on the stack: */
-  typename WeightsType::ValueType weightsArray1D[numberOfWeights];
-  WeightsType                     weights1D(weightsArray1D, numberOfWeights, false);
 
   /** Check if the coefficient image has been set. */
   if (!this->m_CoefficientImages[0])
@@ -78,8 +59,8 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(co
   }
 
   // Compute interpolation weighs and store them in weights1D
-  IndexType supportIndex;
-  this->m_RecursiveBSplineWeightFunction->Evaluate(cindex, weights1D, supportIndex);
+  IndexType         supportIndex;
+  const WeightsType weights1D = this->m_RecursiveBSplineWeightFunction.Evaluate(cindex, supportIndex);
 
   /** Initialize (helper) variables. */
   const OffsetValueType * bsplineOffsetTable = this->m_CoefficientImages[0]->GetOffsetTable();
@@ -97,8 +78,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(co
 
   /** Call the recursive TransformPoint function. */
   ScalarType displacement[SpaceDimension];
-  RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::TransformPoint(
-    displacement, mu, bsplineOffsetTable, &(weights1D[0]));
+  ImplementationType::TransformPoint(displacement, mu, bsplineOffsetTable, weights1D.data());
 
   // The output point is the start point + displacement.
   for (unsigned int j = 0; j < SpaceDimension; ++j)
@@ -151,19 +131,15 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobian(
    * In contrast to the normal B-spline weights function, the recursive version
    * returns the individual weights instead of the multiplied ones.
    */
-  const unsigned int              numberOfWeights = RecursiveBSplineWeightFunctionType::NumberOfWeights;
-  typename WeightsType::ValueType weightsArray1D[numberOfWeights];
-  WeightsType                     weights1D(weightsArray1D, numberOfWeights, false);
-  IndexType                       supportIndex;
-  this->m_RecursiveBSplineWeightFunction->Evaluate(cindex, weights1D, supportIndex);
+  IndexType         supportIndex;
+  const WeightsType weights1D = this->m_RecursiveBSplineWeightFunction.Evaluate(cindex, supportIndex);
 
   /** Recursively compute the first numberOfIndices entries of the Jacobian.
    * They are directly written in the Jacobian matrix memory block.
    * The pointer has changed after this function call.
    */
   ParametersValueType * jacobianPointer = jacobian.data_block();
-  RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::GetJacobian(
-    jacobianPointer, &(weights1D[0]), 1.0);
+  ImplementationType::GetJacobian(jacobianPointer, weights1D.data(), 1.0);
 
   /** Compute the nonzero Jacobian indices.
    * Takes a significant portion of the computation time of this function.
@@ -209,11 +185,8 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::EvaluateJacobianW
    * In contrast to the normal B-spline weights function, the recursive version
    * returns the individual weights instead of the multiplied ones.
    */
-  const unsigned int              numberOfWeights = RecursiveBSplineWeightFunctionType::NumberOfWeights;
-  typename WeightsType::ValueType weightsArray1D[numberOfWeights];
-  WeightsType                     weights1D(weightsArray1D, numberOfWeights, false);
-  IndexType                       supportIndex;
-  this->m_RecursiveBSplineWeightFunction->Evaluate(cindex, weights1D, supportIndex);
+  IndexType         supportIndex;
+  const WeightsType weights1D = this->m_RecursiveBSplineWeightFunction.Evaluate(cindex, supportIndex);
 
   /** Recursively compute the inner product of the Jacobian and the moving image gradient.
    * The pointer has changed after this function call.
@@ -225,8 +198,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::EvaluateJacobianW
     migArray[j] = movingImageGradient[j];
   }
   ParametersValueType * imageJacobianPointer = imageJacobian.data_block();
-  RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::
-    EvaluateJacobianWithImageGradientProduct(imageJacobianPointer, migArray, &(weights1D[0]), 1.0);
+  ImplementationType::EvaluateJacobianWithImageGradientProduct(imageJacobianPointer, migArray, weights1D.data(), 1.0);
 
   /** Setup support region needed for the nonZeroJacobianIndices. */
   const RegionType supportRegion(supportIndex, Superclass::m_SupportSize);
@@ -261,23 +233,14 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialJacobia
     return;
   }
 
-  /** Create storage for the B-spline interpolation weights. */
-  const unsigned int              numberOfWeights = RecursiveBSplineWeightFunctionType::NumberOfWeights;
-  typename WeightsType::ValueType weightsArray1D[numberOfWeights];
-  WeightsType                     weights1D(weightsArray1D, numberOfWeights, false);
-  typename WeightsType::ValueType derivativeWeightsArray1D[numberOfWeights];
-  WeightsType                     derivativeWeights1D(derivativeWeightsArray1D, numberOfWeights, false);
-
-  double * weightsPointer = &(weights1D[0]);
-  double * derivativeWeightsPointer = &(derivativeWeights1D[0]);
-
   /** Compute the interpolation weights.
    * In contrast to the normal B-spline weights function, the recursive version
    * returns the individual weights instead of the multiplied ones.
    */
-  IndexType supportIndex;
-  this->m_RecursiveBSplineWeightFunction->Evaluate(cindex, weights1D, supportIndex);
-  this->m_RecursiveBSplineWeightFunction->EvaluateDerivative(cindex, derivativeWeights1D, supportIndex);
+  IndexType         supportIndex;
+  const WeightsType weights1D = this->m_RecursiveBSplineWeightFunction.Evaluate(cindex, supportIndex);
+  const WeightsType derivativeWeights1D =
+    this->m_RecursiveBSplineWeightFunction.EvaluateDerivative(cindex, supportIndex);
 
   /** Compute the offset to the start index. */
   const OffsetValueType * bsplineOffsetTable = this->m_CoefficientImages[0]->GetOffsetTable();
@@ -296,8 +259,8 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialJacobia
 
   /** Recursively compute the spatial Jacobian. */
   double spatialJacobian[SpaceDimension * (SpaceDimension + 1)]; // double
-  RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::GetSpatialJacobian(
-    spatialJacobian, mu, bsplineOffsetTable, weightsPointer, derivativeWeightsPointer);
+  ImplementationType::GetSpatialJacobian(
+    spatialJacobian, mu, bsplineOffsetTable, weights1D.data(), derivativeWeights1D.data());
 
   /** Copy the correct elements to the spatial Jacobian.
    * The first SpaceDimension elements are actually the displacement, i.e. the recursive
@@ -348,27 +311,16 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialHessian
     return;
   }
 
-  /** Create storage for the B-spline interpolation weights. */
-  const unsigned int              numberOfWeights = RecursiveBSplineWeightFunctionType::NumberOfWeights;
-  typename WeightsType::ValueType weightsArray1D[numberOfWeights];
-  WeightsType                     weights1D(weightsArray1D, numberOfWeights, false);
-  typename WeightsType::ValueType derivativeWeightsArray1D[numberOfWeights];
-  WeightsType                     derivativeWeights1D(derivativeWeightsArray1D, numberOfWeights, false);
-  typename WeightsType::ValueType hessianWeightsArray1D[numberOfWeights];
-  WeightsType                     hessianWeights1D(hessianWeightsArray1D, numberOfWeights, false);
-
-  double * weightsPointer = &(weights1D[0]);
-  double * derivativeWeightsPointer = &(derivativeWeights1D[0]);
-  double * hessianWeightsPointer = &(hessianWeights1D[0]);
-
   /** Compute the interpolation weights.
    * In contrast to the normal B-spline weights function, the recursive version
    * returns the individual weights instead of the multiplied ones.
    */
-  IndexType supportIndex;
-  this->m_RecursiveBSplineWeightFunction->Evaluate(cindex, weights1D, supportIndex);
-  this->m_RecursiveBSplineWeightFunction->EvaluateDerivative(cindex, derivativeWeights1D, supportIndex);
-  this->m_RecursiveBSplineWeightFunction->EvaluateSecondOrderDerivative(cindex, hessianWeights1D, supportIndex);
+  IndexType         supportIndex;
+  const WeightsType weights1D = this->m_RecursiveBSplineWeightFunction.Evaluate(cindex, supportIndex);
+  const WeightsType derivativeWeights1D =
+    this->m_RecursiveBSplineWeightFunction.EvaluateDerivative(cindex, supportIndex);
+  const WeightsType hessianWeights1D =
+    this->m_RecursiveBSplineWeightFunction.EvaluateSecondOrderDerivative(cindex, supportIndex);
 
   /** Compute the offset to the start index. */
   const OffsetValueType * bsplineOffsetTable = this->m_CoefficientImages[0]->GetOffsetTable();
@@ -387,8 +339,8 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialHessian
 
   /** Recursively compute the spatial Hessian. */
   double spatialHessian[SpaceDimension * (SpaceDimension + 1) * (SpaceDimension + 2) / 2];
-  RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::GetSpatialHessian(
-    spatialHessian, mu, bsplineOffsetTable, weightsPointer, derivativeWeightsPointer, hessianWeightsPointer);
+  ImplementationType::GetSpatialHessian(
+    spatialHessian, mu, bsplineOffsetTable, weights1D.data(), derivativeWeights1D.data(), hessianWeights1D.data());
 
   /** Copy the correct elements to the spatial Hessian.
    * The first SpaceDimension elements are actually the displacement, i.e. the recursive
@@ -467,23 +419,14 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
     return;
   }
 
-  /** Create storage for the B-spline interpolation weights. */
-  const unsigned int              numberOfWeights = RecursiveBSplineWeightFunctionType::NumberOfWeights;
-  typename WeightsType::ValueType weightsArray1D[numberOfWeights];
-  WeightsType                     weights1D(weightsArray1D, numberOfWeights, false);
-  typename WeightsType::ValueType derivativeWeightsArray1D[numberOfWeights];
-  WeightsType                     derivativeWeights1D(derivativeWeightsArray1D, numberOfWeights, false);
-
-  double * weightsPointer = &(weights1D[0]);
-  double * derivativeWeightsPointer = &(derivativeWeights1D[0]);
-
   /** Compute the interpolation weights.
    * In contrast to the normal B-spline weights function, the recursive version
    * returns the individual weights instead of the multiplied ones.
    */
-  IndexType supportIndex;
-  this->m_RecursiveBSplineWeightFunction->Evaluate(cindex, weights1D, supportIndex);
-  this->m_RecursiveBSplineWeightFunction->EvaluateDerivative(cindex, derivativeWeights1D, supportIndex);
+  IndexType         supportIndex;
+  const WeightsType weights1D = this->m_RecursiveBSplineWeightFunction.Evaluate(cindex, supportIndex);
+  const WeightsType derivativeWeights1D =
+    this->m_RecursiveBSplineWeightFunction.EvaluateDerivative(cindex, supportIndex);
 
   /** Allocate memory for jsj. If you want also the Jacobian,
    * numberOfIndices more elements are needed.
@@ -493,8 +436,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
   /** Recursively expand all weights (destroys dummy), and multiply with dc. */
   const double * dc = this->m_PointToIndexMatrix2.GetVnlMatrix().data_block();
   double *       jsjPtr2 = jsj[0].GetVnlMatrix().data_block();
-  RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::
-    GetJacobianOfSpatialJacobian(jsjPtr2, weightsPointer, derivativeWeightsPointer, dc, dummy);
+  ImplementationType::GetJacobianOfSpatialJacobian(jsjPtr2, weights1D.data(), derivativeWeights1D.data(), dc, dummy);
 
   /** Setup support region needed for the nonZeroJacobianIndices. */
   const RegionType supportRegion(supportIndex, Superclass::m_SupportSize);
@@ -566,27 +508,17 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
     return;
   }
 
-  /** Create storage for the B-spline interpolation weights. */
-  const unsigned int              numberOfWeights = RecursiveBSplineWeightFunctionType::NumberOfWeights;
-  typename WeightsType::ValueType weightsArray1D[numberOfWeights];
-  WeightsType                     weights1D(weightsArray1D, numberOfWeights, false);
-  typename WeightsType::ValueType derivativeWeightsArray1D[numberOfWeights];
-  WeightsType                     derivativeWeights1D(derivativeWeightsArray1D, numberOfWeights, false);
-  typename WeightsType::ValueType hessianWeightsArray1D[numberOfWeights];
-  WeightsType                     hessianWeights1D(hessianWeightsArray1D, numberOfWeights, false);
-
-  double * weightsPointer = &(weights1D[0]);
-  double * derivativeWeightsPointer = &(derivativeWeights1D[0]);
-  double * hessianWeightsPointer = &(hessianWeights1D[0]);
 
   /** Compute the interpolation weights.
    * In contrast to the normal B-spline weights function, the recursive version
    * returns the individual weights instead of the multiplied ones.
    */
-  IndexType supportIndex;
-  this->m_RecursiveBSplineWeightFunction->Evaluate(cindex, weights1D, supportIndex);
-  this->m_RecursiveBSplineWeightFunction->EvaluateDerivative(cindex, derivativeWeights1D, supportIndex);
-  this->m_RecursiveBSplineWeightFunction->EvaluateSecondOrderDerivative(cindex, hessianWeights1D, supportIndex);
+  IndexType         supportIndex;
+  const WeightsType weights1D = this->m_RecursiveBSplineWeightFunction.Evaluate(cindex, supportIndex);
+  const WeightsType derivativeWeights1D =
+    this->m_RecursiveBSplineWeightFunction.EvaluateDerivative(cindex, supportIndex);
+  const WeightsType hessianWeights1D =
+    this->m_RecursiveBSplineWeightFunction.EvaluateSecondOrderDerivative(cindex, supportIndex);
 
   /** Recursively expand all weights (destroys dummy and jshPtr points to last element afterwards).
    * This version also performs pre- and post-multiplication with the matrices dc^T and dc, respectively.
@@ -596,8 +528,8 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
   double *       jshPtr = jsh[0][0].GetVnlMatrix().data_block();
   const double * dc = this->m_PointToIndexMatrix2.GetVnlMatrix().data_block();
   const double   dummy[1] = { 1.0 };
-  RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::
-    GetJacobianOfSpatialHessian(jshPtr, weightsPointer, derivativeWeightsPointer, hessianWeightsPointer, dc, dummy);
+  ImplementationType::GetJacobianOfSpatialHessian(
+    jshPtr, weights1D.data(), derivativeWeights1D.data(), hessianWeights1D.data(), dc, dummy);
 
   /** Setup support region needed for the nonZeroJacobianIndices. */
   const RegionType supportRegion(supportIndex, Superclass::m_SupportSize);
@@ -651,8 +583,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::ComputeNonZeroJac
   /** Call the recursive implementation. */
   unsigned long   currentIndex = totalOffsetToSupportIndex;
   unsigned long * nzjiPointer = &nonZeroJacobianIndices[0];
-  RecursiveBSplineTransformImplementation<SpaceDimension, SpaceDimension, SplineOrder, TScalar>::
-    ComputeNonZeroJacobianIndices(nzjiPointer, parametersPerDim, currentIndex, gridOffsetTable);
+  ImplementationType::ComputeNonZeroJacobianIndices(nzjiPointer, parametersPerDim, currentIndex, gridOffsetTable);
 
 } // end ComputeNonZeroJacobianIndices()
 

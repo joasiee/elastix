@@ -21,6 +21,8 @@
 #include "itkAdvancedBSplineDeformableTransform.h"
 
 #include "itkRecursiveBSplineInterpolationWeightFunction.h"
+#include "itkRecursiveBSplineTransformImplementation.h"
+#include "elxDefaultConstructibleSubclass.h"
 
 namespace itk
 {
@@ -110,10 +112,6 @@ public:
   /** Parameter index array type. */
   using typename Superclass::ParameterIndexArrayType;
 
-  using RecursiveBSplineWeightFunctionType = typename itk::
-    RecursiveBSplineInterpolationWeightFunction<TScalarType, NDimensions, VSplineOrder>; // TODO: get rid of this and
-                                                                                         // use the kernels directly.
-
   /** Compute point transformation. This one is commonly used.
    * It calls RecursiveBSplineTransformImplementation2::InterpolateTransformPoint
    * for a recursive implementation.
@@ -175,13 +173,11 @@ public:
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override;
 
 protected:
-  RecursiveBSplineTransform();
+  RecursiveBSplineTransform() = default;
   ~RecursiveBSplineTransform() override = default;
 
   using typename Superclass::JacobianImageType;
   using typename Superclass::JacobianPixelType;
-
-  typename RecursiveBSplineWeightFunctionType::Pointer m_RecursiveBSplineWeightFunction;
 
   /** Compute the nonzero Jacobian indices. */
   void
@@ -192,6 +188,14 @@ private:
   RecursiveBSplineTransform(const Self &) = delete;
   void
   operator=(const Self &) = delete;
+
+  using ImplementationType =
+    RecursiveBSplineTransformImplementation<NDimensions, NDimensions, VSplineOrder, TScalarType>;
+
+  using RecursiveBSplineWeightFunctionType =
+    itk::RecursiveBSplineInterpolationWeightFunction<TScalarType, NDimensions, VSplineOrder>;
+
+  elastix::DefaultConstructibleSubclass<RecursiveBSplineWeightFunctionType> m_RecursiveBSplineWeightFunction;
 };
 
 } // end namespace itk

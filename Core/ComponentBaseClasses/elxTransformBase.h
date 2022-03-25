@@ -152,8 +152,7 @@ public:
   using MovingImageType = typename TElastix::MovingImageType;
 
   /** Typedef's from ComponentDatabase. */
-  using ComponentDatabaseType = ComponentDatabase;
-  using ComponentDescriptionType = ComponentDatabaseType::ComponentDescriptionType;
+  using ComponentDescriptionType = ComponentDatabase::ComponentDescriptionType;
   using PtrToCreator = ComponentDatabase::PtrToCreator;
 
   /** Typedef for the ProgressCommand. */
@@ -166,7 +165,6 @@ public:
   itkStaticConstMacro(MovingImageDimension, unsigned int, MovingImageType::ImageDimension);
 
   /** Other typedef's. */
-  using ObjectType = itk::Object;
   using CombinationTransformType = itk::AdvancedCombinationTransform<CoordRepType, Self::FixedImageDimension>;
   using ITKBaseType = CombinationTransformType;
   using InitialTransformType = typename CombinationTransformType::InitialTransformType;

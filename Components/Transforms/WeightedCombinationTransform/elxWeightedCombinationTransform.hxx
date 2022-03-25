@@ -196,7 +196,6 @@ WeightedCombinationTransformElastix<TElastix>::LoadSubTransforms()
   /** Typedef's from ComponentDatabase. */
   using ComponentDescriptionType = typename Superclass2::ComponentDescriptionType;
   using PtrToCreator = typename Superclass2::PtrToCreator;
-  using ObjectType = typename Superclass2::ObjectType;
 
   const std::size_t N = this->m_Configuration->CountNumberOfParameterEntries("SubTransforms");
 
@@ -226,7 +225,7 @@ WeightedCombinationTransformElastix<TElastix>::LoadSubTransforms()
 
     /** Create a new configuration, which will be initialized with
      * the subtransformFileName. */
-    ConfigurationPointer configurationSubTransform = ConfigurationType::New();
+    const auto configurationSubTransform = Configuration::New();
 
     /** Create argmapInitialTransform. */
     CommandLineArgumentMapType argmapSubTransform;
@@ -243,12 +242,9 @@ WeightedCombinationTransformElastix<TElastix>::LoadSubTransforms()
     configurationSubTransform->ReadParameter(subTransformName, "Transform", 0);
 
     /** Create a SubTransform. */
-    typename ObjectType::Pointer subTransform;
-    PtrToCreator                 testcreator = nullptr;
-    testcreator = ElastixMain::GetComponentDatabase().GetCreator(subTransformName, this->m_Elastix->GetDBIndex());
-
-    // Note that ObjectType::Pointer() yields a default-constructed SmartPointer (null).
-    subTransform = testcreator ? testcreator() : typename ObjectType::Pointer();
+    const PtrToCreator testcreator =
+      ElastixMain::GetComponentDatabase().GetCreator(subTransformName, this->m_Elastix->GetDBIndex());
+    const itk::Object::Pointer subTransform = (testcreator == nullptr) ? nullptr : testcreator();
 
     /** Cast to TransformBase */
     Superclass2 * elx_subTransform = dynamic_cast<Superclass2 *>(subTransform.GetPointer());

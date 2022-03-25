@@ -40,7 +40,6 @@
 
 #include <vector>
 
-#include "itkImageLinearIteratorWithIndex.h"
 #include "itkInterpolateImageFunction.h"
 #include <vnl/vnl_matrix.h>
 
@@ -121,9 +120,6 @@ public:
   /** PointType typedef support */
   using typename Superclass::PointType;
 
-  /** Iterator typedef support */
-  using Iterator = ImageLinearIteratorWithIndex<TImageType>;
-
   /** Internal Coefficient typedef support */
   using CoefficientDataType = TCoefficientType;
   using CoefficientImageType = Image<CoefficientDataType, Self::ImageDimension>;
@@ -193,9 +189,8 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   // These are needed by the smoothing spline routine.
-  std::vector<CoefficientDataType> m_Scratch;     // temp storage for processing of Coefficients
-  typename TImageType::SizeType    m_DataLength;  // Image size
-  unsigned int                     m_SplineOrder; // User specified spline order (3rd or cubic is the default)
+  typename TImageType::SizeType m_DataLength;  // Image size
+  unsigned int                  m_SplineOrder; // User specified spline order (3rd or cubic is the default)
 
   typename CoefficientImageType::ConstPointer m_Coefficients; // Spline coefficients
 
@@ -240,9 +235,7 @@ private:
   void
   ApplyMirrorBoundaryConditions(vnl_matrix<long> & evaluateIndex, unsigned int splineOrder) const;
 
-  Iterator               m_CIterator;                    // Iterator for traversing spline coefficients.
-  unsigned long          m_MaxNumberInterpolationPoints; // number of neighborhood points used for interpolation
-  std::vector<IndexType> m_PointsToIndex;                // Preallocation of interpolation neighborhood indicies
+  std::vector<IndexType> m_PointsToIndex; // Preallocation of interpolation neighborhood indicies
 
   CoefficientFilterPointer m_CoefficientFilter;
 

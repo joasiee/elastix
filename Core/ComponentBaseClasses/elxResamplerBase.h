@@ -85,11 +85,7 @@ public:
 
   /** Typedef's from superclass. */
   using typename Superclass::ElastixType;
-  using typename Superclass::ElastixPointer;
-  using typename Superclass::ConfigurationType;
-  using typename Superclass::ConfigurationPointer;
   using typename Superclass::RegistrationType;
-  using typename Superclass::RegistrationPointer;
 
   /** Typedef's from elastix.
    * NB: it is assumed that fixed and moving image dimension are equal!  */
@@ -227,6 +223,18 @@ private:
   /** Release memory. */
   void
   ReleaseMemory();
+
+  /** Casts the specified input image to the image type with the specified pixel type. */
+  template <typename TResultPixel>
+  itk::SmartPointer<itk::ImageBase<ImageDimension>>
+  CastImage(const InputImageType * const inputImage) const
+  {
+    const auto castFilter =
+      itk::CastImageFilter<InputImageType, itk::Image<TResultPixel, InputImageType::ImageDimension>>::New();
+    castFilter->SetInput(inputImage);
+    castFilter->Update();
+    return castFilter->GetOutput();
+  }
 };
 
 } // end namespace elastix

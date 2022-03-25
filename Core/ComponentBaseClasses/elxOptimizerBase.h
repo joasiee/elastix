@@ -62,11 +62,7 @@ public:
 
   /** Typedefs inherited from Elastix. */
   using typename Superclass::ElastixType;
-  using typename Superclass::ElastixPointer;
-  using typename Superclass::ConfigurationType;
-  using typename Superclass::ConfigurationPointer;
   using typename Superclass::RegistrationType;
-  using typename Superclass::RegistrationPointer;
 
   /** ITKBaseType. */
   using ITKBaseType = itk::Optimizer;

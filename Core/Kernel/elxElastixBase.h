@@ -150,10 +150,8 @@ public:
   using Superclass = BaseComponent;
 
   /** Typedefs used in this class. */
-  using ConfigurationType = Configuration;
-  using ConfigurationPointer = ConfigurationType::Pointer;
-  using ObjectType = itk::Object; // for the components
-  using ObjectPointer = ObjectType::Pointer;
+  using ConfigurationPointer = Configuration::Pointer;
+  using ObjectPointer = itk::Object::Pointer;
   using DataObjectType = itk::DataObject; // for the images
   using DataObjectPointer = DataObjectType::Pointer;
   using ObjectContainerType = itk::VectorContainer<unsigned int, ObjectPointer>;
@@ -170,9 +168,8 @@ public:
   using ResultDeformationFieldType = itk::DataObject;
 
   /** Other typedef's. */
-  using ComponentDatabaseType = ComponentDatabase;
-  using ComponentDatabasePointer = ComponentDatabaseType::Pointer;
-  using DBIndexType = ComponentDatabaseType::IndexType;
+  using ComponentDatabasePointer = ComponentDatabase::Pointer;
+  using DBIndexType = ComponentDatabase::IndexType;
   using FlatDirectionCosinesType = std::vector<double>;
 
   /** Type for representation of the transform coordinates. */
@@ -185,8 +182,8 @@ public:
   using TimerType = itk::TimeProbe;
 
   /** Set/Get the Configuration Object. */
-  elxGetObjectMacro(Configuration, ConfigurationType);
-  elxSetObjectMacro(Configuration, ConfigurationType);
+  elxGetObjectMacro(Configuration, Configuration);
+  elxSetObjectMacro(Configuration, Configuration);
 
   /** Set the database index of the instantiated elastix object. */
   void
@@ -287,20 +284,20 @@ public:
   elxGetNumberOfMacro(ResultDeformationField);
 
   /** Set/Get the initial transform
-   * The type is ObjectType, but the pointer should actually point
+   * The type is itk::Object, but the pointer should actually point
    * to an itk::Transform type (or inherited from that one).
    */
-  elxSetObjectMacro(InitialTransform, ObjectType);
-  elxGetObjectMacro(InitialTransform, ObjectType);
+  elxSetObjectMacro(InitialTransform, itk::Object);
+  elxGetObjectMacro(InitialTransform, itk::Object);
 
   /** Set/Get the final transform
-   * The type is ObjectType, but the pointer should actually point
+   * The type is itk::Object, but the pointer should actually point
    * to an itk::Transform type (or inherited from that one).
    * You can use this to set it as an initial transform in another
    * ElastixBase instantiation.
    */
-  elxSetObjectMacro(FinalTransform, ObjectType);
-  elxGetObjectMacro(FinalTransform, ObjectType);
+  elxSetObjectMacro(FinalTransform, itk::Object);
+  elxGetObjectMacro(FinalTransform, itk::Object);
 
   /** Empty Run()-function to be overridden. */
   virtual int
@@ -397,7 +394,7 @@ public:
   void
   AddTargetCellToIterationInfo(const char * const name)
   {
-    m_IterationInfo.AddTargetCell(name);
+    m_IterationInfo.AddNewTargetCell(name);
   }
 
 protected:
