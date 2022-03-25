@@ -1842,7 +1842,6 @@ GOMEAOptimizer::runAllPopulations()
     {
       this->initializeNewPopulation();
     }
-
     this->generationalStepAllPopulations();
     this->UpdatePosition(number_of_populations - 1);
     m_CurrentIteration++;
@@ -1850,8 +1849,7 @@ GOMEAOptimizer::runAllPopulations()
     this->InvokeEvent(IterationEvent());
   }
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
-  this->m_CurrentValue =
-    m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
+  this->m_CurrentValue = objective_values_selections[number_of_populations - 1][0];
 }
 
 const std::string

@@ -191,11 +191,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const unsigned long        sampleContainerSize = sampleContainer.Size();
 
   /** Create variables to store intermediate results. circumvent false sharing */
-  unsigned long numberOfPixelsMissed = 0;
+  unsigned long numberOfPixelsCounted = 0;
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
 /** Loop over the fixed image samples to calculate the mean squares. */
-#pragma omp parallel for reduction(+ : measure, numberOfPixelsMissed)
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted)
   for (int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
@@ -205,29 +205,15 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
     const RealType &            fixedImageValue = static_cast<RealType>(sampleContainer[i].m_ImageValue);
 
     // clamp to closest moving image pixel if mapped outside buffer.
-    if (!(this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0)))
+    if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
     {
-      const typename MovingImageType::Superclass &   imageBase = *(this->GetMovingImage());
-      MovingImageIndexType                           index = imageBase.TransformPhysicalPointToIndex(mappedPoint);
-      const typename MovingImageRegionType::SizeType regionSize = imageBase.GetLargestPossibleRegion().GetSize();
-      for (int d = 0; d < MovingImageDimension; ++d)
-      {
-        const long lo = 0L;
-        const long hi = static_cast<long>(regionSize[d] - 1);
-        index[d] = std::clamp(static_cast<long>(index[d]), lo, hi);
-      }
-      movingImageValue = this->GetMovingImage()->GetPixel(index);
-      ++numberOfPixelsMissed;
+      const RealType diff = movingImageValue - fixedImageValue;
+      measure += diff * diff;
+      ++numberOfPixelsCounted;
     }
-
-    const RealType diff = movingImageValue - fixedImageValue;
-    measure += diff * diff;
   }
 
-  measure += static_cast<RealType>(numberOfPixelsMissed) * this->m_MissedPixelPenalty;
-  measure *= this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) *
-                           100.0);
+  measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
 
   return measure;
 } // end GetValue()

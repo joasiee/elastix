@@ -14,7 +14,7 @@
 (Resampler "DefaultResampler")
 (Transform "RecursiveBSplineTransform")
 (NumberOfResolutions 1)
-(FinalGridSpacingInVoxels 200)
+(FinalGridSpacingInVoxels 100)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
@@ -23,8 +23,9 @@
 //(FosElementSize -6)
 
 (WriteResultImage "true")
-(ImageSampler "Random")
-(NumberOfSpatialSamples 100)
+(ImageSampler "RandomCoordinate")
+(NewSamplesEveryIteration "true")
+(NumberOfSpatialSamples 10000)
 (SamplingPercentage 0.05)
 (DefaultPixelValue 0)
 (RandomSeed 43982)
