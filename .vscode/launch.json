@@ -8,7 +8,7 @@
             "name": "empire-26",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/RelWithDebInfo/bin/elastix",
+            "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
                 "-f",
                 "scans/26_Fixed.mhd",

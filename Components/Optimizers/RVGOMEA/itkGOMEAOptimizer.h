@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <iostream>
+#include <numeric>
 #include <fstream>
 #include <math.h>
 #include <stdio.h>
@@ -274,7 +275,7 @@ private:
   void
   ezilaitini(void);
   void
-  UpdatePosition(int population_index);
+  UpdatePosition(bool avg = true);
 
   mutable std::ostringstream m_StopConditionDescription;
 

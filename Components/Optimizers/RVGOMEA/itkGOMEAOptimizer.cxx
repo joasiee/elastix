@@ -1724,11 +1724,12 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
 }
 
 void
-GOMEAOptimizer::UpdatePosition(int population_index)
+GOMEAOptimizer::UpdatePosition(bool avg)
 {
-  this->SetCurrentPosition(mean_vectors[population_index]);
-  m_CurrentValue =
-    m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
+  this->SetCurrentPosition(selections[number_of_populations - 1][0]);
+  auto &     v = objective_values_selections[number_of_populations - 1];
+  auto const count = static_cast<float>(selection_sizes[number_of_populations - 1]);
+  this->m_CurrentValue = avg ? std::reduce(v.begin(), &v[count]) / count : v[0];
 }
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
@@ -1843,13 +1844,12 @@ GOMEAOptimizer::runAllPopulations()
       this->initializeNewPopulation();
     }
     this->generationalStepAllPopulations();
-    this->UpdatePosition(number_of_populations - 1);
+    this->UpdatePosition();
     m_CurrentIteration++;
     this->IterationWriteOutput();
     this->InvokeEvent(IterationEvent());
   }
-  this->SetCurrentPosition(selections[number_of_populations - 1][0]);
-  this->m_CurrentValue = objective_values_selections[number_of_populations - 1][0];
+  this->UpdatePosition(false);
 }
 
 const std::string

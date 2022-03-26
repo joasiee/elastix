@@ -134,12 +134,6 @@ public:
   void
   BeforeEachResolution() override;
 
-  void
-  AfterEachIteration(void) override;
-
-  void
-  BeforeRegistration(void) override;
-
 protected:
   /** The constructor. */
   AdvancedMeanSquaresMetric() = default;
