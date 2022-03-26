@@ -185,17 +185,20 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const TransformParametersType & parameters) const -> MeasureType
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
+  const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
 
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
+  const ThreadIdType         numThreads =
+    std::max(std::min(maxThreads, static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)), 1U);
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixelsCounted = 0;
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
 /** Loop over the fixed image samples to calculate the mean squares. */
-#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted)
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(numThreads)
   for (int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
@@ -230,11 +233,13 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
-  MeasureType              measure = NumericTraits<MeasureType>::Zero;
-  unsigned long            sumPixelsCounted = 0;
+  const ThreadIdType maxThreads = std::min(static_cast<unsigned long>(Self::GetNumberOfWorkUnits()), fosPoints.size());
+
+  MeasureType   measure = NumericTraits<MeasureType>::Zero;
+  unsigned long sumPixelsCounted = 0;
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for reduction(+ : measure, sumPixelsCounted)
+#pragma omp parallel for reduction(+ : measure, sumPixelsCounted) num_threads(maxThreads)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));

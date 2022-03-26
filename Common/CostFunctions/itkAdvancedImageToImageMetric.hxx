@@ -1013,11 +1013,12 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   i = 0;
   while (!coeffImageIterator.IsAtEnd())
   {
-    IndexType  imageIndex;
-    auto transformedPoint = wrappedImage->template TransformIndexToPhysicalPoint<PixelType>(coeffImageIterator.GetIndex());
+    IndexType imageIndex;
+    auto      transformedPoint =
+      wrappedImage->template TransformIndexToPhysicalPoint<PixelType>(coeffImageIterator.GetIndex());
     auto origin = fixedImage->GetOrigin();
-    auto  physicalIndex = transformedPoint - origin;
-      
+    auto physicalIndex = transformedPoint - origin;
+
     unsigned int offset = wrappedImage->ComputeOffset(coeffImageIterator.GetIndex());
     for (d = 0; d < FixedImageDimension; ++d)
     {

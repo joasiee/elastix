@@ -79,7 +79,7 @@ public:
 
 protected:
   /** The constructor. */
-  ImageRandomSampler() = default;
+  ImageRandomSampler();
   /** The destructor. */
   ~ImageRandomSampler() override = default;
 
@@ -96,6 +96,9 @@ private:
   /** The deleted assignment operator. */
   void
   operator=(const Self &) = delete;
+
+  using GeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
+  typename GeneratorType::Pointer m_Generator;
 };
 
 } // end namespace itk

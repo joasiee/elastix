@@ -1850,6 +1850,7 @@ GOMEAOptimizer::runAllPopulations()
     this->InvokeEvent(IterationEvent());
   }
   this->UpdatePosition(false);
+  m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
 }
 
 const std::string

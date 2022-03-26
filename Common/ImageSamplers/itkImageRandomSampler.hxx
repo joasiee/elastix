@@ -25,6 +25,12 @@
 namespace itk
 {
 
+template <class TInputImage>
+ImageRandomSampler<TInputImage>::ImageRandomSampler()
+{
+  this->m_Generator = GeneratorType::New();
+}
+
 /**
  * ******************* GenerateData *******************
  */
@@ -50,7 +56,7 @@ ImageRandomSampler<TInputImage>::GenerateData()
 
   /** Setup a random iterator over the input image. */
   using RandomIteratorType = ImageRandomConstIteratorWithIndex<InputImageType>;
-  RandomIteratorType randIter(inputImage, this->GetCroppedInputImageRegion());
+  RandomIteratorType randIter(inputImage, this->GetCroppedInputImageRegion(), this->m_Generator);
 
   // reinit seed if requested
   if (this->m_ReinitSeed)

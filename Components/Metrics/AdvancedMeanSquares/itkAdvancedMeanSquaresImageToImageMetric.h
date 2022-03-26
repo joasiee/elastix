@@ -126,6 +126,9 @@ public:
   /** The moving image dimension. */
   itkStaticConstMacro(MovingImageDimension, unsigned int, MovingImageType::ImageDimension);
 
+  /** Number of samples to allocate to a thread minimally. */
+  itkStaticConstMacro(SamplesPerThread, unsigned int, 100);
+
   MeasureType
   GetValue(const TransformParametersType & parameters) const override;
 
