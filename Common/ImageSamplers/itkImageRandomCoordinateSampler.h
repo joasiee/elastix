@@ -84,10 +84,6 @@ public:
   using BSplineInterpolatorType = BSplineInterpolateImageFunction<InputImageType, CoordRepType, double>;
   using DefaultInterpolatorType = LinearInterpolateImageFunction<InputImageType, CoordRepType>;
 
-  /** The random number generator used to generate random coordinates. */
-  using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
-  using RandomGeneratorPointer = typename RandomGeneratorType::Pointer;
-
   /** Set/Get the interpolator. A 3rd order B-spline interpolator is used by default. */
   itkSetObjectMacro(Interpolator, InterpolatorType);
   itkGetModifiableObjectMacro(Interpolator, InterpolatorType);
@@ -101,9 +97,6 @@ public:
    * Default: false. */
   itkGetConstMacro(UseRandomSampleRegion, bool);
   itkSetMacro(UseRandomSampleRegion, bool);
-
-  void
-  SetGeneratorSeed(int seed) override;
 
 protected:
   using InputImageContinuousIndexType = typename InterpolatorType::ContinuousIndexType;
@@ -135,7 +128,6 @@ protected:
                            InputImageContinuousIndexType &       randomContIndex);
 
   InterpolatorPointer    m_Interpolator;
-  RandomGeneratorPointer m_RandomGenerator;
   InputImageSpacingType  m_SampleRegionSize;
 
   /** Generate the two corners of a sampling region, given the two corners

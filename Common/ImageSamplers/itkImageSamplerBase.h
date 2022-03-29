@@ -22,6 +22,7 @@
 #include "itkImageSample.h"
 #include "itkVectorDataContainer.h"
 #include "itkSpatialObject.h"
+#include "itkXoshiroRandomGenerators.hpp"
 
 namespace itk
 {
@@ -170,9 +171,8 @@ public:
     return true;
   }
 
-  virtual void
-  SetGeneratorSeed(int seed)
-  {}
+  inline void
+  SetGeneratorSeed(int seed);
 
   /** Get a handle to the cropped InputImageregion. */
   itkGetConstReferenceMacro(CroppedInputImageRegion, InputImageRegionType);
@@ -229,10 +229,11 @@ protected:
   std::vector<ImageSampleContainerPointer> m_ThreaderSampleContainer;
 
   // tmp?
-  bool m_UseMultiThread;
-
-  bool m_ReinitSeed{ false };
-  int  m_NextSeed{ 0 };
+  bool               m_UseMultiThread;
+  Xoshiro128PlusPlus m_RandomGenerator;
+  int                m_PreviousSeed;
+  bool               m_ReinitSeed{ false };
+  int                m_NextSeed{ 0 };
 
 private:
   /** The deleted copy constructor. */

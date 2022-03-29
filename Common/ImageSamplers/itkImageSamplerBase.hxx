@@ -19,6 +19,7 @@
 #define itkImageSamplerBase_hxx
 
 #include "itkImageSamplerBase.h"
+#include "itkMersenneTwisterRandomVariateGenerator.h"
 
 namespace itk
 {
@@ -34,6 +35,8 @@ ImageSamplerBase<TInputImage>::ImageSamplerBase()
   this->m_NumberOfMasks = 0;
   this->m_NumberOfInputImageRegions = 0;
   this->m_NumberOfSamples = 0;
+  using RandomGeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
+  this->SetGeneratorSeed(RandomGeneratorType::GetNextSeed());
 
   // tmp?
   this->m_UseMultiThread = false;
@@ -502,6 +505,22 @@ ImageSamplerBase<TInputImage>::AfterThreadedGenerateData()
   }
 
 } // end AfterThreadedGenerateData()
+
+/**
+ * ******************* SetGeneratorSeed *******************
+ */
+
+template <class TInputImage>
+void
+ImageSamplerBase<TInputImage>::SetGeneratorSeed(int seed)
+{
+  if (seed != this->m_PreviousSeed)
+  {
+    this->m_PreviousSeed = seed;
+    this->m_RandomGenerator = Xoshiro128PlusPlus(seed);
+    this->Modified();
+  }
+}
 
 
 /**

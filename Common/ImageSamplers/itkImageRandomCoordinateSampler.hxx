@@ -35,9 +35,6 @@ ImageRandomCoordinateSampler<TInputImage>::ImageRandomCoordinateSampler()
   auto linearInterpolator = DefaultInterpolatorType::New();
   this->m_Interpolator = linearInterpolator;
 
-  /** Setup random generator. */
-  this->m_RandomGenerator = RandomGeneratorType::New();
-
   this->m_UseRandomSampleRegion = false;
   this->m_SampleRegionSize.Fill(1.0);
 
@@ -279,11 +276,10 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateRandomCoordinate(
 {
   for (unsigned int i = 0; i < InputImageDimension; ++i)
   {
-    randomContIndex[i] = static_cast<InputImagePointValueType>(
-      this->m_RandomGenerator->GetUniformVariate(smallestContIndex[i], largestContIndex[i]));
+    std::uniform_real_distribution<InputImagePointValueType> dist(smallestContIndex[i], largestContIndex[i]);
+    randomContIndex[i] = dist(this->m_RandomGenerator);
   }
 } // end GenerateRandomCoordinate()
-
 
 /**
  * ******************* GenerateSampleRegion *******************
@@ -326,22 +322,6 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateSampleRegion(
 
 } // end GenerateSampleRegion()
 
-/**
- * ******************* SetGeneratorSeed *******************
- */
-
-template <class TInputImage>
-void
-ImageRandomCoordinateSampler<TInputImage>::SetGeneratorSeed(int seed)
-{
-  if (this->m_NextSeed != seed)
-  {
-    this->m_NextSeed = seed;
-    this->m_RandomGenerator->SetSeed(seed);
-    this->Modified();
-  }
-} // end SetGeneratorSeed()
-
 
 /**
  * ******************* PrintSelf *******************
@@ -354,8 +334,6 @@ ImageRandomCoordinateSampler<TInputImage>::PrintSelf(std::ostream & os, Indent i
   Superclass::PrintSelf(os, indent);
 
   os << indent << "Interpolator: " << this->m_Interpolator.GetPointer() << std::endl;
-  os << indent << "RandomGenerator: " << this->m_RandomGenerator.GetPointer() << std::endl;
-
 } // end PrintSelf()
 
 

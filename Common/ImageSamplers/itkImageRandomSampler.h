@@ -74,12 +74,9 @@ public:
   using InputImageIndexType = typename InputImageType::IndexType;
   using InputImagePointType = typename InputImageType::PointType;
 
-  void
-  SetGeneratorSeed(int seed) override;
-
 protected:
   /** The constructor. */
-  ImageRandomSampler();
+  ImageRandomSampler() = default;
   /** The destructor. */
   ~ImageRandomSampler() override = default;
 
@@ -97,8 +94,8 @@ private:
   void
   operator=(const Self &) = delete;
 
-  using GeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
-  typename GeneratorType::Pointer m_Generator;
+  void
+  GetPoint(unsigned long randomPosition, InputImageIndexType & index, InputImagePointType & point);
 };
 
 } // end namespace itk

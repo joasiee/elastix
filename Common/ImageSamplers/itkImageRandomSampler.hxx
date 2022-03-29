@@ -24,13 +24,6 @@
 
 namespace itk
 {
-
-template <class TInputImage>
-ImageRandomSampler<TInputImage>::ImageRandomSampler()
-{
-  this->m_Generator = GeneratorType::New();
-}
-
 /**
  * ******************* GenerateData *******************
  */
@@ -54,18 +47,8 @@ ImageRandomSampler<TInputImage>::GenerateData()
   /** Reserve memory for the output. */
   sampleContainer->Reserve(this->GetNumberOfSamples());
 
-  /** Setup a random iterator over the input image. */
-  using RandomIteratorType = ImageRandomConstIteratorWithIndex<InputImageType>;
-  RandomIteratorType randIter(inputImage, this->GetCroppedInputImageRegion(), this->m_Generator);
-
-  // reinit seed if requested
-  if (this->m_ReinitSeed)
-  {
-    randIter.ReinitializeSeed(this->m_NextSeed);
-    this->m_ReinitSeed = false;
-  }
-
-  randIter.GoToBegin();
+  const unsigned long numPixels = this->GetCroppedInputImageRegion().GetNumberOfPixels();
+  std::uniform_int_distribution<unsigned long> dist(numPixels - 1);
 
   /** Setup an iterator over the output, which is of ImageSampleContainerType. */
   typename ImageSampleContainerType::Iterator      iter;
@@ -73,22 +56,16 @@ ImageRandomSampler<TInputImage>::GenerateData()
 
   if (mask.IsNull())
   {
-    /** number of samples + 1, because of the initial ++randIter. */
-    randIter.SetNumberOfSamples(this->GetNumberOfSamples() + 1);
-    /** Advance one, in order to generate the same sequence as when using a mask */
-    ++randIter;
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {
-      /** Get the index, transform it to the physical coordinates and put it in the sample. */
-      InputImageIndexType index = randIter.GetIndex();
-      inputImage->TransformIndexToPhysicalPoint(index, (*iter).Value().m_ImageCoordinates);
-      /** Get the value and put it in the sample. */
-      (*iter).Value().m_ImageValue = randIter.Get();
-      /** Jump to a random position. */
-      ++randIter;
+      const unsigned long randomPosition = dist(this->m_RandomGenerator);
+      InputImageIndexType positionIndex;
+      this->GetPoint(randomPosition, positionIndex, (*iter).Value().m_ImageCoordinates);
 
-    } // end for loop
-  }   // end if no mask
+      /** Get the value and put it in the sample. */
+      (*iter).Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
+    }
+  } // end if no mask
   else
   {
     /** Update the mask. */
@@ -98,20 +75,23 @@ ImageRandomSampler<TInputImage>::GenerateData()
     }
 
     /** Make sure we are not eternally trying to find samples: */
-    randIter.SetNumberOfSamples(10 * this->GetNumberOfSamples());
+    const unsigned long maxSamples = 10 * this->GetNumberOfSamples();
+    unsigned long       numSamples = 0L;
 
     /** Loop over the sample container. */
     InputImagePointType inputPoint;
-    bool                insideMask = false;
+    InputImageIndexType positionIndex;
+    bool insideMask = false;
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {
       /** Loop until a valid sample is found. */
       do
       {
         /** Jump to a random position. */
-        ++randIter;
+        const unsigned long randomPosition = dist(this->m_RandomGenerator);
+        ++numSamples;
         /** Check if we are not trying eternally to find a valid point. */
-        if (randIter.IsAtEnd())
+        if (numSamples > maxSamples)
         {
           /** Squeeze the sample container to the size that is still valid. */
           typename ImageSampleContainerType::iterator stlnow = sampleContainer->begin();
@@ -122,22 +102,16 @@ ImageRandomSampler<TInputImage>::GenerateData()
             << "Could not find enough image samples within reasonable time. Probably the mask is too small");
         }
         /** Get the index, and transform it to the physical coordinates. */
-        InputImageIndexType index = randIter.GetIndex();
-        inputImage->TransformIndexToPhysicalPoint(index, inputPoint);
+        this->GetPoint(randomPosition, positionIndex, inputPoint);
         /** Check if it's inside the mask. */
         insideMask = mask->IsInsideInWorldSpace(inputPoint);
       } while (!insideMask);
 
       /** Put the coordinates and the value in the sample. */
       (*iter).Value().m_ImageCoordinates = inputPoint;
-      (*iter).Value().m_ImageValue = randIter.Get();
+      (*iter).Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
 
     } // end for loop
-
-    /** Extra random sample to make sure the same sequence is generated
-     * with and without mask.
-     */
-    ++randIter;
   }
 
 } // end GenerateData()
@@ -183,22 +157,9 @@ ImageRandomSampler<TInputImage>::ThreadedGenerateData(const InputImageRegionType
   InputImageIndexType regionIndex = this->GetCroppedInputImageRegion().GetIndex();
   for (iter = sampleContainerThisThread->Begin(); iter != end; ++iter, sampleId++)
   {
-    unsigned long randomPosition = static_cast<unsigned long>(this->m_RandomNumberList[sampleId]);
-
-    /** Translate randomPosition to an index, copied from ImageRandomConstIteratorWithIndex. */
-    unsigned long       residual;
+    unsigned long       randomPosition = static_cast<unsigned long>(this->m_RandomNumberList[sampleId]);
     InputImageIndexType positionIndex;
-    for (unsigned int dim = 0; dim < InputImageDimension; ++dim)
-    {
-      const unsigned long sizeInThisDimension = regionSize[dim];
-      residual = randomPosition % sizeInThisDimension;
-      positionIndex[dim] = residual + regionIndex[dim];
-      randomPosition -= residual;
-      randomPosition /= sizeInThisDimension;
-    }
-
-    /** Transform index to the physical coordinates and put it in the sample. */
-    inputImage->TransformIndexToPhysicalPoint(positionIndex, (*iter).Value().m_ImageCoordinates);
+    this->GetPoint(randomPosition, positionIndex, (*iter).Value().m_ImageCoordinates);
 
     /** Get the value and put it in the sample. */
     (*iter).Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
@@ -208,22 +169,33 @@ ImageRandomSampler<TInputImage>::ThreadedGenerateData(const InputImageRegionType
 } // end ThreadedGenerateData()
 
 /**
- * ******************* SetGeneratorSeed *******************
+ * ******************* GetIndex *******************
  */
 
 template <class TInputImage>
 void
-ImageRandomSampler<TInputImage>::SetGeneratorSeed(int seed)
+ImageRandomSampler<TInputImage>::GetPoint(unsigned long         randomPosition,
+                                          InputImageIndexType & index,
+                                          InputImagePointType & point)
 {
-  if (seed != this->m_NextSeed)
+  InputImageConstPointer inputImage = this->GetInput();
+  InputImageSizeType  regionSize = this->GetCroppedInputImageRegion().GetSize();
+  InputImageIndexType regionIndex = this->GetCroppedInputImageRegion().GetIndex();
+
+  /** Translate randomPosition to an index, copied from ImageRandomConstIteratorWithIndex. */
+  unsigned long residual;
+  for (unsigned int dim = 0; dim < InputImageDimension; ++dim)
   {
-    this->m_ReinitSeed = true;
-    this->m_NextSeed = seed;
-    this->Modified();
+    const unsigned long sizeInThisDimension = regionSize[dim];
+    residual = randomPosition % sizeInThisDimension;
+    index[dim] = residual + regionIndex[dim];
+    randomPosition -= residual;
+    randomPosition /= sizeInThisDimension;
   }
-} // end SetGeneratorSeed()
 
-
+  /** Transform index to the physical coordinates and put it in the sample. */
+  inputImage->TransformIndexToPhysicalPoint(index, point);
+}
 } // end namespace itk
 
 #endif // end #ifndef itkImageRandomSampler_hxx
