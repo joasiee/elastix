@@ -27,15 +27,6 @@ export ITK_HOME=$WORKING_DIR/ITK
 
 if [ $REBUILD_ALL_COMPONENTS -eq 1 ]
 then
-
-    # Configure and install openBLAS
-    cd $WORKING_DIR
-    git clone https://github.com/xianyi/OpenBLAS.git && cd OpenBLAS
-    make NO_LAPACK=0 USE_THREAD=0 USE_LOCKING=1 DYNAMIC_ARCH=1 -j24 && make PREFIX=$INSTALL_DIR install
-
-    cd $WORKING_DIR
-    rm -rf OpenBLAS
-
     # Configure and install Eigen3
     wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
     tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
@@ -46,7 +37,7 @@ then
     rm eigen-3.4.0.tar.bz2 && rm -rf eigen-3.4.0
 
     # Configure and install ITK
-    git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout rv_gomea_integration
+    git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout gomea
 fi
 
 cd $WORKING_DIR/ITK
