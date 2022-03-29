@@ -123,6 +123,9 @@ public:
   /** Define the dimension. */
   itkStaticConstMacro(FixedImageDimension, unsigned int, FixedImageType::ImageDimension);
 
+  /** Number of samples to allocate to a thread minimally. */
+  itkStaticConstMacro(SamplesPerThread, unsigned int, 20);
+
   /** Get the penalty term value. */
   MeasureType
   GetValue(const ParametersType & parameters) const override;

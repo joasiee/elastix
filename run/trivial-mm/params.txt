@@ -13,18 +13,18 @@
 (FinalBSplineInterpolationOrder 3)
 (Resampler "DefaultResampler")
 (Transform "RecursiveBSplineTransform")
-(NumberOfResolutions 3)
+(NumberOfResolutions 1)
 
 (FinalGridSpacingInVoxels 10 10)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
-(MaximumNumberOfIterations 2)
+(MaximumNumberOfIterations 5)
 (PartialEvaluations "true")
 (FosElementSize -6)
 
 (WriteResultImage "true")
 (UseNormalization "true")
-(ImageSampler "RandomCoordinate" "RandomCoordinate")
+(ImageSampler "Random" "Random")
 (SamplingPercentage 0.2)
 (DefaultPixelValue 0)

@@ -1726,10 +1726,12 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
 void
 GOMEAOptimizer::UpdatePosition(bool avg)
 {
-  this->SetCurrentPosition(selections[number_of_populations - 1][0]);
-  auto &     v = objective_values_selections[number_of_populations - 1];
-  auto const count = static_cast<float>(selection_sizes[number_of_populations - 1]);
-  this->m_CurrentValue = avg ? std::reduce(v.begin(), &v[count]) / count : v[0];
+  if (avg)
+    this->SetCurrentPosition(mean_vectors[number_of_populations - 1]);
+  else
+    this->SetCurrentPosition(selections[number_of_populations - 1][0]);
+  this->m_CurrentValue =
+    m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
 }
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
@@ -1850,7 +1852,6 @@ GOMEAOptimizer::runAllPopulations()
     this->InvokeEvent(IterationEvent());
   }
   this->UpdatePosition(false);
-  m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
 }
 
 const std::string

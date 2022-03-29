@@ -1120,7 +1120,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(i
       sum += params[this->m_FOS.sets[set][i]];
   }
 
-  return static_cast<int>(sum * 1000);
+  return static_cast<int>(sum * 1e5);
 }
 
 
