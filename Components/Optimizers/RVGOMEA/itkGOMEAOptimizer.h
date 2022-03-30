@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <iostream>
+#include <numeric>
 #include <fstream>
 #include <math.h>
 #include <stdio.h>
@@ -127,10 +128,7 @@ public:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   void
-  PrintSettings(std::ostream & os, Indent indent) const;
-
-  void
-  PrintProgress(std::ostream & os, Indent indent, bool concise = true) const;
+  PrintSettings(std::stringstream & output) const;
 
 protected:
   GOMEAOptimizer();
@@ -276,6 +274,8 @@ private:
   IterationWriteOutput();
   void
   ezilaitini(void);
+  void
+  UpdatePosition(bool avg = true);
 
   mutable std::ostringstream m_StopConditionDescription;
 

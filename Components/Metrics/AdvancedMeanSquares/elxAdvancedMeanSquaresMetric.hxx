@@ -87,22 +87,6 @@ AdvancedMeanSquaresMetric<TElastix>::BeforeEachResolution()
 
 } // end BeforeEachResolution()
 
-template <class TElastix>
-void
-AdvancedMeanSquaresMetric<TElastix>::BeforeRegistration(void)
-{
-  this->AddTargetCellToIterationInfo("3:MissedPixels");
-  this->GetIterationInfoAt("3:MissedPixels") << std::showpoint << std::fixed;
-}
-
-template <class TElastix>
-void
-AdvancedMeanSquaresMetric<TElastix>::AfterEachIteration(void)
-{
-  this->GetIterationInfoAt("3:MissedPixels") << boost::accumulators::mean(this->m_MissedPixelsMean);
-  this->m_MissedPixelsMean = {};
-}
-
 
 } // end namespace elastix
 

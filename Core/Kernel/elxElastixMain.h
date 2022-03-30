@@ -141,16 +141,13 @@ public:
   /** Typedef's.*/
 
   /** ITK base objects. */
-  using ObjectType = itk::Object;
-  using ObjectPointer = ObjectType::Pointer;
+  using ObjectPointer = itk::Object::Pointer;
   using DataObjectType = itk::DataObject;
   using DataObjectPointer = DataObjectType::Pointer;
 
   /** elastix components. */
-  using ElastixBaseType = ElastixBase;
-  using ConfigurationType = ElastixBase::ConfigurationType;
-  using ArgumentMapType = ConfigurationType::CommandLineArgumentMapType;
-  using ConfigurationPointer = ConfigurationType::Pointer;
+  using ArgumentMapType = Configuration::CommandLineArgumentMapType;
+  using ConfigurationPointer = Configuration::Pointer;
   using ObjectContainerType = ElastixBase::ObjectContainerType;
   using DataObjectContainerType = ElastixBase::DataObjectContainerType;
   using ObjectContainerPointer = ElastixBase::ObjectContainerPointer;
@@ -160,13 +157,12 @@ public:
   /** Typedefs for the database that holds pointers to New() functions.
    * Those functions are used to instantiate components, such as the metric etc.
    */
-  using ComponentDatabaseType = ComponentDatabase;
-  using ComponentDatabasePointer = ComponentDatabaseType::Pointer;
-  using PtrToCreator = ComponentDatabaseType::PtrToCreator;
-  using ComponentDescriptionType = ComponentDatabaseType::ComponentDescriptionType;
-  using PixelTypeDescriptionType = ComponentDatabaseType::PixelTypeDescriptionType;
-  using ImageDimensionType = ComponentDatabaseType::ImageDimensionType;
-  using DBIndexType = ComponentDatabaseType::IndexType;
+  using ComponentDatabasePointer = ComponentDatabase::Pointer;
+  using PtrToCreator = ComponentDatabase::PtrToCreator;
+  using ComponentDescriptionType = ComponentDatabase::ComponentDescriptionType;
+  using PixelTypeDescriptionType = ComponentDatabase::PixelTypeDescriptionType;
+  using ImageDimensionType = ComponentDatabase::ImageDimensionType;
+  using DBIndexType = ComponentDatabase::IndexType;
 
   /** Typedef that is used in the elastix dll version. */
   using ParameterMapType = itk::ParameterMapInterface::ParameterMapType;
@@ -210,19 +206,19 @@ public:
   itkGetModifiableObjectMacro(ResultDeformationFieldContainer, DataObjectContainerType);
 
   /** Set/Get the configuration object. */
-  itkSetObjectMacro(Configuration, ConfigurationType);
-  itkGetModifiableObjectMacro(Configuration, ConfigurationType);
+  itkSetObjectMacro(Configuration, Configuration);
+  itkGetModifiableObjectMacro(Configuration, Configuration);
 
   /** Functions to get pointers to the elastix components.
    * The components are returned as Object::Pointer.
    * Before calling this functions, call run().
    */
-  itkGetModifiableObjectMacro(Elastix, ObjectType);
+  itkGetModifiableObjectMacro(Elastix, itk::Object);
 
   /** Convenience function that returns the elastix component as
-   * a pointer to an ElastixBaseType. Use only after having called run()!
+   * a pointer to an ElastixBase. Use only after having called run()!
    */
-  ElastixBaseType &
+  ElastixBase &
   GetElastixBase() const;
 
   /** Get the final transform (the result of running elastix).
@@ -230,14 +226,14 @@ public:
    * of ElastixMain.
    * Only valid after calling Run()!
    */
-  itkGetModifiableObjectMacro(FinalTransform, ObjectType);
+  itkGetModifiableObjectMacro(FinalTransform, itk::Object);
 
   /** Set/Get the initial transform
-   * the type is ObjectType, but the pointer should actually point
+   * the type is itk::Object, but the pointer should actually point
    * to an itk::Transform type (or inherited from that one).
    */
-  itkSetObjectMacro(InitialTransform, ObjectType);
-  itkGetModifiableObjectMacro(InitialTransform, ObjectType);
+  itkSetObjectMacro(InitialTransform, itk::Object);
+  itkGetModifiableObjectMacro(InitialTransform, itk::Object);
 
   /** Set/Get the original fixed image direction as a flat array
    * (d11 d21 d31 d21 d22 etc ) */

@@ -612,8 +612,13 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueA
     else
     {
 #ifdef ELASTIX_USE_OPENMP
-      const int threadid = static_cast<unsigned int>(omp_get_thread_num());
-      movingImageValue = this->m_BSplineInterpolator->EvaluateAtContinuousIndex(cindex, threadid);
+      if (this->m_InterpolatorIsBSpline)
+      {
+        const int threadid = static_cast<unsigned int>(omp_get_thread_num());
+        movingImageValue = this->m_BSplineInterpolator->EvaluateAtContinuousIndex(cindex, threadid);
+      }
+      else
+        movingImageValue = this->m_Interpolator->EvaluateAtContinuousIndex(cindex);
 #else
       movingImageValue = this->m_Interpolator->EvaluateAtContinuousIndex(cindex);
 #endif
@@ -797,9 +802,11 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValueThreaderCallback(
   ThreadIdType     threadID = infoStruct->WorkUnitID;
 
   MultiThreaderParameterType * temp = static_cast<MultiThreaderParameterType *>(infoStruct->UserData);
-  std::invoke(temp->st_Metric->m_ThreadedGetValueFn, temp->st_Metric, threadID);
+
+  temp->st_Metric->ThreadedGetValue(threadID);
 
   return itk::ITK_THREAD_RETURN_DEFAULT_VALUE;
+
 } // end GetValueThreaderCallback()
 
 
@@ -1006,10 +1013,12 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   i = 0;
   while (!coeffImageIterator.IsAtEnd())
   {
-    IndexType  imageIndex;
-    OriginType physicalIndex =
-      wrappedImage->template TransformIndexToPhysicalPoint<PixelType>(coeffImageIterator.GetIndex()) -
-      fixedImage->GetOrigin();
+    IndexType imageIndex;
+    auto      transformedPoint =
+      wrappedImage->template TransformIndexToPhysicalPoint<PixelType>(coeffImageIterator.GetIndex());
+    auto origin = fixedImage->GetOrigin();
+    auto physicalIndex = transformedPoint - origin;
+
     unsigned int offset = wrappedImage->ComputeOffset(coeffImageIterator.GetIndex());
     for (d = 0; d < FixedImageDimension; ++d)
     {
@@ -1111,7 +1120,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(i
       sum += params[this->m_FOS.sets[set][i]];
   }
 
-  return static_cast<int>(sum * 1000);
+  return static_cast<int>(sum * 1e5);
 }
 
 

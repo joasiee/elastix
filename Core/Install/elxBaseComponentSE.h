@@ -53,19 +53,16 @@ public:
   using Self = BaseComponentSE;
   using Superclass = BaseComponent;
 
-  /** Elastix typedef's. */
+  /** Elastix typedef. */
   using ElastixType = TElastix;
-  using ElastixPointer = itk::WeakPointer<ElastixType>;
 
-  /** ConfigurationType. */
-  using ConfigurationType = Configuration;
+  /** Configuration pointer type. */
   using ConfigurationPointer = Configuration::Pointer;
 
   /** RegistrationType; NB: this is the elx::RegistrationBase
    * not an itk::Object or something like that.
    */
   using RegistrationType = typename ElastixType::RegistrationBaseType;
-  using RegistrationPointer = RegistrationType *;
 
   /**
    * Get/Set functions for Elastix.
@@ -109,11 +106,11 @@ public:
     return this->m_Elastix->AddTargetCellToIterationInfo(name);
   }
 
-  /** itkGetModifiableObjectMacro(Configuration, ConfigurationType);
+  /** itkGetModifiableObjectMacro(Configuration, Configuration);
    * The configuration object provides functionality to
    * read parameters and command line arguments.
    */
-  ConfigurationType *
+  Configuration *
   GetConfiguration() const
   {
     return this->m_Configuration.GetPointer();
@@ -122,14 +119,14 @@ public:
 
   /** Set the configuration. Added for transformix. */
   void
-  SetConfiguration(ConfigurationType * _arg);
+  SetConfiguration(Configuration * _arg);
 
   /** Get a pointer to the Registration component.
    * This is a convenience function, since the registration
    * component is needed often by other components.
    * It could be accessed also via GetElastix->GetElxRegistrationBase().
    */
-  RegistrationPointer
+  RegistrationType *
   GetRegistration() const
   {
     return this->m_Registration;
@@ -140,9 +137,9 @@ protected:
   BaseComponentSE() = default;
   ~BaseComponentSE() override = default;
 
-  ElastixPointer       m_Elastix{};
-  ConfigurationPointer m_Configuration{};
-  RegistrationPointer  m_Registration{};
+  itk::WeakPointer<TElastix> m_Elastix{};
+  ConfigurationPointer       m_Configuration{};
+  RegistrationType *         m_Registration{};
 
 private:
   virtual const itk::Object &

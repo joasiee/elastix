@@ -113,6 +113,9 @@ void
 GOMEA<TElastix>::AfterEachResolution(void)
 {
   std::string stopcondition;
+  std::stringstream settings;
+  this->PrintSettings(settings);
+  elxout << settings.str();
 
   switch (this->GetStopCondition())
   {
@@ -150,8 +153,7 @@ void
 GOMEA<TElastix>::AfterRegistration(void)
 {
   /** Print the best metric value */
-  double bestValue = this->GetCurrentValue();
-  elxout << std::endl << "Final metric value  = " << bestValue << std::endl;
+  elxout << std::endl << "Final metric value  = " << this->m_CurrentValue << std::endl;
 }
 
 } // namespace elastix

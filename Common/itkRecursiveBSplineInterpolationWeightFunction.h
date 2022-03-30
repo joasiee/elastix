@@ -82,6 +82,22 @@ public:
   /** Get number of indices. */
   itkGetConstMacro(NumberOfIndices, unsigned int);
 
+  WeightsType
+  Evaluate(const ContinuousIndexType & index, IndexType & startIndex) const;
+
+  WeightsType
+  EvaluateDerivative(const ContinuousIndexType & index, const IndexType & startIndex) const;
+
+  WeightsType
+  EvaluateSecondOrderDerivative(const ContinuousIndexType & index, const IndexType & startIndex) const;
+
+protected:
+  RecursiveBSplineInterpolationWeightFunction();
+  ~RecursiveBSplineInterpolationWeightFunction() override = default;
+  void
+  PrintSelf(std::ostream & os, Indent indent) const override;
+
+private:
   /** Evaluate the weights at specified ContinousIndex position.
    * Subclasses must provide this method. */
   WeightsType
@@ -98,21 +114,6 @@ public:
   void
   Evaluate(const ContinuousIndexType & index, WeightsType & weights, IndexType & startIndex) const override;
 
-  void
-  EvaluateDerivative(const ContinuousIndexType & index, WeightsType & weights, const IndexType & startIndex) const;
-
-  void
-  EvaluateSecondOrderDerivative(const ContinuousIndexType & index,
-                                WeightsType &               weights,
-                                const IndexType &           startIndex) const;
-
-protected:
-  RecursiveBSplineInterpolationWeightFunction();
-  ~RecursiveBSplineInterpolationWeightFunction() override = default;
-  void
-  PrintSelf(std::ostream & os, Indent indent) const override;
-
-private:
   RecursiveBSplineInterpolationWeightFunction(const Self &) = delete;
   void
   operator=(const Self &) = delete;

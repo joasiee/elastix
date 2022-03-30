@@ -29,6 +29,9 @@
 
 #include "elxMacro.h"
 #include "itkPlatformMultiThreader.h"
+#include "itkThreadPool.h"
+#include "itkMersenneTwisterRandomVariateGenerator.h"
+
 
 #ifdef ELASTIX_USE_OPENCL
 #  include "itkOpenCLContext.h"
@@ -151,7 +154,7 @@ xoutManager::Guard::~Guard()
 ElastixMain::ElastixMain()
 {
   /** Initialize the components. */
-  this->m_Configuration = ConfigurationType::New();
+  this->m_Configuration = Configuration::New();
 
   this->m_Elastix = nullptr;
 
@@ -271,7 +274,7 @@ ElastixMain::EnterCommandLineArguments(const ArgumentMapType & argmap, const std
     /** Initialize the configuration object with the
      * command line parameters entered by the user.
      */
-    this->m_Configurations[i] = ConfigurationType::New();
+    this->m_Configurations[i] = Configuration::New();
     int dummy = this->m_Configurations[i]->Initialize(argmap, inputMaps[i]);
     if (dummy)
     {
@@ -351,6 +354,19 @@ ElastixMain::Run()
   /** Set some information in the ElastixBase. */
   elastixBase.SetConfiguration(this->m_Configuration);
   elastixBase.SetDBIndex(this->m_DBIndex);
+
+  /** Set the random seed. Use 121212 as a default, which is the same as
+   * the default in the MersenneTwister code.
+   * Use silent parameter file readout, to avoid annoying warning when
+   * starting elastix */
+  using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
+  using SeedType = RandomGeneratorType::IntegerType;
+  unsigned int randomSeed = 0;
+  if (this->GetConfiguration()->ReadParameter(randomSeed, "RandomSeed", 0, false))
+  {
+    RandomGeneratorType::Pointer randomGenerator = RandomGeneratorType::GetInstance();
+    randomGenerator->SetSeed(static_cast<SeedType>(randomSeed));
+  }
 
   /** Populate the component containers. ImageSampler is not mandatory.
    * No defaults are specified for ImageSampler, Metric, Transform
@@ -727,11 +743,11 @@ ElastixMain::GetTotalNumberOfElastixLevels()
  * ************************* GetElastixBase ***************************
  */
 
-ElastixMain::ElastixBaseType &
+ElastixBase &
 ElastixMain::GetElastixBase() const
 {
-  /** Convert ElastixAsObject to a pointer to an ElastixBaseType. */
-  const auto testpointer = dynamic_cast<ElastixBaseType *>(this->m_Elastix.GetPointer());
+  /** Convert ElastixAsObject to a pointer to an ElastixBase. */
+  const auto testpointer = dynamic_cast<ElastixBase *>(this->m_Elastix.GetPointer());
   if (testpointer == nullptr)
   {
     itkExceptionMacro(<< "Probably GetElastixBase() is called before having called Run()");
@@ -750,11 +766,8 @@ ElastixMain::ObjectPointer
 ElastixMain::CreateComponent(const ComponentDescriptionType & name)
 {
   /** A pointer to the New() function. */
-  PtrToCreator testcreator = nullptr;
-  testcreator = GetComponentDatabase().GetCreator(name, this->m_DBIndex);
-
-  // Note that ObjectPointer() yields a default-constructed SmartPointer (null).
-  ObjectPointer testpointer = testcreator ? testcreator() : ObjectPointer();
+  const PtrToCreator  testcreator = GetComponentDatabase().GetCreator(name, this->m_DBIndex);
+  const ObjectPointer testpointer = (testcreator == nullptr) ? nullptr : testcreator();
 
   if (testpointer.IsNull())
   {

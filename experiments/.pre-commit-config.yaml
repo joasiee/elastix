@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: system
+        name: Requirements
+        entry: bash -c 'cd experiments && poetry export --format=requirements.txt --without-hashes --output=requirements.txt'
+        pass_filenames: false
+        language: system

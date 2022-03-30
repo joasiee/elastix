@@ -18,28 +18,21 @@
 #ifndef elxPixelType_h
 #define elxPixelType_h
 
-#include <typeinfo>
-#include "itkMacro.h"
-
 namespace elastix
 {
 // PixelType traits for writing types as strings to parameter files
 
 // Default implementation
-template <typename T>
+template <typename>
 struct PixelType
 {
-  static const char *
-  ToString()
-  {
-    itkGenericExceptionMacro(<< "Pixel type \"" << typeid(T).name() << "\" is not supported.");
-  }
+  // `PixelType<T>::ToString()` is only supported for the template specializations below here.
 };
 
 template <>
 struct PixelType<char>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "char";
@@ -49,7 +42,7 @@ struct PixelType<char>
 template <>
 struct PixelType<unsigned char>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "unsigned char";
@@ -59,7 +52,7 @@ struct PixelType<unsigned char>
 template <>
 struct PixelType<short>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "short";
@@ -69,7 +62,7 @@ struct PixelType<short>
 template <>
 struct PixelType<unsigned short>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "unsigned short";
@@ -79,7 +72,7 @@ struct PixelType<unsigned short>
 template <>
 struct PixelType<int>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "int";
@@ -89,7 +82,7 @@ struct PixelType<int>
 template <>
 struct PixelType<unsigned int>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "unsigned int";
@@ -99,7 +92,7 @@ struct PixelType<unsigned int>
 template <>
 struct PixelType<long>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "long";
@@ -109,7 +102,7 @@ struct PixelType<long>
 template <>
 struct PixelType<unsigned long>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "unsigned long";
@@ -119,7 +112,7 @@ struct PixelType<unsigned long>
 template <>
 struct PixelType<float>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "float";
@@ -129,7 +122,7 @@ struct PixelType<float>
 template <>
 struct PixelType<double>
 {
-  static const char *
+  static constexpr const char *
   ToString()
   {
     return "double";

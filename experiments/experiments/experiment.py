@@ -5,7 +5,8 @@ import redis
 from dotenv import load_dotenv
 import os
 import wandb
-
+from sshtunnel import SSHTunnelForwarder
+from elastix_wrapper import wrapper
 from elastix_wrapper.parameters import Parameters
 
 WANDB_ENTITY = "joasiee"
@@ -14,7 +15,7 @@ WANDB_ENTITY = "joasiee"
 class Experiment:
     __slots__ = ["project", "params"]
 
-    def __init__(self, project: str, params: Parameters) -> None:
+    def __init__(self, params: Parameters, project: str = None) -> None:
         params.prune()
         self.project = project
         self.params = params
@@ -23,7 +24,7 @@ class Experiment:
     def from_json(cls, jsondump):
         pyjson = json.loads(jsondump)
         params = Parameters(pyjson["params"]).set_paths()
-        return cls(pyjson["project"], params)
+        return cls(params, pyjson["project"])
 
     def already_done(self, keys: List[str]):
         keys += ["Optimizer", "Instance"]
@@ -49,8 +50,17 @@ class ExperimentQueue:
 
     def __init__(self) -> None:
         load_dotenv()
-        self.client = redis.Redis(
-            host=os.environ["REDIS_HOST"], port=6379, password=os.environ["REDIS_PWD"], username="joasiee", db=0)
+        self.ssh_forwarding_enable()
+        self.client = redis.Redis(host="localhost", port=self.local_port, db=0)
+
+    def ssh_forwarding_enable(self):
+        self.sshserver = SSHTunnelForwarder(
+            os.environ["REDIS_HOST"],
+            ssh_username="root",
+            remote_bind_address=('127.0.0.1', 6379)
+        )
+        self.sshserver.start()
+        self.local_port = self.sshserver.local_bind_port
 
     def push(self, experiment: Experiment) -> None:
         self.client.rpush(ExperimentQueue.queue_id, experiment.to_json())
@@ -64,7 +74,20 @@ class ExperimentQueue:
     def peek(self) -> Experiment:
         return self.client.lrange(ExperimentQueue.queue_id, 0, 0)
 
+    def size(self) -> int:
+        return self.client.llen(ExperimentQueue.queue_id)
+
+    def clear(self) -> None:
+        self.client.delete(ExperimentQueue.queue_id)
+
+def run_experiment(experiment: Experiment):
+    wandb.init(project=experiment.project,
+                     name=str(experiment.params), reinit=True)
+    wandb.config.update(experiment.params.params)
+    wrapper.run(experiment.params, Path("output") / wandb.run.project / wandb.run.name)
+
 
 if __name__ == "__main__":
     expq = ExperimentQueue()
-    print(expq.pop())
+    # expq.clear()
+    print(expq.size())

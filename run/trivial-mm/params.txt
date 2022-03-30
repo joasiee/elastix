@@ -1,61 +1,30 @@
-// ********** Image Types
-
 (FixedInternalImagePixelType "float")
 (MovingInternalImagePixelType "float")
-
-
-// ********** Components
 
 (Registration "MultiMetricMultiResolutionRegistration")
 (FixedImagePyramid "FixedRecursiveImagePyramid" "FixedRecursiveImagePyramid")
 (MovingImagePyramid "MovingRecursiveImagePyramid" "MovingRecursiveImagePyramid")
-(Interpolator "BSplineInterpolator" "BSplineInterpolator")
+(Interpolator "LinearInterpolator" "LinearInterpolator")
 (Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
 (Metric0Weight 1.0)
 (Metric1Weight 1.0)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
+(FinalBSplineInterpolationOrder 3)
 (Resampler "DefaultResampler")
 (Transform "RecursiveBSplineTransform")
-
-
-// ********** Pyramid
-
-// Total number of resolutions
-(NumberOfResolutions 2)
-
-// ********** Transform
+(NumberOfResolutions 1)
 
 (FinalGridSpacingInVoxels 10 10)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
-
-// ********** Optimizer
-
-(MaximumNumberOfIterations 20)
+(MaximumNumberOfIterations 5)
 (PartialEvaluations "true")
 (FosElementSize -6)
-(BasePopulationSize 50)
-
-// ********** Several
 
 (WriteResultImage "true")
 (UseNormalization "true")
-
-
-// ********** ImageSampler
-(ImageSampler "RandomCoordinate" "RandomCoordinate")
+(ImageSampler "Random" "Random")
 (SamplingPercentage 0.2)
-
-
-// ********** Interpolator and Resampler
-
-//Order of B-Spline interpolation used in each resolution level:
-(BSplineInterpolationOrder 1)
-
-//Order of B-Spline interpolation used for applying the final deformation:
-(FinalBSplineInterpolationOrder 3)
-
-//Default pixel value for pixels that come from outside the picture:
 (DefaultPixelValue 0)

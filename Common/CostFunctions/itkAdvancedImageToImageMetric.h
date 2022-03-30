@@ -366,6 +366,8 @@ protected:
   mutable ImageSamplerPointer                        m_ImageSampler{ nullptr };
   std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
   std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
+  std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
+  std::vector<std::vector<int>>                      m_BSplinePointsRegions;
   double                                             m_SamplingPercentage{ 0.05 };
   FOS                                                m_FOS{ 0 };
 

@@ -693,7 +693,8 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 
   this->BeforeThreadedInit(parameters);
 
-  /** Compute, store and combine all metric values. */
+/** Compute, store and combine all metric values. */
+#pragma omp parallel for num_threads(this->m_NumberOfMetrics) reduction(+ : measure)
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     /** Time the computation per metric. */

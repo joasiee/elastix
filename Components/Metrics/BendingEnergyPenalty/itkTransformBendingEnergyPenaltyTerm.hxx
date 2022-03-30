@@ -51,7 +51,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
 
   if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
   {
-    return static_cast<MeasureType>(measure);
+    return measure;
   }
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
@@ -71,110 +71,27 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
   {
     return measure;
   }
-  // TODO: This is only required once! and not every iteration.
-
-  /** Check if this transform is a B-spline transform. */
-  typename BSplineOrder3TransformType::Pointer dummy; // default-constructed (null)
-  const bool                                   transformIsBSpline = this->CheckForBSplineTransform2(dummy);
 
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
+  unsigned long              numberOfPixelsCounted = 0;
+
+  const ThreadIdType maxWorkUnits = omp_in_parallel() ? Self::GetNumberOfWorkUnits() / 2 : Self::GetNumberOfWorkUnits();
+  const ThreadIdType         numThreads =
+    std::max(std::min(maxWorkUnits, static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)), 1U);
 
 /** Loop over the fixed image to calculate the penalty term and its derivative. */
-#pragma omp parallel for reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices)
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices) num_threads(numThreads)
   for (int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
+    const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
 
-    /** Get the spatial Hessian of the transformation at the current point.
-     * This is needed to compute the bending energy.
-     */
-    this->m_AdvancedTransform->GetJacobianOfSpatialHessian(
-      fixedPoint, spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices);
-
-    /** Prepare some stuff for the computation of the metric (derivative). */
-    FixedArray<InternalMatrixType, FixedImageDimension> A;
-    for (unsigned int k = 0; k < FixedImageDimension; ++k)
+    if (this->IsInsideMovingMask(mappedPoint))
     {
-      A[k] = spatialHessian[k].GetVnlMatrix();
-    }
-
-    /** Compute the contribution to the metric value of this point. */
-    for (unsigned int k = 0; k < FixedImageDimension; ++k)
-    {
-      measure += vnl_math::sqr(A[k].frobenius_norm());
-    }
-  } // end for loop over the image sample container
-
-  measure /= static_cast<RealType>(this->GetNumberOfFixedImageSamples());
-
-  return measure;
-}
-
-/**
- * ******************* GetValuePartial *******************
- */
-
-template <class TFixedImage, class TScalarType>
-typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
-                                                                      const int              fosIndex) const
-{
-  MeasureType measure = NumericTraits<MeasureType>::Zero;
-
-  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
-  {
-    return static_cast<MeasureType>(measure);
-  }
-
-  this->BeforeThreadedGetValueAndDerivative(parameters);
-
-  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
-
-  /** Create and initialize some variables. */
-  SpatialHessianType           spatialHessian;
-  JacobianOfSpatialHessianType jacobianOfSpatialHessian;
-  NonZeroJacobianIndicesType   nonZeroJacobianIndices;
-  const NumberOfParametersType numberOfNonZeroJacobianIndices =
-    this->m_AdvancedTransform->GetNumberOfNonZeroJacobianIndices();
-  jacobianOfSpatialHessian.resize(numberOfNonZeroJacobianIndices);
-  nonZeroJacobianIndices.resize(numberOfNonZeroJacobianIndices);
-
-  /** Check if the SpatialHessian is nonzero. */
-  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian() &&
-      !this->m_AdvancedTransform->GetHasNonZeroJacobianOfSpatialHessian())
-  {
-    return measure;
-  }
-  // TODO: This is only required once! and not every iteration.
-
-  /** Check if this transform is a B-spline transform. */
-  typename BSplineOrder3TransformType::Pointer dummy; // default-constructed (null)
-  const bool                                   transformIsBSpline = this->CheckForBSplineTransform2(dummy);
-
-// iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for schedule(dynamic) reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices)
-  for (int i = 0; i < fosPoints.size(); ++i)
-  {
-    this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
-    this->m_SubfunctionSamplers[fosPoints[i]]->Update();
-    ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
-    const unsigned long        sampleContainerSize = sampleContainer.Size();
-
-
-    /** Create iterator over the sample container. */
-    typename ImageSampleContainerType::ConstIterator threader_fiter;
-    typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
-    typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
-
-    /** Loop over the fixed image samples to calculate the mean squares. */
-    for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
-    {
-      /** Read fixed coordinates and initialize some variables. */
-      const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
-
+      ++numberOfPixelsCounted;
       /** Get the spatial Hessian of the transformation at the current point.
        * This is needed to compute the bending energy.
        */
@@ -194,9 +111,101 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
         measure += vnl_math::sqr(A[k].frobenius_norm());
       }
     }
+  } // end for loop over the image sample container
+
+  measure /= static_cast<RealType>(numberOfPixelsCounted);
+
+  return measure;
+}
+
+/**
+ * ******************* GetValuePartial *******************
+ */
+
+template <class TFixedImage, class TScalarType>
+typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
+TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
+                                                                      const int              fosIndex) const
+{
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
+  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
+  {
+    return measure;
   }
 
-  measure /= static_cast<RealType>(this->GetNumberOfFixedImageSamples());
+  this->BeforeThreadedGetValueAndDerivative(parameters);
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
+
+  /** Create and initialize some variables. */
+  SpatialHessianType           spatialHessian;
+  JacobianOfSpatialHessianType jacobianOfSpatialHessian;
+  NonZeroJacobianIndicesType   nonZeroJacobianIndices;
+  const NumberOfParametersType numberOfNonZeroJacobianIndices =
+    this->m_AdvancedTransform->GetNumberOfNonZeroJacobianIndices();
+  jacobianOfSpatialHessian.resize(numberOfNonZeroJacobianIndices);
+  nonZeroJacobianIndices.resize(numberOfNonZeroJacobianIndices);
+
+  /** Check if the SpatialHessian is nonzero. */
+  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian() &&
+      !this->m_AdvancedTransform->GetHasNonZeroJacobianOfSpatialHessian())
+  {
+    return measure;
+  }
+
+  const ThreadIdType maxWorkUnits = omp_in_parallel() ? Self::GetNumberOfWorkUnits() / 2 : Self::GetNumberOfWorkUnits();
+  const ThreadIdType numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
+
+// iterate over these subfunction samplers and calculate mean squared diffs
+#pragma omp parallel for reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices) num_threads(numThreads)
+  for (int i = 0; i < fosPoints.size(); ++i)
+  {
+    this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
+    this->m_SubfunctionSamplers[fosPoints[i]]->Update();
+    ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
+    const unsigned long        sampleContainerSize = sampleContainer.Size();
+
+    /** Create iterator over the sample container. */
+    typename ImageSampleContainerType::ConstIterator threader_fiter;
+    typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
+    typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
+
+    unsigned long numberOfPixelsCounted = 0;
+    MeasureType   tmpMeasure = NumericTraits<MeasureType>::Zero;
+
+    /** Loop over the fixed image samples to calculate the mean squares. */
+    for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
+    {
+      /** Read fixed coordinates and initialize some variables. */
+      const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+      const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
+
+      if (this->IsInsideMovingMask(mappedPoint))
+      {
+        ++numberOfPixelsCounted;
+
+        /** Get the spatial Hessian of the transformation at the current point.
+         * This is needed to compute the bending energy.
+         */
+        this->m_AdvancedTransform->GetJacobianOfSpatialHessian(
+          fixedPoint, spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices);
+
+        /** Prepare some stuff for the computation of the metric (derivative). */
+        FixedArray<InternalMatrixType, FixedImageDimension> A;
+        for (unsigned int k = 0; k < FixedImageDimension; ++k)
+        {
+          A[k] = spatialHessian[k].GetVnlMatrix();
+        }
+
+        /** Compute the contribution to the metric value of this point. */
+        for (unsigned int k = 0; k < FixedImageDimension; ++k)
+        {
+          tmpMeasure += vnl_math::sqr(A[k].frobenius_norm());
+        }
+      }
+    }
+    tmpMeasure /= static_cast<RealType>(numberOfPixelsCounted);
+    measure += tmpMeasure;
+  }
 
   return measure;
 } // end GetValuePartial()

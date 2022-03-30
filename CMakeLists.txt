@@ -36,7 +36,7 @@ if(DEFINED ENV{ITK_HOME})
 endif()
 
 # Find ITK.
-find_package( ITK 5.2.0 REQUIRED COMPONENTS
+find_package( ITK 5.3 REQUIRED COMPONENTS
     ITKCommon
     ITKDisplacementField
     ITKDistanceMap
@@ -322,9 +322,7 @@ if( MSVC )
 
   # Increases address capacity
   if( WIN32 )
-    set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /bigobj" )
-    set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /bigobj" )
-    set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /bigobj" )
+    add_compile_options( /bigobj )
   endif()
 endif()
 

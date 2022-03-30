@@ -53,16 +53,12 @@ public:
   /** Typedef's from Superclass. */
 
   /** typedef's from itk base Object. */
-  using ObjectType = Superclass::ObjectType;
   using Superclass::ObjectPointer;
   using Superclass::DataObjectType;
   using Superclass::DataObjectPointer;
 
   /** Elastix components. */
-  using Superclass::ElastixBaseType;
-  using Superclass::ConfigurationType;
   using Superclass::ArgumentMapType;
-  using Superclass::ConfigurationPointer;
   using Superclass::ObjectContainerType;
   using Superclass::DataObjectContainerType;
   using Superclass::ObjectContainerPointer;
@@ -71,7 +67,6 @@ public:
   /** Typedefs for the database that holds pointers to New() functions.
    * Those functions are used to instantiate components, such as the metric etc.
    */
-  using Superclass::ComponentDatabaseType;
   using Superclass::ComponentDatabasePointer;
   using Superclass::PtrToCreator;
   using Superclass::ComponentDescriptionType;

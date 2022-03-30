@@ -74,9 +74,6 @@ public:
   using InputImageIndexType = typename InputImageType::IndexType;
   using InputImagePointType = typename InputImageType::PointType;
 
-  void
-  SetGeneratorSeed(int seed) override;
-
 protected:
   /** The constructor. */
   ImageRandomSampler() = default;
@@ -96,6 +93,9 @@ private:
   /** The deleted assignment operator. */
   void
   operator=(const Self &) = delete;
+
+  void
+  GetPoint(unsigned long randomPosition, InputImageIndexType & index, InputImagePointType & point);
 };
 
 } // end namespace itk

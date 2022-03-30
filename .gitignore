@@ -45,6 +45,7 @@ build/
 
 # debug run output
 run/**/dir
+run/**/out
 
 # gomea random seed
 random_seed.dat

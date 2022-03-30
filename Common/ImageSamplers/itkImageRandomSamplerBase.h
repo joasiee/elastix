@@ -19,6 +19,7 @@
 #define itkImageRandomSamplerBase_h
 
 #include "itkImageSamplerBase.h"
+#include <random>
 
 namespace itk
 {

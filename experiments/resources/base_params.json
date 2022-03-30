@@ -4,7 +4,7 @@
     "Registration": "MultiResolutionRegistration",
     "FixedImagePyramid": "FixedRecursiveImagePyramid",
     "MovingImagePyramid": "MovingRecursiveImagePyramid",
-    "Interpolator": "BSplineInterpolator",
+    "Interpolator": "LinearInterpolator",
     "ResampleInterpolator": "FinalBSplineInterpolator",
     "Resampler": "DefaultResampler",
     "Transform": "RecursiveBSplineTransform",
@@ -17,5 +17,6 @@
     "NewSamplesEveryIteration": "true",
     "UseNormalization": "true",
     "WriteTransformParametersEachResolution": "true",
-    "ErodeMask": "false"
+    "ErodeMask": "false",
+    "FixedImageBSplineInterpolationOrder": 1
 }

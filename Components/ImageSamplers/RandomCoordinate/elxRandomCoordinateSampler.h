@@ -123,17 +123,14 @@ public:
   using typename Superclass1::CoordRepType;
   using typename Superclass1::InterpolatorType;
   using typename Superclass1::DefaultInterpolatorType;
+  using typename Superclass1::BSplineInterpolatorType;
 
   /** The input image dimension. */
   itkStaticConstMacro(InputImageDimension, unsigned int, Superclass1::InputImageDimension);
 
   /** Typedefs inherited from Elastix. */
   using typename Superclass2::ElastixType;
-  using typename Superclass2::ElastixPointer;
-  using typename Superclass2::ConfigurationType;
-  using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
-  using typename Superclass2::RegistrationPointer;
   using ITKBaseType = typename Superclass2::ITKBaseType;
 
   /** Execute stuff before each resolution:

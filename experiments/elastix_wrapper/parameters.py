@@ -4,6 +4,7 @@ import json
 from math import ceil
 import os
 import time
+import uuid
 from PIL import Image
 from enum import Enum
 from pathlib import Path
@@ -29,12 +30,13 @@ class Parameters:
         params
     ) -> None:
         self.params = params
+        self.id = [str(int(time.time())), str(uuid.uuid1())[:8]]
 
     @classmethod
     def from_base(cls,
                   metric: str = "AdvancedMeanSquares",
                   sampler: str = "RandomCoordinate",
-                  sampling_p: float = 0.02,
+                  sampling_p: float = 0.05,
                   mesh_size: List[int] | int = 12,
                   seed: int = None,
                   write_img=False):
@@ -46,6 +48,7 @@ class Parameters:
         params["MeshSize"] = mesh_size
         params["RandomSeed"] = seed
         params["WriteResultImage"] = write_img
+        params["WritePyramidImagesAfterEachResolution"] = write_img
         return cls(params)
 
     @classmethod
@@ -77,9 +80,10 @@ class Parameters:
         return self
 
     def multi_resolution(
-            self, n: int = 3, p_sched: List[int] = None) -> Parameters:
+            self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None) -> Parameters:
         self["NumberOfResolutions"] = n
         self["ImagePyramidSchedule"] = p_sched
+        self["GridSpacingSchedule"] = g_sched
         return self
 
     def optimizer(self, optim: str, params: Dict[str, Any] = None) -> Parameters:
@@ -118,6 +122,9 @@ class Parameters:
             },
         )
 
+    def asgd(self):
+        return self.optimizer("AdaptiveStochasticGradientDescent")
+
     def prune(self):
         self.params = {k: v for k, v in self.params.items() if v is not None}
 
@@ -140,8 +147,7 @@ class Parameters:
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
-            voxel_spacings.append(ceil(voxel_dim / self["ImagePyramidSchedule"][(
-                len(total_samples)-1)*len(voxel_dims)+i] / self["MeshSize"][i]))
+            voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             for n in range(len(total_samples)):
                 total_samples[n] *= int(voxel_dim /
                                         self["ImagePyramidSchedule"][n*len(voxel_dims)+i])
@@ -163,16 +169,17 @@ class Parameters:
                 "Unknown how to extract dimensions from filetype.")
 
     def set_paths(self):
-        collection = self["Collection"]
-        instance = self["Instance"]
-        extension = INSTANCES_CONFIG[collection]["extension"]
-        folder = INSTANCES_CONFIG[collection]["folder"]
-        fixed = f"{instance:02}_Fixed.{extension}"
-        moving = f"{instance:02}_Moving.{extension}"
-        self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
-        self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
-            fixed if INSTANCES_CONFIG[collection]["masks"] else None
-        self.moving_path = INSTANCES_SRC / folder / "scans" / moving
+        if "Collection" in self.params and "Instance" in self.params:
+            collection = self["Collection"]
+            instance = self["Instance"]
+            extension = INSTANCES_CONFIG[collection]["extension"]
+            folder = INSTANCES_CONFIG[collection]["folder"]
+            fixed = f"{instance:02}_Fixed.{extension}"
+            moving = f"{instance:02}_Moving.{extension}"
+            self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
+            self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
+                fixed if INSTANCES_CONFIG[collection]["masks"] else None
+            self.moving_path = INSTANCES_SRC / folder / "scans" / moving
         return self
 
     def __getitem__(self, key) -> Any:
@@ -182,7 +189,7 @@ class Parameters:
         self.params[key] = value
 
     def __str__(self) -> str:
-        return f"{int(time.time())}_{self['Collection']}_{self['Instance']}_{self['Optimizer']}".lower()
+        return f"{self.id[0]}_{self['Collection']}_{self['Instance']}_{self['Optimizer']}_{self.id[1]}".lower()
 
     def n_param(self, param: str, n: int = 2) -> List[str]:
         self[param] = [self[param] for i in range(n)]

@@ -112,19 +112,12 @@ public:
   using CoordRepType = typename OutputPointType::CoordRepType;
 
   using typename Superclass1::MeshIdType;
-  /** Other typedef's. */
-  using ObjectType = itk::Object;
-
   using CombinationTransformType = itk::AdvancedCombinationTransform<CoordRepType, Self::FixedImageDimension>;
   using InitialTransformType = typename CombinationTransformType::InitialTransformType;
 
   /** Typedefs inherited from elastix. */
   using typename Superclass2::ElastixType;
-  using typename Superclass2::ElastixPointer;
-  using typename Superclass2::ConfigurationType;
-  using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
-  using typename Superclass2::RegistrationPointer;
   using ITKBaseType = typename Superclass2::ITKBaseType;
   using typename Superclass2::FixedImageType;
   using typename Superclass2::MovingImageType;
