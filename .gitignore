@@ -54,3 +54,5 @@ random_seed.dat
 *.pyc
 
 temp
+
+!Components/Metrics/BendingEnergyPenaltyAnalytic/lib/libplmregister.a

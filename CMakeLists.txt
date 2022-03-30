@@ -122,6 +122,21 @@ if( ELASTIX_USE_EIGEN )
   add_definitions( -DELASTIX_USE_EIGEN )
 endif()
 
+find_package(BLAS REQUIRED)
+include_directories( ${BLAS_INCLUDE_DIR} )
+
+find_package(LAPACK REQUIRED)
+include_directories( ${LAPACK_INCLUDE_DIR} )
+
+find_package(Boost REQUIRED)
+include_directories( ${Boost_INCLUDE_DIR} )
+
+find_package(Plastimatch REQUIRED
+  NO_DEFAULT_PATH
+  HINTS "/home/joasiee/projects/plastimatch/build/Debug"
+)
+include_directories( ${Plastimatch_INCLUDE_DIR} )
+
 #---------------------------------------------------------------------
 # Find OpenMP
 mark_as_advanced( ELASTIX_USE_OPENMP )

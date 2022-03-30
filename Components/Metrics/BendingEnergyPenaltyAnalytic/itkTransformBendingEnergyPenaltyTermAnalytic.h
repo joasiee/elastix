@@ -20,6 +20,7 @@
 
 #include "itkTransformPenaltyTerm.h"
 #include "itkImageGridSampler.h"
+#include "plastimatch/bspline_regularize.h"
 
 namespace itk
 {
