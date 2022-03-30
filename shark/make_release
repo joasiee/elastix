@@ -27,6 +27,8 @@ export ITK_HOME=$WORKING_DIR/ITK
 
 if [[ -z "${SKIP_REBUILD}" ]]
 then
+    cd $WORKING_DIR
+    
     # Configure and install Eigen3
     wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
     tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
