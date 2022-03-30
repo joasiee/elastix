@@ -2,8 +2,8 @@
 #
 #SBATCH --partition=all
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=24
-#SBATCH --mem=16G
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=12G
 #SBATCH --time=04:00:00
 #SBATCH -D /home/jmulder6/projects/elastix
 #SBATCH -o /home/jmulder6/projects/elastix/shark/make_release-%j.out
@@ -17,7 +17,7 @@ module load library/boost/1.72.0/gcc-8.3.1
 module load library/blas/0.3.13/gcc-8.3.1
 module load library/lapack/3.9.0/gcc-8.3.1
 
-
+CORES=16
 ELASTIX_DIR=$PWD
 CMAKE_BUILD_TYPE=Release
 WORKING_DIR=$PWD/temp
@@ -25,13 +25,13 @@ INSTALL_DIR=$WORKING_DIR/install
 mkdir -p $INSTALL_DIR
 export ITK_HOME=$WORKING_DIR/ITK
 
-if [ $REBUILD_ALL_COMPONENTS -eq 1 ]
+if [[ -z "${SKIP_REBUILD}" ]]
 then
     # Configure and install Eigen3
     wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
     tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
     cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_INSTALL_PREFIX:STRING=$INSTALL_DIR -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-    cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 24 --config $CMAKE_BUILD_TYPE --target install
+    cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target install
 
     cd $WORKING_DIR
     rm eigen-3.4.0.tar.bz2 && rm -rf eigen-3.4.0
@@ -42,9 +42,9 @@ fi
 
 cd $WORKING_DIR/ITK
 cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 24 --config $CMAKE_BUILD_TYPE --target all
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target all
 
 # Configure and install elastix
 cd $ELASTIX_DIR
 cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel 24 --config $CMAKE_BUILD_TYPE --target elastix_exe
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target elastix_exe
