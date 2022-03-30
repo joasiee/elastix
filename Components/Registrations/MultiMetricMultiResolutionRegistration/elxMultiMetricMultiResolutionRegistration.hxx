@@ -103,10 +103,13 @@ MultiMetricMultiResolutionRegistration<TElastix>::BeforeRegistration()
   }
 
   /** Temporary? Use the multi-threaded version or not. */
-  std::string tmp = this->m_Configuration->GetCommandLineArgument("-mtcombo");
-  if (tmp == "true" || tmp.empty())
+  std::string tmp = this->m_Configuration->GetCommandLineArgument("-threads");
+  this->GetCombinationMetric()->SetUseMultiThread(true);
+
+  if (!tmp.empty())
   {
-    this->GetCombinationMetric()->SetUseMultiThread(true);
+    const unsigned int nrOfThreads = atoi(tmp.c_str());
+    this->GetCombinationMetric()->SetNumberOfWorkUnits(nrOfThreads);
   }
   else
   {

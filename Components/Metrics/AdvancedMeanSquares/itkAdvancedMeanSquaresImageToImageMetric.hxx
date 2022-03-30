@@ -185,12 +185,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const TransformParametersType & parameters) const -> MeasureType
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
-  const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
 
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
-  const ThreadIdType maxWorkUnits = omp_in_parallel() ? Self::GetNumberOfWorkUnits() / 2 : Self::GetNumberOfWorkUnits();
+  const ThreadIdType maxWorkUnits = Self::GetNumberOfWorkUnits();
   const ThreadIdType         numThreads =
     std::max(std::min(maxWorkUnits, static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)), 1U);
 
@@ -234,7 +233,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
-  const ThreadIdType maxWorkUnits = omp_in_parallel() ? Self::GetNumberOfWorkUnits() / 2 : Self::GetNumberOfWorkUnits();
+  const ThreadIdType maxWorkUnits = Self::GetNumberOfWorkUnits();
   const ThreadIdType numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
 
   MeasureType   measure = NumericTraits<MeasureType>::Zero;

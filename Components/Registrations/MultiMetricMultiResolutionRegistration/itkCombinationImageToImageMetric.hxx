@@ -594,7 +594,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     {
       // The NumberOfThreadsPerMetric is changed after Initialize() so we save it before and then
       // set it on.
-      unsigned nrOfThreadsPerMetric = this->GetNumberOfWorkUnits();
+      unsigned int nrOfThreadsPerMetric = testPtr1->GetNumberOfWorkUnits() / this->GetNumberOfMetrics();
       testPtr1->Initialize();
       testPtr1->SetNumberOfWorkUnits(nrOfThreadsPerMetric);
     }
@@ -603,6 +603,9 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
       testPtr2->Initialize();
     }
   }
+
+  const auto nestedThreads = Self::GetNumberOfWorkUnits() / this->GetNumberOfMetrics();
+  omp_set_max_active_levels(nestedThreads);
 
 } // end Initialize()
 
