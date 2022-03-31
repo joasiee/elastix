@@ -84,7 +84,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
 
 /** Loop over the fixed image to calculate the penalty term and its derivative. */
 #pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices) num_threads(numThreads)
-  for (int i = 0; i < sampleContainerSize; ++i)
+  for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;

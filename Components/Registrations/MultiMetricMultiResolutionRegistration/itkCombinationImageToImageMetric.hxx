@@ -603,10 +603,6 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
       testPtr2->Initialize();
     }
   }
-
-  const auto nestedThreads = Self::GetNumberOfWorkUnits() / this->GetNumberOfMetrics();
-  omp_set_max_active_levels(nestedThreads);
-
 } // end Initialize()
 
 /**
@@ -731,8 +727,8 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 
   this->BeforeThreadedInit(parameters);
 
-  /** Compute, store and combine all metric values. */
-  #pragma omp parallel for num_threads(this->m_NumberOfMetrics) reduction(+ : measure)
+/** Compute, store and combine all metric values. */
+#pragma omp parallel for num_threads(this->m_NumberOfMetrics) reduction(+ : measure)
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     itk::TimeProbe timer;
