@@ -171,7 +171,7 @@ public:
     return true;
   }
 
-  inline void
+  virtual void
   SetGeneratorSeed(int seed);
 
   /** Get a handle to the cropped InputImageregion. */
