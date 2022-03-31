@@ -34,15 +34,15 @@ GOMEAOptimizer::PrintSelf(std::ostream & os, Indent indent) const
 }
 
 void
-GOMEAOptimizer::PrintSettings(std::stringstream & output) const
+GOMEAOptimizer::PrintSettings() const
 {
   Indent indent = *itk::Indent::New();
-  output << indent << "Settings: " << std::endl;
-  output << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << std::endl;
-  output << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << std::endl;
-  output << indent.GetNextIndent() << "Tau: " << m_Tau << std::endl;
-  output << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << std::endl;
-  output << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << std::endl;
+  std::cout << indent << "Settings: " << std::endl;
+  std::cout << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << std::endl;
+  std::cout << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << std::endl;
+  std::cout << indent.GetNextIndent() << "Tau: " << m_Tau << std::endl;
+  std::cout << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << std::endl;
+  std::cout << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << std::endl;
 }
 
 void
@@ -1889,6 +1889,7 @@ GOMEAOptimizer::GetStopConditionDescription() const
 void
 GOMEAOptimizer::run(void)
 {
+  this->PrintSettings();
   this->runAllPopulations();
   this->ezilaitini();
   this->StopOptimization();

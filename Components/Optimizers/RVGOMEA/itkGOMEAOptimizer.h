@@ -128,7 +128,7 @@ public:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   void
-  PrintSettings(std::stringstream & output) const;
+  PrintSettings() const;
 
 protected:
   GOMEAOptimizer();
