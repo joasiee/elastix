@@ -25,22 +25,21 @@ class Collection(str, Enum):
 
 
 class Parameters:
-    def __init__(
-        self,
-        params
-    ) -> None:
+    def __init__(self, params) -> None:
         self.params = params
         self.id = [str(int(time.time())), str(uuid.uuid1())[:8]]
 
     @classmethod
-    def from_base(cls,
-                  metric: str = "AdvancedMeanSquares",
-                  sampler: str = "RandomCoordinate",
-                  sampling_p: float = 0.05,
-                  use_mask: bool = False,
-                  mesh_size: List[int] | int = 12,
-                  seed: int = None,
-                  write_img=False):
+    def from_base(
+        cls,
+        metric: str = "AdvancedMeanSquares",
+        sampler: str = "RandomCoordinate",
+        sampling_p: float = 0.05,
+        use_mask: bool = False,
+        mesh_size: List[int] | int = 12,
+        seed: int = None,
+        write_img=False,
+    ):
         with BASE_PARAMS_PATH.open() as f:
             params: Dict[str, Any] = json.loads(f.read())
         params["Metric"] = metric
@@ -82,7 +81,8 @@ class Parameters:
         return self
 
     def multi_resolution(
-            self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None) -> Parameters:
+        self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None
+    ) -> Parameters:
         self["NumberOfResolutions"] = n
         self["ImagePyramidSchedule"] = p_sched
         self["GridSpacingSchedule"] = g_sched
@@ -96,11 +96,12 @@ class Parameters:
         return self
 
     def stopping_criteria(
-            self,
-            iterations: List[int] | int = None,
-            evals: List[int] | int = None,
-            max_time_s: int = 0,
-            fitness_var: float = 1e-9):
+        self,
+        iterations: List[int] | int = None,
+        evals: List[int] | int = None,
+        max_time_s: int = 0,
+        fitness_var: float = 1e-9,
+    ):
         self["MaximumNumberOfIterations"] = iterations
         self["MaxNumberOfEvaluations"] = evals
         self["MaxTimeSeconds"] = max_time_s
@@ -141,34 +142,40 @@ class Parameters:
     def calc_voxel_params(self) -> Parameters:
         voxel_dims = self.get_voxel_dimensions()
         if not isinstance(self["MeshSize"], List):
-            self["MeshSize"] = [self["MeshSize"]
-                                for _ in range(len(voxel_dims))]
-        if "ImagePyramidSchedule" not in self.params or not self["ImagePyramidSchedule"]:
+            self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
+        if (
+            "ImagePyramidSchedule" not in self.params
+            or not self["ImagePyramidSchedule"]
+        ):
             self["ImagePyramidSchedule"] = [
-                2**n for n in range(self["NumberOfResolutions"] - 1, -1, -1) for _ in range(len(voxel_dims))]
+                2**n
+                for n in range(self["NumberOfResolutions"] - 1, -1, -1)
+                for _ in range(len(voxel_dims))
+            ]
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
             voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             for n in range(len(total_samples)):
-                total_samples[n] *= int(voxel_dim /
-                                        self["ImagePyramidSchedule"][n*len(voxel_dims)+i])
+                total_samples[n] *= int(
+                    voxel_dim / self["ImagePyramidSchedule"][n * len(voxel_dims) + i]
+                )
 
         self["FinalGridSpacingInVoxels"] = voxel_spacings
         self["NumberOfSpatialSamples"] = [
-            int(x * self["SamplingPercentage"]) for x in total_samples]
+            int(x * self["SamplingPercentage"]) for x in total_samples
+        ]
         return self
 
     def get_voxel_dimensions(self) -> List[int]:
         extension = INSTANCES_CONFIG[self["Collection"]]["extension"]
-        if extension == 'mhd':
+        if extension == "mhd":
             return Parameters.read_mhd(self.fixed_path)["DimSize"]
-        elif extension == 'png':
+        elif extension == "png":
             image = Image.open(str(self.fixed_path))
             return list(image.size)
         else:
-            raise Exception(
-                "Unknown how to extract dimensions from filetype.")
+            raise Exception("Unknown how to extract dimensions from filetype.")
 
     def set_paths(self):
         if "Collection" in self.params and "Instance" in self.params:
@@ -179,8 +186,11 @@ class Parameters:
             fixed = f"{instance:02}_Fixed.{extension}"
             moving = f"{instance:02}_Moving.{extension}"
             self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
-            self.fixedmask_path = INSTANCES_SRC / folder / "masks" / \
-                fixed if INSTANCES_CONFIG[collection]["masks"] else None
+            self.fixedmask_path = (
+                INSTANCES_SRC / folder / "masks" / fixed
+                if INSTANCES_CONFIG[collection]["masks"]
+                else None
+            )
             self.moving_path = INSTANCES_SRC / folder / "scans" / moving
         return self
 
@@ -198,7 +208,9 @@ class Parameters:
 
     @staticmethod
     def parse_param(key, value):
-        def esc(x): return f'"{x}"' if isinstance(x, str) else str(x)
+        def esc(x):
+            return f'"{x}"' if isinstance(x, str) else str(x)
+
         res = ""
         if isinstance(value, str):
             res += f"({key} {esc(value)})\n"
@@ -239,7 +251,12 @@ class Parameters:
 
 
 if __name__ == "__main__":
-    sched = [9, 9, 9, 6, 6, 6, 5, 5, 5, 4, 4, 4]
-    params = Parameters.from_base(mesh_size=10).gomea(
-    ).multi_resolution(4, p_sched=sched).multi_metric().instance(Collection.EMPIRE, 7)
+    params = (
+        Parameters.from_base(mesh_size=2, seed=1523, sampling_p=0.2)
+        .multi_resolution(1, p_sched=[7, 7, 7])
+        .multi_metric()
+        .gomea(fos=-6, partial_evals=True)
+        .instance(Collection.EMPIRE, 26)
+        .stopping_criteria(iterations=[5000])
+    )
     params.write(Path())
