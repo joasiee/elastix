@@ -37,6 +37,7 @@ class Parameters:
                   metric: str = "AdvancedMeanSquares",
                   sampler: str = "RandomCoordinate",
                   sampling_p: float = 0.05,
+                  use_mask: bool = False,
                   mesh_size: List[int] | int = 12,
                   seed: int = None,
                   write_img=False):
@@ -45,6 +46,7 @@ class Parameters:
         params["Metric"] = metric
         params["ImageSampler"] = sampler
         params["SamplingPercentage"] = sampling_p
+        params["UseMask"] = use_mask
         params["MeshSize"] = mesh_size
         params["RandomSeed"] = seed
         params["WriteResultImage"] = write_img

@@ -36,3 +36,4 @@
 (MaximumNumberOfIterations 200)
 (MaxTimeSeconds 0)
 (FitnessVarianceTolerance 1e-09)
+(UseMask "false")

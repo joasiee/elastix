@@ -112,7 +112,7 @@ ImageGridSampler<TInputImage>::GenerateData()
   }
   index = sampleGridIndex;
 
-  if (mask.IsNull())
+  if (mask.IsNull() || !this->m_UseMask)
   {
     /** Ugly loop over the grid. */
     for (unsigned int t = 0; t < dim_t; ++t)

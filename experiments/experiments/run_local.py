@@ -10,10 +10,10 @@ from experiments.experiment import Experiment, run_experiment
 params = (
     Parameters.from_base(mesh_size=2, seed=1523, sampling_p=0.2)
     .multi_resolution(1, p_sched=[7, 7, 7])
-    # .multi_metric()
+    .multi_metric()
     .gomea()
     .instance(Collection.EMPIRE, 26)
-    .stopping_criteria(iterations=[200])
+    .stopping_criteria(iterations=[5000])
 )
 
 run_experiment(Experiment(params, "zandbak"))

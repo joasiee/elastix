@@ -85,7 +85,7 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateData()
 
   InputImageContinuousIndexType sampleContIndex;
   /** Fill the sample container. */
-  if (mask.IsNull())
+  if (mask.IsNull() || !this->m_UseMask)
   {
     /** Start looping over the sample container. */
     for (iter = sampleContainer->Begin(); iter != end; ++iter)

@@ -54,7 +54,7 @@ ImageRandomSampler<TInputImage>::GenerateData()
   typename ImageSampleContainerType::Iterator      iter;
   typename ImageSampleContainerType::ConstIterator end = sampleContainer->End();
 
-  if (mask.IsNull())
+  if (mask.IsNull() || !this->m_UseMask)
   {
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {

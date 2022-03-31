@@ -72,9 +72,7 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         ]
         if params.fixedmask_path:
             args += ["-fMask", str(params.fixedmask_path)]
-        subprocess.run(
-            args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
-        )
+        subprocess.run(args, check=True)
 
 
 if __name__ == "__main__":

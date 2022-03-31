@@ -183,6 +183,7 @@ public:
 
   /** \todo: Temporary, should think about interface. */
   itkSetMacro(UseMultiThread, bool);
+  itkSetMacro(UseMask, bool);
 
 protected:
   /** The constructor. */
@@ -230,10 +231,10 @@ protected:
 
   // tmp?
   bool               m_UseMultiThread;
-  Xoshiro128PlusPlus m_RandomGenerator;
+  bool               m_UseMask{ true };
   int                m_PreviousSeed;
-  bool               m_ReinitSeed{ false };
-  int                m_NextSeed{ 0 };
+  Xoshiro128PlusPlus m_RandomGenerator;
+
 
 private:
   /** The deleted copy constructor. */
