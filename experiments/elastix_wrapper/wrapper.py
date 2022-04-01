@@ -40,6 +40,7 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
 
     logger.info("Run finished successfully.")
     wd.stop()
+    wd.join()
 
     if watch:
         wandb.save(
