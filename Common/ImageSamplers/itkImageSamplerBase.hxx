@@ -517,7 +517,7 @@ ImageSamplerBase<TInputImage>::SetGeneratorSeed(int seed)
   if (seed != this->m_PreviousSeed)
   {
     this->m_PreviousSeed = seed;
-    this->m_RandomGenerator = Xoshiro128PlusPlus(seed);
+    this->m_RandomGenerator.seed(seed);
     this->Modified();
   }
 }

@@ -23,6 +23,7 @@
 #include "itkVectorDataContainer.h"
 #include "itkSpatialObject.h"
 #include "itkXoshiroRandomGenerators.hpp"
+#include "boost/random/sobol.hpp"
 
 namespace itk
 {
@@ -233,7 +234,7 @@ protected:
   bool               m_UseMultiThread;
   bool               m_UseMask{ true };
   int                m_PreviousSeed;
-  Xoshiro128PlusPlus m_RandomGenerator;
+  boost::random::sobol m_RandomGenerator{Self::InputImageDimension};
 
 
 private:
