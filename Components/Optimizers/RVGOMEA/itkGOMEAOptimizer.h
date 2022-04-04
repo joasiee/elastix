@@ -118,9 +118,6 @@ public:
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
 
-  itkGetConstMacro(WriteOutput, bool);
-  itkSetMacro(WriteOutput, bool);
-
   const std::string
   GetStopConditionDescription() const override;
 
@@ -271,11 +268,9 @@ private:
   void
   runAllPopulations();
   void
-  IterationWriteOutput();
-  void
   ezilaitini(void);
   void
-  UpdatePosition(bool avg = true);
+  UpdatePosition();
 
   mutable std::ostringstream m_StopConditionDescription;
 
@@ -297,7 +292,6 @@ private:
   int           number_of_populations{ 0 };
 
   bool m_PartialEvaluations{ false };
-  bool m_WriteOutput{ false };
 
   template <typename T>
   using Vector1D = std::vector<T>;
@@ -325,8 +319,6 @@ private:
   Vector1D<MatrixXd>           full_covariance_matrix;
   Vector2D<MatrixXd>           decomposed_covariance_matrices;
   Vector2D<MatrixXd>           decomposed_cholesky_factors_lower_triangle;
-
-  std::ofstream outFile;
 
   GOMEA::FOS ** linkage_model;
 };

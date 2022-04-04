@@ -46,12 +46,6 @@ GOMEAOptimizer::PrintSettings() const
 }
 
 void
-GOMEAOptimizer::IterationWriteOutput()
-{
-  outFile << m_CurrentIteration << " " << m_NumberOfEvaluations << " " << m_CurrentValue << std::endl;
-}
-
-void
 GOMEAOptimizer::StartOptimization()
 {
   itkDebugMacro("StartOptimization");
@@ -127,9 +121,6 @@ GOMEAOptimizer::initialize(void)
   if (m_FosElementSize == 1)
     use_univariate_FOS = 1;
   GOMEA::FOS_element_size = m_FosElementSize;
-
-  if (m_WriteOutput)
-    outFile.open("out.txt");
 
   // finish initialization
   this->checkOptions();
@@ -1724,14 +1715,13 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
 }
 
 void
-GOMEAOptimizer::UpdatePosition(bool avg)
+GOMEAOptimizer::UpdatePosition()
 {
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
   this->m_CurrentValue =
     m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
 
   m_CurrentIteration++;
-  this->IterationWriteOutput();
   this->InvokeEvent(IterationEvent());
 }
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
@@ -1780,9 +1770,6 @@ GOMEAOptimizer::ezilaitiniMemory(void)
   samples_drawn_from_normal.clear();
   out_of_bounds_draws.clear();
   individual_NIS.clear();
-
-  if (m_WriteOutput)
-    outFile.close();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
