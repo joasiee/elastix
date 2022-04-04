@@ -186,6 +186,9 @@ public:
   itkSetMacro(UseMultiThread, bool);
   itkSetMacro(UseMask, bool);
 
+  itkGetConstMacro(WriteSamplesEachIteration, bool);
+  itkSetMacro(WriteSamplesEachIteration, bool);
+
 protected:
   /** The constructor. */
   ImageSamplerBase();
@@ -231,10 +234,11 @@ protected:
   std::vector<ImageSampleContainerPointer> m_ThreaderSampleContainer;
 
   // tmp?
-  bool               m_UseMultiThread;
-  bool               m_UseMask{ true };
-  int                m_PreviousSeed;
-  boost::random::sobol m_RandomGenerator{Self::InputImageDimension};
+  bool                 m_UseMultiThread;
+  bool                 m_UseMask;
+  bool                 m_WriteSamplesEachIteration;
+  int                  m_PreviousSeed;
+  boost::random::sobol m_RandomGenerator{ Self::InputImageDimension };
 
 
 private:

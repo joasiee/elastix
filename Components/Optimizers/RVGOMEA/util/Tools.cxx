@@ -76,13 +76,13 @@ Malloc(long size)
 void
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 {
-  const char uplo{'U'};
-  int      info;
+  const char uplo{ 'L' };
+  int        info;
 
-  result.triangularView<Eigen::Upper>() = matrix.triangularView<Eigen::Upper>();
+  result.triangularView<Eigen::Lower>() = matrix.triangularView<Eigen::Lower>();
+  
   LAPACK_dpotrf(&uplo, &n, result.data(), &n, &info);
-
-  if (info != n) /* Matrix is not positive definite */
+  if (info != 0) /* Matrix is not positive definite */
   {
     result.fill(0.0);
     result.diagonal() = matrix.diagonal().array().sqrt();

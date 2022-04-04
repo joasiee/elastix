@@ -19,11 +19,11 @@
 #ifndef elxImageSamplerBase_h
 #define elxImageSamplerBase_h
 
+#include <boost/filesystem.hpp>
+
 /** Needed for the macros */
 #include "elxMacro.h"
-
 #include "elxBaseComponentSE.h"
-
 #include "itkImageSamplerBase.h"
 
 namespace elastix
@@ -60,6 +60,9 @@ public:
 
   /** ITKBaseType. */
   using ITKBaseType = itk::ImageSamplerBase<InputImageType>;
+  using ImageSampleContainerType = typename ITKBaseType::ImageSampleContainerType;
+  using ImageSampleContainerPointer = typename ITKBaseType::ImageSampleContainerPointer;
+  itkStaticConstMacro(InputImageDimension, unsigned int, ITKBaseType::InputImageDimension);
 
   /** Retrieves this object as ITKBaseType. */
   ITKBaseType *
@@ -84,11 +87,16 @@ public:
   void
   BeforeEachResolutionBase() override;
 
+  void
+  AfterEachIterationBase() override;
+
 protected:
   /** The constructor. */
   ImageSamplerBase() = default;
   /** The destructor. */
   ~ImageSamplerBase() override = default;
+
+  boost::filesystem::path m_SamplesOutDir;
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
@@ -98,6 +106,9 @@ private:
   /** The deleted assignment operator. */
   void
   operator=(const Self &) = delete;
+
+  void
+  WriteSamplesOfIteration();
 };
 
 } // end namespace elastix

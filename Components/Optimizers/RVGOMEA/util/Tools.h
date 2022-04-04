@@ -43,6 +43,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Cholesky>
 #include <cblas.h>
 #include <lapack.h>
 
