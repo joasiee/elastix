@@ -1726,10 +1726,7 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
 void
 GOMEAOptimizer::UpdatePosition(bool avg)
 {
-  if (avg)
-    this->SetCurrentPosition(mean_vectors[number_of_populations - 1]);
-  else
-    this->SetCurrentPosition(selections[number_of_populations - 1][0]);
+  this->SetCurrentPosition(selections[number_of_populations - 1][0]);
   this->m_CurrentValue =
     m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
 
@@ -1852,7 +1849,7 @@ GOMEAOptimizer::runAllPopulations()
     this->generationalStepAllPopulations();
     this->UpdatePosition();
   }
-  this->UpdatePosition(false);
+  this->UpdatePosition();
 }
 
 const std::string

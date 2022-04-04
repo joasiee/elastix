@@ -922,7 +922,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsi
   this->m_NumberOfPixelsCounted = found;
   if (found < wanted * this->GetRequiredRatioOfValidSamples())
   {
-    itkExceptionMacro("Too many samples map outside moving image buffer: " << found << " / " << wanted << std::endl);
+    itkExceptionMacro("Too many samples map outside moving image buffer: "
+                      << found << " / " << wanted * this->GetRequiredRatioOfValidSamples() << std::endl);
   }
 
 } // end CheckNumberOfSamples()
@@ -1117,7 +1118,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(i
   for (int set : this->m_BSplineRegionsToFosSets[region])
   {
     for (int i = 0; i < this->m_FOS.set_length[set]; ++i)
-      sum += params[this->m_FOS.sets[set][i]];
+      sum += abs(params[this->m_FOS.sets[set][i]]);
   }
 
   return static_cast<int>(sum * 1e5);
