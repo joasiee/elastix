@@ -22,9 +22,10 @@
 (Optimizer "GOMEA")
 (FinalGridSpacingInVoxels 10 10)
 (MaximumNumberOfIterations 30)
-//(PartialEvaluations "true")
-//(FosElementSize -6)
 (NewSamplesEveryIteration "true")
 (WriteSamplesEachIteration "false")
-//(BasePopulationSize 400)
 (RandomSeed 125050)
+
+//(BasePopulationSize 50)
+//(PartialEvaluations "true")
+//(FosElementSize -6)

@@ -142,7 +142,11 @@ protected:
   StopConditionType m_StopCondition{ Unknown };
   MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
   unsigned int      m_NrOfParameters;
-  int               m_ImageDimension;
+  unsigned int      m_ImageDimension;
+  unsigned int      m_PdDecompositions{ 0U };
+
+  double
+  IterationPctPdDecompositions() const;
 
 private:
   void

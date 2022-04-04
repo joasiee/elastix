@@ -17,10 +17,10 @@ GOMEA<TElastix>::BeforeRegistration(void)
   this->SetImageDimension(this->GetElastix()->GetFixedImage()->GetImageDimension());
 
   this->AddTargetCellToIterationInfo("2:Metric");
-  this->AddTargetCellToIterationInfo("3:Evaluations");
+  this->AddTargetCellToIterationInfo("3:PdPct");
 
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
-  this->GetIterationInfoAt("3:Evaluations") << std::setw(10);
+  this->GetIterationInfoAt("3:PdPct") << std::showpoint << std::fixed;
 }
 
 template <class TElastix>
@@ -29,7 +29,8 @@ GOMEA<TElastix>::AfterEachIteration(void)
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->m_CurrentValue;
-  this->GetIterationInfoAt("3:Evaluations") << this->m_NumberOfEvaluations << std::setw(10);
+  this->GetIterationInfoAt("3:PdPct") << this->IterationPctPdDecompositions();
+  this->m_PdDecompositions = 0U;
 
   /** Select new samples if desired. These
    * will be used in the next iteration */

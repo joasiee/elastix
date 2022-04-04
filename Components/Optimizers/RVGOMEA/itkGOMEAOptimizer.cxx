@@ -1328,9 +1328,9 @@ GOMEAOptimizer::computeParametersForSampling(int population_index)
   {
     for (i = 0; i < linkage_model[population_index]->length; i++)
     {
-      choleskyDecomposition(decomposed_cholesky_factors_lower_triangle[population_index][i],
-                            decomposed_covariance_matrices[population_index][i],
-                            linkage_model[population_index]->set_length[i]);
+      m_PdDecompositions += choleskyDecomposition(decomposed_cholesky_factors_lower_triangle[population_index][i],
+                                                  decomposed_covariance_matrices[population_index][i],
+                                                  linkage_model[population_index]->set_length[i]);
     }
   }
 }
@@ -1724,6 +1724,15 @@ GOMEAOptimizer::UpdatePosition()
   m_CurrentIteration++;
   this->InvokeEvent(IterationEvent());
 }
+
+double
+GOMEAOptimizer::IterationPctPdDecompositions() const
+{
+  return static_cast<double>(m_PdDecompositions) /
+         static_cast<double>(number_of_subgenerations_per_population_factor - 1) /
+         static_cast<double>(linkage_model[number_of_populations - 1]->length) * 100.0;
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=- Section Ezilaitini -=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

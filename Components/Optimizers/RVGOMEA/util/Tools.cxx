@@ -73,7 +73,7 @@ Malloc(long size)
  * of a square, symmetric and positive-definite matrix.
  * Subroutines from LINPACK and BLAS are used.
  */
-void
+bool
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 {
   const char uplo{ 'L' };
@@ -86,7 +86,9 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
   {
     result.fill(0.0);
     result.diagonal() = matrix.diagonal().array().sqrt();
+    return false;
   }
+  return true;
 }
 
 
