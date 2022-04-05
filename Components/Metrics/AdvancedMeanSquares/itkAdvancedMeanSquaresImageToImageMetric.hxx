@@ -216,7 +216,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   }
 
   measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
-  this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
+  // this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted); // can fail when using pop based optimizers
 
   return measure;
 } // end GetValue()
@@ -237,10 +237,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   const ThreadIdType numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
 
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
-  unsigned long sumPixelsCounted = 0;
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for reduction(+ : measure, sumPixelsCounted) num_threads(numThreads)
+#pragma omp parallel for reduction(+ : measure) num_threads(numThreads)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
@@ -273,7 +272,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
       }
     }
 
-    sumPixelsCounted += numberOfPixelsCounted;
     if (numberOfPixelsCounted > 0)
     {
       tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted) /
@@ -282,10 +280,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     }
   }
 
-  if (fosIndex == -1)
-  {
-    this->CheckNumberOfSamples(this->GetNumberOfFixedImageSamples(), sumPixelsCounted);
-  }
+  // if (fosIndex == -1)
+  // {
+  //   this->CheckNumberOfSamples(this->GetNumberOfFixedImageSamples(), sumPixelsCounted);
+  // }
 
   return measure;
 } // end GetValuePartial()

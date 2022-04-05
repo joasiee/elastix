@@ -1845,7 +1845,6 @@ GOMEAOptimizer::runAllPopulations()
     this->generationalStepAllPopulations();
     this->UpdatePosition();
   }
-  this->UpdatePosition();
 }
 
 const std::string
