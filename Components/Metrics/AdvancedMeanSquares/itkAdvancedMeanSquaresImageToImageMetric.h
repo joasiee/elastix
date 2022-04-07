@@ -245,6 +245,9 @@ protected:
   inline void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
 
+  bool
+  CheckNumberOfSamples(unsigned long wanted, unsigned long found) const override;
+
 private:
   AdvancedMeanSquaresImageToImageMetric(const Self &) = delete;
   void

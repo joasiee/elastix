@@ -915,7 +915,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AccumulateDerivativesThre
  */
 
 template <class TFixedImage, class TMovingImage>
-void
+bool
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsigned long wanted,
                                                                             unsigned long found) const
 {
@@ -925,7 +925,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsi
     itkExceptionMacro("Too many samples map outside moving image buffer: "
                       << found << " / " << wanted * this->GetRequiredRatioOfValidSamples() << std::endl);
   }
-
+  return true;
 } // end CheckNumberOfSamples()
 
 template <class TFixedImage, class TMovingImage>
