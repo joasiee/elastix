@@ -8,11 +8,12 @@ from elastix_wrapper.parameters import Parameters, Collection
 from experiments.experiment import Experiment, run_experiment
 
 params = (
-    Parameters.from_base(mesh_size=2, seed=1523, sampling_p=0.05)
-    .multi_resolution(2)
-    .asgd()
-    .instance(Collection.EMPIRE, 26)
-    .stopping_criteria(iterations=[5, 1])
+    Parameters.from_base(mesh_size=3, sampling_p=0.1, seed=1)
+    .multi_resolution(1, [5, 5, 5])
+    .gomea(pop_size=10000)
+    .stopping_criteria(100)
+    .instance(Collection.EMPIRE, 16)
 )
 
+# params.write(Path())
 run_experiment(Experiment(params, "zandbak"))
