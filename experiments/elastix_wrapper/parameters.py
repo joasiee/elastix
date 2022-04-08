@@ -116,6 +116,7 @@ class Parameters:
     ) -> Parameters:
         if partial_evals:
             self["NewSamplesEveryIteration"] = "false"
+            self["RequiredRatioOfValidSamples"] = 0.8
         return self.optimizer(
             "GOMEA",
             {

@@ -45,6 +45,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSq
 
   this->m_UseNormalization = false;
   this->m_NormalizationFactor = 1.0;
+  this->m_MissedPixelPenalty = MissedPixelPenalty;
 
   /** SelfHessian related variables, experimental feature. */
   this->m_SelfHessianSmoothingSigma = 1.0;
@@ -139,6 +140,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     const double diff1 = this->m_FixedImageTrueMax - this->m_MovingImageTrueMin;
     const double diff2 = this->m_MovingImageTrueMax - this->m_FixedImageTrueMin;
     const double maxdiff = std::max(diff1, diff2);
+    this->m_MissedPixelPenalty = maxdiff * maxdiff;
 
     /** We guess that maxdiff/10 is the maximum average difference that will
      * be observed.
@@ -156,6 +158,19 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
   }
 
 } // end Initialize()
+
+/**
+ * *********************** CheckNumberOfSamples ***********************
+ */
+
+template <class TFixedImage, class TMovingImage>
+bool
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsigned long wanted,
+                                                                                       unsigned long found) const
+{
+  this->m_NumberOfPixelsCounted = found;
+  return found >= wanted * this->GetRequiredRatioOfValidSamples();
+} // end CheckNumberOfSamples()
 
 
 /**
@@ -189,7 +204,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
-  const ThreadIdType maxWorkUnits = Self::GetNumberOfWorkUnits();
+  const ThreadIdType         maxWorkUnits = Self::GetNumberOfWorkUnits();
   const ThreadIdType         numThreads =
     std::max(std::min(maxWorkUnits, static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)), 1U);
 
@@ -216,9 +231,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   }
 
   measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
-  // this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted); // can fail when using pop based optimizers
+  const bool valid =
+    this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted); // can fail when using pop based optimizers
 
-  return measure;
+  return valid ? measure : NumericTraits<MeasureType>::max();
 } // end GetValue()
 
 
@@ -233,10 +249,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
-  const ThreadIdType maxWorkUnits = Self::GetNumberOfWorkUnits();
-  const ThreadIdType numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
+  const ThreadIdType       maxWorkUnits = Self::GetNumberOfWorkUnits();
+  const ThreadIdType       numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
 
-  MeasureType   measure = NumericTraits<MeasureType>::Zero;
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
 
 // iterate over these subfunction samplers and calculate mean squared diffs
 #pragma omp parallel for reduction(+ : measure) num_threads(numThreads)
@@ -272,18 +288,14 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
       }
     }
 
-    if (numberOfPixelsCounted > 0)
-    {
-      tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted) /
-                    static_cast<RealType>(this->m_BSplinePointsRegions[0].size());
-      measure += tmpMeasure;
-    }
+    const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
+    this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) *
+                             100.0);
+    tmpMeasure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
+    tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted) /
+                  static_cast<RealType>(this->m_BSplinePointsRegions[0].size());
+    measure += tmpMeasure;
   }
-
-  // if (fosIndex == -1)
-  // {
-  //   this->CheckNumberOfSamples(this->GetNumberOfFixedImageSamples(), sumPixelsCounted);
-  // }
 
   return measure;
 } // end GetValuePartial()
@@ -408,7 +420,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDer
   } // end for loop over the image sample container
 
   /** Check if enough samples were valid. */
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
+  this->Superclass::CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** Compute the measure value and derivative. */
   double normal_sum = 0.0;
@@ -601,7 +613,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
 
   /** Check if enough samples were valid. */
   ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
+  this->Superclass::CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** The normalization factor. */
   DerivativeValueType normal_sum =
@@ -830,7 +842,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   } // end for loop over the image sample container
 
   /** Check if enough samples were valid. */
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
+  this->Superclass::CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** Compute the measure value and derivative. */
   if (this->m_NumberOfPixelsCounted > 0)

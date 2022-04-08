@@ -37,8 +37,8 @@ def convergence_experiment(project):
             params = (
                 Parameters.from_base(mesh_size=3, sampling_p=0.1, seed=seed)
                 .multi_resolution(1, sched)
-                .gomea()
-                .stopping_criteria(100)
+                .gomea(partial_evals=True, fos=-6)
+                .stopping_criteria(50)
                 .instance(Collection.EMPIRE, instance)
             )
             yield Experiment(params, project)
