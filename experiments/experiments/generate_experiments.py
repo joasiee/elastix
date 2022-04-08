@@ -10,11 +10,11 @@ def sampling_p_range(instance: int, project: str):
     for sampling_p in list(np.arange(0.01, 0.11, 0.01)):
         for seed in [2356, 3487, 4942, 1432]:
             params = (
-                Parameters.from_base(mesh_size=3, seed=seed, sampling_p=sampling_p)
+                Parameters.from_base(mesh_size=3, seed=seed, sampling_p=sampling_p, use_mask=True)
                 .multi_resolution(1, p_sched=[5, 5, 5])
                 .gomea(fos=-6, partial_evals=True)
                 .instance(Collection.EMPIRE, instance)
-                .stopping_criteria(iterations=[50])
+                .stopping_criteria(iterations=[200])
             )
             yield Experiment(params, project)
 

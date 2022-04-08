@@ -21,6 +21,7 @@ black = "^22.1.0"
 ipykernel = "^6.11.0"
 matplotlib = "^3.5.1"
 tinydb = "^4.7.0"
+xarray = "^2022.3.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
