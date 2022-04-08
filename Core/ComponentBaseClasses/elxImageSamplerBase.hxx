@@ -75,8 +75,8 @@ ImageSamplerBase<TElastix>::BeforeEachResolutionBase()
   {
     std::ostringstream samplesDir("");
     samplesDir << this->m_Configuration->GetCommandLineArgument("-out") << "samples.R" << level << "/";
-    this->m_SamplesOutDir = boost::filesystem::path(samplesDir.str());
-    boost::filesystem::create_directory(this->m_SamplesOutDir);
+    this->m_SamplesOutDir = samplesDir.str();
+    std::filesystem::create_directory(this->m_SamplesOutDir);
   }
 
 } // end BeforeEachResolutionBase()
@@ -105,7 +105,7 @@ ImageSamplerBase<TElastix>::WriteSamplesOfIteration()
   std::ofstream      outFile;
 
   std::ostringstream makeFileName("");
-  makeFileName << this->m_SamplesOutDir.string() << itNr << ".dat";
+  makeFileName << this->m_SamplesOutDir << itNr << ".dat";
   std::string fileName = makeFileName.str();
   outFile.open(fileName.c_str());
 

@@ -13,11 +13,10 @@ ADD_ELXCOMPONENT(GOMEA
 
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
-find_package(Boost 1.70.0 REQUIRED COMPONENTS filesystem)
+find_package(Boost 1.70.0 REQUIRED)
 
 target_link_libraries(GOMEA
   BLAS::BLAS
   LAPACK::LAPACK
   Boost::boost
-  Boost::filesystem
 )

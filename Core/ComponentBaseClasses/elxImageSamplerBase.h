@@ -19,7 +19,7 @@
 #ifndef elxImageSamplerBase_h
 #define elxImageSamplerBase_h
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 /** Needed for the macros */
 #include "elxMacro.h"
@@ -96,7 +96,7 @@ protected:
   /** The destructor. */
   ~ImageSamplerBase() override = default;
 
-  boost::filesystem::path m_SamplesOutDir;
+  std::string m_SamplesOutDir;
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
