@@ -292,7 +292,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) *
                              100.0);
     tmpMeasure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
-    tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted) /
+    tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(sampleContainerSize) /
                   static_cast<RealType>(this->m_BSplinePointsRegions[0].size());
     measure += tmpMeasure;
   }
