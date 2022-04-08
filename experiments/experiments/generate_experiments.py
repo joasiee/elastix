@@ -7,15 +7,14 @@ from experiments.experiment import Experiment, ExperimentQueue
 logger = logging.getLogger("ParetoFront")
 
 def sampling_p_range(instance: int, project: str):
-    for sampling_p in [0.01, 0.02, 0.03] + list(np.arange(0.05, 0.55, 0.05)):
+    for sampling_p in list(np.arange(0.01, 0.11, 0.01)):
         for seed in [2356, 3487, 4942, 1432]:
             params = (
-                Parameters.from_base(mesh_size=2, seed=seed, sampling_p=sampling_p)
-                .multi_resolution(1, p_sched=[7, 7, 7])
-                .multi_metric()
-                .gomea()
-                .instance(Collection.EMPIRE, 26)
-                .stopping_criteria(iterations=[100])
+                Parameters.from_base(mesh_size=3, seed=seed, sampling_p=sampling_p)
+                .multi_resolution(1, p_sched=[5, 5, 5])
+                .gomea(fos=-6, partial_evals=True)
+                .instance(Collection.EMPIRE, instance)
+                .stopping_criteria(iterations=[50])
             )
             yield Experiment(params, project)
 
@@ -45,5 +44,5 @@ def convergence_experiment(project):
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in convergence_experiment("convergence_experiment"):
+    for experiment in sampling_p_range(16, "sampling_experiment"):
         queue.push(experiment)
