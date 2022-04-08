@@ -230,9 +230,12 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
     }
   }
 
+  const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
+  this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) *
+                           100.0);
+
   measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
-  const bool valid =
-    this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted); // can fail when using pop based optimizers
+  const bool valid = this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
 
   return valid ? measure : NumericTraits<MeasureType>::max();
 } // end GetValue()
@@ -291,10 +294,15 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
     this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) *
                              100.0);
-    tmpMeasure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
-    tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(sampleContainerSize) /
-                  static_cast<RealType>(this->m_BSplinePointsRegions[0].size());
-    measure += tmpMeasure;
+    // tmpMeasure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
+
+
+    if (numberOfPixelsCounted > 0)
+    {
+      tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted) /
+                    static_cast<RealType>(this->m_BSplinePointsRegions[0].size());
+      measure += tmpMeasure;
+    }
   }
 
   return measure;
@@ -613,6 +621,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
 
   /** Check if enough samples were valid. */
   ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
+  this->m_MissedPixelsMean(static_cast<RealType>(this->m_NumberOfPixelsMissed) /
+                           static_cast<RealType>(sampleContainer->Size()) * 100.0);
   this->Superclass::CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** The normalization factor. */
