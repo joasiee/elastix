@@ -40,9 +40,10 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
 
     logger.info("Run finished successfully.")
     wd.stop()
-    wd.join()
 
     if watch:
+        wd.join()
+
         wandb.save(
             str((run_dir / "*").resolve()), base_path=str(run_dir.parents[0].resolve())
         )
@@ -77,14 +78,11 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 
 if __name__ == "__main__":
-    sched = [7, 7, 7]
-    iterations_g = [20, 30, 50]
-    iterations_a = [2000, 2000, 3000]
     params = (
-        Parameters.from_base(mesh_size=4, seed=1523, write_img=True)
-        .multi_resolution(1, p_sched=sched)
-        .gomea()
-        .instance(Collection.EMPIRE, 26)
-        .stopping_criteria(iterations=iterations_g)
+        Parameters.from_base(mesh_size=3, sampling_p=0.1, seed=5, write_img=True)
+        .multi_resolution(1, [7, 7, 7])
+        .gomea(fos=-6, partial_evals=True)
+        .stopping_criteria(50)
+        .instance(Collection.EMPIRE, 14)
     )
     run(params, Path("output/" + str(params)), False)

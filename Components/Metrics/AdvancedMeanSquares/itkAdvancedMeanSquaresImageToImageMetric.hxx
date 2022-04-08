@@ -45,6 +45,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSq
 
   this->m_UseNormalization = false;
   this->m_NormalizationFactor = 1.0;
+  this->m_MissedPixelPenalty = MissedPixelPenalty;
 
   /** SelfHessian related variables, experimental feature. */
   this->m_SelfHessianSmoothingSigma = 1.0;
@@ -139,6 +140,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     const double diff1 = this->m_FixedImageTrueMax - this->m_MovingImageTrueMin;
     const double diff2 = this->m_MovingImageTrueMax - this->m_FixedImageTrueMin;
     const double maxdiff = std::max(diff1, diff2);
+    this->m_MissedPixelPenalty = maxdiff * maxdiff;
 
     /** We guess that maxdiff/10 is the maximum average difference that will
      * be observed.
@@ -229,7 +231,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   }
 
   measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
-  const bool valid = this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted); // can fail when using pop based optimizers
+  const bool valid =
+    this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted); // can fail when using pop based optimizers
 
   return valid ? measure : NumericTraits<MeasureType>::max();
 } // end GetValue()
@@ -250,10 +253,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   const ThreadIdType       numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
 
   MeasureType measure = NumericTraits<MeasureType>::Zero;
-  unsigned long sumPixelsCounted {0L};
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for reduction(+ : measure, sumPixelsCounted) num_threads(numThreads)
+#pragma omp parallel for reduction(+ : measure) num_threads(numThreads)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
@@ -285,24 +287,17 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
         ++numberOfPixelsCounted;
       }
     }
-    sumPixelsCounted += numberOfPixelsCounted;
 
-    if (numberOfPixelsCounted > 0)
-    {
-      tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted) /
-                    static_cast<RealType>(this->m_BSplinePointsRegions[0].size());
-      measure += tmpMeasure;
-    }
+    const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
+    this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) *
+                             100.0);
+    tmpMeasure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
+    tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted) /
+                  static_cast<RealType>(this->m_BSplinePointsRegions[0].size());
+    measure += tmpMeasure;
   }
 
-  bool valid = true;
-
-  if (fosIndex == -1)
-  {
-    valid = this->CheckNumberOfSamples(this->GetNumberOfFixedImageSamples(), sumPixelsCounted);
-  }
-
-  return valid ? measure : NumericTraits<MeasureType>::max();
+  return measure;
 } // end GetValuePartial()
 
 
