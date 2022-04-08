@@ -8,11 +8,11 @@ from elastix_wrapper.parameters import Parameters, Collection
 from experiments.experiment import Experiment, run_experiment
 
 params = (
-    Parameters.from_base(mesh_size=3, sampling_p=0.1, seed=5)
-    .multi_resolution(1, [5, 5, 5])
-    .gomea(fos=-6, partial_evals=True)
+    Parameters.from_base(mesh_size=7, sampler="Full")
+    .multi_resolution(3)
+    .asgd()
     .stopping_criteria(100)
-    .instance(Collection.EMPIRE, 14)
+    .instance(Collection.EXAMPLES, 1)
 )
 
 # params.write(Path())

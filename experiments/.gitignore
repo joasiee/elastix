@@ -5,3 +5,4 @@ output
 wandb
 .python-version
 .venv
+tinydb
