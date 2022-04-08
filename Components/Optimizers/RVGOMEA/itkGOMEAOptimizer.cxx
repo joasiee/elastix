@@ -83,7 +83,8 @@ GOMEAOptimizer::initialize(void)
   if (m_BasePopulationSize == 0.0)
   {
     if (m_MaxNumberOfPopulations == 1)
-      m_BasePopulationSize = (int)(36.1 + 7.58 * log2((double)m_NrOfParameters));
+      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(36.1 + 7.58 * log2((double)m_NrOfParameters))
+                                                  : static_cast<int>(m_NrOfParameters * 10);
     else
       m_BasePopulationSize = 10;
   }
@@ -1152,12 +1153,15 @@ GOMEAOptimizer::getOverallBest(int * population_index, int * individual_index)
 }
 
 void
-GOMEAOptimizer::evaluateCompletePopulation(int population_index)
+GOMEAOptimizer::evaluateAllPopulations()
 {
-  int j;
+  int i, j;
 
-  for (j = 0; j < population_sizes[population_index]; j++)
-    this->costFunctionEvaluation(&populations[population_index][j], &objective_values[population_index][j]);
+  for (i = 0; i < number_of_populations; ++i)
+  {
+    for (j = 0; j < population_sizes[i]; j++)
+      this->costFunctionEvaluation(&populations[i][j], &objective_values[i][j]);
+  }
 }
 
 void
@@ -1839,9 +1843,10 @@ GOMEAOptimizer::runAllPopulations()
   while (!this->checkTerminationCondition())
   {
     if (number_of_populations < m_MaxNumberOfPopulations)
-    {
       this->initializeNewPopulation();
-    }
+    else if (!m_PartialEvaluations)
+      this->evaluateAllPopulations(); //re-eval on new samples
+
     this->generationalStepAllPopulations();
     this->UpdatePosition();
   }
