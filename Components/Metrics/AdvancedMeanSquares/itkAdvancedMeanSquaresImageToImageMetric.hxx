@@ -252,8 +252,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
-  const ThreadIdType       maxWorkUnits = Self::GetNumberOfWorkUnits();
-  const ThreadIdType       numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
+  const ThreadIdType       maxThreads = Self::GetNumberOfWorkUnits();
+  const ThreadIdType       numThreads = std::min(maxThreads, static_cast<ThreadIdType>(fosPoints.size()));
+  const ThreadIdType       freeThreads = maxThreads - numThreads;
+  const ThreadIdType       nestedThreads = (freeThreads / numThreads) + 1;
+  const ThreadIdType       restThreads = freeThreads - ((nestedThreads - 1) * numThreads);
 
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
@@ -274,14 +277,20 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     unsigned long numberOfPixelsCounted = 0;
     MeasureType   tmpMeasure = NumericTraits<MeasureType>::Zero;
 
-    /** Loop over the fixed image samples to calculate the mean squares. */
-    for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
+    const ThreadIdType numThreads =
+      std::max(std::min(nestedThreads + (static_cast<ThreadIdType>(omp_get_thread_num()) < restThreads),
+                        static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)),
+               1U);
+
+/** Loop over the fixed image samples to calculate the mean squares. */
+#pragma omp parallel for reduction(+ : tmpMeasure, numberOfPixelsCounted) num_threads(numThreads)
+    for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
       /** Read fixed coordinates and initialize some variables. */
-      const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+      const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
       RealType                    movingImageValue;
       const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
-      const RealType &            fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
+      const RealType &            fixedImageValue = static_cast<RealType>(sampleContainer[i].m_ImageValue);
 
       if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
       {
@@ -294,8 +303,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
     this->m_MissedPixelsMean(static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize) *
                              100.0);
-    // tmpMeasure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
-
+    // tmpMeasure += numberOfPixelsMissed * this->m_MissedPixelPenalty; TODO: impl mask stuff first
 
     if (numberOfPixelsCounted > 0)
     {
