@@ -50,6 +50,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AdvancedImageToImageMetri
   /** OpenMP related. Switch to on when available */
 #ifdef ELASTIX_USE_OPENMP
   this->m_UseOpenMP = true;
+  omp_set_max_active_levels(3);
 #else
   this->m_UseOpenMP = false;
 #endif
