@@ -1,1 +1,1 @@
-../../build/RelWithDebInfo/bin/elastix -f $HOME/instances/empire/scans/26_Fixed.mhd -fMask $HOME/instances/empire/masks/26_Fixed.mhd -m $HOME/instances/empire/scans/26_Moving.mhd -p params.txt -out out -threads 16
+../../build/RelWithDebInfo/bin/elastix -f $HOME/instances/empire/scans/16_Fixed.mhd -fMask $HOME/instances/empire/masks/16_Fixed.mhd -m $HOME/instances/empire/scans/16_Moving.mhd -p params.txt -out out -threads 16
