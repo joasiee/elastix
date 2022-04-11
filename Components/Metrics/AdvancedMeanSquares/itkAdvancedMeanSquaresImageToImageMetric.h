@@ -255,7 +255,7 @@ protected:
   bool
   CheckNumberOfSamples(unsigned long wanted, unsigned long found) const override;
 
-  typedef accumulator_set<long, stats<tag::mean>> MeanAccumulator;
+  typedef accumulator_set<RealType, stats<tag::mean>> MeanAccumulator;
   mutable MeanAccumulator                         m_MissedPixelsMean;
 
 private:
