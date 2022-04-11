@@ -279,13 +279,13 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
     typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
 
-    const ThreadIdType numThreads =
+    const ThreadIdType numThreads_ =
       std::max(std::min(nestedThreads + (static_cast<ThreadIdType>(omp_get_thread_num()) < restThreads),
                         static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)),
                1U);
 
 /** Loop over the fixed image samples to calculate the mean squares. */
-#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(numThreads)
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(numThreads_)
     for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
       /** Read fixed coordinates and initialize some variables. */

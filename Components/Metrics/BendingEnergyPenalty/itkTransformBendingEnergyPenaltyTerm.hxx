@@ -176,12 +176,12 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
     unsigned long numberOfPixelsCounted = 0;
     MeasureType   tmpMeasure = NumericTraits<MeasureType>::Zero;
 
-    const ThreadIdType numThreads =
+    const ThreadIdType numThreads_ =
       std::max(std::min(nestedThreads + (static_cast<ThreadIdType>(omp_get_thread_num()) < restThreads),
                         static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)),
                1U);
 
-#pragma omp parallel for reduction(+ : tmpMeasure, numberOfPixelsCounted) num_threads(numThreads)
+#pragma omp parallel for reduction(+ : tmpMeasure, numberOfPixelsCounted) num_threads(numThreads_)
     for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
       /** Read fixed coordinates and initialize some variables. */
