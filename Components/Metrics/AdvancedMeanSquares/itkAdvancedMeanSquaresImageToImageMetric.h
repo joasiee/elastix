@@ -19,6 +19,7 @@
 #define itkAdvancedMeanSquaresImageToImageMetric_h
 
 #include "algorithm"
+#include <math.h>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
