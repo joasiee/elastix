@@ -56,6 +56,10 @@ namespace GOMEA
 {
 void *
 Malloc(long size);
+void
+shrunkCovariance(MatrixXd & emp_cov, const double alpha);
+void
+shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size);
 float
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n);
 int *

@@ -68,6 +68,30 @@ Malloc(long size)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-= Section Matrix -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
+void
+shrunkCovariance(MatrixXd & emp_cov, const double shrinkage)
+{
+  const int n = emp_cov.rows();
+  const double mu = emp_cov.trace() / n;
+  emp_cov = (1.0 - shrinkage) * emp_cov;
+  emp_cov.diagonal().array() += shrinkage * mu;
+}
+
+void
+shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size)
+{  
+  const int n = emp_cov.rows();
+  const double mu = emp_cov.trace() / n;
+  
+  const double alpha = (emp_cov * emp_cov).mean();
+  const double num = alpha * (mu * mu);
+  const double den = (1.0 + double(pop_size)) * (alpha - (mu*mu) / n);
+
+  const double shrinkage = den == 0.0 ? 1.0 : std::min(num / den, 1.0);
+  emp_cov = (1.0 - shrinkage) * emp_cov;
+  emp_cov.diagonal().array() += shrinkage * mu;
+}
+
 /**
  * Computes the lower-triangle Cholesky Decomposition
  * of a square, symmetric and positive-definite matrix.
