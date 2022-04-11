@@ -56,7 +56,7 @@ namespace GOMEA
 {
 void *
 Malloc(long size);
-bool
+float
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n);
 int *
 mergeSort(double * array, int array_size);

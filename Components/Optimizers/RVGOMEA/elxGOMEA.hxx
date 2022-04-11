@@ -28,9 +28,9 @@ void
 GOMEA<TElastix>::AfterEachIteration(void)
 {
   /** Print some information. */
-  this->GetIterationInfoAt("2:Metric") << this->m_CurrentValue;
-  this->GetIterationInfoAt("3:PdPct") << this->IterationPctPdDecompositions();
-  this->m_PdDecompositions = 0U;
+  this->GetIterationInfoAt("2:Metric") << this->m_Value;
+  this->GetIterationInfoAt("3:PdPct") << boost::accumulators::mean(this->m_PdPctMean);
+  this->m_PdPctMean = {};
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
@@ -151,7 +151,7 @@ void
 GOMEA<TElastix>::AfterRegistration(void)
 {
   /** Print the best metric value */
-  elxout << std::endl << "Final metric value  = " << this->m_CurrentValue << std::endl;
+  elxout << std::endl << "Final metric value = " << this->m_Value << std::endl;
 }
 
 } // namespace elastix

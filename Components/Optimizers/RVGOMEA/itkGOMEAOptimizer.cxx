@@ -52,7 +52,7 @@ GOMEAOptimizer::StartOptimization()
   this->m_NrOfParameters = this->GetCostFunction()->GetNumberOfParameters();
   this->SetCurrentPosition(this->GetInitialPosition());
   this->m_CurrentIteration = 0;
-  this->m_CurrentValue = NumericTraits<MeasureType>::max();
+  this->m_Value = NumericTraits<MeasureType>::max();
   this->m_NumberOfEvaluations = 0L;
   this->m_StopCondition = Unknown;
   this->number_of_populations = 0;
@@ -1332,9 +1332,9 @@ GOMEAOptimizer::computeParametersForSampling(int population_index)
   {
     for (i = 0; i < linkage_model[population_index]->length; i++)
     {
-      m_PdDecompositions += choleskyDecomposition(decomposed_cholesky_factors_lower_triangle[population_index][i],
-                                                  decomposed_covariance_matrices[population_index][i],
-                                                  linkage_model[population_index]->set_length[i]);
+      this->m_PdPctMean(choleskyDecomposition(decomposed_cholesky_factors_lower_triangle[population_index][i],
+                                              decomposed_covariance_matrices[population_index][i],
+                                              linkage_model[population_index]->set_length[i]));
     }
   }
 }
@@ -1722,19 +1722,11 @@ void
 GOMEAOptimizer::UpdatePosition()
 {
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
-  this->m_CurrentValue =
+  this->m_Value =
     m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
 
   m_CurrentIteration++;
   this->InvokeEvent(IterationEvent());
-}
-
-double
-GOMEAOptimizer::IterationPctPdDecompositions() const
-{
-  return static_cast<double>(m_PdDecompositions) /
-         static_cast<double>(number_of_subgenerations_per_population_factor - 1) /
-         static_cast<double>(linkage_model[number_of_populations - 1]->length) * 100.0;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
@@ -1845,7 +1837,7 @@ GOMEAOptimizer::runAllPopulations()
     if (number_of_populations < m_MaxNumberOfPopulations)
       this->initializeNewPopulation();
     else if (!m_PartialEvaluations)
-      this->evaluateAllPopulations(); //re-eval on new samples
+      this->evaluateAllPopulations(); // re-eval on new samples
 
     this->generationalStepAllPopulations();
     this->UpdatePosition();

@@ -37,6 +37,10 @@
 #include "itkArray.h"
 #include "itkArray2D.h"
 #include "itkMatrix.h"
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+using namespace boost::accumulators;
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -79,7 +83,6 @@ public:
 
   itkGetConstMacro(CurrentIteration, unsigned long);
   itkGetConstMacro(NumberOfEvaluations, unsigned long);
-  itkGetConstMacro(CurrentValue, MeasureType);
   itkGetConstReferenceMacro(StopCondition, StopConditionType);
 
   itkGetConstMacro(MaximumNumberOfIterations, int);
@@ -140,13 +143,11 @@ protected:
   unsigned long     m_NumberOfEvaluations{ 0L };
   unsigned long     m_CurrentIteration{ 0L };
   StopConditionType m_StopCondition{ Unknown };
-  MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
   unsigned int      m_NrOfParameters;
   unsigned int      m_ImageDimension;
-  unsigned int      m_PdDecompositions{ 0U };
 
-  double
-  IterationPctPdDecompositions() const;
+  typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
+  mutable MeanAccumulator                         m_PdPctMean;
 
 private:
   void
