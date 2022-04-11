@@ -7,7 +7,7 @@
 (Interpolator "LinearInterpolator" "LinearInterpolator")
 (Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
 (Metric0Weight 1.0)
-(Metric1Weight 1.0)
+(Metric1Weight 100.0)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (FinalBSplineInterpolationOrder 3)
@@ -15,16 +15,18 @@
 (Transform "RecursiveBSplineTransform")
 (NumberOfResolutions 1)
 
-(FinalGridSpacingInVoxels 10 10)
+(FinalGridSpacingInVoxels 20 20)
+(BasePopulationSize 50)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
-(MaximumNumberOfIterations 5)
-(PartialEvaluations "true")
-(FosElementSize -6)
+(MaximumNumberOfIterations 1)
+//(PartialEvaluations "true")
+//(FosElementSize -6)
 
 (WriteResultImage "true")
 (UseNormalization "true")
 (ImageSampler "Random" "Random")
+(NumberOfSpatialSamples 400)
 (SamplingPercentage 0.2)
 (DefaultPixelValue 0)
