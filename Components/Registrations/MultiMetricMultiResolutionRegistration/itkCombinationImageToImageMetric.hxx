@@ -629,6 +629,50 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations
   }
 } // end InitPartialEvaluations()
 
+/**
+ * ******************** SetImageSampler ************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::SetImageSampler(ImageSamplerType * _arg)
+{
+  /** Check if at least one (image)metric is provided */
+  if (this->GetNumberOfMetrics() == 0)
+  {
+    itkExceptionMacro(<< "At least one metric should be set!");
+  }
+
+  /** Call Initialize for all metrics. */
+  for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
+  {
+    Superclass * metricAsAdvanced = dynamic_cast<Superclass *>(this->GetMetric(i));
+    metricAsAdvanced->SetImageSampler(_arg);
+  }
+}
+
+/**
+ * ******************** SetUseImageSampler ************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::SetUseImageSampler(const bool _arg)
+{
+  /** Check if at least one (image)metric is provided */
+  if (this->GetNumberOfMetrics() == 0)
+  {
+    itkExceptionMacro(<< "At least one metric should be set!");
+  }
+
+  /** Call Initialize for all metrics. */
+  for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
+  {
+    Superclass * metricAsAdvanced = dynamic_cast<Superclass *>(this->GetMetric(i));
+    metricAsAdvanced->SetUseImageSampler(_arg);
+  }
+}
+
 
 /**
  * ******************* InitializeThreadingParameters *******************

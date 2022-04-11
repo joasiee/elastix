@@ -19,6 +19,7 @@
 #define elxRegistrationBase_hxx
 
 #include "elxRegistrationBase.h"
+#include "itkImageFullSampler.h"
 
 namespace elastix
 {
@@ -212,6 +213,37 @@ RegistrationBase<TElastix>::GenerateMovingMaskSpatialObject(const MovingMaskImag
   return movingMaskSpatialObject;
 
 } // end GenerateMovingMaskSpatialObject()
+
+template <class TElastix>
+void
+RegistrationBase<TElastix>::FinalFullEvaluation()
+{
+  using FullSamplerType = itk::ImageFullSampler<FixedImageType>;
+  using FullSamplerPointer = typename FullSamplerType::Pointer;
+
+  MetricPointer metric = this->GetAsITKBaseType()->GetMetric();
+  FullSamplerPointer fullSampler = FullSamplerType::New();
+  fullSampler->SetInput(metric->GetFixedImage());
+  metric->SetUseImageSampler(true);
+  metric->SetImageSampler(fullSampler);
+
+  const ParametersType & parameters = this->GetAsITKBaseType()->GetOptimizer()->GetCurrentPosition();
+  this->GetAsITKBaseType()->GetOptimizer()->SetValue(metric->GetValue(parameters));
+  elxout << std::endl << "Final full evaluation:" << std::endl; 
+  this->GetAsITKBaseType()->GetOptimizer()->InvokeEvent(itk::IterationEvent());
+  elxout << std::endl;
+}
+
+/**
+ * ****************** AfterEachResolutionBase **********************
+ */
+
+template <class TElastix>
+void
+RegistrationBase<TElastix>::AfterEachResolutionBase()
+{
+  this->FinalFullEvaluation();
+}
 
 
 } // end namespace elastix

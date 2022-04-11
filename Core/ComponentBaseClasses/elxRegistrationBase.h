@@ -97,6 +97,9 @@ public:
 
   /** Typedef for ITKBaseType. */
   using ITKBaseType = itk::MultiResolutionImageRegistrationMethod2<FixedImageType, MovingImageType>;
+  using MetricType = typename ITKBaseType::MetricType;
+  using MetricPointer = typename ITKBaseType::MetricPointer;
+  using ParametersType = typename ITKBaseType::ParametersType;
 
   /** Typedef for mask erosion options */
   using UseMaskErosionArrayType = std::vector<bool>;
@@ -142,6 +145,9 @@ public:
                      const unsigned int        nrOfMasks,
                      const std::string &       whichMask,
                      const unsigned int        level) const;
+
+  void
+  AfterEachResolutionBase() override;
 
 protected:
   /** The constructor. */
@@ -213,6 +219,9 @@ private:
   /** The deleted assignment operator. */
   void
   operator=(const Self &) = delete;
+
+  void
+  FinalFullEvaluation();
 };
 
 } // end namespace elastix

@@ -225,6 +225,7 @@ public:
   /** Inheriting classes can specify whether they use the image sampler functionality;
    * This method allows the user to inspect this setting. */
   itkGetConstMacro(UseImageSampler, bool);
+  itkSetMacro(UseImageSampler, bool);
 
   /** Set/Get the required ratio of valid samples; default 0.25.
    * When less than this ratio*numberOfSamplesTried samples map
@@ -519,10 +520,6 @@ protected:
   /** Initialize variables related to the image sampler; called by Initialize. */
   virtual void
   InitializeImageSampler();
-
-  /** Inheriting classes can specify whether they use the image sampler functionality
-   * Make sure to set it before calling Initialize; default: false. */
-  itkSetMacro(UseImageSampler, bool);
 
   /** Check if enough samples have been found to compute a reliable
    * estimate of the value/derivative; throws an exception if not. */
