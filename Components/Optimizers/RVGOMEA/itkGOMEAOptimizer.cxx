@@ -1045,10 +1045,13 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
   double cov;
 
   /* First do the maximum-likelihood estimate from data */
+  // for each fos set:
   for (i = 0; i < linkage_model[population_index]->length; i++)
   {
+    // for each parameter index in fos set:
     for (j = 0; j < linkage_model[population_index]->set_length[i]; j++)
     {
+      // for each pair (vara, varb) of parameters:
       vara = linkage_model[population_index]->sets[i][j];
       for (k = j; k < linkage_model[population_index]->set_length[i]; k++)
       {
