@@ -67,64 +67,7 @@ ImageSamplerBase<TElastix>::BeforeEachResolutionBase()
   this->m_Configuration->ReadParameter(useMask, "UseMask", "", level, 0, true);
   this->GetAsITKBaseType()->SetUseMask(useMask);
 
-  bool writeSamplesEachIteration = false;
-  this->m_Configuration->ReadParameter(writeSamplesEachIteration, "WriteSamplesEachIteration", "", level, 0, true);
-  this->GetAsITKBaseType()->SetWriteSamplesEachIteration(writeSamplesEachIteration);
-
-  if (writeSamplesEachIteration)
-  {
-    std::ostringstream samplesDir("");
-    samplesDir << this->m_Configuration->GetCommandLineArgument("-out") << "samples.R" << level << "/";
-    this->m_SamplesOutDir = samplesDir.str();
-    std::filesystem::create_directory(this->m_SamplesOutDir);
-  }
-
 } // end BeforeEachResolutionBase()
-
-/**
- * ******************* AfterEachIterationBase ******************
- */
-
-template <class TElastix>
-void
-ImageSamplerBase<TElastix>::AfterEachIterationBase()
-{
-  if (this->GetAsITKBaseType()->GetWriteSamplesEachIteration())
-    this->WriteSamplesOfIteration();
-}
-
-/**
- * ******************* WriteSamplesOfIteration ******************
- */
-
-template <class TElastix>
-void
-ImageSamplerBase<TElastix>::WriteSamplesOfIteration()
-{
-  const unsigned int itNr = this->m_Elastix->GetIterationCounter();
-  std::ofstream      outFile;
-
-  std::ostringstream makeFileName("");
-  makeFileName << this->m_SamplesOutDir << itNr << ".dat";
-  std::string fileName = makeFileName.str();
-  outFile.open(fileName.c_str());
-
-  ImageSampleContainerPointer                      sampleContainer = this->GetAsITKBaseType()->GetOutput();
-  typename ImageSampleContainerType::ConstIterator threader_fiter;
-  typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer->Begin();
-  typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer->End();
-
-  for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
-  {
-    const auto & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
-    for (unsigned int dim = 0; dim < Self::InputImageDimension; ++dim)
-    {
-      outFile << fixedPoint[dim] << " ";
-    }
-    outFile << std::endl;
-  }
-  outFile.close();
-}
 
 
 } // end namespace elastix

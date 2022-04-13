@@ -143,7 +143,7 @@ GOMEA<TElastix>::AfterEachResolution(void)
   }
 
   /** Print the stopping condition */
-  elxout << "Stopping condition: " << stopcondition << "." << std::endl;
+  elxout << "Stopping condition: " << stopcondition << ".\n";
 }
 
 template <class TElastix>
@@ -151,7 +151,7 @@ void
 GOMEA<TElastix>::AfterRegistration(void)
 {
   /** Print the best metric value */
-  elxout << std::endl << "Final metric value = " << this->m_Value << std::endl;
+  elxout << "\n" << "Final metric value = " << this->m_Value << "\n";
 }
 
 } // namespace elastix

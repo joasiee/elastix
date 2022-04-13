@@ -37,6 +37,7 @@
 #include "itkAdvancedBSplineDeformableTransform.h"
 #include "itkAdvancedCombinationTransform.h"
 #include "itkPlatformMultiThreader.h"
+#include "itkImageMaskSpatialObject.h"
 
 namespace itk
 {
@@ -128,6 +129,7 @@ public:
   using typename Superclass::GradientImageFilterPointer;
   using typename Superclass::FixedImageMaskType;
   using typename Superclass::FixedImageMaskPointer;
+  using typename Superclass::FixedImageMaskConstPointer;
   using typename Superclass::MovingImageMaskType;
   using typename Superclass::MovingImageMaskPointer;
   using typename Superclass::MeasureType;
@@ -142,6 +144,11 @@ public:
   using FixedImagePixelType = typename FixedImageType::PixelType;
   using MovingImageRegionType = typename MovingImageType::RegionType;
   using MovingImageDerivativeScalesType = FixedArray<double, Self::MovingImageDimension>;
+  using FixedImageSizeType = Size<Self::FixedImageDimension>;
+  using ImageSpatialObjectType = ImageMaskSpatialObject<Self::FixedImageDimension>;
+  using ImageSpatialObjectPointer = typename ImageSpatialObjectType::Pointer;
+  using FixedImageMaskImageType = typename ImageSpatialObjectType::ImageType;
+
 
   /** Typedefs for the ImageSampler. */
   using ImageSamplerType = ImageSamplerBase<FixedImageType>;
@@ -275,6 +282,9 @@ public:
   itkSetMacro(SamplingPercentage, double);
   itkGetConstReferenceMacro(SamplingPercentage, double);
 
+  itkGetConstMacro(PartialEvaluations, bool);
+  itkSetMacro(PartialEvaluations, bool);
+
   /** Initialize the Metric by making sure that all the components
    *  are present and plugged together correctly.
    * \li Call the superclass' implementation
@@ -317,6 +327,9 @@ public:
 
   void
   InitPartialEvaluations(int ** sets, int * set_length, int length) override;
+
+  void
+  WriteSamplesOfIteration(std::ofstream & outFile) const;
 
 protected:
   /** Constructor. */
@@ -369,6 +382,7 @@ protected:
   std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegions;
+  std::vector<int>                                   m_BSplinePointOffsetMap;
   double                                             m_SamplingPercentage{ 0.05 };
   FOS                                                m_FOS{ 0 };
 
@@ -597,9 +611,15 @@ protected:
                             TransformJacobianType &      jacobian,
                             NonZeroJacobianIndicesType & nzji) const;
 
-  /** Convenience method: check if point is inside the moving mask. *****************/
+  /** Convenience methods: check if point is inside either mask. *****************/
   virtual bool
   IsInsideMovingMask(const MovingImagePointType & point) const;
+  bool
+  IsInsideFixedMask(const FixedImagePointType & point) const;
+  bool
+  IsInsideFixedMask(const FixedImageRegionType & region, const double pct) const;
+  FixedImageRegionType
+  TransformImageToMaskRegion(const FixedImageRegionType & region) const;
 
   /** Initialize the {Fixed,Moving}[True]{Max,Min}[Limit] and the {Fixed,Moving}ImageLimiter
    * Only does something when Use{Fixed,Moving}Limiter is set to true; */
@@ -629,6 +649,9 @@ private:
   void
   GetRegionsForFOS(int ** sets, int * set_length, int length);
 
+  void
+  ComputeFOSMapping();
+
   /** Private member variables. */
   bool   m_UseImageSampler{ false };
   bool   m_UseFixedImageLimiter{ false };
@@ -636,6 +659,7 @@ private:
   double m_RequiredRatioOfValidSamples{ 0.25 };
   bool   m_UseMovingImageDerivativeScales{ false };
   bool   m_ScaleGradientWithRespectToMovingImageOrientation{ false };
+  bool   m_PartialEvaluations{ false };
 
   MovingImageDerivativeScalesType m_MovingImageDerivativeScales{ MovingImageDerivativeScalesType::Filled(1.0) };
 };

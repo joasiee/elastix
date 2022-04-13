@@ -22,7 +22,6 @@
 #include "itkImageSample.h"
 #include "itkVectorDataContainer.h"
 #include "itkSpatialObject.h"
-#include "itkXoshiroRandomGenerators.hpp"
 #include "boost/random/sobol.hpp"
 
 namespace itk
@@ -186,8 +185,11 @@ public:
   itkSetMacro(UseMultiThread, bool);
   itkSetMacro(UseMask, bool);
 
-  itkGetConstMacro(WriteSamplesEachIteration, bool);
-  itkSetMacro(WriteSamplesEachIteration, bool);
+  void
+  WriteSamplesToFile(std::ofstream & outFile);
+
+  bool
+  CheckCroppedInputImageRegion();
 
 protected:
   /** The constructor. */
@@ -235,8 +237,7 @@ protected:
 
   // tmp?
   bool                 m_UseMultiThread;
-  bool                 m_UseMask;
-  bool                 m_WriteSamplesEachIteration;
+  bool                 m_UseMask{ true };
   int                  m_PreviousSeed;
   boost::random::sobol m_RandomGenerator{ Self::InputImageDimension };
 
