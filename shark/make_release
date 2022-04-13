@@ -39,7 +39,8 @@ if [[ ! -z "${BUILD_ITK}" ]]
 then
     # Configure and install ITK
     cd $WORKING_DIR
-    git clone https://github.com/joasiee/ITK.git && cd ITK && git checkout gomea
+    git clone https://github.com/joasiee/ITK.git
+    cd ITK && git checkout gomea
     cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -CCMakeDefaultCache.txt -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
     cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target all
 fi
