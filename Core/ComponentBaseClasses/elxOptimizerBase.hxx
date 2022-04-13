@@ -68,8 +68,11 @@ OptimizerBase<TElastix>::BeforeEachResolutionBase()
   /** Get the current resolution level. */
   unsigned int level = this->GetRegistration()->GetAsITKBaseType()->GetCurrentLevel();
 
+  bool partialEvaluations = false;
+  this->m_Configuration->ReadParameter(partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
+
   /** Check if after every iteration a new sample set should be created. */
-  this->m_NewSamplesEveryIteration = false;
+  this->m_NewSamplesEveryIteration = !partialEvaluations;
   this->GetConfiguration()->ReadParameter(
     this->m_NewSamplesEveryIteration, "NewSamplesEveryIteration", this->GetComponentLabel(), level, 0);
 } // end BeforeEachResolutionBase()
