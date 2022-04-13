@@ -87,16 +87,11 @@ public:
   void
   BeforeEachResolutionBase() override;
 
-  void
-  AfterEachIterationBase() override;
-
 protected:
   /** The constructor. */
   ImageSamplerBase() = default;
   /** The destructor. */
   ~ImageSamplerBase() override = default;
-
-  std::string m_SamplesOutDir;
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
@@ -106,9 +101,6 @@ private:
   /** The deleted assignment operator. */
   void
   operator=(const Self &) = delete;
-
-  void
-  WriteSamplesOfIteration();
 };
 
 } // end namespace elastix

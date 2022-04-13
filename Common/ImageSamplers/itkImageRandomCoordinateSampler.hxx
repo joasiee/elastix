@@ -115,7 +115,7 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateData()
     /** Set up some variable that are used to make sure we are not forever
      * walking around on this image, trying to look for valid samples. */
     unsigned long numberOfSamplesTried = 0;
-    unsigned long maximumNumberOfSamplesToTry = 10 * this->GetNumberOfSamples();
+    unsigned long maximumNumberOfSamplesToTry = 100 * this->GetNumberOfSamples();
 
     /** Start looping over the sample container */
     for (iter = sampleContainer->Begin(); iter != end; ++iter)

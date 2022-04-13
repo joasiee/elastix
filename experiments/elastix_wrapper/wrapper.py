@@ -72,17 +72,17 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
             "-threads",
             os.environ["OMP_NUM_THREADS"],
         ]
-        if params.fixedmask_path:
+        if params.fixedmask_path and params["UseMask"]:
             args += ["-fMask", str(params.fixedmask_path)]
         subprocess.run(args, check=True)
 
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=3, sampling_p=0.1, seed=5, write_img=True)
-        .multi_resolution(1, [7, 7, 7])
-        .gomea(fos=-6, partial_evals=True)
-        .stopping_criteria(50)
-        .instance(Collection.EMPIRE, 14)
+        Parameters.from_base(mesh_size=3, sampling_p=0.05, seed=5, write_img=True)
+        .multi_resolution(1, [5, 5, 5])
+        .asgd()
+        .stopping_criteria(10000)
+        .instance(Collection.EMPIRE, 16)
     )
     run(params, Path("output/" + str(params)), False)

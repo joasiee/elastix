@@ -223,6 +223,7 @@ RegistrationBase<TElastix>::FinalFullEvaluation()
 
   MetricPointer metric = this->GetAsITKBaseType()->GetMetric();
   FullSamplerPointer fullSampler = FullSamplerType::New();
+  fullSampler->SetMask(metric->GetFixedImageMask());
   fullSampler->SetInput(metric->GetFixedImage());
   metric->SetUseImageSampler(true);
   metric->SetImageSampler(fullSampler);

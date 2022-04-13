@@ -35,7 +35,7 @@ class Parameters:
         metric: str = "AdvancedMeanSquares",
         sampler: str = "RandomCoordinate",
         sampling_p: float = 0.05,
-        use_mask: bool = False,
+        use_mask: bool = True,
         mesh_size: List[int] | int = 12,
         seed: int = None,
         write_img=False,
@@ -116,7 +116,6 @@ class Parameters:
     ) -> Parameters:
         if partial_evals:
             self["NewSamplesEveryIteration"] = "false"
-            self["RequiredRatioOfValidSamples"] = 0.8
         return self.optimizer(
             "GOMEA",
             {

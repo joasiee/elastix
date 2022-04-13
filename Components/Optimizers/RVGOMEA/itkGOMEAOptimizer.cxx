@@ -30,19 +30,19 @@ GOMEAOptimizer::GOMEAOptimizer()
 void
 GOMEAOptimizer::PrintSelf(std::ostream & os, Indent indent) const
 {
-  os << indent << this->GetNameOfClass() << ":" << std::endl;
+  os << indent << this->GetNameOfClass() << ":\n";
 }
 
 void
 GOMEAOptimizer::PrintSettings() const
 {
   Indent indent = *itk::Indent::New();
-  std::cout << indent << "Settings: " << std::endl;
-  std::cout << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << std::endl;
-  std::cout << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << std::endl;
-  std::cout << indent.GetNextIndent() << "Tau: " << m_Tau << std::endl;
-  std::cout << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << std::endl;
-  std::cout << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << std::endl;
+  std::cout << indent << "Settings: \n";
+  std::cout << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n";
+  std::cout << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << "\n";
+  std::cout << indent.GetNextIndent() << "Tau: " << m_Tau << "\n";
+  std::cout << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n";
+  std::cout << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n";
 }
 
 void
@@ -1193,7 +1193,7 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
 
   // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1);
   // if (abs(obj_val_full - *obj_val) > 1e-3)
-  //   std::cout << "WTF" << std::endl;
+  //   std::cout << "WTF\n";
 
   ++m_NumberOfEvaluations;
   this->Modified();

@@ -253,6 +253,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
+  if (fosPoints.size() == 0)
+    return 0.0;
+
   const ThreadIdType       maxThreads = Self::GetNumberOfWorkUnits();
   const ThreadIdType       numThreads = std::min(maxThreads, static_cast<ThreadIdType>(fosPoints.size()));
   const ThreadIdType       freeThreads = maxThreads - numThreads;

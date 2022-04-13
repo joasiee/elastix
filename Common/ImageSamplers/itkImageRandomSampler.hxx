@@ -71,7 +71,7 @@ ImageRandomSampler<TInputImage>::GenerateData()
     }
 
     /** Make sure we are not eternally trying to find samples: */
-    const unsigned long maxSamples = 10 * this->GetNumberOfSamples();
+    const unsigned long maxSamples = 100 * this->GetNumberOfSamples();
     unsigned long       numSamples = 0L;
 
     /** Loop over the sample container. */

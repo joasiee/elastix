@@ -229,6 +229,9 @@ protected:
   ExactMetricSampleGridSpacingType m_ExactMetricSampleGridSpacing;
   unsigned int                     m_ExactMetricEachXNumberOfIterations;
 
+  bool        m_WriteSamplesEveryIteration{ false };
+  std::string m_SamplesOutDir;
+
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
 
@@ -237,6 +240,9 @@ private:
   /** The deleted assignment operator. */
   void
   operator=(const Self &) = delete;
+
+  void
+  WriteSamplesOfIteration() const;
 };
 
 } // end namespace elastix
