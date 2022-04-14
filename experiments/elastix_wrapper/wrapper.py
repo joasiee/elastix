@@ -2,27 +2,27 @@ from pathlib import Path
 import os
 import subprocess
 import logging
-import time
 
 from typing import Any, Dict
 
 from elastix_wrapper import TimeoutException, time_limit
 from elastix_wrapper.parameters import Collection, Parameters
-from elastix_wrapper.watchdog import SaveStrategyComet, SaveStrategyFile, Watchdog
+from elastix_wrapper.watchdog import SaveStrategy, Watchdog
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
 
 
-def run(params: Parameters, run_dir: Path) -> Dict[str, Any]:
+def run(params: Parameters, run_dir: Path, save_strategy: SaveStrategy = None) -> Dict[str, Any]:
     run_dir.mkdir(parents=True)
     params_file = params.write(run_dir)
     out_dir = run_dir.joinpath(Path("out"))
     os.mkdir(out_dir)
 
-    wd = Watchdog(out_dir, params["NumberOfResolutions"])
-    wd.set_strategy(SaveStrategyComet("test1", params.params))
-    wd.start()
+    if save_strategy:
+        wd = Watchdog(out_dir, params["NumberOfResolutions"])
+        wd.set_strategy(save_strategy)
+        wd.start()
 
     logger.info(f"Running elastix in: {str(run_dir)}")
     try:
@@ -37,7 +37,11 @@ def run(params: Parameters, run_dir: Path) -> Dict[str, Any]:
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
 
-    wd.stop()
+    if save_strategy:
+        wd.stop()
+        wd.join()
+        wd.sv_strategy.close()
+
     logger.info("Run finished successfully.")
 
 
@@ -67,7 +71,7 @@ if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, sampler="Full")
         .asgd()
-        .stopping_criteria(5000)
+        .stopping_criteria(20000)
         .instance(Collection.EXAMPLES, 1)
     )
     run(params, Path("output/" + str(params)))

@@ -2,15 +2,17 @@ from pathlib import Path
 import re
 import threading
 import time
+import wandb
 import os
-from typing import Any, Dict
 import pandas as pd
 import numpy as np
-from comet_ml import Experiment
+
+from experiments.experiment import Experiment
+
 
 
 class SaveStrategy:
-    def save(self, headers, values, resolution) -> None:
+    def save(self, headers, row, resolution) -> None:
         pass
 
     def close(self) -> None:
@@ -24,29 +26,53 @@ class SaveStrategyFile(SaveStrategy):
             self.out_dir.mkdir(parents=True)
         self.files = []
 
-    def save(self, headers, values, resolution) -> None:
+    def save(self, headers, row, resolution) -> None:
         if len(self.files) < resolution + 1:
             out_file = self.out_dir / f"{resolution}.dat"
             self.files.append(open(out_file.absolute().resolve(), "ab"))
-        np.savetxt(self.files[resolution], values)
+        np.savetxt(self.files[resolution], row)
 
     def close(self) -> None:
         for file in self.files:
             file.close()
 
+class SaveStrategyWandb(SaveStrategy):
+    def __init__(self, experiment: Experiment, batch_size: int = 1) -> None:
+        wandb.init(project=experiment.project,
+                     name=str(experiment.params), reinit=True)
+        wandb.config.update(experiment.params.params)
+        self.batch_size = batch_size
+        self._rowcount = 0
+        self._sum_time = 0
+        self._resolution = 0
+        self._buffer = (None, None)
 
-class SaveStrategyComet(SaveStrategy):
-    def __init__(self, project: str, params: Dict[str, Any]) -> None:
-        self.experiment: Experiment = Experiment(
-            api_key=os.environ["COMET_API_KEY"], project_name=project
-        )
-        self.experiment.log_parameters(params)
+    def _reset_state(self):
+        self._rowcount = 0
+        self._sum_time = 0
+        self._resolution = 0
+        self._buffer = (None, None)
 
-    def save(self, headers, values, resolution) -> None:
-        values[-1][-1] = np.sum(values[:, -1])
-        to_log = dict(zip(headers[1:], values[-1][1:]))
-        self.experiment.log_metrics(to_log, f"R{resolution}", values[-1][0])
+    def _log_buffer(self):
+        headers, row = self._buffer
+        row[-1] = self._sum_time
+        headers = [f"R{self._resolution}/{header}" for header in headers]
+        metrics = dict(zip(headers, row))
+        wandb.log(metrics)
+        self._reset_state()
 
+    def save(self, headers, row, resolution) -> None:
+        self._rowcount += 1
+        self._sum_time += row[-1]
+        self._buffer = (headers, row)
+        self._resolution = resolution
+        
+        if self._rowcount == self.batch_size:
+            self._log_buffer()
+
+    def close(self) -> None:
+        self._log_buffer()
+        wandb.finish()
 
 class Watchdog(threading.Thread):
     def __init__(
@@ -86,6 +112,9 @@ class Watchdog(threading.Thread):
             except pd.errors.EmptyDataError:
                 continue
 
+            if resolution_results.isnull().values.any():
+                continue
+
             headers = resolution_results.columns.values
             headers = [re.sub(r"\d:", "", header).lower() for header in headers]
             values = resolution_results.values
@@ -95,11 +124,14 @@ class Watchdog(threading.Thread):
             line_counts[r] = len_values
 
             if len_diff > 0:
-                self.sv_strategy.save(headers, values[len_values - len_diff :], r)
+                for row in values[len_values - len_diff :]:  
+                    self.sv_strategy.save(headers, row, r)
             elif r < self.n_resolutions - 1 and os.path.exists(file_names[r + 1]):
                 r += 1
             elif self._stop_event.is_set():
                 break
+
+            time.sleep(0.1)
 
     def stop(self):
         self._stop_event.set()

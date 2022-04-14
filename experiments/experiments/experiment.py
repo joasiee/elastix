@@ -1,12 +1,8 @@
 import json
-from pathlib import Path
-from typing import List
 import redis
 from dotenv import load_dotenv
 import os
-import wandb
 from sshtunnel import SSHTunnelForwarder
-from elastix_wrapper import wrapper
 from elastix_wrapper.parameters import Parameters
 
 WANDB_ENTITY = "joasiee"
@@ -25,15 +21,6 @@ class Experiment:
         pyjson = json.loads(jsondump)
         params = Parameters(pyjson["params"]).set_paths()
         return cls(params, pyjson["project"])
-
-    def already_done(self, keys: List[str]):
-        keys += ["Optimizer", "Instance"]
-        filters = {"state": {"$in": ["finished", "running"]}}
-        for key in keys:
-            filters[f"config.{key}"] = self.params[key]
-        api = wandb.Api()
-        runs = api.runs(WANDB_ENTITY + "/" + self.project, filters=filters)
-        return len(runs) > 0
 
     def to_json(self):
         return json.dumps({
@@ -78,13 +65,7 @@ class ExperimentQueue:
         return self.client.llen(ExperimentQueue.queue_id)
 
     def clear(self) -> None:
-        self.client.delete(ExperimentQueue.queue_id)
-
-def run_experiment(experiment: Experiment):
-    wandb.init(project=experiment.project,
-                     name=str(experiment.params), reinit=True)
-    wandb.config.update(experiment.params.params)
-    wrapper.run(experiment.params, Path("output") / wandb.run.project / wandb.run.name)
+        self.client.delete(ExperimentQueue.queue_id)    
 
 
 if __name__ == "__main__":
