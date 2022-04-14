@@ -1,18 +1,59 @@
+from pathlib import Path
 import re
 import threading
 import time
 import os
 import pandas as pd
+import numpy as np
+
+
+class SaveStrategy:
+    def save(self, headers, values, resolution):
+        pass
+
+    def close(self):
+        pass
+
+class SaveStrategyFile(SaveStrategy):
+    def __init__(self, out_dir: Path) -> None:
+        super().__init__()
+        self.out_dir = out_dir
+        if not self.out_dir.exists():
+            self.out_dir.mkdir(parents=True)
+        self.files = []
+
+    def save(self, headers, values, resolution):
+        if len(self.files) < resolution + 1:
+            out_file = self.out_dir / f"{resolution}.dat"
+            self.files.append(open(out_file.absolute().resolve(),'ab'))
+        np.savetxt(self.files[resolution], values)
+
+    def close(self):
+        for file in self.files:
+            file.close()
+        
 
 class Watchdog(threading.Thread):
-    def __init__(self, out_dir, n_resolutions, *args, **kwargs):
+    def __init__(
+        self,
+        out_dir,
+        n_resolutions,
+        *args,
+        **kwargs,
+    ):
         super(Watchdog, self).__init__(*args, **kwargs)
         self._stop_event = threading.Event()
-        self.set_output_dir(out_dir, n_resolutions)
+        self.set_input(out_dir, n_resolutions)
 
-    def set_output_dir(self, out_dir, n_resolutions):
+    def set_strategy(self, strategy: SaveStrategy):
+        self.sv_strategy: SaveStrategy = strategy
+
+    def set_input(self, out_dir, n_resolutions):
         self.out_dir = out_dir
         self.n_resolutions = n_resolutions
+
+    def save_output(self, headers, values):
+        pass
 
     def run(self):
         line_counts = [0 for _ in range(self.n_resolutions)]
@@ -39,7 +80,7 @@ class Watchdog(threading.Thread):
             line_counts[r] = len_values
 
             if len_diff > 0:
-                yield headers, values[len_values - len_diff :]
+                self.sv_strategy.save(headers, values[len_values - len_diff :], r)
             elif r < self.n_resolutions - 1 and os.path.exists(file_names[r + 1]):
                 r += 1
             elif self._stop_event.is_set():
@@ -48,5 +89,4 @@ class Watchdog(threading.Thread):
             time.sleep(0.1)
 
     def stop(self):
-        time.sleep(5)
         self._stop_event.set()
