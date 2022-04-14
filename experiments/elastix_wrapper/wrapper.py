@@ -2,12 +2,13 @@ from pathlib import Path
 import os
 import subprocess
 import logging
+import time
 
 from typing import Any, Dict
 
 from elastix_wrapper import TimeoutException, time_limit
 from elastix_wrapper.parameters import Collection, Parameters
-from elastix_wrapper.watchdog import SaveStrategyFile, Watchdog
+from elastix_wrapper.watchdog import SaveStrategyComet, SaveStrategyFile, Watchdog
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
@@ -20,7 +21,7 @@ def run(params: Parameters, run_dir: Path) -> Dict[str, Any]:
     os.mkdir(out_dir)
 
     wd = Watchdog(out_dir, params["NumberOfResolutions"])
-    wd.set_strategy(SaveStrategyFile(Path()))
+    wd.set_strategy(SaveStrategyComet("test1", params.params))
     wd.start()
 
     logger.info(f"Running elastix in: {str(run_dir)}")
@@ -65,9 +66,8 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, sampler="Full")
-        .multi_resolution(3)
         .asgd()
-        .stopping_criteria(2000)
+        .stopping_criteria(5000)
         .instance(Collection.EXAMPLES, 1)
     )
     run(params, Path("output/" + str(params)))
