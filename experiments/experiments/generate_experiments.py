@@ -8,13 +8,13 @@ logger = logging.getLogger("ParetoFront")
 
 def sampling_p_range(instance: int, project: str):
     for sampling_p in list(np.arange(0.01, 0.11, 0.01)):
-        for seed in [2356, 3487, 4942, 1432]:
+        for seed in [1, 2, 3, 4, 5]:
             params = (
-                Parameters.from_base(mesh_size=3, seed=seed, sampling_p=sampling_p, use_mask=True)
+                Parameters.from_base(mesh_size=3, seed=seed, sampling_p=sampling_p)
                 .multi_resolution(1, p_sched=[5, 5, 5])
                 .gomea(fos=-6, partial_evals=True)
                 .instance(Collection.EMPIRE, instance)
-                .stopping_criteria(iterations=[200])
+                .stopping_criteria(iterations=[50])
             )
             yield Experiment(params, project)
 
@@ -44,5 +44,5 @@ def convergence_experiment(project):
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in sampling_p_range(16, "sampling_experiment"):
+    for experiment in sampling_p_range(16, "sampling_experiment2"):
         queue.push(experiment)

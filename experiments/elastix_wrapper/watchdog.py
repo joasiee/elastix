@@ -1,18 +1,16 @@
 import re
 import threading
 import time
-import wandb
 import os
 import pandas as pd
-
 
 class Watchdog(threading.Thread):
     def __init__(self, out_dir, n_resolutions, *args, **kwargs):
         super(Watchdog, self).__init__(*args, **kwargs)
         self._stop_event = threading.Event()
-        self.set_output(out_dir, n_resolutions)
+        self.set_output_dir(out_dir, n_resolutions)
 
-    def set_output(self, out_dir, n_resolutions):
+    def set_output_dir(self, out_dir, n_resolutions):
         self.out_dir = out_dir
         self.n_resolutions = n_resolutions
 
@@ -28,36 +26,27 @@ class Watchdog(threading.Thread):
             if not os.path.exists(file_names[r]):
                 continue
             try:
-                resolution_results = pd.read_csv(file_names[r], sep="	").to_dict()
+                resolution_results = pd.read_csv(file_names[r], sep="	")
             except pd.errors.EmptyDataError:
                 continue
 
-            headers = list(resolution_results.keys())[1:]
-            values = [list(v.values()) for v in resolution_results.values()][1:]
+            headers = resolution_results.columns.values[1:]
+            headers = [re.sub(r"\d:", "", header).lower() for header in headers]
+            values = resolution_results.values[:, 1:]
 
-            len_values = len(values[0])
+            len_values = values.shape[0]
             len_diff = len_values - line_counts[r]
             line_counts[r] = len_values
 
-            for line in range(len_values - len_diff, len_values):
-                scalars = {}
-                for index, header in enumerate(headers):
-                    header = re.sub(r"\d:", "", header).lower()
-                    scalars[f"R{r}/" + header] = values[index][line]
-                wandb.log(scalars)
-
-            if self._stop_event.is_set() and r == self.n_resolutions - 1:
+            if len_diff > 0:
+                yield headers, values[len_values - len_diff :]
+            elif r < self.n_resolutions - 1 and os.path.exists(file_names[r + 1]):
+                r += 1
+            elif self._stop_event.is_set():
                 break
 
-            if (
-                r < self.n_resolutions - 1
-                and os.path.exists(file_names[r + 1])
-                and len_diff == 0
-            ):
-                r += 1
-
-            time.sleep(5)
+            time.sleep(0.1)
 
     def stop(self):
-        time.sleep(1)
+        time.sleep(5)
         self._stop_event.set()

@@ -8,10 +8,9 @@ from elastix_wrapper.parameters import Parameters, Collection
 from experiments.experiment import Experiment, run_experiment
 
 params = (
-    Parameters.from_base(mesh_size=7, sampler="Full")
-    .multi_resolution(3)
+    Parameters.from_base(mesh_size=5, sampler="Full")
     .asgd()
-    .stopping_criteria(100)
+    .stopping_criteria(2000)
     .instance(Collection.EXAMPLES, 1)
 )
 

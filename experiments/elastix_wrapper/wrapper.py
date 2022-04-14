@@ -6,7 +6,6 @@ import logging
 
 from typing import Any, Dict
 
-import wandb
 from elastix_wrapper import TimeoutException, time_limit
 from elastix_wrapper.parameters import Collection, Parameters
 from elastix_wrapper.watchdog import Watchdog
@@ -15,15 +14,14 @@ ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
 
 
-def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]:
+def run(params: Parameters, run_dir: Path) -> Dict[str, Any]:
     run_dir.mkdir(parents=True)
     params_file = params.write(run_dir)
     out_dir = run_dir.joinpath(Path("out"))
     os.mkdir(out_dir)
 
     wd = Watchdog(out_dir, params["NumberOfResolutions"])
-    if watch:
-        wd.start()
+    wd.start()
 
     logger.info(f"Running elastix in: {str(run_dir)}")
     try:
@@ -38,23 +36,9 @@ def run(params: Parameters, run_dir: Path, watch: bool = True) -> Dict[str, Any]
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
 
-    logger.info("Run finished successfully.")
     wd.stop()
 
-    if watch:
-        wd.join()
-
-        wandb.save(
-            str((run_dir / "*").resolve()), base_path=str(run_dir.parents[0].resolve())
-        )
-        wandb.save(
-            str((run_dir / "out" / "TransformParameters*").resolve()),
-            base_path=str(run_dir.parents[0].resolve()),
-        )
-        wandb_dir = Path(wandb.run.dir)
-        wandb.finish()
-        shutil.rmtree(run_dir.absolute())
-        shutil.rmtree(wandb_dir.parent.absolute())
+    logger.info("Run finished successfully.")
 
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
@@ -74,15 +58,16 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         ]
         if params.fixedmask_path and params["UseMask"]:
             args += ["-fMask", str(params.fixedmask_path)]
-        subprocess.run(args, check=True)
+
+        subprocess.run(args, check=True, stdout=subprocess.DEVNULL)
 
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=3, sampling_p=0.05, seed=5, write_img=True)
-        .multi_resolution(1, [5, 5, 5])
+        Parameters.from_base(mesh_size=5, sampler="Full")
+        .multi_resolution(3)
         .asgd()
-        .stopping_criteria(10000)
-        .instance(Collection.EMPIRE, 16)
+        .stopping_criteria(2000)
+        .instance(Collection.EXAMPLES, 1)
     )
-    run(params, Path("output/" + str(params)), False)
+    run(params, Path("output/" + str(params)))
