@@ -13,8 +13,6 @@ redis = "^4.1.4"
 sshtunnel = "^0.4.0"
 pandas = "^1.4.1"
 wcwidth = "^0.2.5"
-pyzmq = "^22.3.0"
-comet-ml = "^3.28.3"
 wandb = "^0.12.14"
 
 [tool.poetry.dev-dependencies]
@@ -22,7 +20,6 @@ pre-commit = "^2.17.0"
 black = "^22.1.0"
 ipykernel = "^6.11.0"
 matplotlib = "^3.5.1"
-tinydb = "^4.7.0"
 xarray = "^2022.3.0"
 
 [build-system]
