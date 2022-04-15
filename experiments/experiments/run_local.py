@@ -4,10 +4,8 @@ from pathlib import Path
 path_root = Path(__file__).parents[1]
 sys.path.append(str(path_root))
 
-from elastix_wrapper.watchdog import SaveStrategyWandb
-from elastix_wrapper import wrapper
 from elastix_wrapper.parameters import Parameters, Collection
-from experiments.experiment import Experiment
+from experiments.experiment import Experiment, run_experiment
 
 params = (
     Parameters.from_base(mesh_size=5, sampler="Full")
@@ -17,6 +15,4 @@ params = (
 )
 
 experiment = Experiment(params, "zandbak")
-run_dir = Path("output") / experiment.project / str(experiment.params)
-sv_strat = SaveStrategyWandb(experiment, run_dir, 100)
-wrapper.run(experiment.params, run_dir, sv_strat)
+run_experiment(experiment)

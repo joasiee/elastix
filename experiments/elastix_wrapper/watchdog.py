@@ -6,10 +6,6 @@ import time
 import wandb
 import os
 import pandas as pd
-import numpy as np
-
-from experiments.experiment import Experiment
-
 
 
 class SaveStrategy:
@@ -19,26 +15,8 @@ class SaveStrategy:
     def close(self) -> None:
         pass
 
-
-class SaveStrategyFile(SaveStrategy):
-    def __init__(self, out_dir: Path) -> None:
-        self.out_dir = out_dir
-        if not self.out_dir.exists():
-            self.out_dir.mkdir(parents=True)
-        self.files = []
-
-    def save(self, headers, row, resolution) -> None:
-        if len(self.files) < resolution + 1:
-            out_file = self.out_dir / f"{resolution}.dat"
-            self.files.append(open(out_file.absolute().resolve(), "ab"))
-        np.savetxt(self.files[resolution], row)
-
-    def close(self) -> None:
-        for file in self.files:
-            file.close()
-
 class SaveStrategyWandb(SaveStrategy):
-    def __init__(self, experiment: Experiment, run_dir: Path, batch_size: int = 1) -> None:
+    def __init__(self, experiment, run_dir: Path, batch_size: int = 1) -> None:
         wandb.init(project=experiment.project,
                      name=str(experiment.params), reinit=True)
         wandb.config.update(experiment.params.params)

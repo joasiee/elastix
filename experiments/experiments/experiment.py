@@ -1,16 +1,17 @@
 import json
+from pathlib import Path
 import redis
 from dotenv import load_dotenv
 import os
 from sshtunnel import SSHTunnelForwarder
+from elastix_wrapper import wrapper
 from elastix_wrapper.parameters import Parameters
+from elastix_wrapper.watchdog import SaveStrategyWandb
 
 WANDB_ENTITY = "joasiee"
 
 
 class Experiment:
-    __slots__ = ["project", "params"]
-
     def __init__(self, params: Parameters, project: str = None) -> None:
         params.prune()
         self.project = project
@@ -23,17 +24,14 @@ class Experiment:
         return cls(params, pyjson["project"])
 
     def to_json(self):
-        return json.dumps({
-            "project": self.project,
-            "params": self.params.params
-        })
+        return json.dumps({"project": self.project, "params": self.params.params})
 
     def __str__(self) -> str:
         return self.to_json()
 
 
 class ExperimentQueue:
-    queue_id = 'queue:experiments'
+    queue_id = "queue:experiments"
 
     def __init__(self) -> None:
         load_dotenv()
@@ -44,7 +42,7 @@ class ExperimentQueue:
         self.sshserver = SSHTunnelForwarder(
             os.environ["REDIS_HOST"],
             ssh_username="root",
-            remote_bind_address=('127.0.0.1', 6379)
+            remote_bind_address=("127.0.0.1", 6379),
         )
         self.sshserver.start()
         self.local_port = self.sshserver.local_bind_port
@@ -65,7 +63,18 @@ class ExperimentQueue:
         return self.client.llen(ExperimentQueue.queue_id)
 
     def clear(self) -> None:
-        self.client.delete(ExperimentQueue.queue_id)    
+        self.client.delete(ExperimentQueue.queue_id)
+
+
+def run_experiment(experiment: Experiment):
+    run_dir = Path("output") / experiment.project / str(experiment.params)
+    batch_size = (
+        50
+        if experiment.params["Optimizer"] == "AdaptiveStochasticGradientDescent"
+        else 1
+    )
+    sv_strat = SaveStrategyWandb(experiment, run_dir, batch_size)
+    wrapper.run(experiment.params, run_dir, sv_strat)
 
 
 if __name__ == "__main__":
