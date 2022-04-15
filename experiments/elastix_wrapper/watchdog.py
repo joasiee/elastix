@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import shutil
 import threading
 import time
 import wandb
@@ -37,10 +38,11 @@ class SaveStrategyFile(SaveStrategy):
             file.close()
 
 class SaveStrategyWandb(SaveStrategy):
-    def __init__(self, experiment: Experiment, batch_size: int = 1) -> None:
+    def __init__(self, experiment: Experiment, run_dir: Path, batch_size: int = 1) -> None:
         wandb.init(project=experiment.project,
                      name=str(experiment.params), reinit=True)
         wandb.config.update(experiment.params.params)
+        self.run_dir = run_dir
         self.batch_size = batch_size
         self._rowcount = 0
         self._sum_time = 0
@@ -72,7 +74,14 @@ class SaveStrategyWandb(SaveStrategy):
 
     def close(self) -> None:
         self._log_buffer()
+        print(self.run_dir)
+        wandb.save(
+            str((self.run_dir / "out"/ "*").resolve()), base_path=str(self.run_dir.parents[0].resolve())
+        )
+        wandb_dir = Path(wandb.run.dir)
         wandb.finish()
+        shutil.rmtree(self.run_dir.absolute())
+        shutil.rmtree(wandb_dir.parent.absolute())
 
 class Watchdog(threading.Thread):
     def __init__(

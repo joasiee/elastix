@@ -17,5 +17,6 @@ params = (
 )
 
 experiment = Experiment(params, "zandbak")
-sv_strat = SaveStrategyWandb(experiment, 100)
-wrapper.run(experiment.params, Path("output") / experiment.project / str(experiment.params), sv_strat)
+run_dir = Path("output") / experiment.project / str(experiment.params)
+sv_strat = SaveStrategyWandb(experiment, run_dir, 100)
+wrapper.run(experiment.params, run_dir, sv_strat)
