@@ -1808,8 +1808,6 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
   for (i = 0; i < number_of_subgenerations_per_population_factor - 1; i++)
   {
-    this->evaluateAllPopulations();
-
     for (population_index = population_index_smallest; population_index <= population_index_biggest; population_index++)
     {
       if (!populations_terminated[population_index])
@@ -1831,8 +1829,6 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
     for (population_index = population_index_smallest; population_index < population_index_biggest; population_index++)
       this->generationalStepAllPopulationsRecursiveFold(population_index_smallest, population_index);
-
-    this->UpdatePosition();
   }
 }
 
@@ -1843,8 +1839,12 @@ GOMEAOptimizer::runAllPopulations()
   {
     if (number_of_populations < m_MaxNumberOfPopulations)
       this->initializeNewPopulation();
+    else
+      this->evaluateAllPopulations();
 
     this->generationalStepAllPopulations();
+
+    this->UpdatePosition();
   }
 }
 
