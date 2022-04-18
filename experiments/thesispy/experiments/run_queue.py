@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
 
-path_root = Path(__file__).parents[1]
+path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
-from experiments.experiment import ExperimentQueue, run_experiment
+from thesispy.experiments.experiment import ExperimentQueue, run_experiment
 
 exp_queue = ExperimentQueue()
 
