@@ -6,6 +6,7 @@ import time
 import wandb
 import os
 import pandas as pd
+import numpy as np
 
 
 class SaveStrategy:
@@ -34,12 +35,13 @@ class SaveStrategyWandb(SaveStrategy):
         self._buffer = (None, None)
 
     def _log_buffer(self):
-        headers, row = self._buffer
-        row[-1] = self._sum_time
-        headers = [f"R{self._resolution}/{header}" for header in headers]
-        metrics = dict(zip(headers, row))
-        wandb.log(metrics)
-        self._reset_state()
+        if self._rowcount > 0:
+            headers, row = self._buffer
+            row[-1] = self._sum_time
+            headers = [f"R{self._resolution}/{header}" for header in headers]
+            metrics = dict(zip(headers, row))
+            wandb.log(metrics)
+            self._reset_state()
 
     def save(self, headers, row, resolution) -> None:
         self._rowcount += 1
@@ -80,9 +82,6 @@ class Watchdog(threading.Thread):
         self.out_dir = out_dir
         self.n_resolutions = n_resolutions
 
-    def save_output(self, headers, values):
-        pass
-
     def run(self):
         line_counts = [0 for _ in range(self.n_resolutions)]
         file_names = [
@@ -99,7 +98,7 @@ class Watchdog(threading.Thread):
             except pd.errors.EmptyDataError:
                 continue
 
-            if resolution_results.isnull().values.any():
+            if np.count_nonzero(resolution_results.isnull().values) > 1:
                 continue
 
             headers = resolution_results.columns.values
