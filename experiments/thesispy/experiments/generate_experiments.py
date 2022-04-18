@@ -14,7 +14,7 @@ def sampling_p_range(instance: int, project: str):
                 .multi_resolution(1, p_sched=[5, 5, 5])
                 .gomea(fos=-6, partial_evals=True)
                 .instance(Collection.EMPIRE, instance)
-                .stopping_criteria(iterations=[50])
+                .stopping_criteria(iterations=[300])
             )
             yield Experiment(params, project)
 
@@ -44,5 +44,5 @@ def convergence_experiment(project):
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in sampling_p_range(16, "sampling_experiment2"):
+    for experiment in sampling_p_range(16, "sampling_experiment_shuffle"):
         queue.push(experiment)

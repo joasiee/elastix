@@ -9,9 +9,10 @@ from PIL import Image
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List
+from thesispy.definitions import ROOT_DIR
 
-BASE_PARAMS_PATH = Path("resources", "base_params.json")
-INSTANCE_CONFIG_PATH = Path("resources", "instances.json")
+BASE_PARAMS_PATH = ROOT_DIR / Path("resources", "base_params.json")
+INSTANCE_CONFIG_PATH = ROOT_DIR / Path("resources", "instances.json")
 INSTANCES_CONFIG: Dict[str, str] = {}
 INSTANCES_SRC = Path(os.environ.get("INSTANCES_SRC"))
 
