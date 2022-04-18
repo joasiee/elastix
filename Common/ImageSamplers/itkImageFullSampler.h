@@ -83,7 +83,7 @@ public:
    * The same samples would be selected anyway.
    */
   void
-  SetGeneratorSeed(int seed) override
+  SetGeneratorSeed(uint_least64_t seed) override
   {}
 
 

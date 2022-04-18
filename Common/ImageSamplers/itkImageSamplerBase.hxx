@@ -546,7 +546,7 @@ ImageSamplerBase<TInputImage>::WriteSamplesToFile(std::ofstream & outFile)
 
 template <class TInputImage>
 void
-ImageSamplerBase<TInputImage>::SetGeneratorSeed(int seed)
+ImageSamplerBase<TInputImage>::SetGeneratorSeed(uint_least64_t seed)
 {
   if (seed != this->m_PreviousSeed)
   {

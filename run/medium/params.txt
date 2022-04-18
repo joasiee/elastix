@@ -19,11 +19,11 @@
 (UseDirectionCosines "true")
 
 (MaximumNumberOfIterations 5)
-//(PartialEvaluations "true")
-//(FosElementSize -6)
+(PartialEvaluations "true")
+(FosElementSize -6)
 
 (WriteResultImage "true")
-(ImageSampler "Full")
+(ImageSampler "RandomCoordinate")
 (NumberOfSpatialSamples 5000)
-(SamplingPercentage 0.05)
+(SamplingPercentage 0.03)
 (DefaultPixelValue 0)

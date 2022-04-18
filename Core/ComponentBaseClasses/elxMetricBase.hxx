@@ -183,6 +183,8 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
       std::filesystem::create_directory(this->m_SamplesOutDir);
     }
 
+    thisAsAdvanced->UpdateIterationSeed();
+
   } // end advanced metric
 
 } // end BeforeEachResolutionBase()
@@ -214,6 +216,9 @@ MetricBase<TElastix>::AfterEachIterationBase()
 
   if (m_WriteSamplesEveryIteration)
     this->WriteSamplesOfIteration();
+
+  AdvancedMetricType * thisAsAdvanced = dynamic_cast<AdvancedMetricType *>(this);
+  thisAsAdvanced->UpdateIterationSeed();
 
 } // end AfterEachIterationBase()
 

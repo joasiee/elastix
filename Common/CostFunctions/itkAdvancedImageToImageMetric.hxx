@@ -22,6 +22,7 @@
 
 #include "itkAdvancedRayCastInterpolateImageFunction.h"
 #include "itkComputeImageExtremaFilter.h"
+#include "itkMersenneTwisterRandomVariateGenerator.h"
 
 #ifdef ELASTIX_USE_OPENMP
 #  include <omp.h>
@@ -1244,7 +1245,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetTasksForThread(ThreadI
 }
 
 template <class TFixedImage, class TMovingImage>
-int
+uint_least64_t
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(int region) const
 {
   double                          sum{ 0 };
@@ -1256,7 +1257,15 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(i
       sum += abs(params[this->m_FOS.sets[set][i]]);
   }
 
-  return static_cast<int>(sum * 1e5);
+  return static_cast<uint_least64_t>(sum * 1e5) + this->m_IterationSeed;
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::UpdateIterationSeed()
+{
+  using RandomGeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
+  this->m_IterationSeed = static_cast<uint_least64_t>(RandomGeneratorType::GetInstance()->GetIntegerVariate());
 }
 
 template <class TFixedImage, class TMovingImage>

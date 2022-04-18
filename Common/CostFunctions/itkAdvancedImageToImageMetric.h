@@ -331,6 +331,9 @@ public:
   void
   WriteSamplesOfIteration(std::ofstream & outFile) const;
 
+  void
+  UpdateIterationSeed();
+
 protected:
   /** Constructor. */
   AdvancedImageToImageMetric();
@@ -448,7 +451,7 @@ protected:
   void
   GetTasksForThread(ThreadIdType threadId, int & start, int & end) const;
 
-  int
+  uint_least64_t
   GetSeedForBSplineRegion(int region) const;
 
   /** GetValueAndDerivative threader callback function. */
@@ -656,10 +659,12 @@ private:
   bool   m_UseImageSampler{ false };
   bool   m_UseFixedImageLimiter{ false };
   bool   m_UseMovingImageLimiter{ false };
-  double m_RequiredRatioOfValidSamples{ 0.25 };
   bool   m_UseMovingImageDerivativeScales{ false };
   bool   m_ScaleGradientWithRespectToMovingImageOrientation{ false };
   bool   m_PartialEvaluations{ false };
+  double m_RequiredRatioOfValidSamples{ 0.25 };
+  uint_least64_t m_IterationSeed;
+
 
   MovingImageDerivativeScalesType m_MovingImageDerivativeScales{ MovingImageDerivativeScalesType::Filled(1.0) };
 };

@@ -172,7 +172,7 @@ public:
   }
 
   virtual void
-  SetGeneratorSeed(int seed);
+  SetGeneratorSeed(uint_least64_t seed);
 
   /** Get a handle to the cropped InputImageregion. */
   itkGetConstReferenceMacro(CroppedInputImageRegion, InputImageRegionType);
