@@ -14,7 +14,7 @@ def sampling_p_range(instance: int, project: str):
                 .multi_resolution(1, p_sched=[5, 5, 5])
                 .gomea(fos=-6, partial_evals=True)
                 .instance(Collection.EMPIRE, instance)
-                .stopping_criteria(iterations=[300])
+                .stopping_criteria(iterations=[400])
             )
             yield Experiment(params, project)
 
