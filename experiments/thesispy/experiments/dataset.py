@@ -2,14 +2,15 @@ from pathlib import Path
 from typing import Any, Dict, List
 import itertools
 import pickle
-
 import numpy as np
 import pandas as pd
 import dictquery as dq
 
-path = Path("datasets")
-if not path.exists():
-    path.mkdir(parents=True)
+from thesispy.definitions import ROOT_DIR
+
+DATASETS_PATH = ROOT_DIR / Path("datasets")
+if not DATASETS_PATH.exists():
+    DATASETS_PATH.mkdir(parents=True)
 
 class FinishedRun:
     def __init__(self, name: str, config: Dict[str, Any], metrics: pd.DataFrame) -> None:
@@ -58,12 +59,12 @@ class Dataset:
             yield unique_value_tuple, self.filter(query).runs
 
     def save(self):
-        path = Path("datasets") / f"{self.project}.pkl"
+        path = DATASETS_PATH / f"{self.project}.pkl"
         with path.open('wb') as file:
             pickle.dump(self, file)
 
     @staticmethod
     def load(project: str):
-        path = Path("datasets") / f"{project}.pkl"
+        path = DATASETS_PATH / f"{project}.pkl"
         with path.open('rb') as file:
             return pickle.load(file)
