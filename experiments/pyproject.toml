@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "experiments"
+name = "thesispy"
 version = "0.1.0"
 description = ""
 authors = ["Joas Mulder <joasmulder@hotmail.com>"]
