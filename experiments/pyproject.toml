@@ -5,7 +5,7 @@ description = ""
 authors = ["Joas Mulder <joasmulder@hotmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.8,<3.11"
 numpy = "^1.22.3"
 Pillow = "^9.0.1"
 python-dotenv = "^0.19.2"
@@ -23,6 +23,7 @@ ipykernel = "^6.11.0"
 matplotlib = "^3.5.1"
 xarray = "^2022.3.0"
 seaborn = "^0.11.2"
+SciencePlots = "^1.0.9"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

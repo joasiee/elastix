@@ -1,0 +1,9 @@
+lines.linewidth: 1
+figure.figsize: 6.72, 4.15
+figure.dpi: 150
+axes.titlelocation: left
+axes.linewidth: 0.6
+axes.spines.right : False
+axes.spines.top : False
+ytick.right: False
+xtick.top: False
