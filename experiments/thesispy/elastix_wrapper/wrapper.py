@@ -5,9 +5,9 @@ import logging
 
 from typing import Any, Dict
 
-from elastix_wrapper import TimeoutException, time_limit
-from elastix_wrapper.parameters import Collection, Parameters
-from elastix_wrapper.watchdog import SaveStrategy, Watchdog
+from thesispy.elastix_wrapper import TimeoutException, time_limit
+from thesispy.elastix_wrapper.parameters import Collection, Parameters
+from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")

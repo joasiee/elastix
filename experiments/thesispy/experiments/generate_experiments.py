@@ -1,8 +1,8 @@
 import logging
 
 import numpy as np
-from elastix_wrapper.parameters import Parameters, Collection
-from experiments.experiment import Experiment, ExperimentQueue
+from thesispy.elastix_wrapper.parameters import Parameters, Collection
+from thesispy.experiments.experiment import Experiment, ExperimentQueue
 
 logger = logging.getLogger("ParetoFront")
 

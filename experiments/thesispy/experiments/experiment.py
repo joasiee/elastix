@@ -4,9 +4,9 @@ import redis
 from dotenv import load_dotenv
 import os
 from sshtunnel import SSHTunnelForwarder
-from elastix_wrapper import wrapper
-from elastix_wrapper.parameters import Parameters
-from elastix_wrapper.watchdog import SaveStrategyWandb
+from thesispy.elastix_wrapper import wrapper
+from thesispy.elastix_wrapper.parameters import Parameters
+from thesispy.elastix_wrapper.watchdog import SaveStrategyWandb
 
 WANDB_ENTITY = "joasiee"
 
