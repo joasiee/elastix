@@ -121,6 +121,9 @@ public:
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
 
+  itkGetConstMacro(OASShrinkage, bool);
+  itkSetMacro(OASShrinkage, bool);
+
   const std::string
   GetStopConditionDescription() const override;
 
@@ -150,7 +153,7 @@ protected:
   unsigned int      m_ImageDimension;
 
   typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
-  mutable MeanAccumulator                         m_PdPctMean;
+  mutable MeanAccumulator                          m_PdPctMean;
 
 private:
   void
@@ -300,6 +303,7 @@ private:
   int           number_of_populations{ 0 };
 
   bool m_PartialEvaluations{ false };
+  bool m_OASShrinkage{ false };
 
   template <typename T>
   using Vector1D = std::vector<T>;

@@ -110,6 +110,11 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
   this->SetPartialEvaluations(partialEvaluations);
 
+  /** Set OASShrinkage*/
+  bool oasShrinkage = false;
+  this->m_Configuration->ReadParameter(oasShrinkage, "UseShrinkage", this->GetComponentLabel(), level, 0);
+  this->SetOASShrinkage(oasShrinkage);
+
   std::ostringstream makeFileName("");
   makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
   std::string fileName = makeFileName.str();

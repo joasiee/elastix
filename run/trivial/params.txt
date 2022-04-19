@@ -26,5 +26,7 @@
 (WriteSamplesEachIteration "false")
 (RandomSeed 2022)
 
-(PartialEvaluations "true")
-(FosElementSize -6)
+(BasePopulationSize 20)
+(UseShrinkage "false")
+//(PartialEvaluations "true")
+//(FosElementSize -6)

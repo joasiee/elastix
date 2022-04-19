@@ -19,15 +19,15 @@ def sampling_p_range(instance: int, project: str):
             yield Experiment(params, project)
 
 def pd_pop_experiment(project):
-    for pop_size in [2**x for x in range(5, 10)]:
-        for seed in [25324, 65984, 24137, 96897, 86458]:
-            params = (
-                Parameters.from_base(mesh_size=2, sampler="Full", seed=seed)
-                .gomea(pop_size=pop_size)
-                .instance(Collection.EXAMPLES, 1)
-                .stopping_criteria(iterations=100)
-            )
-            yield Experiment(params, project)
+    for pop_size in [2**x for x in range(4, 11)]:
+        params = (
+            Parameters.from_base(mesh_size=2, sampling_p=0.03, seed=1)
+            .multi_resolution(1, p_sched=[5, 5, 5])
+            .gomea(pop_size=pop_size)
+            .instance(Collection.EMPIRE, 16)
+            .stopping_criteria(iterations=50)
+        )
+        yield Experiment(params, project)
 
 def convergence_experiment(project):
     for instance in [16, 17, 14]:
@@ -44,5 +44,5 @@ def convergence_experiment(project):
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in sampling_p_range(16, "sampling_experiment_shuffle"):
+    for experiment in pd_pop_experiment("pd_pop_experiment"):
         queue.push(experiment)
