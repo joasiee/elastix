@@ -13,7 +13,9 @@ ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
 
 
-def run(params: Parameters, run_dir: Path, save_strategy: SaveStrategy = None) -> Dict[str, Any]:
+def run(
+    params: Parameters, run_dir: Path, save_strategy: SaveStrategy = None
+) -> Dict[str, Any]:
     run_dir.mkdir(parents=True)
     params_file = params.write(run_dir)
     out_dir = run_dir.joinpath(Path("out"))
@@ -45,7 +47,6 @@ def run(params: Parameters, run_dir: Path, save_strategy: SaveStrategy = None) -
     logger.info("Run finished successfully.")
 
 
-
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
         args = [
@@ -69,9 +70,10 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, sampler="Full")
-        .asgd()
-        .stopping_criteria(20000)
-        .instance(Collection.EXAMPLES, 1)
+        Parameters.from_base(mesh_size=3, seed=1, sampling_p=0.03, write_img=True)
+        .multi_resolution(1, p_sched=[5, 5, 5])
+        .gomea(fos=-6, partial_evals=True)
+        .instance(Collection.EMPIRE, 16)
+        .stopping_criteria(iterations=[10])
     )
     run(params, Path("output/" + str(params)))

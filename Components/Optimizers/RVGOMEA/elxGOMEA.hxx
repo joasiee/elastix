@@ -32,6 +32,8 @@ GOMEA<TElastix>::AfterEachIteration(void)
   this->GetIterationInfoAt("3:PdPct") << boost::accumulators::mean(this->m_PdPctMean);
   this->m_PdPctMean = {};
 
+  this->WriteDistributionMultipliers(this->m_DistMultOutFile);
+
   /** Select new samples if desired. These
    * will be used in the next iteration */
   if (this->GetNewSamplesEveryIteration())
@@ -107,12 +109,19 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   bool partialEvaluations = false;
   this->m_Configuration->ReadParameter(partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
   this->SetPartialEvaluations(partialEvaluations);
+
+  std::ostringstream makeFileName("");
+  makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
+  std::string fileName = makeFileName.str();
+  this->m_DistMultOutFile.open(fileName.c_str());
 }
 
 template <class TElastix>
 void
 GOMEA<TElastix>::AfterEachResolution(void)
 {
+  this->m_DistMultOutFile.close();
+
   std::string stopcondition;
 
   switch (this->GetStopCondition())

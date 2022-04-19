@@ -1876,6 +1876,20 @@ GOMEAOptimizer::GetStopConditionDescription() const
   return m_StopConditionDescription.str();
 }
 
+void
+GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
+{
+  if (this->distribution_multipliers.size() > 0)
+  {
+    for (const double & distm : this->distribution_multipliers[0])
+    {
+      outfile << distm << " ";
+    }
+    outfile << "\n";
+    outfile.flush();
+  }
+}
+
 /**
  * Runs the IDEA.
  */

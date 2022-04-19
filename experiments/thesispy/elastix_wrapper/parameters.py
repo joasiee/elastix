@@ -50,7 +50,6 @@ class Parameters:
         params["MeshSize"] = mesh_size
         params["RandomSeed"] = seed
         params["WriteResultImage"] = write_img
-        params["WritePyramidImagesAfterEachResolution"] = write_img
         return cls(params)
 
     @classmethod
@@ -194,6 +193,10 @@ class Parameters:
             )
             self.moving_path = INSTANCES_SRC / folder / "scans" / moving
         return self
+
+    def debug(self):
+        params["WritePyramidImagesAfterEachResolution"] = True
+        params["WriteSamplesEachIteration"] = True
 
     def __getitem__(self, key) -> Any:
         return self.params[key]

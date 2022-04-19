@@ -64,6 +64,8 @@ private:
   GOMEA(const Self &) = delete;
   void
   operator=(const Self &) = delete;
+
+  std::ofstream m_DistMultOutFile;
 };
 
 } // end namespace elastix

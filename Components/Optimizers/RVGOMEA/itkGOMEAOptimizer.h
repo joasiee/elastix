@@ -130,6 +130,9 @@ public:
   void
   PrintSettings() const;
 
+  void
+  WriteDistributionMultipliers(std::ofstream & outfile) const;
+
 protected:
   GOMEAOptimizer();
   ~GOMEAOptimizer() override = default;
