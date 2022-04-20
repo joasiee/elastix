@@ -19,11 +19,11 @@
 #ifndef elxImageSamplerBase_h
 #define elxImageSamplerBase_h
 
+#include <filesystem>
+
 /** Needed for the macros */
 #include "elxMacro.h"
-
 #include "elxBaseComponentSE.h"
-
 #include "itkImageSamplerBase.h"
 
 namespace elastix
@@ -60,6 +60,9 @@ public:
 
   /** ITKBaseType. */
   using ITKBaseType = itk::ImageSamplerBase<InputImageType>;
+  using ImageSampleContainerType = typename ITKBaseType::ImageSampleContainerType;
+  using ImageSampleContainerPointer = typename ITKBaseType::ImageSampleContainerPointer;
+  itkStaticConstMacro(InputImageDimension, unsigned int, ITKBaseType::InputImageDimension);
 
   /** Retrieves this object as ITKBaseType. */
   ITKBaseType *

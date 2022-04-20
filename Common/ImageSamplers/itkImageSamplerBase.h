@@ -22,7 +22,7 @@
 #include "itkImageSample.h"
 #include "itkVectorDataContainer.h"
 #include "itkSpatialObject.h"
-#include "itkXoshiroRandomGenerators.hpp"
+#include "boost/random/sobol.hpp"
 
 namespace itk
 {
@@ -171,8 +171,8 @@ public:
     return true;
   }
 
-  inline void
-  SetGeneratorSeed(int seed);
+  virtual void
+  SetGeneratorSeed(uint_least64_t seed);
 
   /** Get a handle to the cropped InputImageregion. */
   itkGetConstReferenceMacro(CroppedInputImageRegion, InputImageRegionType);
@@ -183,6 +183,13 @@ public:
 
   /** \todo: Temporary, should think about interface. */
   itkSetMacro(UseMultiThread, bool);
+  itkSetMacro(UseMask, bool);
+
+  void
+  WriteSamplesToFile(std::ofstream & outFile);
+
+  bool
+  CheckCroppedInputImageRegion();
 
 protected:
   /** The constructor. */
@@ -229,11 +236,11 @@ protected:
   std::vector<ImageSampleContainerPointer> m_ThreaderSampleContainer;
 
   // tmp?
-  bool               m_UseMultiThread;
-  Xoshiro128PlusPlus m_RandomGenerator;
-  int                m_PreviousSeed;
-  bool               m_ReinitSeed{ false };
-  int                m_NextSeed{ 0 };
+  bool                 m_UseMultiThread;
+  bool                 m_UseMask{ true };
+  int                  m_PreviousSeed;
+  boost::random::sobol m_RandomGenerator{ Self::InputImageDimension };
+
 
 private:
   /** The deleted copy constructor. */

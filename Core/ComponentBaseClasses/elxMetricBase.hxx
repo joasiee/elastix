@@ -173,6 +173,18 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
     this->m_Configuration->ReadParameter(samplingPercentage, "SamplingPercentage", this->GetComponentLabel(), level, 0);
     thisAsAdvanced->SetSamplingPercentage(samplingPercentage);
 
+    this->m_Configuration->ReadParameter(m_WriteSamplesEveryIteration, "WriteSamplesEachIteration", "", level, 0, true);
+
+    if (m_WriteSamplesEveryIteration)
+    {
+      std::ostringstream samplesDir("");
+      samplesDir << this->m_Configuration->GetCommandLineArgument("-out") << "samples.R" << level << "/";
+      this->m_SamplesOutDir = samplesDir.str();
+      std::filesystem::create_directory(this->m_SamplesOutDir);
+    }
+
+    thisAsAdvanced->UpdateIterationSeed();
+
   } // end advanced metric
 
 } // end BeforeEachResolutionBase()
@@ -202,7 +214,35 @@ MetricBase<TElastix>::AfterEachIterationBase()
     this->GetIterationInfoAt(exactMetricColumn.c_str()) << this->m_CurrentExactMetricValue;
   }
 
+  if (m_WriteSamplesEveryIteration)
+    this->WriteSamplesOfIteration();
+
+  AdvancedMetricType * thisAsAdvanced = dynamic_cast<AdvancedMetricType *>(this);
+  thisAsAdvanced->UpdateIterationSeed();
+
 } // end AfterEachIterationBase()
+
+/**
+ * ******************* WriteSamplesOfIteration ******************
+ */
+
+template <class TElastix>
+void
+MetricBase<TElastix>::WriteSamplesOfIteration() const
+{
+  const AdvancedMetricType * thisAsAdvanced = dynamic_cast<const AdvancedMetricType *>(this);
+
+  const unsigned int itNr = this->m_Elastix->GetIterationCounter();
+  std::ofstream      outFile;
+  std::ostringstream makeFileName("");
+  makeFileName << this->m_SamplesOutDir << itNr << ".dat";
+  std::string fileName = makeFileName.str();
+  outFile.open(fileName.c_str());
+
+  thisAsAdvanced->WriteSamplesOfIteration(outFile);
+
+  outFile.close();
+}
 
 
 /**

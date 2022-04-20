@@ -594,7 +594,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     {
       // The NumberOfThreadsPerMetric is changed after Initialize() so we save it before and then
       // set it on.
-      unsigned nrOfThreadsPerMetric = this->GetNumberOfWorkUnits();
+      unsigned int nrOfThreadsPerMetric = testPtr1->GetNumberOfWorkUnits() / this->GetNumberOfMetrics();
       testPtr1->Initialize();
       testPtr1->SetNumberOfWorkUnits(nrOfThreadsPerMetric);
     }
@@ -603,7 +603,6 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
       testPtr2->Initialize();
     }
   }
-
 } // end Initialize()
 
 /**
@@ -629,6 +628,50 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations
     costfunc->InitPartialEvaluations(sets, set_length, length);
   }
 } // end InitPartialEvaluations()
+
+/**
+ * ******************** SetImageSampler ************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::SetImageSampler(ImageSamplerType * _arg)
+{
+  /** Check if at least one (image)metric is provided */
+  if (this->GetNumberOfMetrics() == 0)
+  {
+    itkExceptionMacro(<< "At least one metric should be set!");
+  }
+
+  /** Call Initialize for all metrics. */
+  for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
+  {
+    Superclass * metricAsAdvanced = dynamic_cast<Superclass *>(this->GetMetric(i));
+    metricAsAdvanced->SetImageSampler(_arg);
+  }
+}
+
+/**
+ * ******************** SetUseImageSampler ************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::SetUseImageSampler(const bool _arg)
+{
+  /** Check if at least one (image)metric is provided */
+  if (this->GetNumberOfMetrics() == 0)
+  {
+    itkExceptionMacro(<< "At least one metric should be set!");
+  }
+
+  /** Call Initialize for all metrics. */
+  for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
+  {
+    Superclass * metricAsAdvanced = dynamic_cast<Superclass *>(this->GetMetric(i));
+    metricAsAdvanced->SetUseImageSampler(_arg);
+  }
+}
 
 
 /**
@@ -728,7 +771,8 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 
   this->BeforeThreadedInit(parameters);
 
-  /** Compute, store and combine all metric values. */
+/** Compute, store and combine all metric values. */
+#pragma omp parallel for num_threads(this->m_NumberOfMetrics) reduction(+ : measure)
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     itk::TimeProbe timer;

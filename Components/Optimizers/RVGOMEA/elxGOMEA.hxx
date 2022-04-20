@@ -17,10 +17,10 @@ GOMEA<TElastix>::BeforeRegistration(void)
   this->SetImageDimension(this->GetElastix()->GetFixedImage()->GetImageDimension());
 
   this->AddTargetCellToIterationInfo("2:Metric");
-  this->AddTargetCellToIterationInfo("3:Evaluations");
+  this->AddTargetCellToIterationInfo("3:PdPct");
 
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
-  this->GetIterationInfoAt("3:Evaluations") << std::setw(10);
+  this->GetIterationInfoAt("3:PdPct") << std::showpoint << std::fixed;
 }
 
 template <class TElastix>
@@ -28,8 +28,11 @@ void
 GOMEA<TElastix>::AfterEachIteration(void)
 {
   /** Print some information. */
-  this->GetIterationInfoAt("2:Metric") << this->m_CurrentValue;
-  this->GetIterationInfoAt("3:Evaluations") << this->m_NumberOfEvaluations << std::setw(10);
+  this->GetIterationInfoAt("2:Metric") << this->m_Value;
+  this->GetIterationInfoAt("3:PdPct") << boost::accumulators::mean(this->m_PdPctMean);
+  this->m_PdPctMean = {};
+
+  this->WriteDistributionMultipliers(this->m_DistMultOutFile);
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
@@ -106,16 +109,25 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   bool partialEvaluations = false;
   this->m_Configuration->ReadParameter(partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
   this->SetPartialEvaluations(partialEvaluations);
+
+  /** Set OASShrinkage*/
+  bool oasShrinkage = false;
+  this->m_Configuration->ReadParameter(oasShrinkage, "UseShrinkage", this->GetComponentLabel(), level, 0);
+  this->SetOASShrinkage(oasShrinkage);
+
+  std::ostringstream makeFileName("");
+  makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
+  std::string fileName = makeFileName.str();
+  this->m_DistMultOutFile.open(fileName.c_str());
 }
 
 template <class TElastix>
 void
 GOMEA<TElastix>::AfterEachResolution(void)
 {
+  this->m_DistMultOutFile.close();
+
   std::string stopcondition;
-  std::stringstream settings;
-  this->PrintSettings(settings);
-  elxout << settings.str();
 
   switch (this->GetStopCondition())
   {
@@ -145,7 +157,7 @@ GOMEA<TElastix>::AfterEachResolution(void)
   }
 
   /** Print the stopping condition */
-  elxout << "Stopping condition: " << stopcondition << "." << std::endl;
+  elxout << "Stopping condition: " << stopcondition << ".\n";
 }
 
 template <class TElastix>
@@ -153,7 +165,7 @@ void
 GOMEA<TElastix>::AfterRegistration(void)
 {
   /** Print the best metric value */
-  elxout << std::endl << "Final metric value  = " << this->m_CurrentValue << std::endl;
+  elxout << "\n" << "Final metric value = " << this->m_Value << "\n";
 }
 
 } // namespace elastix

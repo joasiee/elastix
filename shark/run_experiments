@@ -13,4 +13,4 @@ module load system/gcc/11.2.0
 
 export OMP_NUM_THREADS=12
 
-.venv/bin/python experiments/run_queue.py
+.venv/bin/python thesispy/experiments/run_queue.py

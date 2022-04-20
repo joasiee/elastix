@@ -294,7 +294,7 @@ void
 PreconditionedStochasticGradientDescent<TElastix>::AfterEachIteration()
 {
   /** Print some information. */
-  this->GetIterationInfoAt("2:Metric") << this->GetValue();
+  this->GetIterationInfoAt("2:Metric") << this->m_Value;
   this->GetIterationInfoAt("3a:Time") << this->GetCurrentTime();
   this->GetIterationInfoAt("3b:StepSize") << this->GetLearningRate() * this->m_NoiseFactor;
 
@@ -388,7 +388,7 @@ void
 PreconditionedStochasticGradientDescent<TElastix>::AfterRegistration()
 {
   /** Print the best metric value. */
-  double bestValue = this->GetValue();
+  double bestValue = this->m_Value;
   elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
 
   elxout << "Settings of " << this->elxGetClassName() << " for all resolutions:" << std::endl;

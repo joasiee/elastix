@@ -56,3 +56,5 @@ random_seed.dat
 temp
 
 !Components/Metrics/BendingEnergyPenaltyAnalytic/lib/libplmregister.a
+perf.data
+perf.data.old

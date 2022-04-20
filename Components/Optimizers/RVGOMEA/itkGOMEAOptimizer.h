@@ -37,6 +37,10 @@
 #include "itkArray.h"
 #include "itkArray2D.h"
 #include "itkMatrix.h"
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+using namespace boost::accumulators;
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -79,7 +83,6 @@ public:
 
   itkGetConstMacro(CurrentIteration, unsigned long);
   itkGetConstMacro(NumberOfEvaluations, unsigned long);
-  itkGetConstMacro(CurrentValue, MeasureType);
   itkGetConstReferenceMacro(StopCondition, StopConditionType);
 
   itkGetConstMacro(MaximumNumberOfIterations, int);
@@ -118,8 +121,8 @@ public:
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
 
-  itkGetConstMacro(WriteOutput, bool);
-  itkSetMacro(WriteOutput, bool);
+  itkGetConstMacro(OASShrinkage, bool);
+  itkSetMacro(OASShrinkage, bool);
 
   const std::string
   GetStopConditionDescription() const override;
@@ -128,7 +131,10 @@ public:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   void
-  PrintSettings(std::stringstream & output) const;
+  PrintSettings() const;
+
+  void
+  WriteDistributionMultipliers(std::ofstream & outfile) const;
 
 protected:
   GOMEAOptimizer();
@@ -143,9 +149,11 @@ protected:
   unsigned long     m_NumberOfEvaluations{ 0L };
   unsigned long     m_CurrentIteration{ 0L };
   StopConditionType m_StopCondition{ Unknown };
-  MeasureType       m_CurrentValue{ NumericTraits<MeasureType>::max() };
   unsigned int      m_NrOfParameters;
-  int               m_ImageDimension;
+  unsigned int      m_ImageDimension;
+
+  typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
+  mutable MeanAccumulator                          m_PdPctMean;
 
 private:
   void
@@ -227,7 +235,7 @@ private:
   void
   getOverallBest(int * population_index, int * individual_index);
   void
-  evaluateCompletePopulation(int population_index);
+  evaluateAllPopulations();
   void
   costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val);
   void
@@ -252,7 +260,7 @@ private:
   applyAMS(int population_index, int individual_index);
   void
   applyForcedImprovements(int population_index, int individual_index, int donor_index);
-  double *
+  void
   generateNewPartialSolutionFromFOSElement(int population_index, int FOS_index, VectorXd & result);
   short
   adaptDistributionMultipliers(int population_index, int FOS_index);
@@ -271,11 +279,9 @@ private:
   void
   runAllPopulations();
   void
-  IterationWriteOutput();
-  void
   ezilaitini(void);
   void
-  UpdatePosition(bool avg = true);
+  UpdatePosition();
 
   mutable std::ostringstream m_StopConditionDescription;
 
@@ -297,7 +303,7 @@ private:
   int           number_of_populations{ 0 };
 
   bool m_PartialEvaluations{ false };
-  bool m_WriteOutput{ false };
+  bool m_OASShrinkage{ false };
 
   template <typename T>
   using Vector1D = std::vector<T>;
@@ -314,8 +320,6 @@ private:
   Array<int>           no_improvement_stretch;
   Array<int>           number_of_generations;
   Array<int>           population_sizes;
-  Vector1D<Array<int>> samples_drawn_from_normal;
-  Vector1D<Array<int>> out_of_bounds_draws;
   Vector1D<Array<int>> individual_NIS;
 
   Vector1D<Array<MeasureType>> objective_values;
@@ -325,8 +329,6 @@ private:
   Vector1D<MatrixXd>           full_covariance_matrix;
   Vector2D<MatrixXd>           decomposed_covariance_matrices;
   Vector2D<MatrixXd>           decomposed_cholesky_factors_lower_triangle;
-
-  std::ofstream outFile;
 
   GOMEA::FOS ** linkage_model;
 };

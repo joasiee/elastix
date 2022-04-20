@@ -53,7 +53,7 @@ ImageFullSampler<TInputImage>::GenerateData()
   InputImageIterator iter(inputImage, this->GetCroppedInputImageRegion());
 
   /** Fill the sample container. */
-  if (mask.IsNull())
+  if (mask.IsNull() || !this->m_UseMask)
   {
     /** Try to reserve memory. If no mask is used this can raise std
      * exceptions when the input image is large.
@@ -148,7 +148,7 @@ ImageFullSampler<TInputImage>::ThreadedGenerateData(const InputImageRegionType &
 
   /** Fill the sample container. */
   const unsigned long chunkSize = inputRegionForThread.GetNumberOfPixels();
-  if (mask.IsNull())
+  if (mask.IsNull() || !this->m_UseMask)
   {
     /** Try to reserve memory. If no mask is used this can raise std
      * exceptions when the input image is large.

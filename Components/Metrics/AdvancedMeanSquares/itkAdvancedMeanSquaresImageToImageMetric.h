@@ -19,6 +19,11 @@
 #define itkAdvancedMeanSquaresImageToImageMetric_h
 
 #include "algorithm"
+#include <math.h>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+using namespace boost::accumulators;
 
 #include "itkAdvancedImageToImageMetric.h"
 #include "itkSmoothingRecursiveGaussianImageFilter.h"   // needed for SelfHessian
@@ -129,6 +134,8 @@ public:
   /** Number of samples to allocate to a thread minimally. */
   itkStaticConstMacro(SamplesPerThread, unsigned int, 50);
 
+  itkStaticConstMacro(MissedPixelPenalty, unsigned int, 512);
+
   MeasureType
   GetValue(const TransformParametersType & parameters) const override;
 
@@ -219,6 +226,7 @@ protected:
   using SelfHessianSamplerType = ImageGridSampler<FixedImageType>;
 
   double m_NormalizationFactor;
+  double m_MissedPixelPenalty;
 
   /** Compute a pixel's contribution to the measure and derivatives;
    * Called by GetValueAndDerivative(). */
@@ -244,6 +252,12 @@ protected:
   /** Gather the values and derivatives from all threads. */
   inline void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
+
+  bool
+  CheckNumberOfSamples(unsigned long wanted, unsigned long found) const override;
+
+  typedef accumulator_set<RealType, stats<tag::mean>> MeanAccumulator;
+  mutable MeanAccumulator                         m_MissedPixelsMean;
 
 private:
   AdvancedMeanSquaresImageToImageMetric(const Self &) = delete;

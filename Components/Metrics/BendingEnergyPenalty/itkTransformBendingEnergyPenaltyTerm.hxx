@@ -75,15 +75,16 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
-  unsigned long              numberOfPixelsCounted = 0;
 
-  const ThreadIdType maxWorkUnits = omp_in_parallel() ? Self::GetNumberOfWorkUnits() / 2 : Self::GetNumberOfWorkUnits();
-  const ThreadIdType         numThreads =
+  const ThreadIdType maxWorkUnits = Self::GetNumberOfWorkUnits();
+  const ThreadIdType numThreads =
     std::max(std::min(maxWorkUnits, static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)), 1U);
+
+  unsigned long numberOfPixelsCounted = 0;
 
 /** Loop over the fixed image to calculate the penalty term and its derivative. */
 #pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices) num_threads(numThreads)
-  for (int i = 0; i < sampleContainerSize; ++i)
+  for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
@@ -152,8 +153,11 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
     return measure;
   }
 
-  const ThreadIdType maxWorkUnits = omp_in_parallel() ? Self::GetNumberOfWorkUnits() / 2 : Self::GetNumberOfWorkUnits();
-  const ThreadIdType numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
+  const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
+  const ThreadIdType numThreads = std::min(maxThreads, static_cast<ThreadIdType>(fosPoints.size()));
+  const ThreadIdType freeThreads = maxThreads - numThreads;
+  const ThreadIdType nestedThreads = (freeThreads / numThreads) + 1;
+  const ThreadIdType restThreads = freeThreads - ((nestedThreads - 1) * numThreads);
 
 // iterate over these subfunction samplers and calculate mean squared diffs
 #pragma omp parallel for reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices) num_threads(numThreads)
@@ -172,11 +176,16 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
     unsigned long numberOfPixelsCounted = 0;
     MeasureType   tmpMeasure = NumericTraits<MeasureType>::Zero;
 
-    /** Loop over the fixed image samples to calculate the mean squares. */
-    for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
+    const ThreadIdType numThreads_ =
+      std::max(std::min(nestedThreads + (static_cast<ThreadIdType>(omp_get_thread_num()) < restThreads),
+                        static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)),
+               1U);
+
+#pragma omp parallel for reduction(+ : tmpMeasure, numberOfPixelsCounted) num_threads(numThreads_)
+    for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
       /** Read fixed coordinates and initialize some variables. */
-      const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+      const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
       const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
 
       if (this->IsInsideMovingMask(mappedPoint))

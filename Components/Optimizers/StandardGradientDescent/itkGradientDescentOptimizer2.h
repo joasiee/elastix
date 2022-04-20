@@ -123,7 +123,7 @@ public:
   itkGetConstMacro(CurrentIteration, unsigned int);
 
   /** Get the current value. */
-  itkGetConstReferenceMacro(Value, double);
+  // itkGetConstReferenceMacro(Value, double);
 
   /** Get Stop condition. */
   itkGetConstReferenceMacro(StopCondition, StopConditionType);
@@ -153,7 +153,7 @@ private:
   void
   operator=(const Self &) = delete;
 
-  double        m_Value{ 0.0 };
+  // double        m_Value{ 0.0 };
   double        m_LearningRate{ 1.0 };
   bool          m_Stop{ false };
   unsigned long m_NumberOfIterations{ 100 };

@@ -45,6 +45,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSq
 
   this->m_UseNormalization = false;
   this->m_NormalizationFactor = 1.0;
+  this->m_MissedPixelPenalty = MissedPixelPenalty;
 
   /** SelfHessian related variables, experimental feature. */
   this->m_SelfHessianSmoothingSigma = 1.0;
@@ -148,6 +149,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     if (maxdiff > 1e-10)
     {
       this->m_NormalizationFactor = 100.0 / maxdiff / maxdiff;
+      this->m_MissedPixelPenalty = maxdiff * maxdiff;
     }
   }
   else
@@ -156,6 +158,19 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
   }
 
 } // end Initialize()
+
+/**
+ * *********************** CheckNumberOfSamples ***********************
+ */
+
+template <class TFixedImage, class TMovingImage>
+bool
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsigned long wanted,
+                                                                                       unsigned long found) const
+{
+  this->m_NumberOfPixelsCounted = found;
+  return found >= wanted * this->GetRequiredRatioOfValidSamples();
+} // end CheckNumberOfSamples()
 
 
 /**
@@ -185,12 +200,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const TransformParametersType & parameters) const -> MeasureType
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
-  const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
 
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
-  const ThreadIdType maxWorkUnits = omp_in_parallel() ? Self::GetNumberOfWorkUnits() / 2 : Self::GetNumberOfWorkUnits();
+  const ThreadIdType         maxWorkUnits = Self::GetNumberOfWorkUnits();
   const ThreadIdType         numThreads =
     std::max(std::min(maxWorkUnits, static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)), 1U);
 
@@ -200,7 +214,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
 /** Loop over the fixed image samples to calculate the mean squares. */
 #pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(numThreads)
-  for (int i = 0; i < sampleContainerSize; ++i)
+  for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
     const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
@@ -216,10 +230,15 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
     }
   }
 
-  measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
-  this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
+  const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
+  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize);
+  this->m_MissedPixelsMean(pctMissed * 100.0);
 
-  return measure;
+  measure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
+  measure *= this->m_NormalizationFactor / static_cast<RealType>(sampleContainerSize);
+  const bool valid = this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
+
+  return valid ? measure : NumericTraits<MeasureType>::max();
 } // end GetValue()
 
 
@@ -234,59 +253,66 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 {
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
-  const ThreadIdType maxWorkUnits = omp_in_parallel() ? Self::GetNumberOfWorkUnits() / 2 : Self::GetNumberOfWorkUnits();
-  const ThreadIdType numThreads = std::min(maxWorkUnits, static_cast<ThreadIdType>(fosPoints.size()));
+  if (fosPoints.size() == 0)
+    return 0.0;
+
+  const ThreadIdType       maxThreads = Self::GetNumberOfWorkUnits();
+  const ThreadIdType       numThreads = std::min(maxThreads, static_cast<ThreadIdType>(fosPoints.size()));
+  const ThreadIdType       freeThreads = maxThreads - numThreads;
+  const ThreadIdType       nestedThreads = (freeThreads / numThreads) + 1;
+  const ThreadIdType       restThreads = freeThreads - ((nestedThreads - 1) * numThreads);
 
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
-  unsigned long sumPixelsCounted = 0;
+  unsigned long numberOfPixelsCounted = 0;
+  unsigned long sumNrPixels = 0;
+
 
 // iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for reduction(+ : measure, sumPixelsCounted) num_threads(numThreads)
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted, sumNrPixels) num_threads(numThreads)
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
     this->m_SubfunctionSamplers[fosPoints[i]]->Update();
     ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
     const unsigned long        sampleContainerSize = sampleContainer.Size();
+    sumNrPixels += sampleContainerSize;
 
     /** Create iterator over the sample container. */
     typename ImageSampleContainerType::ConstIterator threader_fiter;
     typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
     typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
 
-    unsigned long numberOfPixelsCounted = 0;
-    MeasureType   tmpMeasure = NumericTraits<MeasureType>::Zero;
+    const ThreadIdType numThreads_ =
+      std::max(std::min(nestedThreads + (static_cast<ThreadIdType>(omp_get_thread_num()) < restThreads),
+                        static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)),
+               1U);
 
-    /** Loop over the fixed image samples to calculate the mean squares. */
-    for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
+/** Loop over the fixed image samples to calculate the mean squares. */
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(numThreads_)
+    for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
       /** Read fixed coordinates and initialize some variables. */
-      const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+      const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
       RealType                    movingImageValue;
       const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
-      const RealType &            fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
+      const RealType &            fixedImageValue = static_cast<RealType>(sampleContainer[i].m_ImageValue);
 
       if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
       {
         const RealType diff = movingImageValue - fixedImageValue;
-        tmpMeasure += diff * diff;
+        measure += diff * diff;
         ++numberOfPixelsCounted;
       }
     }
-
-    sumPixelsCounted += numberOfPixelsCounted;
-    if (numberOfPixelsCounted > 0)
-    {
-      tmpMeasure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted) /
-                    static_cast<RealType>(this->m_BSplinePointsRegions[0].size());
-      measure += tmpMeasure;
-    }
   }
 
-  if (fosIndex == -1)
-  {
-    this->CheckNumberOfSamples(this->GetNumberOfFixedImageSamples(), sumPixelsCounted);
-  }
+  const unsigned long totalSamples = this->GetNumberOfFixedImageSamples();
+  const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
+  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
+  this->m_MissedPixelsMean(pctMissed * 100.0);
+
+  measure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
+  measure *= this->m_NormalizationFactor / static_cast<RealType>(totalSamples);
 
   return measure;
 } // end GetValuePartial()
@@ -411,7 +437,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDer
   } // end for loop over the image sample container
 
   /** Check if enough samples were valid. */
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
+  this->Superclass::CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** Compute the measure value and derivative. */
   double normal_sum = 0.0;
@@ -604,7 +630,9 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
 
   /** Check if enough samples were valid. */
   ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
+  this->m_MissedPixelsMean(static_cast<RealType>(this->m_NumberOfPixelsMissed) /
+                           static_cast<RealType>(sampleContainer->Size()) * 100.0);
+  this->Superclass::CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** The normalization factor. */
   DerivativeValueType normal_sum =
@@ -619,6 +647,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Value = NumericTraits<MeasureType>::Zero;
   }
+  // value += this->m_NumberOfPixelsMissed * this->m_MissedPixelPenalty;
   value *= normal_sum;
 
   /** Accumulate derivatives. */
@@ -833,7 +862,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   } // end for loop over the image sample container
 
   /** Check if enough samples were valid. */
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
+  this->Superclass::CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
   /** Compute the measure value and derivative. */
   if (this->m_NumberOfPixelsCounted > 0)

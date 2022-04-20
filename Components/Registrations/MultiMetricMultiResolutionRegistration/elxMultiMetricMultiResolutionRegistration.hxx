@@ -89,7 +89,7 @@ MultiMetricMultiResolutionRegistration<TElastix>::BeforeRegistration()
     std::ostringstream makestring1;
     makestring1 << "2:Metric" << std::setfill('0') << std::setw(width) << i;
     this->AddTargetCellToIterationInfo(makestring1.str().c_str());
-    this->GetIterationInfoAt(makestring1.str().c_str()) << std::showpoint << std::fixed;
+    this->GetIterationInfoAt(makestring1.str().c_str()) << std::showpoint << std::fixed <<std::setprecision(8);
 
     std::ostringstream makestring2;
     makestring2 << "4:||Gradient" << std::setfill('0') << std::setw(width) << i << "||";
@@ -103,10 +103,13 @@ MultiMetricMultiResolutionRegistration<TElastix>::BeforeRegistration()
   }
 
   /** Temporary? Use the multi-threaded version or not. */
-  std::string tmp = this->m_Configuration->GetCommandLineArgument("-mtcombo");
-  if (tmp == "true" || tmp.empty())
+  std::string tmp = this->m_Configuration->GetCommandLineArgument("-threads");
+  this->GetCombinationMetric()->SetUseMultiThread(true);
+
+  if (!tmp.empty())
   {
-    this->GetCombinationMetric()->SetUseMultiThread(true);
+    const unsigned int nrOfThreads = atoi(tmp.c_str());
+    this->GetCombinationMetric()->SetNumberOfWorkUnits(nrOfThreads);
   }
   else
   {

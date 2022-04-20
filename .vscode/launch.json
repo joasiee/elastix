@@ -5,17 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "empire-26",
+            "name": "empire-16",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
                 "-f",
-                "scans/26_Fixed.mhd",
+                "scans/16_Fixed.mhd",
                 "-fMask",
-                "masks/26_Fixed.mhd",
+                "masks/16_Fixed.mhd",
                 "-m",
-                "scans/26_Moving.mhd",
+                "scans/16_Moving.mhd",
                 "-p",
                 "${workspaceFolder}/run/empire/params.txt",
                 "-out",

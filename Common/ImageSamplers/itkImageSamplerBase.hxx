@@ -321,77 +321,77 @@ ImageSamplerBase<TInputImage>::CropInputImageRegion()
    * InputImageRegion and the BoundingBoxRegion.
    */
   this->m_CroppedInputImageRegion = this->m_InputImageRegion;
-  if (!this->m_Mask.IsNull())
+  // if (!this->m_Mask.IsNull())
+  // {
+  //   /** Get a handle to the input image. */
+  //   InputImageConstPointer inputImage = this->GetInput();
+  //   if (!inputImage)
+  //   {
+  //     return;
+  //   }
+
+  //   this->UpdateAllMasks();
+
+  //   /** Get the indices of the bounding box extremes, based on the first mask.
+  //    * Note that the bounding box is defined in terms of the mask
+  //    * spacing and origin, and that we need a region in terms
+  //    * of the inputImage indices.
+  //    */
+
+  //   using BoundingBoxType = typename MaskType::BoundingBoxType;
+  //   using PointsContainerType = typename BoundingBoxType::PointsContainer;
+  //   typename BoundingBoxType::ConstPointer bb = this->m_Mask->GetMyBoundingBoxInWorldSpace();
+  //   auto                                   bbIndex = BoundingBoxType::New();
+  //   const PointsContainerType *            cornersWorld = bb->GetPoints();
+  //   auto                                   cornersIndex = PointsContainerType::New();
+  //   cornersIndex->Reserve(cornersWorld->Size());
+  //   typename PointsContainerType::const_iterator itCW = cornersWorld->begin();
+  //   typename PointsContainerType::iterator       itCI = cornersIndex->begin();
+  //   using CIndexType = itk::ContinuousIndex<InputImagePointValueType, InputImageDimension>;
+  //   CIndexType cindex;
+  //   while (itCW != cornersWorld->end())
+  //   {
+  //     inputImage->TransformPhysicalPointToContinuousIndex(*itCW, cindex);
+  //     *itCI = cindex;
+  //     itCI++;
+  //     itCW++;
+  //   }
+  //   bbIndex->SetPoints(cornersIndex);
+  //   bbIndex->ComputeBoundingBox();
+
+  //   /** Create a bounding box region. */
+  //   InputImageIndexType minIndex, maxIndex;
+  //   using IndexValueType = typename InputImageIndexType::IndexValueType;
+  //   InputImageSizeType   size;
+  //   InputImageRegionType boundingBoxRegion;
+  //   for (unsigned int i = 0; i < InputImageDimension; ++i)
+  //   {
+  //     /** apply ceil/floor for max/min resp. to be sure that
+  //      * the bounding box is not too small */
+  //     maxIndex[i] = static_cast<IndexValueType>(std::ceil(bbIndex->GetMaximum()[i]));
+  //     minIndex[i] = static_cast<IndexValueType>(std::floor(bbIndex->GetMinimum()[i]));
+  //     size[i] = maxIndex[i] - minIndex[i] + 1;
+  //   }
+  //   boundingBoxRegion.SetIndex(minIndex);
+  //   boundingBoxRegion.SetSize(size);
+
+  /** Compute the intersection. */
+  bool cropped = this->CheckCroppedInputImageRegion();
+
+  /** If the cropping return false, then the intersection is empty.
+   * In this case m_CroppedInputImageRegion is unchanged,
+   * but we would like to throw an exception.
+   */
+  if (!cropped)
   {
-    /** Get a handle to the input image. */
-    InputImageConstPointer inputImage = this->GetInput();
-    if (!inputImage)
-    {
-      return;
-    }
-
-    this->UpdateAllMasks();
-
-    /** Get the indices of the bounding box extremes, based on the first mask.
-     * Note that the bounding box is defined in terms of the mask
-     * spacing and origin, and that we need a region in terms
-     * of the inputImage indices.
-     */
-
-    using BoundingBoxType = typename MaskType::BoundingBoxType;
-    using PointsContainerType = typename BoundingBoxType::PointsContainer;
-    typename BoundingBoxType::ConstPointer bb = this->m_Mask->GetMyBoundingBoxInWorldSpace();
-    auto                                   bbIndex = BoundingBoxType::New();
-    const PointsContainerType *            cornersWorld = bb->GetPoints();
-    auto                                   cornersIndex = PointsContainerType::New();
-    cornersIndex->Reserve(cornersWorld->Size());
-    typename PointsContainerType::const_iterator itCW = cornersWorld->begin();
-    typename PointsContainerType::iterator       itCI = cornersIndex->begin();
-    using CIndexType = itk::ContinuousIndex<InputImagePointValueType, InputImageDimension>;
-    CIndexType cindex;
-    while (itCW != cornersWorld->end())
-    {
-      inputImage->TransformPhysicalPointToContinuousIndex(*itCW, cindex);
-      *itCI = cindex;
-      itCI++;
-      itCW++;
-    }
-    bbIndex->SetPoints(cornersIndex);
-    bbIndex->ComputeBoundingBox();
-
-    /** Create a bounding box region. */
-    InputImageIndexType minIndex, maxIndex;
-    using IndexValueType = typename InputImageIndexType::IndexValueType;
-    InputImageSizeType   size;
-    InputImageRegionType boundingBoxRegion;
-    for (unsigned int i = 0; i < InputImageDimension; ++i)
-    {
-      /** apply ceil/floor for max/min resp. to be sure that
-       * the bounding box is not too small */
-      maxIndex[i] = static_cast<IndexValueType>(std::ceil(bbIndex->GetMaximum()[i]));
-      minIndex[i] = static_cast<IndexValueType>(std::floor(bbIndex->GetMinimum()[i]));
-      size[i] = maxIndex[i] - minIndex[i] + 1;
-    }
-    boundingBoxRegion.SetIndex(minIndex);
-    boundingBoxRegion.SetSize(size);
-
-    /** Compute the intersection. */
-    bool cropped = this->CropRegion(this->m_CroppedInputImageRegion);
-
-    /** If the cropping return false, then the intersection is empty.
-     * In this case m_CroppedInputImageRegion is unchanged,
-     * but we would like to throw an exception.
-     */
-    if (!cropped)
-    {
-      itkExceptionMacro(<< "ERROR: the bounding box of the mask lies entirely out of the InputImageRegion!");
-    }
+    itkExceptionMacro(<< "ERROR: the bounding box of the mask lies entirely out of the InputImageRegion!");
   }
+  // }
 
 } // end CropInputImageRegion()
 
 /**
- * ******************* GetBoundingBoxRegionForMask *******************
+ * ******************* CropRegion *******************
  */
 template <class TInputImage>
 bool
@@ -455,8 +455,18 @@ ImageSamplerBase<TInputImage>::CropRegion(InputImageRegionType & region)
     return region.Crop(boundingBoxRegion);
   }
   return true;
-} // end GetBoundingBoxRegionForMask()
+} // end CropRegion()
 
+/**
+ * ******************* CheckCroppedInputImageRegion *******************
+ */
+
+template <class TInputImage>
+bool
+ImageSamplerBase<TInputImage>::CheckCroppedInputImageRegion()
+{
+  return this->CropRegion(this->m_CroppedInputImageRegion);
+}
 
 /**
  * ******************* BeforeThreadedGenerateData *******************
@@ -507,17 +517,41 @@ ImageSamplerBase<TInputImage>::AfterThreadedGenerateData()
 } // end AfterThreadedGenerateData()
 
 /**
+ * ******************* WriteSamplesToFile *******************
+ */
+
+template <class TInputImage>
+void
+ImageSamplerBase<TInputImage>::WriteSamplesToFile(std::ofstream & outFile)
+{
+  ImageSampleContainerPointer                      sampleContainer = this->GetOutput();
+  typename ImageSampleContainerType::ConstIterator threader_fiter;
+  typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer->Begin();
+  typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer->End();
+
+  for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
+  {
+    const auto & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+    for (unsigned int dim = 0; dim < Self::InputImageDimension; ++dim)
+    {
+      outFile << fixedPoint[dim] << " ";
+    }
+    outFile << "\n";
+  }
+}
+
+/**
  * ******************* SetGeneratorSeed *******************
  */
 
 template <class TInputImage>
 void
-ImageSamplerBase<TInputImage>::SetGeneratorSeed(int seed)
+ImageSamplerBase<TInputImage>::SetGeneratorSeed(uint_least64_t seed)
 {
   if (seed != this->m_PreviousSeed)
   {
     this->m_PreviousSeed = seed;
-    this->m_RandomGenerator = Xoshiro128PlusPlus(seed);
+    this->m_RandomGenerator.seed(seed);
     this->Modified();
   }
 }

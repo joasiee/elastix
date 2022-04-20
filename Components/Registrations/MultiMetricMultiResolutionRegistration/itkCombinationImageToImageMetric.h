@@ -112,9 +112,10 @@ public:
   using typename Superclass::HessianValueType;
   using typename Superclass::HessianType;
 
-  /**
   using typename Superclass::ImageSamplerType;
   using typename Superclass::ImageSamplerPointer;
+
+  /**
   using typename Superclass::ImageSampleContainerType;
   using typename Superclass::ImageSampleContainerPointer;
   using typename Superclass::FixedImageLimiterType;
@@ -235,6 +236,11 @@ public:
   /**
    * Set/Get functions for the metric components
    */
+
+  void
+  SetImageSampler(ImageSamplerType * _arg) override;
+  void
+  SetUseImageSampler(const bool _arg) override;
 
   /** Pass the transform to all sub metrics.  */
   void

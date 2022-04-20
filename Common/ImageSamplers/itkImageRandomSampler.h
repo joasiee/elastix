@@ -95,7 +95,7 @@ private:
   operator=(const Self &) = delete;
 
   void
-  GetPoint(unsigned long randomPosition, InputImageIndexType & index, InputImagePointType & point);
+  GeneratePoint(InputImageIndexType & index, InputImagePointType & point);
 };
 
 } // end namespace itk

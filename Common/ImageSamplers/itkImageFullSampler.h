@@ -79,6 +79,13 @@ public:
     return false;
   }
 
+  /** Selecting new samples makes no sense if nothing changed.
+   * The same samples would be selected anyway.
+   */
+  void
+  SetGeneratorSeed(uint_least64_t seed) override
+  {}
+
 
   /** Returns whether the sampler supports SelectNewSamplesOnUpdate(). */
   bool

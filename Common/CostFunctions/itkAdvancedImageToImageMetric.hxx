@@ -22,6 +22,7 @@
 
 #include "itkAdvancedRayCastInterpolateImageFunction.h"
 #include "itkComputeImageExtremaFilter.h"
+#include "itkMersenneTwisterRandomVariateGenerator.h"
 
 #ifdef ELASTIX_USE_OPENMP
 #  include <omp.h>
@@ -50,6 +51,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AdvancedImageToImageMetri
   /** OpenMP related. Switch to on when available */
 #ifdef ELASTIX_USE_OPENMP
   this->m_UseOpenMP = true;
+  omp_set_max_active_levels(3);
 #else
   this->m_UseOpenMP = false;
 #endif
@@ -741,6 +743,97 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::IsInsideMovingMask(const 
 
 } // end IsInsideMovingMask()
 
+/**
+ * ************************** IsInsideFixedMask *************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+bool
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::IsInsideFixedMask(const FixedImagePointType & point) const
+{
+  /** If a mask has been set: */
+  if (this->m_FixedImageMask.IsNotNull())
+  {
+    return this->m_FixedImageMask->IsInsideInWorldSpace(point);
+  }
+
+  /** If no mask has been set, just return true. */
+  return true;
+
+} // end IsInsideFixedMask()
+
+/**
+ * ************************** IsInsideFixedMask *************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+bool
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::IsInsideFixedMask(const FixedImageRegionType & region,
+                                                                         const double                 pct) const
+{
+  /** If a mask has been set: */
+  if (this->m_FixedImageMask.IsNotNull())
+  {
+    FixedImageConstPointer                                  fixedImage = this->GetFixedImage();
+    ImageRegionConstIteratorWithIndex<const FixedImageType> regionIterator(fixedImage, region);
+
+    unsigned long pixelsNeeded = double(region.GetNumberOfPixels()) * pct;
+    unsigned long pixelsInMask = 0L;
+    while (!regionIterator.IsAtEnd())
+    {
+      FixedImagePointType point;
+      fixedImage->TransformIndexToPhysicalPoint(regionIterator.GetIndex(), point);
+      if (this->IsInsideFixedMask(point))
+        ++pixelsInMask;
+
+      if (pixelsInMask >= pixelsNeeded)
+        return true;
+
+      ++regionIterator;
+    }
+  }
+  else
+    return true;
+
+  return false;
+} // end IsInsideFixedMask()
+
+/**
+ * ************************** TransformImageToMaskRegion *************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+auto
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::TransformImageToMaskRegion(
+  const FixedImageRegionType & region) const -> FixedImageRegionType
+{
+  FixedImagePointType            lower, upper;
+  FixedImageConstPointer         fixedImage = this->GetFixedImage();
+  const ImageSpatialObjectType * fixedImageMask =
+    dynamic_cast<const ImageSpatialObjectType *>(this->GetFixedImageMask());
+
+  MovingImageContinuousIndexType lowerIndex = region.GetIndex();
+  MovingImageContinuousIndexType upperIndex = region.GetUpperIndex();
+
+  fixedImage->TransformContinuousIndexToPhysicalPoint(lowerIndex, lower);
+  fixedImage->TransformContinuousIndexToPhysicalPoint(upperIndex, upper);
+  fixedImageMask->GetImage()->TransformPhysicalPointToContinuousIndex(lower, lowerIndex);
+  fixedImageMask->GetImage()->TransformPhysicalPointToContinuousIndex(upper, upperIndex);
+
+  FixedImageRegionType maskRegion;
+  FixedImageSizeType   maskSize;
+  FixedImageIndexType  maskIndex;
+  for (unsigned int i = 0; i < Self::FixedImageDimension; ++i)
+  {
+    maskSize[i] = std::ceil(upperIndex[i]) - std::floor(lowerIndex[i]) + 1;
+    maskIndex[i] = static_cast<FixedImageIndexValueType>(std::floor(lowerIndex[i]));
+  }
+  maskRegion.SetIndex(maskIndex);
+  maskRegion.SetSize(maskSize);
+
+  return maskRegion;
+}
+
 
 /**
  * *********************** GetSelfHessian ***********************
@@ -915,16 +1008,17 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::AccumulateDerivativesThre
  */
 
 template <class TFixedImage, class TMovingImage>
-void
+bool
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsigned long wanted,
                                                                             unsigned long found) const
 {
   this->m_NumberOfPixelsCounted = found;
   if (found < wanted * this->GetRequiredRatioOfValidSamples())
   {
-    itkExceptionMacro("Too many samples map outside moving image buffer: " << found << " / " << wanted << std::endl);
+    itkExceptionMacro("Too many samples map outside moving image buffer: "
+                      << found << " / " << wanted * this->GetRequiredRatioOfValidSamples() << std::endl);
   }
-
+  return true;
 } // end CheckNumberOfSamples()
 
 template <class TFixedImage, class TMovingImage>
@@ -944,28 +1038,56 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   for (i = 0; i < n_regions; ++i)
   {
     ImageSamplerInputImageRegionType & region = this->m_BSplineFOSRegions[i];
-    if (!this->m_ImageSampler->CropRegion(region))
+    ImageSamplerPointer                subfunctionSampler = this->m_ImageSampler->Clone();
+
+    using ExtractImageFilterType = itk::RegionOfInterestImageFilter<TFixedImage, TFixedImage>;
+    typename ExtractImageFilterType::Pointer extractImageRegion = ExtractImageFilterType::New();
+    extractImageRegion->SetInput(this->GetFixedImage());
+    extractImageRegion->SetRegionOfInterest(region);
+    extractImageRegion->Update();
+    subfunctionSampler->SetInput(extractImageRegion->GetOutput());
+    subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
+
+    const ImageSpatialObjectType * fixedImageMask =
+      dynamic_cast<const ImageSpatialObjectType *>(this->GetFixedImageMask());
+    if (fixedImageMask)
+    {
+      using ExtractMaskFilterType = itk::RegionOfInterestImageFilter<FixedImageMaskImageType, FixedImageMaskImageType>;
+      typename ExtractMaskFilterType::Pointer extractMaskRegion = ExtractMaskFilterType::New();
+      extractMaskRegion->SetInput(fixedImageMask->GetImage());
+      extractMaskRegion->SetRegionOfInterest(this->TransformImageToMaskRegion(region));
+      extractMaskRegion->Update();
+
+      ImageSpatialObjectPointer fixedImageMaskRegion = fixedImageMask->Clone();
+      fixedImageMaskRegion->SetImage(extractMaskRegion->GetOutput());
+      fixedImageMaskRegion->Update();
+
+      subfunctionSampler->SetMask(fixedImageMaskRegion);
+    }
+
+    try
+    {
+      subfunctionSampler->Update();
+    }
+    catch (const std::exception & e)
+    {}
+
+
+    if (!subfunctionSampler->CheckCroppedInputImageRegion() || !this->IsInsideFixedMask(region, 0.1))
     {
       this->m_SubfunctionSamplers.push_back(nullptr);
       continue;
     }
 
-    ImageSamplerPointer subfunctionSampler = this->m_ImageSampler->Clone();
-
-    using ExtractFilterType = itk::RegionOfInterestImageFilter<TFixedImage, TFixedImage>;
-    typename ExtractFilterType::Pointer extractFilter = ExtractFilterType::New();
-    extractFilter->SetInput(this->GetFixedImage());
-    extractFilter->SetRegionOfInterest(region);
-
-    subfunctionSampler->SetInput(extractFilter->GetOutput());
-    subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
-    subfunctionSampler->Update();
     totalSamples += subfunctionSampler->GetOutput()->Size();
-
     this->m_SubfunctionSamplers.push_back(subfunctionSampler);
   }
+
   this->SetNumberOfFixedImageSamples(totalSamples);
   this->SetUseImageSampler(false);
+  this->SetPartialEvaluations(true);
+
+  this->ComputeFOSMapping();
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -988,7 +1110,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   const int              num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
   RegionType             coeffRegionCropped = wrappedImage->GetLargestPossibleRegion();
   IndexType              coeffRegionCroppedIndex;
-  std::vector<int>       cpointOffsetMap(coeffRegionCropped.GetNumberOfPixels());
+  this->m_BSplinePointOffsetMap.clear();
+  this->m_BSplinePointOffsetMap.reserve(coeffRegionCropped.GetNumberOfPixels());
 
   // crop control points grid to only contain those at lower left corners of fixed image pixel areas.
   for (d = 0; d < FixedImageDimension; ++d)
@@ -1006,9 +1129,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplinePointsRegions.resize(length + 1);
 
-  std::vector<bool> regionWithinMask(coeffRegionCropped.GetNumberOfPixels(), false);
-
-  // iterate over these control points and calculate fixed image pixel region
+  // iterate over these control points and calculate fixed image pixel regions
   ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(wrappedImage, coeffRegionCropped);
   i = 0;
   while (!coeffImageIterator.IsAtEnd())
@@ -1029,30 +1150,46 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
     }
     this->m_BSplineFOSRegions[i].SetIndex(imageIndex);
 
-    if (this->m_ImageSampler->CropRegion(this->m_BSplineFOSRegions[i]))
-    {
-      regionWithinMask[i] = true;
-      this->m_BSplinePointsRegions[0].push_back(i);
-    }
-
-    cpointOffsetMap[offset] = i;
+    this->m_BSplinePointOffsetMap[offset] = i;
     ++coeffImageIterator;
     ++i;
   }
+}
 
-  // assign fixed image regions to control points which affect them and vice versa.
+// assign fixed image regions to control points which affect them and vice versa.
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
+{
+  unsigned int i, j, d;
+
+  CombinationTransformType * comboPtr =
+    dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
+  const BSplineOrder3TransformType * bsplinePtr =
+    dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
+  ImagePointer wrappedImage = bsplinePtr->GetWrappedImages()[0];
+
   std::vector<bool> pointAdded(this->m_BSplineFOSRegions.size(), false);
+  const int         num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
 
+  // add regions (that are within mask if set) to 0th list containing all regions of image combined.
+  for (i = 0; i < this->m_BSplineFOSRegions.size(); ++i)
+  {
+    if (this->m_SubfunctionSamplers[i])
+      this->m_BSplinePointsRegions[0].push_back(i);
+  }
+
+  // now compute mappings between control points and fos sets, and vice versa.
   // for each fos set j:
-  for (j = 0; j < (unsigned)length; ++j)
+  for (j = 0; j < (unsigned)this->m_FOS.length; ++j)
   {
     std::fill(pointAdded.begin(), pointAdded.end(), false);
 
     // for each index i in fos set:
-    for (i = 0; i < (unsigned)set_length[j]; ++i)
+    for (i = 0; i < (unsigned)this->m_FOS.set_length[j]; ++i)
     {
       // calc control point number and its corresponding index
-      int            cpoint = (sets[j][i] % num_points);
+      int            cpoint = (this->m_FOS.sets[j][i] % num_points);
       ImageIndexType p = wrappedImage->ComputeIndex(cpoint);
 
       // calculate the region of influence for this control point
@@ -1073,10 +1210,10 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
       {
         // offset needs to be adjusted to cropped coefficient grid.
         unsigned int offset = wrappedImage->ComputeOffset(imageIterator.GetIndex());
-        offset = cpointOffsetMap[offset];
+        offset = this->m_BSplinePointOffsetMap[offset];
 
         // add region to mapping from fos sets to regions if not added yet.
-        if (!pointAdded[offset] && regionWithinMask[offset])
+        if (!pointAdded[offset] && m_SubfunctionSamplers[offset])
         {
           this->m_BSplinePointsRegions[j + 1].push_back(offset);
           this->m_BSplineRegionsToFosSets[offset].push_back(j);
@@ -1108,7 +1245,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetTasksForThread(ThreadI
 }
 
 template <class TFixedImage, class TMovingImage>
-int
+uint_least64_t
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(int region) const
 {
   double                          sum{ 0 };
@@ -1117,10 +1254,36 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(i
   for (int set : this->m_BSplineRegionsToFosSets[region])
   {
     for (int i = 0; i < this->m_FOS.set_length[set]; ++i)
-      sum += params[this->m_FOS.sets[set][i]];
+      sum += abs(params[this->m_FOS.sets[set][i]]);
   }
 
-  return static_cast<int>(sum * 1e5);
+  return static_cast<uint_least64_t>(sum * 1e5) + this->m_IterationSeed;
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::UpdateIterationSeed()
+{
+  using RandomGeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
+  this->m_IterationSeed = static_cast<uint_least64_t>(RandomGeneratorType::GetInstance()->GetIntegerVariate());
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::WriteSamplesOfIteration(std::ofstream & outFile) const
+{
+  if (!this->GetPartialEvaluations())
+  {
+    this->GetImageSampler()->WriteSamplesToFile(outFile);
+  }
+  else
+  {
+    for (const int samplerIndex : this->m_BSplinePointsRegions[0])
+    {
+      ImageSamplerPointer sampler = this->m_SubfunctionSamplers[samplerIndex];
+      sampler->WriteSamplesToFile(outFile);
+    }
+  }
 }
 
 

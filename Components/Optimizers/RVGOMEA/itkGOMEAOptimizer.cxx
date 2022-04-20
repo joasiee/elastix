@@ -30,25 +30,19 @@ GOMEAOptimizer::GOMEAOptimizer()
 void
 GOMEAOptimizer::PrintSelf(std::ostream & os, Indent indent) const
 {
-  os << indent << this->GetNameOfClass() << ":" << std::endl;
+  os << indent << this->GetNameOfClass() << ":\n";
 }
 
 void
-GOMEAOptimizer::PrintSettings(std::stringstream & output) const
+GOMEAOptimizer::PrintSettings() const
 {
   Indent indent = *itk::Indent::New();
-  output << indent << "Settings: " << std::endl;
-  output << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << std::endl;
-  output << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << std::endl;
-  output << indent.GetNextIndent() << "Tau: " << m_Tau << std::endl;
-  output << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << std::endl;
-  output << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << std::endl;
-}
-
-void
-GOMEAOptimizer::IterationWriteOutput()
-{
-  outFile << m_CurrentIteration << " " << m_NumberOfEvaluations << " " << m_CurrentValue << std::endl;
+  std::cout << indent << "Settings: \n";
+  std::cout << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n";
+  std::cout << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << "\n";
+  std::cout << indent.GetNextIndent() << "Tau: " << m_Tau << "\n";
+  std::cout << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n";
+  std::cout << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n";
 }
 
 void
@@ -58,7 +52,7 @@ GOMEAOptimizer::StartOptimization()
   this->m_NrOfParameters = this->GetCostFunction()->GetNumberOfParameters();
   this->SetCurrentPosition(this->GetInitialPosition());
   this->m_CurrentIteration = 0;
-  this->m_CurrentValue = NumericTraits<MeasureType>::max();
+  this->m_Value = NumericTraits<MeasureType>::max();
   this->m_NumberOfEvaluations = 0L;
   this->m_StopCondition = Unknown;
   this->number_of_populations = 0;
@@ -89,7 +83,8 @@ GOMEAOptimizer::initialize(void)
   if (m_BasePopulationSize == 0.0)
   {
     if (m_MaxNumberOfPopulations == 1)
-      m_BasePopulationSize = (int)(36.1 + 7.58 * log2((double)m_NrOfParameters));
+      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(36.1 + 7.58 * log2((double)m_NrOfParameters))
+                                                  : static_cast<int>(m_NrOfParameters * 10);
     else
       m_BasePopulationSize = 10;
   }
@@ -127,9 +122,6 @@ GOMEAOptimizer::initialize(void)
   if (m_FosElementSize == 1)
     use_univariate_FOS = 1;
   GOMEA::FOS_element_size = m_FosElementSize;
-
-  if (m_WriteOutput)
-    outFile.open("out.txt");
 
   // finish initialization
   this->checkOptions();
@@ -293,8 +285,6 @@ GOMEAOptimizer::initializeMemory(void)
   full_covariance_matrix.resize(m_MaxNumberOfPopulations);
   decomposed_cholesky_factors_lower_triangle.resize(m_MaxNumberOfPopulations);
   decomposed_covariance_matrices.resize(m_MaxNumberOfPopulations);
-  samples_drawn_from_normal.resize(m_MaxNumberOfPopulations);
-  out_of_bounds_draws.resize(m_MaxNumberOfPopulations);
   individual_NIS.resize(m_MaxNumberOfPopulations);
   objective_values.resize(m_MaxNumberOfPopulations);
   objective_values_selections.resize(m_MaxNumberOfPopulations);
@@ -333,8 +323,6 @@ GOMEAOptimizer::initializeNewPopulationMemory(int population_index)
   if (learn_linkage_tree)
   {
     distribution_multipliers[population_index] = Array<double>(1);
-    samples_drawn_from_normal[population_index] = Array<int>(1);
-    out_of_bounds_draws[population_index] = Array<int>(1);
     linkage_model[population_index] = (FOS *)Malloc(sizeof(FOS));
     linkage_model[population_index]->length = 1;
     linkage_model[population_index]->sets = (int **)Malloc(linkage_model[population_index]->length * sizeof(int *));
@@ -445,15 +433,7 @@ GOMEAOptimizer::initializeFOS(int population_index)
 void
 GOMEAOptimizer::initializeDistributionMultipliers(int population_index)
 {
-  int j;
-
-  distribution_multipliers[population_index] = Array<double>(linkage_model[population_index]->length);
-
-  for (j = 0; j < linkage_model[population_index]->length; j++)
-    distribution_multipliers[population_index][j] = 1.0;
-
-  samples_drawn_from_normal[population_index] = Array<int>(linkage_model[population_index]->length);
-  out_of_bounds_draws[population_index] = Array<int>(linkage_model[population_index]->length);
+  distribution_multipliers[population_index] = Array<double>(linkage_model[population_index]->length, 1.0);
 
   distribution_multiplier_increase = 1.0 / m_DistributionMultiplierDecrease;
 }
@@ -995,11 +975,10 @@ GOMEAOptimizer::estimateParametersML(int population_index)
 void
 GOMEAOptimizer::estimateMeanVectorML(int population_index)
 {
-  int    i, j;
-  double new_mean;
-  int    n = m_NrOfParameters;
+  unsigned int i, j;
+  double       new_mean;
 
-  for (i = 0; i < n; i++)
+  for (i = 0; i < m_NrOfParameters; i++)
   {
     new_mean = 0.0;
     for (j = 0; j < selection_sizes[population_index]; j++)
@@ -1053,10 +1032,13 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
   double cov;
 
   /* First do the maximum-likelihood estimate from data */
+  // for each fos set:
   for (i = 0; i < linkage_model[population_index]->length; i++)
   {
+    // for each parameter index in fos set:
     for (j = 0; j < linkage_model[population_index]->set_length[i]; j++)
     {
+      // for each pair (vara, varb) of parameters:
       vara = linkage_model[population_index]->sets[i][j];
       for (k = j; k < linkage_model[population_index]->set_length[i]; k++)
       {
@@ -1081,6 +1063,8 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
           decomposed_covariance_matrices[population_index][i](j, k);
       }
     }
+    if (this->m_OASShrinkage)
+      shrunkCovarianceOAS(decomposed_covariance_matrices[population_index][i], this->m_BasePopulationSize);
   }
 }
 
@@ -1161,12 +1145,15 @@ GOMEAOptimizer::getOverallBest(int * population_index, int * individual_index)
 }
 
 void
-GOMEAOptimizer::evaluateCompletePopulation(int population_index)
+GOMEAOptimizer::evaluateAllPopulations()
 {
-  int j;
+  int i, j;
 
-  for (j = 0; j < population_sizes[population_index]; j++)
-    this->costFunctionEvaluation(&populations[population_index][j], &objective_values[population_index][j]);
+  for (i = 0; i < number_of_populations; ++i)
+  {
+    for (j = 0; j < population_sizes[i]; j++)
+      this->costFunctionEvaluation(&populations[i][j], &objective_values[i][j]);
+  }
 }
 
 void
@@ -1195,7 +1182,7 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
 
   // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1);
   // if (abs(obj_val_full - *obj_val) > 1e-3)
-  //   std::cout << "WTF" << std::endl;
+  //   std::cout << "WTF\n";
 
   ++m_NumberOfEvaluations;
   this->Modified();
@@ -1265,8 +1252,6 @@ GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulation(int population_i
     {
       j = fos_order[oj];
 
-      samples_drawn_from_normal[population_index][j] = 0;
-      out_of_bounds_draws[population_index][j] = 0;
       FOS_element_caused_improvement[j] = 0;
 
       apply_AMS = 1;
@@ -1337,9 +1322,9 @@ GOMEAOptimizer::computeParametersForSampling(int population_index)
   {
     for (i = 0; i < linkage_model[population_index]->length; i++)
     {
-      choleskyDecomposition(decomposed_cholesky_factors_lower_triangle[population_index][i],
-                            decomposed_covariance_matrices[population_index][i],
-                            linkage_model[population_index]->set_length[i]);
+      this->m_PdPctMean(choleskyDecomposition(decomposed_cholesky_factors_lower_triangle[population_index][i],
+                                              decomposed_covariance_matrices[population_index][i],
+                                              linkage_model[population_index]->set_length[i]));
     }
   }
 }
@@ -1349,58 +1334,34 @@ GOMEAOptimizer::computeParametersForSampling(int population_index)
  * a sample for the variables in the selected FOS element
  * and inserting this into the population.
  */
-double *
+void
 GOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index, int FOS_index, VectorXd & result)
 {
 
   short    ready;
-  int      i, times_not_in_bounds, num_indices, *indices;
+  int      i, num_indices, *indices;
   VectorXd z;
 
   num_indices = linkage_model[population_index]->set_length[FOS_index];
   indices = linkage_model[population_index]->sets[FOS_index];
 
-  times_not_in_bounds = -1;
-  out_of_bounds_draws[population_index][FOS_index]--;
+  z = VectorXd(num_indices);
 
-  ready = 0;
-  do
+  for (i = 0; i < num_indices; i++)
+    z[i] = random1DNormalUnit();
+
+  if (use_univariate_FOS)
   {
-    times_not_in_bounds++;
-    samples_drawn_from_normal[population_index][FOS_index]++;
-    out_of_bounds_draws[population_index][FOS_index]++;
-    if (times_not_in_bounds >= 100)
-    {
-      result = VectorXd(num_indices);
-      for (i = 0; i < num_indices; i++)
-        result[i] = m_CurrentPosition[indices[i]] + random1DNormalUnit();
-    }
-    else
-    {
-      z = VectorXd(num_indices);
-
-      for (i = 0; i < num_indices; i++)
-        z[i] = random1DNormalUnit();
-
-      if (use_univariate_FOS)
-      {
-        result = VectorXd(1);
-        result[0] = z[0] * sqrt(decomposed_covariance_matrices[population_index][FOS_index](0, 0)) +
-                    mean_vectors[population_index][indices[0]];
-      }
-      else
-      {
-        result =
-          decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Upper>() * z;
-        for (i = 0; i < num_indices; i++)
-          result[i] += mean_vectors[population_index][indices[i]];
-      }
-    }
-
-    ready = 1;
-  } while (!ready);
-
-  return result.data();
+    result = VectorXd(1);
+    result[0] = z[0] * sqrt(decomposed_covariance_matrices[population_index][FOS_index](0, 0)) +
+                mean_vectors[population_index][indices[0]];
+  }
+  else
+  {
+    result = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>() * z;
+    for (i = 0; i < num_indices; i++)
+      result[i] += mean_vectors[population_index][indices[i]];
+  }
 }
 
 /**
@@ -1440,26 +1401,16 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
 
   if (apply_AMS && (number_of_generations[population_index] > 0))
   {
-    out_of_range = 1;
-    shrink_factor = 2;
-    while ((out_of_range == 1) && (shrink_factor > 1e-10))
+    for (m = 0; m < num_indices; m++)
     {
-      shrink_factor *= 0.5;
-      out_of_range = 0;
-      for (m = 0; m < num_indices; m++)
-      {
-        im = indices[m];
-        result[m] = populations[population_index][individual_index][im] +
-                    shrink_factor * delta_AMS * distribution_multipliers[population_index][FOS_index] *
-                      mean_shift_vector[population_index][im];
-      }
+      im = indices[m];
+      result[m] = populations[population_index][individual_index][im] +
+                  shrink_factor * delta_AMS * distribution_multipliers[population_index][FOS_index] *
+                    mean_shift_vector[population_index][im];
     }
-    if (!out_of_range)
+    for (m = 0; m < num_indices; m++)
     {
-      for (m = 0; m < num_indices; m++)
-      {
-        populations[population_index][individual_index][indices[m]] = result[m];
-      }
+      populations[population_index][individual_index][indices[m]] = result[m];
     }
   }
 
@@ -1494,32 +1445,23 @@ GOMEAOptimizer::applyAMS(int population_index, int individual_index)
   int            m, k;
 
   delta_AMS = 2;
-  out_of_range = 1;
   shrink_factor = 2;
   improvement = 0;
   solution_AMS = ParametersType(m_NrOfParameters);
-  while ((out_of_range == 1) && (shrink_factor > 1e-10))
+  for (m = 0; (unsigned)m < m_NrOfParameters; m++)
   {
-    shrink_factor *= 0.5;
-    out_of_range = 0;
-    for (m = 0; (unsigned)m < m_NrOfParameters; m++)
-    {
-      solution_AMS[m] =
-        populations[population_index][individual_index][m] +
-        shrink_factor * delta_AMS *
-          mean_shift_vector[population_index][m]; //*distribution_multipliers[population_index][FOS_index]
-    }
+    solution_AMS[m] = populations[population_index][individual_index][m] +
+                      shrink_factor * delta_AMS *
+                        mean_shift_vector[population_index][m]; //*distribution_multipliers[population_index][FOS_index]
   }
-  if (!out_of_range)
+
+  this->costFunctionEvaluation(&solution_AMS, &obj_val);
+  if (randomRealUniform01() < 0.05 || obj_val < objective_values[population_index][individual_index])
   {
-    this->costFunctionEvaluation(&solution_AMS, &obj_val);
-    if (randomRealUniform01() < 0.05 || obj_val < objective_values[population_index][individual_index])
-    {
-      objective_values[population_index][individual_index] = obj_val;
-      for (m = 0; (unsigned)m < m_NrOfParameters; m++)
-        populations[population_index][individual_index][m] = solution_AMS[m];
-      improvement = 1;
-    }
+    objective_values[population_index][individual_index] = obj_val;
+    for (m = 0; (unsigned)m < m_NrOfParameters; m++)
+      populations[population_index][individual_index][m] = solution_AMS[m];
+    improvement = 1;
   }
   return (improvement);
 }
@@ -1605,9 +1547,6 @@ GOMEAOptimizer::adaptDistributionMultipliers(int population_index, int FOS_index
   decrease_for_FOS_element = 1.0 / increase_for_FOS_element;
   if (!populations_terminated[i])
   {
-    if ((((double)out_of_bounds_draws[i][j]) / ((double)samples_drawn_from_normal[i][j])) > 0.9)
-      distribution_multipliers[i][j] *= 0.5;
-
     improvementForFOSElement = this->generationalImprovementForOnePopulationForFOSElement(i, j, &st_dev_ratio);
 
     if (improvementForFOSElement)
@@ -1710,8 +1649,10 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
   }
   else
   {
+    MatrixXd identity {num_indices, num_indices};
+    identity.diagonal().setConstant(1.0);
     z =
-      decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Upper>() * x_min_mu;
+      decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>().solve(identity) * x_min_mu;
 
     for (i = 0; i < num_indices; i++)
     {
@@ -1724,15 +1665,16 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
 }
 
 void
-GOMEAOptimizer::UpdatePosition(bool avg)
+GOMEAOptimizer::UpdatePosition()
 {
-  if (avg)
-    this->SetCurrentPosition(mean_vectors[number_of_populations - 1]);
-  else
-    this->SetCurrentPosition(selections[number_of_populations - 1][0]);
-  this->m_CurrentValue =
+  this->SetCurrentPosition(selections[number_of_populations - 1][0]);
+  this->m_Value =
     m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
+
+  m_CurrentIteration++;
+  this->InvokeEvent(IterationEvent());
 }
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=- Section Ezilaitini -=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1776,12 +1718,7 @@ GOMEAOptimizer::ezilaitiniMemory(void)
   number_of_generations.clear();
   decomposed_covariance_matrices.clear();
   decomposed_cholesky_factors_lower_triangle.clear();
-  samples_drawn_from_normal.clear();
-  out_of_bounds_draws.clear();
   individual_NIS.clear();
-
-  if (m_WriteOutput)
-    outFile.close();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
@@ -1842,16 +1779,14 @@ GOMEAOptimizer::runAllPopulations()
   while (!this->checkTerminationCondition())
   {
     if (number_of_populations < m_MaxNumberOfPopulations)
-    {
       this->initializeNewPopulation();
-    }
+    else
+      this->evaluateAllPopulations();
+
     this->generationalStepAllPopulations();
+
     this->UpdatePosition();
-    m_CurrentIteration++;
-    this->IterationWriteOutput();
-    this->InvokeEvent(IterationEvent());
   }
-  this->UpdatePosition(false);
 }
 
 const std::string
@@ -1882,12 +1817,27 @@ GOMEAOptimizer::GetStopConditionDescription() const
   return m_StopConditionDescription.str();
 }
 
+void
+GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
+{
+  if (this->distribution_multipliers.size() > 0)
+  {
+    for (const double & distm : this->distribution_multipliers[0])
+    {
+      outfile << distm << " ";
+    }
+    outfile << "\n";
+    outfile.flush();
+  }
+}
+
 /**
  * Runs the IDEA.
  */
 void
 GOMEAOptimizer::run(void)
 {
+  this->PrintSettings();
   this->runAllPopulations();
   this->ezilaitini();
   this->StopOptimization();
