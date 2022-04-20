@@ -260,7 +260,7 @@ private:
   applyAMS(int population_index, int individual_index);
   void
   applyForcedImprovements(int population_index, int individual_index, int donor_index);
-  double *
+  void
   generateNewPartialSolutionFromFOSElement(int population_index, int FOS_index, VectorXd & result);
   short
   adaptDistributionMultipliers(int population_index, int FOS_index);
@@ -320,8 +320,6 @@ private:
   Array<int>           no_improvement_stretch;
   Array<int>           number_of_generations;
   Array<int>           population_sizes;
-  Vector1D<Array<int>> samples_drawn_from_normal;
-  Vector1D<Array<int>> out_of_bounds_draws;
   Vector1D<Array<int>> individual_NIS;
 
   Vector1D<Array<MeasureType>> objective_values;
