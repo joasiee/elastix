@@ -128,6 +128,15 @@ class Parameters:
     def asgd(self):
         return self.optimizer("AdaptiveStochasticGradientDescent")
 
+    def debug(self):
+        self["WritePyramidImagesAfterEachResolution"] = True
+        self["WriteSamplesEachIteration"] = True
+        return self
+
+    def shrinkage(self, val: bool):
+        self["UseShrinkage"] = val
+        return self
+
     def prune(self):
         self.params = {k: v for k, v in self.params.items() if v is not None}
 
@@ -193,10 +202,6 @@ class Parameters:
             )
             self.moving_path = INSTANCES_SRC / folder / "scans" / moving
         return self
-
-    def debug(self):
-        params["WritePyramidImagesAfterEachResolution"] = True
-        params["WriteSamplesEachIteration"] = True
 
     def __getitem__(self, key) -> Any:
         return self.params[key]

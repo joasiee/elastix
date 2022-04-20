@@ -70,10 +70,10 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=3, seed=1, sampling_p=0.03, write_img=True)
+        Parameters.from_base(mesh_size=3, sampling_p=0.03, write_img=True)
         .multi_resolution(1, p_sched=[5, 5, 5])
-        .gomea(fos=-6, partial_evals=True)
+        .asgd()
         .instance(Collection.EMPIRE, 16)
-        .stopping_criteria(iterations=[10])
+        .stopping_criteria(iterations=50)
     )
     run(params, Path("output/" + str(params)))
