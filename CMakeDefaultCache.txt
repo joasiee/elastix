@@ -47,7 +47,3 @@ set(USE_TranslationStackTransform OFF CACHE BOOL "")
 set(USE_TranslationTransformElastix OFF CACHE BOOL "")
 set(USE_VarianceOverLastDimensionMetric OFF CACHE BOOL "")
 set(USE_WeightedCombinationTransformElastix OFF CACHE BOOL "")
-
-set(BUILD_TESTING OFF CACHE BOOL "")
-set(ITK_LEGACY_REMOVE ON CACHE BOOL "")
-set(ITK_USE_64BITS_IDS ON CACHE BOOL "")

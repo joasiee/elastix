@@ -1,4 +1,5 @@
-[submodule "External/ITK"]
-	path = External/ITK
-	url = https://github.com/joasiee/ITK.git
-	branch = gomea
+[submodule "dox/manual"]
+	path = dox/manual
+	url = https://github.com/SuperElastix/manual.git
+	update = merge
+	branch = main
