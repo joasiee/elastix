@@ -30,6 +30,18 @@ if(ELASTIX_USE_OPENCL)
   list(APPEND _GPU_depends ITKGPUCommon)
 endif()
 
+find_package(Git REQUIRED)
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+  # Update submodules as needed
+  message(STATUS "Submodule update")
+  execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive --remote
+                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                  RESULT_VARIABLE GIT_SUBMOD_RESULT)
+  if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+      message(FATAL_ERROR "git submodule update --init --recursive --remote failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+  endif()
+endif()
+
 add_subdirectory("External/ITK")
 set(ITK_DIR "${CMAKE_BINARY_DIR}/External/ITK")
 
