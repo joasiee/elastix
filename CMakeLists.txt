@@ -30,10 +30,8 @@ if(ELASTIX_USE_OPENCL)
   list(APPEND _GPU_depends ITKGPUCommon)
 endif()
 
-if(DEFINED ENV{ITK_HOME})
-  set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE})
-  set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE} CACHE STRING "")
-endif()
+add_subdirectory("External/ITK")
+set(ITK_DIR "${CMAKE_BINARY_DIR}/External/ITK")
 
 # Find ITK.
 find_package( ITK 5.3 REQUIRED COMPONENTS
@@ -68,6 +66,8 @@ find_package( ITK 5.3 REQUIRED COMPONENTS
     ITKImageIO
     ITKTransformIO
     ITKMeshIO
+    PATHS "${CMAKE_BINARY_DIR}/External/ITK"
+    NO_DEFAULT_PATH
     )
 include( ${ITK_USE_FILE} )
 
@@ -117,10 +117,14 @@ mark_as_advanced( ELASTIX_USE_EIGEN )
 option( ELASTIX_USE_EIGEN "Use Eigen library." OFF )
 
 if( ELASTIX_USE_EIGEN )
-  find_package( Eigen3 REQUIRED )
+  find_package( Eigen3 REQUIRED)
   include_directories( ${EIGEN3_INCLUDE_DIR} )
   add_definitions( -DELASTIX_USE_EIGEN )
 endif()
+
+#---------------------------------------------------------------------
+# Find Boost
+find_package(Boost 1.70.0 REQUIRED)
 
 #---------------------------------------------------------------------
 # Find OpenMP
