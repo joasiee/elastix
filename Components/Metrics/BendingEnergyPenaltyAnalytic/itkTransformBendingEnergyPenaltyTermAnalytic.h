@@ -20,7 +20,8 @@
 
 #include "itkTransformPenaltyTerm.h"
 #include "itkImageGridSampler.h"
-#include "plastimatch/bspline_regularize.h"
+#include "plastimatch/regularization_parms.h"
+#include "plastimatch/bspline_xform.h"
 
 namespace itk
 {
@@ -48,7 +49,8 @@ namespace itk
  */
 
 template <class TFixedImage, class TScalarType>
-class ITK_TEMPLATE_EXPORT TransformBendingEnergyPenaltyTermAnalytic : public TransformPenaltyTerm<TFixedImage, TScalarType>
+class ITK_TEMPLATE_EXPORT TransformBendingEnergyPenaltyTermAnalytic
+  : public TransformPenaltyTerm<TFixedImage, TScalarType>
 {
 public:
   /** Standard ITK stuff. */
@@ -111,6 +113,7 @@ public:
   using typename Superclass::BSplineOrder2TransformPointer;
   using typename Superclass::BSplineOrder3TransformType;
   using typename Superclass::BSplineOrder3TransformPointer;
+  using typename Superclass::ImagePointer;
 
   /** Typedefs from the AdvancedTransform. */
   using typename Superclass::SpatialJacobianType;
@@ -123,6 +126,9 @@ public:
 
   /** Define the dimension. */
   itkStaticConstMacro(FixedImageDimension, unsigned int, FixedImageType::ImageDimension);
+
+  void
+  Initialize() override;
 
   /** Get the penalty term value. */
   MeasureType
@@ -151,7 +157,7 @@ protected:
 
 
   /** The constructor. */
-  TransformBendingEnergyPenaltyTermAnalytic() = default;
+  TransformBendingEnergyPenaltyTermAnalytic();
 
   /** The destructor. */
   ~TransformBendingEnergyPenaltyTermAnalytic() override = default;
@@ -162,6 +168,9 @@ private:
   /** The deleted assignment operator. */
   void
   operator=(const Self &) = delete;
+
+  Regularization_parms m_RegularizationParameters{};
+  Bspline_xform        m_BsplineXform{};
 };
 
 } // end namespace itk

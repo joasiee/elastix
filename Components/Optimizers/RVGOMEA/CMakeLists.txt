@@ -12,7 +12,7 @@ ADD_ELXCOMPONENT(GOMEA
 )
 
 target_link_libraries(GOMEA
-  ${BLAS_LIBRARIES}
-  ${LAPACK_LIBRARIES}
-  ${BOOST_LIBRARIES}
+  BLAS::BLAS
+  LAPACK::LAPACK
+  Boost::boost
 )

@@ -19,6 +19,7 @@
 #define itkTransformBendingEnergyPenaltyTermAnalytic_hxx
 
 #include "itkTransformBendingEnergyPenaltyTermAnalytic.h"
+#include "plastimatch/plm_image_header.h"
 
 #ifdef ELASTIX_USE_OPENMP
 #  include <omp.h>
@@ -26,6 +27,45 @@
 
 namespace itk
 {
+
+template <class TFixedImage, class TScalarType>
+TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::TransformBendingEnergyPenaltyTermAnalytic()
+{
+  this->m_RegularizationParameters.implementation = 'b';
+}
+
+template <class TFixedImage, class TScalarType>
+void
+TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Initialize()
+{
+  if (Self::FixedImageDimension != 3)
+  {
+    return;
+  }
+
+  this->Superclass::Initialize();
+
+  const CombinationTransformType *         comboPtr = dynamic_cast<const CombinationTransformType *>(this->GetTransform());
+  const BSplineOrder3TransformType * bsplinePtr =
+    dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
+
+  ImagePointer           wrappedImage = bsplinePtr->GetWrappedImages()[0];
+  FixedImageConstPointer fixedImage = this->GetFixedImage();
+
+  const Plm_image_header plmImageHeader{ fixedImage->GetLargestPossibleRegion(),
+                                         fixedImage->GetOrigin(),
+                                         fixedImage->GetSpacing(),
+                                         fixedImage->GetDirection() };
+
+  float gridSpacing[3];
+  for (int d = 0; d < 3; ++d)
+  {
+    gridSpacing[d] = wrappedImage->GetSpacing()[d];
+  }
+
+  this->m_BsplineXform.initialize(&plmImageHeader, gridSpacing);
+  free(this->m_BsplineXform.coeff);
+}
 
 template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::MeasureType
