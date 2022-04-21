@@ -83,8 +83,5 @@
         "qr": "cpp",
         "lu": "cpp",
         "core": "cpp"
-    },
-    "cmake.configureArgs": [
-        "-C${workspaceFolder}/CMakeDefaultCache.txt"
-    ]
+    }
 }
