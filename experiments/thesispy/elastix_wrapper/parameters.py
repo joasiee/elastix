@@ -114,8 +114,6 @@ class Parameters:
         pop_size: List[int] | int = None,
         partial_evals: bool = None,
     ) -> Parameters:
-        if partial_evals:
-            self["NewSamplesEveryIteration"] = "false"
         return self.optimizer(
             "GOMEA",
             {
@@ -266,6 +264,6 @@ if __name__ == "__main__":
         # .multi_metric()
         .gomea()
         .instance(Collection.EMPIRE, 26)
-        .stopping_criteria(iterations=[5000])
+        .stopping_criteria(iterations=[500])
     )
     params.write(Path())
