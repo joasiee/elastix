@@ -1073,7 +1073,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     {}
 
 
-    if (!subfunctionSampler->CheckCroppedInputImageRegion() || !this->IsInsideFixedMask(region, 0.1))
+    if (!subfunctionSampler->CheckCroppedInputImageRegion() || !this->IsInsideFixedMask(region, 0.05))
     {
       this->m_SubfunctionSamplers.push_back(nullptr);
       continue;
@@ -1088,6 +1088,19 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   this->SetPartialEvaluations(true);
 
   this->ComputeFOSMapping();
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::SelectNewSamplesSubfunctionSamplers()
+{
+  if (this->m_PartialEvaluations)
+  {
+    for (ImageSamplerPointer & sampler : this->m_SubfunctionSamplers)
+    {
+      sampler->Modified();
+    }
+  }
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1212,7 +1225,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
         unsigned int offset = wrappedImage->ComputeOffset(imageIterator.GetIndex());
         offset = this->m_BSplinePointOffsetMap[offset];
 
-        // add region to mapping from fos sets to regions if not added yet.
+        // add region to mapping from fos sets to regions if not added yet and within mask.
         if (!pointAdded[offset] && m_SubfunctionSamplers[offset])
         {
           this->m_BSplinePointsRegions[j + 1].push_back(offset);

@@ -334,6 +334,9 @@ public:
   void
   UpdateIterationSeed();
 
+  void
+  SelectNewSamplesSubfunctionSamplers();
+
 protected:
   /** Constructor. */
   AdvancedImageToImageMetric();

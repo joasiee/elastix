@@ -257,6 +257,9 @@ MetricBase<TElastix>::SelectNewSamples()
   {
     /** Force the metric to base its computation on a new subset of image samples. */
     this->GetAdvancedMetricImageSampler()->SelectNewSamplesOnUpdate();
+
+    AdvancedMetricType * thisAsMetricWithSampler = dynamic_cast<AdvancedMetricType *>(this);
+    thisAsMetricWithSampler->SelectNewSamplesSubfunctionSamplers();
   }
   else
   {
