@@ -392,7 +392,7 @@ MetricBase<TElastix>::GetAdvancedMetricImageSampler() const -> ImageSamplerBaseT
   {
     return nullptr;
   }
-  if (thisAsMetricWithSampler->GetUseImageSampler() == false)
+  if (thisAsMetricWithSampler->GetUseImageSampler() == false && !thisAsMetricWithSampler->GetPartialEvaluations())
   {
     return nullptr;
   }
