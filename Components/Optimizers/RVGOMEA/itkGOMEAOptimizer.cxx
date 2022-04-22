@@ -1770,6 +1770,9 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
     for (population_index = population_index_smallest; population_index < population_index_biggest; population_index++)
       this->generationalStepAllPopulationsRecursiveFold(population_index_smallest, population_index);
+
+    this->UpdatePosition();
+    this->evaluateAllPopulations();
   }
 }
 
@@ -1780,12 +1783,8 @@ GOMEAOptimizer::runAllPopulations()
   {
     if (number_of_populations < m_MaxNumberOfPopulations)
       this->initializeNewPopulation();
-    else
-      this->evaluateAllPopulations();
 
     this->generationalStepAllPopulations();
-
-    this->UpdatePosition();
   }
 }
 

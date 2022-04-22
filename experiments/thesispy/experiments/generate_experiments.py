@@ -16,9 +16,21 @@ def sampling_p_range(instance: int, project: str):
                 .multi_resolution(1, p_sched=[5, 5, 5])
                 .gomea(fos=-6, partial_evals=True)
                 .instance(Collection.EMPIRE, instance)
-                .stopping_criteria(iterations=[400])
+                .stopping_criteria(iterations=[1000])
             )
             yield Experiment(params, project)
+
+
+def full_eval(instance: int, project: str):
+    for seed in [i for i in range(1, 11)]:
+        params = (
+            Parameters.from_base(mesh_size=3, seed=seed, sampler="Full")
+            .multi_resolution(1, p_sched=[5, 5, 5])
+            .asgd()
+            .instance(Collection.EMPIRE, instance)
+            .stopping_criteria(iterations=[10000])
+        )
+        yield Experiment(params, project)
 
 
 def pd_pop_experiment(project):
@@ -66,5 +78,5 @@ def pareto_experiment(project, instance):
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in pareto_experiment("test_pareto", 14):
+    for experiment in full_eval(16, "16_fulleval"):
         queue.push(experiment)
