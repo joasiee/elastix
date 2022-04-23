@@ -26,9 +26,9 @@ def full_eval(instance: int, project: str):
         params = (
             Parameters.from_base(mesh_size=3, seed=seed, sampler="Full")
             .multi_resolution(1, p_sched=[5, 5, 5])
-            .asgd()
+            .gomea(partial_evals=True, fos=-6)
             .instance(Collection.EMPIRE, instance)
-            .stopping_criteria(iterations=[10000])
+            .stopping_criteria(iterations=[1000])
         )
         yield Experiment(params, project)
 

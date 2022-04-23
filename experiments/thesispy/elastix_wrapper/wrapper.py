@@ -33,7 +33,6 @@ def run(
         logger.error(
             f"Something went wrong while running elastix at: {str(run_dir)}: {str(err)}"
         )
-        return
     except TimeoutException:
         logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
     except KeyboardInterrupt:
@@ -44,7 +43,7 @@ def run(
         wd.join()
         wd.sv_strategy.close()
 
-    logger.info("Run finished successfully.")
+    logger.info("Run ended successfully.")
 
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):

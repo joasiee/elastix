@@ -25,7 +25,7 @@
 (WriteResultImage "false")
 (WritePyramidImagesAfterEachResolution "false")
 (ImagePyramidSchedule 5 5 5)
-(Optimizer "GOMEA")
+(Optimizer "AdaptiveStochasticGradientDescent")
 (Collection "EMPIRE")
 (Instance 26)
 (FinalGridSpacingInVoxels 100 80 60)
