@@ -25,12 +25,13 @@ def full_eval(instance: int, project: str):
     for seed in [i for i in range(1, 11)]:
         params = (
             Parameters.from_base(mesh_size=3, seed=seed, sampler="Full")
-            .multi_resolution(1, p_sched=[5, 5, 5])
+            # .multi_resolution(1, p_sched=[5, 5, 5])
             .gomea(partial_evals=True, fos=-6)
-            .instance(Collection.EMPIRE, instance)
+            .instance(Collection.EXAMPLES, instance)
             .stopping_criteria(iterations=[1000])
         )
         yield Experiment(params, project)
+        break
 
 
 def pd_pop_experiment(project):
@@ -78,5 +79,5 @@ def pareto_experiment(project, instance):
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in full_eval(16, "16_fulleval"):
+    for experiment in full_eval(1, "zandbak"):
         queue.push(experiment)

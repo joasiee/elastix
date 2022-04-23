@@ -64,15 +64,14 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         if params.fixedmask_path and params["UseMask"]:
             args += ["-fMask", str(params.fixedmask_path)]
 
-        subprocess.run(args, check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(args, check=True)
 
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=3, sampling_p=0.03, write_img=True)
-        .multi_resolution(1, p_sched=[5, 5, 5])
-        .asgd()
-        .instance(Collection.EMPIRE, 16)
-        .stopping_criteria(iterations=50)
+        Parameters.from_base(mesh_size=5, sampler="Full", write_img=True)
+        .gomea()
+        .instance(Collection.EXAMPLES, 1)
+        .stopping_criteria(iterations=[500])
     )
     run(params, Path("output/" + str(params)))

@@ -9,9 +9,9 @@ from thesispy.experiments.experiment import Experiment, run_experiment
 
 params = (
     Parameters.from_base(mesh_size=5, sampler="Full")
-    .gomea(fos=-6, partial_evals=True)
+    .gomea()
     .instance(Collection.EXAMPLES, 1)
-    .stopping_criteria(iterations=[50])
+    .stopping_criteria(iterations=[1000])
 )
 
 experiment = Experiment(params, "zandbak")
