@@ -16,7 +16,7 @@ def sampling_p_range(instance: int, project: str):
                 .multi_resolution(1, p_sched=[5, 5, 5])
                 .gomea(fos=-6, partial_evals=True)
                 .instance(Collection.EMPIRE, instance)
-                .stopping_criteria(iterations=[1000])
+                .stopping_criteria(iterations=[500])
             )
             yield Experiment(params, project)
 
@@ -79,5 +79,5 @@ def pareto_experiment(project, instance):
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in full_eval(1, "zandbak"):
+    for experiment in sampling_p_range(16, "sampling_shuffled_iteration"):
         queue.push(experiment)
