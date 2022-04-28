@@ -57,17 +57,29 @@ class Dataset:
         if len(attrs) == 0:
             yield (), self.runs
         else:
+            query_parts = [set() for _ in range(len(attrs))]
             unique_values = [set() for _ in range(len(attrs))]
             for i, attr in enumerate(attrs):
                 for run in self.runs:
-                    unique_values[i].add(run.config[attr])
+                    if attr in run.config:
+                        value = run.config[attr]
+                        unique_values[i].add(value)
+                        if isinstance(value, str):
+                            query_parts[i].add(f"{attr} == '{run.config[attr]}'")
+                        else:
+                            query_parts[i].add(f"{attr} == {run.config[attr]}")
+                    else:
+                        unique_values[i].add(None)
+                        query_parts[i].add(f"NOT {attr}")
 
-            for unique_value_tuple in itertools.product(*unique_values):
-                query = ""
-                for i, unique_value in enumerate(unique_value_tuple):
-                    query += f"{attrs[i]} == {unique_value} AND "
-                query = query[:-5]
-                yield unique_value_tuple, self.filter(query).runs
+            for group, query_tuple in zip(
+                itertools.product(*unique_values), itertools.product(*query_parts)
+            ):
+                query = query_tuple[0]
+                for i in range(1, len(query_tuple) - 1):
+                    query += " AND " + query_tuple[i]
+                query += " AND " + query_tuple[-1]
+                yield group, self.filter(query).runs
 
     def aggregate(
         self,

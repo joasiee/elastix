@@ -114,7 +114,7 @@ class Parameters:
         self,
         fos: int = None,
         pop_size: List[int] | int = None,
-        partial_evals: bool = None,
+        partial_evals: bool = False,
     ) -> Parameters:
         if partial_evals:
             self["OptimizerName"] = "GOMEA-partial"
