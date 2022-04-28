@@ -1817,6 +1817,14 @@ GOMEAOptimizer::GetStopConditionDescription() const
   return m_StopConditionDescription.str();
 }
 
+double
+GOMEAOptimizer::GetAverageDistributionMultiplier() const
+{
+  const int pop = number_of_populations - 1;
+  double sum = std::accumulate(this->distribution_multipliers[pop].begin(), this->distribution_multipliers[pop].end(), 0.0);
+  return sum / this->distribution_multipliers[pop].size();
+}
+
 void
 GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
 {

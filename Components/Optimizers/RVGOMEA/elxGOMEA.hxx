@@ -17,10 +17,12 @@ GOMEA<TElastix>::BeforeRegistration(void)
   this->SetImageDimension(this->GetElastix()->GetFixedImage()->GetImageDimension());
 
   this->AddTargetCellToIterationInfo("2:Metric");
-  this->AddTargetCellToIterationInfo("3:PdPct");
+  this->AddTargetCellToIterationInfo("3a:PdPct");
+  this->AddTargetCellToIterationInfo("3b:DistMult");
 
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
-  this->GetIterationInfoAt("3:PdPct") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("3a:PdPct") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("3b:DistMult") << std::showpoint << std::fixed;
 }
 
 template <class TElastix>
@@ -29,7 +31,8 @@ GOMEA<TElastix>::AfterEachIteration(void)
 {
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->m_Value;
-  this->GetIterationInfoAt("3:PdPct") << boost::accumulators::mean(this->m_PdPctMean);
+  this->GetIterationInfoAt("3a:PdPct") << boost::accumulators::mean(this->m_PdPctMean);
+  this->GetIterationInfoAt("3b:DistMult") << this->GetAverageDistributionMultiplier();
   this->m_PdPctMean = {};
 
   this->WriteDistributionMultipliers(this->m_DistMultOutFile);
@@ -165,7 +168,8 @@ void
 GOMEA<TElastix>::AfterRegistration(void)
 {
   /** Print the best metric value */
-  elxout << "\n" << "Final metric value = " << this->m_Value << "\n";
+  elxout << "\n"
+         << "Final metric value = " << this->m_Value << "\n";
 }
 
 } // namespace elastix

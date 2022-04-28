@@ -136,6 +136,9 @@ public:
   void
   WriteDistributionMultipliers(std::ofstream & outfile) const;
 
+  double
+  GetAverageDistributionMultiplier() const;
+
 protected:
   GOMEAOptimizer();
   ~GOMEAOptimizer() override = default;
