@@ -62,6 +62,8 @@ void
 shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size);
 float
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n);
+void
+lowerTriangularMatrixInverse(MatrixXd & A, const int n);
 int *
 mergeSort(double * array, int array_size);
 void

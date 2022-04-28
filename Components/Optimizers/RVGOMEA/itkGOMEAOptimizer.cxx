@@ -1649,11 +1649,10 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
   }
   else
   {
-    MatrixXd identity{ num_indices, num_indices };
-    identity.diagonal().setConstant(1.0);
-    z = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>().solve(
-          identity) *
-        x_min_mu;
+    MatrixXd inverse =
+      decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>();
+    lowerTriangularMatrixInverse(inverse, num_indices);
+    z = inverse * x_min_mu;
 
     for (i = 0; i < num_indices; i++)
     {
@@ -1741,7 +1740,6 @@ GOMEAOptimizer::generationalStepAllPopulations()
   }
 
   this->generationalStepAllPopulationsRecursiveFold(population_index_smallest, population_index_biggest);
-  this->UpdatePosition();
 }
 
 void
@@ -1772,6 +1770,9 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
     for (population_index = population_index_smallest; population_index < population_index_biggest; population_index++)
       this->generationalStepAllPopulationsRecursiveFold(population_index_smallest, population_index);
+
+    this->UpdatePosition();
+    this->evaluateAllPopulations();
   }
 }
 
@@ -1782,8 +1783,6 @@ GOMEAOptimizer::runAllPopulations()
   {
     if (number_of_populations < m_MaxNumberOfPopulations)
       this->initializeNewPopulation();
-    else
-      this->evaluateAllPopulations();
 
     this->generationalStepAllPopulations();
   }
@@ -1821,7 +1820,8 @@ double
 GOMEAOptimizer::GetAverageDistributionMultiplier() const
 {
   const int pop = number_of_populations - 1;
-  double sum = std::accumulate(this->distribution_multipliers[pop].begin(), this->distribution_multipliers[pop].end(), 0.0);
+  double    sum =
+    std::accumulate(this->distribution_multipliers[pop].begin(), this->distribution_multipliers[pop].end(), 0.0);
   return sum / this->distribution_multipliers[pop].size();
 }
 

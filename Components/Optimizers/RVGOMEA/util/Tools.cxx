@@ -115,6 +115,15 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
   return 100.0f;
 }
 
+void
+lowerTriangularMatrixInverse(MatrixXd & A, const int n)
+{
+  const char uplo{ 'L' };
+  const char diag{ 'N' };
+  int        info;
+  LAPACK_dtrtri(&uplo, &diag, &n, A.data(), &n, &info);
+}
+
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
