@@ -9,8 +9,8 @@ logger = logging.getLogger("ParetoFront")
 
 
 def sampling_p_range(instance: int, project: str):
-    for sampling_p in list(np.arange(0.01, 0.11, 0.01)):
-        for seed in [1, 2, 3, 4, 5]:
+    for sampling_p in list(np.arange(0.02, 0.21, 0.02)):
+        for seed in [1, 2, 3]:
             params = (
                 Parameters.from_base(mesh_size=3, seed=seed, sampling_p=sampling_p)
                 .multi_resolution(1, p_sched=[5, 5, 5])
@@ -25,13 +25,12 @@ def full_eval(instance: int, project: str):
     for seed in [i for i in range(1, 11)]:
         params = (
             Parameters.from_base(mesh_size=3, seed=seed, sampler="Full")
-            # .multi_resolution(1, p_sched=[5, 5, 5])
-            .gomea(partial_evals=True, fos=-6)
-            .instance(Collection.EXAMPLES, instance)
-            .stopping_criteria(iterations=[1000])
+            .multi_resolution(1, p_sched=[5, 5, 5])
+            .asgd()
+            .instance(Collection.EMPIRE , instance)
+            .stopping_criteria(iterations=[100000])
         )
         yield Experiment(params, project)
-        break
 
 
 def pd_pop_experiment(project):
@@ -79,5 +78,5 @@ def pareto_experiment(project, instance):
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in sampling_p_range(16, "sampling_shuffled_iteration"):
+    for experiment in sampling_p_range(16, "16_sampling_020"):
         queue.push(experiment)
