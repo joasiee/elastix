@@ -70,7 +70,7 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, sampler="Full", write_img=True)
-        .gomea()
+        .gomea(partial_evals=True)
         .instance(Collection.EXAMPLES, 1)
         .stopping_criteria(iterations=[500])
     )

@@ -90,6 +90,8 @@ class Parameters:
 
     def optimizer(self, optim: str, params: Dict[str, Any] = None) -> Parameters:
         self["Optimizer"] = optim
+        if "OptimizerName" not in self.params:
+            self["OptimizerName"] = optim
         if params is not None:
             for key, value in params.items():
                 self[key] = value
@@ -114,6 +116,8 @@ class Parameters:
         pop_size: List[int] | int = None,
         partial_evals: bool = None,
     ) -> Parameters:
+        if partial_evals:
+            self["OptimizerName"] = "GOMEA-partial"
         return self.optimizer(
             "GOMEA",
             {

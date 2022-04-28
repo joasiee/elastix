@@ -16,16 +16,16 @@
 (DefaultPixelValue 0)
 (Metric "AdvancedMeanSquares")
 (UseNormalization "true")
-(ImageSampler "Full")
-(NumberOfSpatialSamples 400)
+(ImageSampler "RandomCoordinate")
+(NumberOfSpatialSamples 200)
 (SamplingPercentage 0.05)
-(Optimizer "AdaptiveStochasticGradientDescent") // AdaptiveStochasticGradientDescent
+(Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (FinalGridSpacingInVoxels 5 5)
-(MaximumNumberOfIterations 50000)
+(MaximumNumberOfIterations 30)
 (NewSamplesEveryIteration "true")
 (WriteSamplesEachIteration "false")
 
 //(BasePopulationSize 50)
 (UseShrinkage "false")
-(PartialEvaluations "true")
-(FosElementSize -6)
+//(PartialEvaluations "true")
+//(FosElementSize -6)
