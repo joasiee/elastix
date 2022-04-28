@@ -1098,7 +1098,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::SelectNewSamplesSubfuncti
   {
     for (ImageSamplerPointer & sampler : this->m_SubfunctionSamplers)
     {
-      sampler->Modified();
+      if (sampler)
+        sampler->Modified();
     }
   }
 }
