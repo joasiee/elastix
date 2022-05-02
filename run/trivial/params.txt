@@ -19,9 +19,9 @@
 (ImageSampler "Full")
 (NumberOfSpatialSamples 400)
 (SamplingPercentage 0.05)
-(Optimizer "AdaptiveStochasticGradientDescent") // AdaptiveStochasticGradientDescent
+(Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (FinalGridSpacingInVoxels 10 10)
-(MaximumNumberOfIterations 10000)
+(MaximumNumberOfIterations 50)
 (NewSamplesEveryIteration "true")
 (WriteSamplesEachIteration "false")
 

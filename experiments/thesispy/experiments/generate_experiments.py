@@ -9,7 +9,7 @@ logger = logging.getLogger("ParetoFront")
 
 
 def sampling_p_range(instance: int, project: str):
-    for sampling_p in list(np.arange(0.02, 0.21, 0.02)):
+    for sampling_p in list(np.arange(0.25, 0.81, 0.05)):
         for seed in [1, 2, 3]:
             params = (
                 Parameters.from_base(mesh_size=3, seed=seed, sampling_p=sampling_p)

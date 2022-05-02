@@ -82,6 +82,8 @@
         "eigenvalues": "cpp",
         "qr": "cpp",
         "lu": "cpp",
-        "core": "cpp"
+        "core": "cpp",
+        "strstream": "cpp",
+        "forward_list": "cpp"
     }
 }

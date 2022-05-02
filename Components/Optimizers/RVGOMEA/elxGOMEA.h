@@ -65,7 +65,11 @@ private:
   void
   operator=(const Self &) = delete;
 
+  void
+  WriteMeanPointsOfIteration() const;
+
   std::ofstream m_DistMultOutFile;
+  std::string m_MeanPointsDir;
 };
 
 } // end namespace elastix
