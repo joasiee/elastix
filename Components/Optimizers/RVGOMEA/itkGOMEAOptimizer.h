@@ -241,7 +241,7 @@ private:
   void
   getOverallBest(int * population_index, int * individual_index);
   void
-  evaluateAllPopulations();
+  evaluatePopulation(int population);
   void
   costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val);
   void

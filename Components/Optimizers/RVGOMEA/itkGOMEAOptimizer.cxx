@@ -1145,15 +1145,12 @@ GOMEAOptimizer::getOverallBest(int * population_index, int * individual_index)
 }
 
 void
-GOMEAOptimizer::evaluateAllPopulations()
+GOMEAOptimizer::evaluatePopulation(int population)
 {
-  int i, j;
+  int i;
 
-  for (i = 0; i < number_of_populations; ++i)
-  {
-    for (j = 0; j < population_sizes[i]; j++)
-      this->costFunctionEvaluation(&populations[i][j], &objective_values[i][j]);
-  }
+  for (i = 0; i < population_sizes[population]; ++i)
+    this->costFunctionEvaluation(&populations[population][i], &objective_values[population][i]);
 }
 
 void
@@ -1759,6 +1756,9 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
         number_of_generations[population_index]++;
 
+        this->UpdatePosition();
+        this->evaluatePopulation(population_index);
+
         if (this->checkSubgenerationTerminationConditions())
         {
           for (j = 0; j < number_of_populations; j++)
@@ -1770,9 +1770,6 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
     for (population_index = population_index_smallest; population_index < population_index_biggest; population_index++)
       this->generationalStepAllPopulationsRecursiveFold(population_index_smallest, population_index);
-
-    this->UpdatePosition();
-    this->evaluateAllPopulations();
   }
 }
 

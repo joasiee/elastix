@@ -616,7 +616,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueA
 #ifdef ELASTIX_USE_OPENMP
       if (this->m_InterpolatorIsBSpline)
       {
-        const int threadid = static_cast<unsigned int>(omp_get_thread_num());
+        const unsigned int threadid = static_cast<unsigned int>(omp_get_thread_num());
         movingImageValue = this->m_BSplineInterpolator->EvaluateAtContinuousIndex(cindex, threadid);
       }
       else

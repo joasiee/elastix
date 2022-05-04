@@ -27,7 +27,7 @@ def full_eval(instance: int, project: str):
             Parameters.from_base(mesh_size=3, seed=seed, sampler="Full")
             .multi_resolution(1, p_sched=[5, 5, 5])
             .asgd()
-            .instance(Collection.EMPIRE , instance)
+            .instance(Collection.EMPIRE, instance)
             .stopping_criteria(iterations=[100000])
         )
         yield Experiment(params, project)
@@ -61,7 +61,7 @@ def convergence_experiment(project):
             yield Experiment(params, project)
 
 
-def pareto_experiment(project, instance):
+def pareto_experiment(instance, project):
     for _ in range(100):
         weight0 = 1
         weight1 = random.uniform(1, 5000)
@@ -76,7 +76,19 @@ def pareto_experiment(project, instance):
         yield Experiment(params, project)
 
 
+def grid_experiment(instance, project):
+    for gridsize in [2, 3, 4, 5, 6, 7, 8, 9]:
+        params = (
+            Parameters.from_base(mesh_size=gridsize, sampler="Full", seed=1)
+            .multi_resolution(1, [5, 5, 5])
+            .gomea(partial_evals=True, fos=-6)
+            .stopping_criteria(500)
+            .instance(Collection.EMPIRE, instance)
+        )
+        yield Experiment(params, project)
+
+
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in sampling_p_range(16, "16_sampling_020"):
+    for experiment in grid_experiment(16, "gridsizes_16"):
         queue.push(experiment)

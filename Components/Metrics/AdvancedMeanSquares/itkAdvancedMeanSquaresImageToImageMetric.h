@@ -132,7 +132,7 @@ public:
   itkStaticConstMacro(MovingImageDimension, unsigned int, MovingImageType::ImageDimension);
 
   /** Number of samples to allocate to a thread minimally. */
-  itkStaticConstMacro(SamplesPerThread, unsigned int, 50);
+  itkStaticConstMacro(SamplesPerThread, unsigned int, 64);
 
   itkStaticConstMacro(MissedPixelPenalty, unsigned int, 512);
 
