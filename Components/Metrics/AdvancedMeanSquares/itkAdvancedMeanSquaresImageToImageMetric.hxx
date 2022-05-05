@@ -204,7 +204,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
-  const ThreadIdType         maxThreads = Self::GetNumberOfWorkUnits();
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixelsCounted = 0;
@@ -212,7 +211,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
 /** Loop over the fixed image samples to calculate the mean squares. */
 #ifdef ELASTIX_USE_OPENMP
-#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(maxThreads)
+#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted)
 #endif
   for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
@@ -262,7 +261,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   unsigned long numberOfPixelsCounted = 0;
   unsigned long sumNrPixels = 0;
 
-// iterate over these subfunction samplers and calculate mean squared diffs
+  // iterate over these subfunction samplers and calculate mean squared diffs
   for (int i = 0; i < fosPoints.size(); ++i)
   {
     // this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
@@ -276,9 +275,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
     typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
 
+    // std::cout << "samples: " << sampleContainerSize <<  ", numthreads: " << numThreads << "\n";
+
 #ifdef ELASTIX_USE_OPENMP
 /** Loop over the fixed image samples to calculate the mean squares. */
-#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(maxThreads)
+#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) if (sampleContainerSize >= maxThreads)
 #endif
     for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
