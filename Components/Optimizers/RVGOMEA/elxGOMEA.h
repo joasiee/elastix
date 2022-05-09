@@ -13,8 +13,8 @@ class ITK_TEMPLATE_EXPORT GOMEA
 {
 public:
   /** Standard ITK.*/
-  typedef GOMEA          Self;
-  typedef GOMEAOptimizer Superclass1;
+  typedef GOMEA                         Self;
+  typedef GOMEAOptimizer                Superclass1;
   typedef OptimizerBase<TElastix>       Superclass2;
   typedef itk::SmartPointer<Self>       Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;
@@ -69,7 +69,9 @@ private:
   WriteMeanPointsOfIteration() const;
 
   std::ofstream m_DistMultOutFile;
-  std::string m_MeanPointsDir;
+  std::string   m_MeanPointsDir;
+
+  bool m_WriteMeanPoints{ false };
 };
 
 } // end namespace elastix

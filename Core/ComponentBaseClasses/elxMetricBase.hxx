@@ -173,7 +173,7 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
     this->m_Configuration->ReadParameter(samplingPercentage, "SamplingPercentage", this->GetComponentLabel(), level, 0);
     thisAsAdvanced->SetSamplingPercentage(samplingPercentage);
 
-    this->m_Configuration->ReadParameter(m_WriteSamplesEveryIteration, "WriteSamplesEachIteration", "", level, 0, true);
+    this->m_Configuration->ReadParameter(m_WriteSamplesEveryIteration, "WriteSamplesEveryIteration", "", level, 0, true);
 
     if (m_WriteSamplesEveryIteration)
     {

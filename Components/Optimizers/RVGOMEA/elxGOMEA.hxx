@@ -119,6 +119,9 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(oasShrinkage, "UseShrinkage", this->GetComponentLabel(), level, 0);
   this->SetOASShrinkage(oasShrinkage);
 
+  /** Set WriteMeanPoints*/
+  this->m_Configuration->ReadParameter(this->m_WriteMeanPoints, "WriteMeanPointsEveryIteration", this->GetComponentLabel(), level, 0);
+
   std::ostringstream makeFileName("");
   makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
   std::string fileName = makeFileName.str();
