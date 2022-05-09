@@ -2,7 +2,7 @@
 #
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=12
-#SBATCH --mem=4G
+#SBATCH --mem=6G
 #SBATCH --time=10-00:00:00
 #SBATCH -D /home/jmulder6/projects/elastix/experiments
 #SBATCH -o "output/slurm/pareto_front-%j.out"
