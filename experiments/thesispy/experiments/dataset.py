@@ -63,6 +63,8 @@ class Dataset:
                 for run in self.runs:
                     if attr in run.config:
                         value = run.config[attr]
+                        if isinstance(value, list):
+                            value = tuple(value)
                         unique_values[i].add(value)
                         if isinstance(value, str):
                             query_parts[i].add(f"{attr} == '{run.config[attr]}'")
@@ -83,8 +85,8 @@ class Dataset:
 
     def aggregate(
         self,
-        attrs: List[str],
-        metrics: List[str],
+        attrs: List[str] = [],
+        metrics: List[str] = ["metric"],
         resolution: int = 0,
         val: bool = True,
     ):
@@ -101,7 +103,7 @@ class Dataset:
                         [df_add, run.resolutions_train[resolution][metrics]]
                     )
             for i, attr in enumerate(attrs):
-                df_add[attr] = group[i]
+                df_add[attr] = str(group[i])
             df = pd.concat([df, df_add])
         return df
 
