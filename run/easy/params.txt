@@ -25,6 +25,6 @@
 //(PartialEvaluations "true")
 //(FosElementSize -6)
 (NewSamplesEveryIteration "true")
-(WriteSamplesEachIteration "false")
+(WriteSamplesEveryIteration "false")
 (BasePopulationSize 200)
 (RandomSeed 125050)

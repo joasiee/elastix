@@ -24,7 +24,7 @@
 (FinalGridSpacingInVoxels 30 30 20)
 (MaximumNumberOfIterations 2000)
 (NewSamplesEveryIteration "true")
-(WriteSamplesEachIteration "true")
+(WriteSamplesEveryIteration "true")
 
 //(PartialEvaluations "true")
 //(FosElementSize -6)

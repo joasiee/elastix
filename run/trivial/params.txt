@@ -23,7 +23,7 @@
 (FinalGridSpacingInVoxels 10 10)
 (MaximumNumberOfIterations 50)
 (NewSamplesEveryIteration "true")
-(WriteSamplesEachIteration "false")
+(WriteSamplesEveryIteration "false")
 
 //(BasePopulationSize 50)
 (PartialEvaluations "true")

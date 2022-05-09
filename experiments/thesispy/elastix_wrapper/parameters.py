@@ -132,7 +132,8 @@ class Parameters:
 
     def debug(self):
         self["WritePyramidImagesAfterEachResolution"] = True
-        self["WriteSamplesEachIteration"] = True
+        self["WriteSamplesEveryIteration"] = True
+        self["WriteMeanPointsEveryIteration"] = True
         return self
 
     def shrinkage(self, val: bool):
