@@ -622,8 +622,8 @@ protected:
   IsInsideMovingMask(const MovingImagePointType & point) const;
   bool
   IsInsideFixedMask(const FixedImagePointType & point) const;
-  bool
-  IsInsideFixedMask(const FixedImageRegionType & region, const double pct) const;
+  double
+  PctInsideFixedMask(const FixedImageRegionType & region) const;
   FixedImageRegionType
   TransformImageToMaskRegion(const FixedImageRegionType & region) const;
 

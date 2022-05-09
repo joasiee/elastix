@@ -300,8 +300,12 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 
   const unsigned long totalSamples = this->GetNumberOfFixedImageSamples();
   const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
-  const double        pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
-  this->m_MissedPixelsMean(pctMissed * 100.0);
+
+  if (fosIndex == -1)
+  {
+    const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
+    this->m_MissedPixelsMean(pctMissed * 100.0);
+  }
 
   measure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
   measure *= this->m_NormalizationFactor / static_cast<RealType>(totalSamples);
