@@ -1668,6 +1668,7 @@ GOMEAOptimizer::UpdatePosition()
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
   this->m_Value =
     m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
+  // this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]);
 
   m_CurrentIteration++;
   this->InvokeEvent(IterationEvent());
@@ -1835,25 +1836,6 @@ GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
     for (const double & distm : this->distribution_multipliers[0])
     {
       outfile << distm << " ";
-    }
-    outfile << "\n";
-    outfile.flush();
-  }
-}
-
-void
-GOMEAOptimizer::WriteMeanVectorAsPoints(std::ofstream & outfile) const
-{
-  if (this->mean_vectors.size() > 0)
-  {
-    const size_t nrPoints = mean_vectors[0].size() / m_ImageDimension;
-    for (size_t n = 0UL; n < nrPoints; ++n)
-    {
-      for (size_t dim = 0UL; dim < m_ImageDimension; ++dim)
-      {
-        outfile << mean_vectors[0][n + (dim * nrPoints)] << " ";
-      }
-      outfile << "\n";
     }
     outfile << "\n";
     outfile.flush();

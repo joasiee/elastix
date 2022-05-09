@@ -149,7 +149,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     if (maxdiff > 1e-10)
     {
       this->m_NormalizationFactor = 100.0 / maxdiff / maxdiff;
-      this->m_MissedPixelPenalty = maxdiff * maxdiff;
+      this->m_MissedPixelPenalty = maxdiff * maxdiff * 2;
     }
   }
   else

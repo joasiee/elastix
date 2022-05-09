@@ -36,7 +36,6 @@ GOMEA<TElastix>::AfterEachIteration(void)
   this->m_PdPctMean = {};
 
   this->WriteDistributionMultipliers(this->m_DistMultOutFile);
-  this->WriteMeanPointsOfIteration();
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
@@ -119,22 +118,10 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(oasShrinkage, "UseShrinkage", this->GetComponentLabel(), level, 0);
   this->SetOASShrinkage(oasShrinkage);
 
-  /** Set WriteMeanPoints*/
-  this->m_Configuration->ReadParameter(
-    this->m_WriteMeanPoints, "WriteMeanPointsEveryIteration", this->GetComponentLabel(), level, 0);
-
   std::ostringstream makeFileName("");
   makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
   std::string fileName = makeFileName.str();
   this->m_DistMultOutFile.open(fileName.c_str());
-
-  if (this->m_WriteMeanPoints)
-  {
-    std::ostringstream meanpointsDir("");
-    meanpointsDir << this->m_Configuration->GetCommandLineArgument("-out") << "meanpoints.R" << level << "/";
-    this->m_MeanPointsDir = meanpointsDir.str();
-    std::filesystem::create_directory(this->m_MeanPointsDir);
-  }
 }
 
 template <class TElastix>
@@ -184,27 +171,6 @@ GOMEA<TElastix>::AfterRegistration(void)
   elxout << "\n"
          << "Final metric value = " << this->m_Value << "\n";
 }
-
-/**
- * ******************* WriteSamplesOfIteration ******************
- */
-
-template <class TElastix>
-void
-GOMEA<TElastix>::WriteMeanPointsOfIteration() const
-{
-  const unsigned int itNr = this->m_Elastix->GetIterationCounter();
-  std::ofstream      outFile;
-  std::ostringstream makeFileName("");
-  makeFileName << this->m_MeanPointsDir << itNr << ".dat";
-  std::string fileName = makeFileName.str();
-  outFile.open(fileName.c_str());
-
-  this->WriteMeanVectorAsPoints(outFile);
-
-  outFile.close();
-}
-
 } // namespace elastix
 
 #endif

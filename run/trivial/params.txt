@@ -16,15 +16,15 @@
 (DefaultPixelValue 0)
 (Metric "AdvancedMeanSquares")
 (UseNormalization "true")
-(ImageSampler "RandomCoordinate")
+(ImageSampler "Full")
 (NumberOfSpatialSamples 400)
 (SamplingPercentage 0.05)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (FinalGridSpacingInVoxels 10 10)
-(MaximumNumberOfIterations 50)
+(MaximumNumberOfIterations 30)
 (NewSamplesEveryIteration "true")
 (WriteSamplesEveryIteration "false")
+(WriteMeanPointsEveryIteration "true")
 
-//(BasePopulationSize 50)
 (PartialEvaluations "true")
 (FosElementSize -6)

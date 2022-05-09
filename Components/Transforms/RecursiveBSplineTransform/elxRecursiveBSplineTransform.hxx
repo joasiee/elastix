@@ -145,7 +145,31 @@ RecursiveBSplineTransform<TElastix>::BeforeEachResolution()
     passiveEdgeWidth, "PassiveEdgeWidth", this->GetComponentLabel(), level, 0, false);
   this->SetOptimizerScales(passiveEdgeWidth);
 
+  /** Set WriteMeanPoints*/
+  this->m_Configuration->ReadParameter(
+    this->m_WriteMeanPoints, "WriteMeanPointsEveryIteration", this->GetComponentLabel(), level, 0);
+
+  if (this->m_WriteMeanPoints)
+  {
+    std::ostringstream meanpointsDir("");
+    meanpointsDir << this->m_Configuration->GetCommandLineArgument("-out") << "meanpoints.R" << level << "/";
+    this->m_MeanPointsDir = meanpointsDir.str();
+    std::filesystem::create_directory(this->m_MeanPointsDir);
+  }
+
 } // end BeforeEachResolution()
+
+/**
+ * ******************* BeforeRegistration ***********************
+ */
+
+template <class TElastix>
+void
+RecursiveBSplineTransform<TElastix>::AfterEachIteration()
+{
+  if (this->m_WriteMeanPoints)
+    this->WriteMeanPointsOfIteration();
+}
 
 
 /**
@@ -572,6 +596,26 @@ RecursiveBSplineTransform<TElastix>::SetOptimizerScales(const unsigned int edgeW
   this->m_Registration->GetAsITKBaseType()->GetModifiableOptimizer()->SetScales(newScales);
 
 } // end SetOptimizerScales()
+
+/**
+ * ******************* WriteMeanPointsOfIteration ******************
+ */
+
+template <class TElastix>
+void
+RecursiveBSplineTransform<TElastix>::WriteMeanPointsOfIteration() const
+{
+  const unsigned int itNr = this->m_Elastix->GetIterationCounter();
+  std::ofstream      outFile;
+  std::ostringstream makeFileName("");
+  makeFileName << this->m_MeanPointsDir << itNr << ".dat";
+  std::string fileName = makeFileName.str();
+  outFile.open(fileName.c_str());
+
+  this->m_BSplineTransform->WriteParametersAsPoints(outFile);
+
+  outFile.close();
+} // end WriteMeanPointsOfIteration()
 
 
 } // end namespace elastix
