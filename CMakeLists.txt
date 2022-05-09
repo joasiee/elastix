@@ -340,6 +340,8 @@ add_subdirectory( Components )
 # components, definitions of macros etc.
 add_subdirectory( Core )
 
+add_subdirectory( Scenes )
+
 #---------------------------------------------------------------------
 # Configure the examples
 
