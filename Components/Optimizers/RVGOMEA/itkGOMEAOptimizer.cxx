@@ -1028,22 +1028,21 @@ GOMEAOptimizer::estimateFullCovarianceMatrixML(int population_index)
 void
 GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
 {
-  const bool p = linkage_model[population_index]->length == 1;
+  int vara, varb, i, j, k, m;
+  double cov;
 
   /* First do the maximum-likelihood estimate from data */
   // for each fos set:
-  for (int i = 0; i < linkage_model[population_index]->length; i++)
+  for (i = 0; i < linkage_model[population_index]->length; ++i)
   {
-// for each parameter index in fos set:
-#pragma omp parallel for collapse(2) if(p)
-    for (int j = 0; j < linkage_model[population_index]->set_length[i]; j++)
+    // for each parameter index in fos set:
+    for (j = 0; j < linkage_model[population_index]->set_length[i]; ++j)
     {
-      for (int k = j; k < linkage_model[population_index]->set_length[i]; k++)
+      vara = linkage_model[population_index]->sets[i][j];
+      for (k = j; k < linkage_model[population_index]->set_length[i]; ++k)
       {
-        double cov;
         // for each pair (vara, varb) of parameters:
-        const int vara = linkage_model[population_index]->sets[i][j];
-        const int varb = linkage_model[population_index]->sets[i][k];
+        varb = linkage_model[population_index]->sets[i][k];
 
         if (learn_linkage_tree)
         {
@@ -1052,11 +1051,11 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
         else
         {
           cov = 0.0;
-          for (int m = 0; m < selection_sizes[population_index]; ++m)
+          for (m = 0; m < selection_sizes[population_index]; ++m)
             cov += (selections[population_index][m][vara] - mean_vectors[population_index][vara]) *
                    (selections[population_index][m][varb] - mean_vectors[population_index][varb]);
 
-          cov /= (double)selection_sizes[population_index];
+          cov /= static_cast<double>(selection_sizes[population_index]);
         }
         decomposed_covariance_matrices[population_index][i](j, k) =
           (1 - eta_cov) * decomposed_covariance_matrices[population_index][i](j, k) + eta_cov * cov;
@@ -1757,7 +1756,6 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
         this->makePopulation(population_index);
 
         number_of_generations[population_index]++;
-
         this->UpdatePosition();
         this->evaluatePopulation(population_index);
 
