@@ -77,9 +77,9 @@ def pareto_experiment(instance, project):
 
 
 def grid_experiment(instance, project):
-    for gridsize in [2, 3, 4, 5, 6, 7, 8, 9]:
+    for gridsize in [2, 3, 4, 5, 6, 7]:
         params = (
-            Parameters.from_base(mesh_size=gridsize, sampler="Full", seed=1)
+            Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
             .multi_resolution(1, [5, 5, 5])
             .gomea(partial_evals=True, fos=-6)
             .stopping_criteria(500)

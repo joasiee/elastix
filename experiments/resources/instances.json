@@ -2,11 +2,19 @@
     "EMPIRE": {
         "folder": "empire",
         "extension": "mhd",
-        "masks": true
+        "masks": true,
+        "landmarks": false
+    },
+    "LEARN": {
+        "folder": "learn",
+        "extension": "nii.gz",
+        "masks": true,
+        "landmarks": true
     },
     "EXAMPLES": {
         "folder": "examples",
         "extension": "png",
-        "masks": false
+        "masks": false,
+        "landmarks": false
     }
 }

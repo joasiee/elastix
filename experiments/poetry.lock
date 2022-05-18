@@ -470,6 +470,29 @@ optional = false
 python-versions = ">=3.5"
 
 [[package]]
+name = "nibabel"
+version = "3.2.2"
+description = "Access a multitude of neuroimaging data formats"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+numpy = ">=1.14"
+packaging = ">=14.3"
+
+[package.extras]
+all = ["pydicom (>=1.0.0)", "pillow", "gitpython", "twine", "matplotlib (>=1.5.3)", "numpydoc", "sphinx (>=0.3,<3)", "texext", "h5py", "scipy", "flake8", "coverage", "pytest (!=5.3.4)", "pytest-cov", "pytest-doctestplus (!=0.9.0)", "pytest (<7)"]
+dev = ["gitpython", "twine"]
+dicom = ["pydicom (>=1.0.0)"]
+dicomfs = ["pydicom (>=1.0.0)", "pillow"]
+doc = ["matplotlib (>=1.5.3)", "numpydoc", "sphinx (>=0.3,<3)", "texext"]
+minc2 = ["h5py"]
+spm = ["scipy"]
+style = ["flake8"]
+test = ["coverage", "pytest (!=5.3.4)", "pytest-cov", "pytest-doctestplus (!=0.9.0)", "pytest (<7)"]
+
+[[package]]
 name = "nodeenv"
 version = "1.6.0"
 description = "Node.js virtual environment builder"
@@ -845,7 +868,7 @@ matplotlib = "*"
 name = "scipy"
 version = "1.8.0"
 description = "SciPy: Scientific Library for Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.8,<3.11"
 
@@ -1127,7 +1150,7 @@ viz = ["matplotlib", "seaborn", "nc-time-axis"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "e6aed0fe7e54b40b7c730b1b2eba3c825a354b0a524e49c369bb2702505b0525"
+content-hash = "dcf4ff135d6c9b9ecc2af13dd823ca32c768e95e35828e83a36ad8c7c4b2cdaa"
 
 [metadata.files]
 appnope = [
@@ -1469,6 +1492,10 @@ nest-asyncio = [
     {file = "nest_asyncio-1.5.5-py3-none-any.whl", hash = "sha256:b98e3ec1b246135e4642eceffa5a6c23a3ab12c82ff816a92c612d68205813b2"},
     {file = "nest_asyncio-1.5.5.tar.gz", hash = "sha256:e442291cd942698be619823a17a86a5759eabe1f8613084790de189fe9e16d65"},
 ]
+nibabel = [
+    {file = "nibabel-3.2.2-py3-none-any.whl", hash = "sha256:7df7a2733461441d3aacc61f36f5e100ec533d43ed09a191293bb4ca5a4f10f6"},
+    {file = "nibabel-3.2.2.tar.gz", hash = "sha256:b0dcc174b30405ce9e8fec1eab3cbbb20f5c5e4920976c08b22e050b7c124f94"},
+]
 nodeenv = [
     {file = "nodeenv-1.6.0-py2.py3-none-any.whl", hash = "sha256:621e6b7076565ddcacd2db0294c0381e01fd28945ab36bcf00f41c5daf63bef7"},
     {file = "nodeenv-1.6.0.tar.gz", hash = "sha256:3ef13ff90291ba2a4a7a4ff9a979b63ffdd00a464dbe04acf0ea6471517a4c2b"},
@@ -1478,7 +1505,6 @@ numpy = [
     {file = "numpy-1.22.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:8251ed96f38b47b4295b1ae51631de7ffa8260b5b087808ef09a39a9d66c97ab"},
     {file = "numpy-1.22.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:48a3aecd3b997bf452a2dedb11f4e79bc5bfd21a1d4cc760e703c31d57c84b3e"},
     {file = "numpy-1.22.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a3bae1a2ed00e90b3ba5f7bd0a7c7999b55d609e0c54ceb2b076a25e345fa9f4"},
-    {file = "numpy-1.22.3-cp310-cp310-win32.whl", hash = "sha256:f950f8845b480cffe522913d35567e29dd381b0dc7e4ce6a4a9f9156417d2430"},
     {file = "numpy-1.22.3-cp310-cp310-win_amd64.whl", hash = "sha256:08d9b008d0156c70dc392bb3ab3abb6e7a711383c3247b410b39962263576cd4"},
     {file = "numpy-1.22.3-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:201b4d0552831f7250a08d3b38de0d989d6f6e4658b709a02a73c524ccc6ffce"},
     {file = "numpy-1.22.3-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:f8c1f39caad2c896bc0018f699882b345b2a63708008be29b1f355ebf6f933fe"},
