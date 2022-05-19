@@ -34,8 +34,9 @@ def run(
     try:
         execute_elastix(params_file, out_dir, params)
     except subprocess.CalledProcessError as err:
+        err_msg = err.stderr.decode('utf-8').strip('\n')
         logger.error(
-            f"Something went wrong while running elastix at: {str(run_dir)}: {err.stderr}"
+            f"Something went wrong while running elastix at: {str(run_dir)}: {err_msg}"
         )
     except TimeoutException:
         logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
@@ -45,7 +46,7 @@ def run(
     if save_strategy:
         if params.compute_tre:
             tre = compute_tre(out_dir, params.lms_fixed_path, params.lms_moving_path, params.fixed_path)
-            print(f"TRE: {tre}")
+            logger.info(f"TRE: {tre}")
             wd.sv_strategy.save_custom("TRE", tre)
         wd.stop()
         wd.join()
@@ -66,13 +67,14 @@ def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Pat
         n_points = len(lms_fixed)
         file.write(b"index\n")
         file.write(bytes(str(n_points), encoding="utf-8") + b"\n")
-        np.savetxt(file, lms_fixed)
+        np.savetxt(file, lms_fixed, fmt='%f')
 
     try:
         execute_transformix(params_file, points_file, out_dir)
     except subprocess.CalledProcessError as err:
+        err_msg = err.stderr.decode('utf-8').strip('\n')
         logger.error(
-            f"Something went wrong while running transformix at: {str(out_dir)}, {err.stderr}"
+            f"Something went wrong while running transformix at: {str(out_dir)}, {err_msg}"
         )
         return
 
@@ -86,7 +88,7 @@ def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Pat
             index = np.array([float(s[1]), float(s[2]), float(s[3])])
             lms_fixed_warped[i] = index
 
-    return np.linalg.norm((lms_fixed_warped - lms_moving) * spacing, axis=1)
+    return np.linalg.norm((lms_fixed_warped - lms_moving) * spacing, axis=1).mean()
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
@@ -106,7 +108,7 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         if params.fixedmask_path and params["UseMask"]:
             args += ["-fMask", str(params.fixedmask_path)]
 
-        subprocess.run(args, check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
 
 def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
@@ -116,21 +118,20 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
         str(params_file),
         "-def",
         str(points_file),
-        str(params.moving_path),
         "-out",
         str(out_dir),
         "-threads",
         os.environ["OMP_NUM_THREADS"],
     ]
-    subprocess.run(args, check=True)
+    subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
-        .multi_resolution(1, [5, 5, 5])
+        Parameters.from_base(mesh_size=5, sampler="Full", seed=1, write_img=True)
+        .multi_resolution(1, [4, 4, 4])
         .asgd()
         .instance(Collection.LEARN, 1)
-        .stopping_criteria(iterations=[500])
+        .stopping_criteria(iterations=[3000])
     )
     run(params, Path("output/" + str(params)), SaveStrategy())
