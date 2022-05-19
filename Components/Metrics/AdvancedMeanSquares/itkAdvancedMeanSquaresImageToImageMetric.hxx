@@ -149,7 +149,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     if (maxdiff > 1e-10)
     {
       this->m_NormalizationFactor = 100.0 / maxdiff / maxdiff;
-      this->m_MissedPixelPenalty = maxdiff * maxdiff;
+      this->m_MissedPixelPenalty = maxdiff * maxdiff * 2;
     }
   }
   else
@@ -204,16 +204,15 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
-  const ThreadIdType         maxWorkUnits = Self::GetNumberOfWorkUnits();
-  const ThreadIdType         numThreads =
-    std::max(std::min(maxWorkUnits, static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)), 1U);
 
   /** Create variables to store intermediate results. circumvent false sharing */
   unsigned long numberOfPixelsCounted = 0;
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
 /** Loop over the fixed image samples to calculate the mean squares. */
-#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(numThreads)
+#ifdef ELASTIX_USE_OPENMP
+#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted)
+#endif
   for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
@@ -256,22 +255,16 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   if (fosPoints.size() == 0)
     return 0.0;
 
-  const ThreadIdType       maxThreads = Self::GetNumberOfWorkUnits();
-  const ThreadIdType       numThreads = std::min(maxThreads, static_cast<ThreadIdType>(fosPoints.size()));
-  const ThreadIdType       freeThreads = maxThreads - numThreads;
-  const ThreadIdType       nestedThreads = (freeThreads / numThreads) + 1;
-  const ThreadIdType       restThreads = freeThreads - ((nestedThreads - 1) * numThreads);
+  const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
 
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
   unsigned long numberOfPixelsCounted = 0;
   unsigned long sumNrPixels = 0;
 
-
-// iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted, sumNrPixels) num_threads(numThreads)
+  // iterate over these subfunction samplers and calculate mean squared diffs
   for (int i = 0; i < fosPoints.size(); ++i)
   {
-    this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
+    // this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
     this->m_SubfunctionSamplers[fosPoints[i]]->Update();
     ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
     const unsigned long        sampleContainerSize = sampleContainer.Size();
@@ -282,13 +275,12 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
     typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
 
-    const ThreadIdType numThreads_ =
-      std::max(std::min(nestedThreads + (static_cast<ThreadIdType>(omp_get_thread_num()) < restThreads),
-                        static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)),
-               1U);
+    // std::cout << "samples: " << sampleContainerSize <<  ", numthreads: " << numThreads << "\n";
 
+#ifdef ELASTIX_USE_OPENMP
 /** Loop over the fixed image samples to calculate the mean squares. */
-#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) num_threads(numThreads_)
+#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) if (sampleContainerSize >= maxThreads)
+#endif
     for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
       /** Read fixed coordinates and initialize some variables. */
@@ -308,8 +300,12 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 
   const unsigned long totalSamples = this->GetNumberOfFixedImageSamples();
   const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
-  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
-  this->m_MissedPixelsMean(pctMissed * 100.0);
+
+  if (fosIndex == -1)
+  {
+    const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
+    this->m_MissedPixelsMean(pctMissed * 100.0);
+  }
 
   measure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
   measure *= this->m_NormalizationFactor / static_cast<RealType>(totalSamples);

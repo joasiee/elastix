@@ -6,6 +6,7 @@ import os
 import time
 import uuid
 from PIL import Image
+import nibabel as nib
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List
@@ -22,6 +23,7 @@ with INSTANCE_CONFIG_PATH.open() as f:
 
 class Collection(str, Enum):
     EMPIRE = "EMPIRE"
+    LEARN = "LEARN"
     EXAMPLES = "EXAMPLES"
 
 
@@ -90,6 +92,8 @@ class Parameters:
 
     def optimizer(self, optim: str, params: Dict[str, Any] = None) -> Parameters:
         self["Optimizer"] = optim
+        if "OptimizerName" not in self.params:
+            self["OptimizerName"] = optim
         if params is not None:
             for key, value in params.items():
                 self[key] = value
@@ -112,10 +116,10 @@ class Parameters:
         self,
         fos: int = None,
         pop_size: List[int] | int = None,
-        partial_evals: bool = None,
+        partial_evals: bool = False,
     ) -> Parameters:
         if partial_evals:
-            self["NewSamplesEveryIteration"] = "false"
+            self["OptimizerName"] = "GOMEA-partial"
         return self.optimizer(
             "GOMEA",
             {
@@ -130,7 +134,8 @@ class Parameters:
 
     def debug(self):
         self["WritePyramidImagesAfterEachResolution"] = True
-        self["WriteSamplesEachIteration"] = True
+        self["WriteSamplesEveryIteration"] = True
+        self["WriteMeanPointsEveryIteration"] = True
         return self
 
     def shrinkage(self, val: bool):
@@ -183,6 +188,9 @@ class Parameters:
         elif extension == "png":
             image = Image.open(str(self.fixed_path))
             return list(image.size)
+        elif extension == "nii.gz":
+            image = nib.load(self.fixed_path)
+            return list(image.header.get_data_shape())
         else:
             raise Exception("Unknown how to extract dimensions from filetype.")
 
@@ -194,13 +202,17 @@ class Parameters:
             folder = INSTANCES_CONFIG[collection]["folder"]
             fixed = f"{instance:02}_Fixed.{extension}"
             moving = f"{instance:02}_Moving.{extension}"
+            
             self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
-            self.fixedmask_path = (
-                INSTANCES_SRC / folder / "masks" / fixed
-                if INSTANCES_CONFIG[collection]["masks"]
-                else None
-            )
             self.moving_path = INSTANCES_SRC / folder / "scans" / moving
+            
+            if INSTANCES_CONFIG[collection]["masks"]:
+                self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
+            if INSTANCES_CONFIG[collection]["landmarks"]:
+                self.compute_tre = True
+                self.lms_fixed_path = INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
+                self.lms_moving_path = INSTANCES_SRC / folder / "landmarks" / f"{moving.split('.')[0]}.txt"
+
         return self
 
     def __getitem__(self, key) -> Any:
@@ -261,11 +273,10 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=2, seed=1523, sampling_p=0.2)
-        .multi_resolution(1, p_sched=[7, 7, 7])
-        # .multi_metric()
-        .gomea()
-        .instance(Collection.EMPIRE, 26)
-        .stopping_criteria(iterations=[5000])
+        Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
+        .multi_resolution(1, [5, 5, 5])
+        .gomea(partial_evals=True, fos=-6)
+        .stopping_criteria(500)
+        .instance(Collection.LEARN, 1)
     )
     params.write(Path())

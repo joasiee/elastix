@@ -1028,20 +1028,20 @@ GOMEAOptimizer::estimateFullCovarianceMatrixML(int population_index)
 void
 GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
 {
-  int    i, j, k, m, vara, varb;
+  int vara, varb, i, j, k, m;
   double cov;
 
   /* First do the maximum-likelihood estimate from data */
   // for each fos set:
-  for (i = 0; i < linkage_model[population_index]->length; i++)
+  for (i = 0; i < linkage_model[population_index]->length; ++i)
   {
     // for each parameter index in fos set:
-    for (j = 0; j < linkage_model[population_index]->set_length[i]; j++)
+    for (j = 0; j < linkage_model[population_index]->set_length[i]; ++j)
     {
-      // for each pair (vara, varb) of parameters:
       vara = linkage_model[population_index]->sets[i][j];
-      for (k = j; k < linkage_model[population_index]->set_length[i]; k++)
+      for (k = j; k < linkage_model[population_index]->set_length[i]; ++k)
       {
+        // for each pair (vara, varb) of parameters:
         varb = linkage_model[population_index]->sets[i][k];
 
         if (learn_linkage_tree)
@@ -1051,11 +1051,11 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
         else
         {
           cov = 0.0;
-          for (m = 0; m < selection_sizes[population_index]; m++)
+          for (m = 0; m < selection_sizes[population_index]; ++m)
             cov += (selections[population_index][m][vara] - mean_vectors[population_index][vara]) *
                    (selections[population_index][m][varb] - mean_vectors[population_index][varb]);
 
-          cov /= (double)selection_sizes[population_index];
+          cov /= static_cast<double>(selection_sizes[population_index]);
         }
         decomposed_covariance_matrices[population_index][i](j, k) =
           (1 - eta_cov) * decomposed_covariance_matrices[population_index][i](j, k) + eta_cov * cov;
@@ -1145,15 +1145,12 @@ GOMEAOptimizer::getOverallBest(int * population_index, int * individual_index)
 }
 
 void
-GOMEAOptimizer::evaluateAllPopulations()
+GOMEAOptimizer::evaluatePopulation(int population)
 {
-  int i, j;
+  int i;
 
-  for (i = 0; i < number_of_populations; ++i)
-  {
-    for (j = 0; j < population_sizes[i]; j++)
-      this->costFunctionEvaluation(&populations[i][j], &objective_values[i][j]);
-  }
+  for (i = 0; i < population_sizes[population]; ++i)
+    this->costFunctionEvaluation(&populations[population][i], &objective_values[population][i]);
 }
 
 void
@@ -1649,10 +1646,10 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
   }
   else
   {
-    MatrixXd identity {num_indices, num_indices};
-    identity.diagonal().setConstant(1.0);
-    z =
-      decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>().solve(identity) * x_min_mu;
+    MatrixXd inverse =
+      decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>();
+    lowerTriangularMatrixInverse(inverse, num_indices);
+    z = inverse * x_min_mu;
 
     for (i = 0; i < num_indices; i++)
     {
@@ -1670,6 +1667,7 @@ GOMEAOptimizer::UpdatePosition()
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
   this->m_Value =
     m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
+  // this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]);
 
   m_CurrentIteration++;
   this->InvokeEvent(IterationEvent());
@@ -1758,6 +1756,8 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
         this->makePopulation(population_index);
 
         number_of_generations[population_index]++;
+        this->UpdatePosition();
+        this->evaluatePopulation(population_index);
 
         if (this->checkSubgenerationTerminationConditions())
         {
@@ -1780,12 +1780,8 @@ GOMEAOptimizer::runAllPopulations()
   {
     if (number_of_populations < m_MaxNumberOfPopulations)
       this->initializeNewPopulation();
-    else
-      this->evaluateAllPopulations();
 
     this->generationalStepAllPopulations();
-
-    this->UpdatePosition();
   }
 }
 
@@ -1815,6 +1811,19 @@ GOMEAOptimizer::GetStopConditionDescription() const
       break;
   }
   return m_StopConditionDescription.str();
+}
+
+double
+GOMEAOptimizer::GetAverageDistributionMultiplier() const
+{
+  if (this->distribution_multipliers.size() > 0)
+  {
+    const int pop = number_of_populations - 1;
+    double    sum =
+      std::accumulate(this->distribution_multipliers[pop].begin(), this->distribution_multipliers[pop].end(), 0.0);
+    return sum / this->distribution_multipliers[pop].size();
+  }
+  return 1.0;
 }
 
 void

@@ -49,6 +49,7 @@ run/**/out
 
 # gomea random seed
 random_seed.dat
+*.pkl
 
 .env
 *.pyc

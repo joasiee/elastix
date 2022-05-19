@@ -714,12 +714,13 @@ TransformBase<TElastix>::TransformPointsSomePoints(const std::string & filename)
   typename PointSetType::Pointer inputPointSet = ippReader->GetOutput();
 
   /** Create the storage classes. */
-  std::vector<FixedImageIndexType>   inputindexvec(nrofpoints);
-  std::vector<InputPointType>        inputpointvec(nrofpoints);
-  std::vector<OutputPointType>       outputpointvec(nrofpoints);
-  std::vector<FixedImageIndexType>   outputindexfixedvec(nrofpoints);
-  std::vector<MovingImageIndexType>  outputindexmovingvec(nrofpoints);
-  std::vector<DeformationVectorType> deformationvec(nrofpoints);
+  std::vector<FixedImageIndexType>           inputindexvec(nrofpoints);
+  std::vector<InputPointType>                inputpointvec(nrofpoints);
+  std::vector<OutputPointType>               outputpointvec(nrofpoints);
+  std::vector<FixedImageIndexType>           outputindexfixedvec(nrofpoints);
+  std::vector<FixedImageContinuousIndexType> outputindexcontfixedvec(nrofpoints);
+  std::vector<MovingImageIndexType>          outputindexmovingvec(nrofpoints);
+  std::vector<DeformationVectorType>         deformationvec(nrofpoints);
 
   /** Make a temporary image with the right region info,
    * which we can use to convert between points and indices.
@@ -798,6 +799,7 @@ TransformBase<TElastix>::TransformPointsSomePoints(const std::string & filename)
     for (unsigned int i = 0; i < FixedImageDimension; ++i)
     {
       outputindexfixedvec[j][i] = static_cast<FixedImageIndexValueType>(itk::Math::Round<double>(fixedcindex[i]));
+      outputindexcontfixedvec[j][i] = fixedcindex[i];
     }
 
     if (alsoMovingIndices)
@@ -836,6 +838,13 @@ TransformBase<TElastix>::TransformPointsSomePoints(const std::string & filename)
     for (unsigned int i = 0; i < FixedImageDimension; ++i)
     {
       outputPointsFile << inputpointvec[j][i] << " ";
+    }
+
+    /** The output continuous index in fixed image. */
+    outputPointsFile << "]\t; OutputIndexContinuousFixed = [ ";
+    for (unsigned int i = 0; i < FixedImageDimension; ++i)
+    {
+      outputPointsFile << outputindexcontfixedvec[j][i] << " ";
     }
 
     /** The output index in fixed image. */

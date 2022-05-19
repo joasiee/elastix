@@ -13,8 +13,8 @@ class ITK_TEMPLATE_EXPORT GOMEA
 {
 public:
   /** Standard ITK.*/
-  typedef GOMEA          Self;
-  typedef GOMEAOptimizer Superclass1;
+  typedef GOMEA                         Self;
+  typedef GOMEAOptimizer                Superclass1;
   typedef OptimizerBase<TElastix>       Superclass2;
   typedef itk::SmartPointer<Self>       Pointer;
   typedef itk::SmartPointer<const Self> ConstPointer;

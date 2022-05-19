@@ -191,6 +191,9 @@ public:
   const FixedParametersType &
   GetFixedParameters() const override;
 
+  void
+  WriteParametersAsPoints(std::ofstream & outfile) const;
+
   /** Parameters as SpaceDimension number of images. */
   using PixelType = typename ParametersType::ValueType;
   using ImageType = Image<PixelType, Self::SpaceDimension>;
@@ -355,6 +358,9 @@ protected:
   /** Convert an input point to a continuous index inside the B-spline grid. */
   ContinuousIndexType
   TransformPointToContinuousGridIndex(const InputPointType & point) const;
+
+  InputPointType
+  TransformContinuousGridIndexToPoint(const ContinuousIndexType & index) const;
 
   void
   UpdatePointIndexConversions();

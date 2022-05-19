@@ -218,6 +218,9 @@ public:
   void
   BeforeEachResolution() override;
 
+  void
+  AfterEachIteration() override;
+
   /** Method to increase the density of the B-spline grid.
    * \li Determine the new B-spline coefficients that describe the current deformation field.
    * \li Set these coefficients as InitialParametersOfNextLevel in the registration object.
@@ -275,9 +278,15 @@ private:
   unsigned int m_SplineOrder;
   bool         m_Cyclic;
 
+  bool        m_WriteMeanPoints{ false };
+  std::string m_MeanPointsDir;
+
   /** Initialize the right B-spline transform based on the spline order and periodicity. */
   unsigned int
   InitializeBSplineTransform();
+
+  void
+  WriteMeanPointsOfIteration() const;
 };
 
 } // end namespace elastix

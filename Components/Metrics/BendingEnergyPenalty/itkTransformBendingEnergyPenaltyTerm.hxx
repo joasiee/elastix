@@ -75,15 +75,10 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
   /** Get a handle to the sample container. */
   ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
   const unsigned long        sampleContainerSize = sampleContainer.Size();
-
-  const ThreadIdType maxWorkUnits = Self::GetNumberOfWorkUnits();
-  const ThreadIdType numThreads =
-    std::max(std::min(maxWorkUnits, static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)), 1U);
-
-  unsigned long numberOfPixelsCounted = 0;
+  unsigned long              numberOfPixelsCounted = 0;
 
 /** Loop over the fixed image to calculate the penalty term and its derivative. */
-#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices) num_threads(numThreads)
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices)
   for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
@@ -154,16 +149,11 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
   }
 
   const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
-  const ThreadIdType numThreads = std::min(maxThreads, static_cast<ThreadIdType>(fosPoints.size()));
-  const ThreadIdType freeThreads = maxThreads - numThreads;
-  const ThreadIdType nestedThreads = (freeThreads / numThreads) + 1;
-  const ThreadIdType restThreads = freeThreads - ((nestedThreads - 1) * numThreads);
 
-// iterate over these subfunction samplers and calculate mean squared diffs
-#pragma omp parallel for reduction(+ : measure) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices) num_threads(numThreads)
+  // iterate over these subfunction samplers and calculate mean squared diffs
   for (int i = 0; i < fosPoints.size(); ++i)
   {
-    this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
+    // this->m_SubfunctionSamplers[fosPoints[i]]->SetGeneratorSeed(this->GetSeedForBSplineRegion(fosPoints[i]));
     this->m_SubfunctionSamplers[fosPoints[i]]->Update();
     ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
     const unsigned long        sampleContainerSize = sampleContainer.Size();
@@ -176,12 +166,9 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
     unsigned long numberOfPixelsCounted = 0;
     MeasureType   tmpMeasure = NumericTraits<MeasureType>::Zero;
 
-    const ThreadIdType numThreads_ =
-      std::max(std::min(nestedThreads + (static_cast<ThreadIdType>(omp_get_thread_num()) < restThreads),
-                        static_cast<ThreadIdType>(sampleContainerSize / SamplesPerThread)),
-               1U);
-
-#pragma omp parallel for reduction(+ : tmpMeasure, numberOfPixelsCounted) num_threads(numThreads_)
+#ifdef ELASTIX_USE_OPENMP
+#  pragma omp parallel for reduction(+ : tmpMeasure, numberOfPixelsCounted) if (sampleContainerSize >= maxThreads)
+#endif
     for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
       /** Read fixed coordinates and initialize some variables. */

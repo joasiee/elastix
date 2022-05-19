@@ -1,41 +1,52 @@
-import logging
 import random
 
 import numpy as np
 from thesispy.elastix_wrapper.parameters import Parameters, Collection
 from thesispy.experiments.experiment import Experiment, ExperimentQueue
 
-logger = logging.getLogger("ParetoFront")
+
+def yield_experiments(collection: Collection, instance: int, project: str, exp_fn):
+    for params in exp_fn():
+        params.instance(collection, instance)
+        yield Experiment(params, project)
 
 
-def sampling_p_range(instance: int, project: str):
-    for sampling_p in list(np.arange(0.01, 0.11, 0.01)):
-        for seed in [1, 2, 3, 4, 5]:
+def sampling_p_range():
+    for sampling_p in list(np.arange(0.25, 0.81, 0.05)):
+        for seed in [1, 2, 3]:
             params = (
                 Parameters.from_base(mesh_size=3, seed=seed, sampling_p=sampling_p)
                 .multi_resolution(1, p_sched=[5, 5, 5])
                 .gomea(fos=-6, partial_evals=True)
-                .instance(Collection.EMPIRE, instance)
-                .stopping_criteria(iterations=[400])
+                .stopping_criteria(iterations=[500])
             )
-            yield Experiment(params, project)
+            yield params
 
 
-def pd_pop_experiment(project):
+def full_eval():
+    for seed in [i for i in range(1, 6)]:
+        params = (
+            Parameters.from_base(mesh_size=5, seed=seed, sampler="Full")
+            .multi_resolution(1, p_sched=[4, 4, 4])
+            .gomea(fos=-6, partial_evals=True)
+            .stopping_criteria(iterations=[1000])
+        )
+        yield params
+
+
+def pd_pop_experiment():
     for pop_size in [2**x for x in range(4, 11)]:
         for seed in [1, 2, 3, 4, 5]:
             params = (
                 Parameters.from_base(mesh_size=2, sampling_p=0.05, seed=seed)
                 .multi_resolution(1, p_sched=[5, 5, 5])
                 .gomea(pop_size=pop_size)
-                .instance(Collection.EMPIRE, 16)
-                .shrinkage(False)
                 .stopping_criteria(iterations=100)
             )
-            yield Experiment(params, project)
+            yield params
 
 
-def convergence_experiment(project):
+def convergence_experiment():
     for instance in [16, 17, 14]:
         for seed in [1, 2, 3, 4, 5]:
             sched = [7, 7, 7] if instance == 14 else [5, 5, 5]
@@ -44,28 +55,36 @@ def convergence_experiment(project):
                 .multi_resolution(1, sched)
                 .gomea(partial_evals=True, fos=-6)
                 .stopping_criteria(50)
-                .instance(Collection.EMPIRE, instance)
             )
-            yield Experiment(params, project)
+            yield params
 
 
-def pareto_experiment(project, instance):
-    for _ in range(150):
+def pareto_experiment():
+    for _ in range(100):
         weight0 = 1
         weight1 = int(random.uniform(1, 1000.5))
         params = (
             Parameters.from_base(mesh_size=4, sampling_p=0.05)
             .multi_resolution(1, p_sched=[7, 7, 7])
             .multi_metric(weight0=weight0, weight1=weight1)
-            .gomea(pop_size=512)
-            .shrinkage(True)
-            .instance(Collection.EMPIRE, instance)
-            .stopping_criteria(iterations=[80])
+            .asgd()
+            .stopping_criteria(iterations=[3000])
         )
-        yield Experiment(params, project)
+        yield params
+
+
+def grid_experiment():
+    for gridsize in [2, 3, 4, 5, 6, 7]:
+        params = (
+            Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
+            .multi_resolution(1, [5, 5, 5])
+            .gomea(partial_evals=True, fos=-6)
+            .stopping_criteria(500)
+        )
+        yield params
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in pareto_experiment("pareto_experiment", 14):
+    for experiment in yield_experiments(Collection.LEARN, 1, "fulleval_learn", full_eval):
         queue.push(experiment)

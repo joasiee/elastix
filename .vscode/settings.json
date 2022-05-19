@@ -82,9 +82,8 @@
         "eigenvalues": "cpp",
         "qr": "cpp",
         "lu": "cpp",
-        "core": "cpp"
-    },
-    "cmake.configureArgs": [
-        "-C${workspaceFolder}/CMakeDefaultCache.txt"
-    ]
+        "core": "cpp",
+        "strstream": "cpp",
+        "forward_list": "cpp"
+    }
 }

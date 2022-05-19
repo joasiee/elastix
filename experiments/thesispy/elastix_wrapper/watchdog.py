@@ -13,6 +13,9 @@ class SaveStrategy:
     def save(self, headers, row, resolution) -> None:
         pass
 
+    def save_custom(self, metric, value) -> None:
+        pass
+
     def close(self) -> None:
         pass
 
@@ -51,6 +54,9 @@ class SaveStrategyWandb(SaveStrategy):
         
         if self._rowcount == self.batch_size:
             self._log_buffer()
+
+    def save_custom(self, metric: str, value) -> None:
+        wandb.log({metric: value})
 
     def close(self) -> None:
         self._log_buffer()

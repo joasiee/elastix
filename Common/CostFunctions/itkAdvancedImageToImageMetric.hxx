@@ -23,6 +23,7 @@
 #include "itkAdvancedRayCastInterpolateImageFunction.h"
 #include "itkComputeImageExtremaFilter.h"
 #include "itkMersenneTwisterRandomVariateGenerator.h"
+#include "itkImageFullSampler.h"
 
 #ifdef ELASTIX_USE_OPENMP
 #  include <omp.h>
@@ -616,7 +617,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::EvaluateMovingImageValueA
 #ifdef ELASTIX_USE_OPENMP
       if (this->m_InterpolatorIsBSpline)
       {
-        const int threadid = static_cast<unsigned int>(omp_get_thread_num());
+        const unsigned int threadid = static_cast<unsigned int>(omp_get_thread_num());
         movingImageValue = this->m_BSplineInterpolator->EvaluateAtContinuousIndex(cindex, threadid);
       }
       else
@@ -767,9 +768,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::IsInsideFixedMask(const F
  */
 
 template <class TFixedImage, class TMovingImage>
-bool
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::IsInsideFixedMask(const FixedImageRegionType & region,
-                                                                         const double                 pct) const
+double
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::PctInsideFixedMask(const FixedImageRegionType & region) const
 {
   /** If a mask has been set: */
   if (this->m_FixedImageMask.IsNotNull())
@@ -777,7 +777,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::IsInsideFixedMask(const F
     FixedImageConstPointer                                  fixedImage = this->GetFixedImage();
     ImageRegionConstIteratorWithIndex<const FixedImageType> regionIterator(fixedImage, region);
 
-    unsigned long pixelsNeeded = double(region.GetNumberOfPixels()) * pct;
     unsigned long pixelsInMask = 0L;
     while (!regionIterator.IsAtEnd())
     {
@@ -786,16 +785,12 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::IsInsideFixedMask(const F
       if (this->IsInsideFixedMask(point))
         ++pixelsInMask;
 
-      if (pixelsInMask >= pixelsNeeded)
-        return true;
-
       ++regionIterator;
     }
+    return static_cast<double>(pixelsInMask) / static_cast<double>(region.GetNumberOfPixels());
   }
-  else
-    return true;
+  return 100.0;
 
-  return false;
 } // end IsInsideFixedMask()
 
 /**
@@ -1026,6 +1021,7 @@ void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets, int * set_length, int length)
 {
   int i;
+  using ImageFullSamplerType = ImageFullSampler<FixedImageType>;
 
   this->GetRegionsForFOS(sets, set_length, length);
 
@@ -1038,30 +1034,20 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   for (i = 0; i < n_regions; ++i)
   {
     ImageSamplerInputImageRegionType & region = this->m_BSplineFOSRegions[i];
-    ImageSamplerPointer                subfunctionSampler = this->m_ImageSampler->Clone();
+    ImageSamplerPointer                subfunctionSampler =
+      this->PctInsideFixedMask(region) < 0.05 ? ImageFullSamplerType::New() : this->m_ImageSampler->Clone();
 
-    using ExtractImageFilterType = itk::RegionOfInterestImageFilter<TFixedImage, TFixedImage>;
-    typename ExtractImageFilterType::Pointer extractImageRegion = ExtractImageFilterType::New();
-    extractImageRegion->SetInput(this->GetFixedImage());
-    extractImageRegion->SetRegionOfInterest(region);
-    extractImageRegion->Update();
-    subfunctionSampler->SetInput(extractImageRegion->GetOutput());
+    subfunctionSampler->SetInput(this->GetFixedImage());
+    subfunctionSampler->SetInputImageRegion(region);
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
 
     const ImageSpatialObjectType * fixedImageMask =
       dynamic_cast<const ImageSpatialObjectType *>(this->GetFixedImageMask());
     if (fixedImageMask)
     {
-      using ExtractMaskFilterType = itk::RegionOfInterestImageFilter<FixedImageMaskImageType, FixedImageMaskImageType>;
-      typename ExtractMaskFilterType::Pointer extractMaskRegion = ExtractMaskFilterType::New();
-      extractMaskRegion->SetInput(fixedImageMask->GetImage());
-      extractMaskRegion->SetRegionOfInterest(this->TransformImageToMaskRegion(region));
-      extractMaskRegion->Update();
-
       ImageSpatialObjectPointer fixedImageMaskRegion = fixedImageMask->Clone();
-      fixedImageMaskRegion->SetImage(extractMaskRegion->GetOutput());
+      fixedImageMaskRegion->SetImage(fixedImageMask->GetImage());
       fixedImageMaskRegion->Update();
-
       subfunctionSampler->SetMask(fixedImageMaskRegion);
     }
 
@@ -1072,8 +1058,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     catch (const std::exception & e)
     {}
 
-
-    if (!subfunctionSampler->CheckCroppedInputImageRegion() || !this->IsInsideFixedMask(region, 0.1))
+    if (subfunctionSampler->GetOutput()->Size() == 0UL)
     {
       this->m_SubfunctionSamplers.push_back(nullptr);
       continue;
@@ -1088,6 +1073,20 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   this->SetPartialEvaluations(true);
 
   this->ComputeFOSMapping();
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::SelectNewSamplesSubfunctionSamplers()
+{
+  if (this->m_PartialEvaluations)
+  {
+    for (ImageSamplerPointer & sampler : this->m_SubfunctionSamplers)
+    {
+      if (sampler)
+        sampler->Modified();
+    }
+  }
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1212,7 +1211,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
         unsigned int offset = wrappedImage->ComputeOffset(imageIterator.GetIndex());
         offset = this->m_BSplinePointOffsetMap[offset];
 
-        // add region to mapping from fos sets to regions if not added yet.
+        // add region to mapping from fos sets to regions if not added yet and within mask.
         if (!pointAdded[offset] && m_SubfunctionSamplers[offset])
         {
           this->m_BSplinePointsRegions[j + 1].push_back(offset);

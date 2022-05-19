@@ -173,7 +173,7 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
     this->m_Configuration->ReadParameter(samplingPercentage, "SamplingPercentage", this->GetComponentLabel(), level, 0);
     thisAsAdvanced->SetSamplingPercentage(samplingPercentage);
 
-    this->m_Configuration->ReadParameter(m_WriteSamplesEveryIteration, "WriteSamplesEachIteration", "", level, 0, true);
+    this->m_Configuration->ReadParameter(m_WriteSamplesEveryIteration, "WriteSamplesEveryIteration", "", level, 0, true);
 
     if (m_WriteSamplesEveryIteration)
     {
@@ -182,9 +182,6 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
       this->m_SamplesOutDir = samplesDir.str();
       std::filesystem::create_directory(this->m_SamplesOutDir);
     }
-
-    thisAsAdvanced->UpdateIterationSeed();
-
   } // end advanced metric
 
 } // end BeforeEachResolutionBase()
@@ -216,9 +213,6 @@ MetricBase<TElastix>::AfterEachIterationBase()
 
   if (m_WriteSamplesEveryIteration)
     this->WriteSamplesOfIteration();
-
-  AdvancedMetricType * thisAsAdvanced = dynamic_cast<AdvancedMetricType *>(this);
-  thisAsAdvanced->UpdateIterationSeed();
 
 } // end AfterEachIterationBase()
 
@@ -257,6 +251,9 @@ MetricBase<TElastix>::SelectNewSamples()
   {
     /** Force the metric to base its computation on a new subset of image samples. */
     this->GetAdvancedMetricImageSampler()->SelectNewSamplesOnUpdate();
+
+    AdvancedMetricType * thisAsMetricWithSampler = dynamic_cast<AdvancedMetricType *>(this);
+    thisAsMetricWithSampler->SelectNewSamplesSubfunctionSamplers();
   }
   else
   {
@@ -395,7 +392,7 @@ MetricBase<TElastix>::GetAdvancedMetricImageSampler() const -> ImageSamplerBaseT
   {
     return nullptr;
   }
-  if (thisAsMetricWithSampler->GetUseImageSampler() == false)
+  if (thisAsMetricWithSampler->GetUseImageSampler() == false && !thisAsMetricWithSampler->GetPartialEvaluations())
   {
     return nullptr;
   }

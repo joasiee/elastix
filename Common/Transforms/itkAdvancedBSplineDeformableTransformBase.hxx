@@ -19,6 +19,7 @@
 #define itkAdvancedBSplineDeformableTransformBase_hxx
 
 #include "itkAdvancedBSplineDeformableTransformBase.h"
+#include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkContinuousIndex.h"
 #include "itkIdentityTransform.h"
 #include <vnl/vnl_math.h>
@@ -571,6 +572,58 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::TransformPoint
   return cindex;
 }
 
+template <class TScalarType, unsigned int NDimensions>
+auto
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::TransformContinuousGridIndexToPoint(
+  const ContinuousIndexType & index) const -> InputPointType
+{
+  Vector<double, SpaceDimension> cvector;
+  for (unsigned int j = 0; j < SpaceDimension; ++j)
+  {
+    cvector[j] = index[j];
+  }
+  Vector<double, SpaceDimension> tvector = this->m_IndexToPoint * cvector;
+  for (unsigned int j = 0; j < SpaceDimension; ++j)
+  {
+    tvector[j] = tvector[j] + this->m_GridOrigin[j];
+  }
+
+  InputPointType point;
+  for (unsigned int j = 0; j < SpaceDimension; ++j)
+  {
+    point[j] = static_cast<typename InputPointType::CoordRepType>(tvector[j]);
+  }
+  return point;
+}
+
+template <class TScalarType, unsigned int NDimensions>
+void
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::WriteParametersAsPoints(std::ofstream & outfile) const
+{
+  const ParametersType &                       params = this->GetParameters();
+  const size_t                                 nPoints = this->GetNumberOfParametersPerDimension();
+  ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(m_CoefficientImages[0],
+                                                                  m_CoefficientImages[0]->GetLargestPossibleRegion());
+  while (!coeffImageIterator.IsAtEnd())
+  {
+    IndexType index = coeffImageIterator.GetIndex();
+    ContinuousIndexType displacedIndex;
+    for (unsigned int i = 0; i < SpaceDimension; ++i)
+    {
+      displacedIndex[i] = index[i] + m_CoefficientImages[i]->GetPixel(index);
+    }
+
+    const InputPointType point = this->TransformContinuousGridIndexToPoint(displacedIndex);
+    for (unsigned int i = 0; i < SpaceDimension; ++i)
+    {
+      outfile << point[i] << " ";
+    }
+    outfile << "\n";
+
+    ++coeffImageIterator;
+  }
+  outfile.flush();
+}
 
 } // namespace itk
 

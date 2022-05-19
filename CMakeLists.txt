@@ -1,6 +1,7 @@
 # Minimum CMake version. Equal to ITK 5.0.1 ITK_OLDEST_VALIDATED_POLICIES_VERSION,
 # and to the CMake version used to build the elastix 5.0.0 Linux binaries.
 cmake_minimum_required( VERSION 3.10.2 )
+include(CMakeDefaultCache.txt)
 
 project( elastix )
 set(CMAKE_CXX_STANDARD 17)
@@ -139,8 +140,6 @@ if( ELASTIX_USE_OPENMP )
   find_package( OpenMP QUIET )
   if( OPENMP_FOUND )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
-    #  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}
-    #  ${OpenMP_EXE_LINKER_FLAGS}")
     add_definitions( -DELASTIX_USE_OPENMP )
   endif()
 endif()
@@ -348,6 +347,8 @@ add_subdirectory( Components )
 # Core dir: code that takes care of starting elastix, loading
 # components, definitions of macros etc.
 add_subdirectory( Core )
+
+add_subdirectory( Scenes )
 
 #---------------------------------------------------------------------
 # Configure the examples

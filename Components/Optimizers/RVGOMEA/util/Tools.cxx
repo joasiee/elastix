@@ -103,16 +103,25 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
   const char uplo{ 'L' };
   int        info;
 
-  result.triangularView<Eigen::Lower>() = matrix.triangularView<Eigen::Lower>();
+  result.triangularView<Eigen::Lower>() = matrix;
   
   LAPACK_dpotrf(&uplo, &n, result.data(), &n, &info);
   if (info != 0) /* Matrix is not positive definite */
   {
-    result.fill(0.0);
+    result.triangularView<Eigen::Lower>().fill(0.0);
     result.diagonal() = matrix.diagonal().array().sqrt();
     return static_cast<float>(info) / static_cast<float>(n) * 100.0f;
   }
   return 100.0f;
+}
+
+void
+lowerTriangularMatrixInverse(MatrixXd & A, const int n)
+{
+  const char uplo{ 'L' };
+  const char diag{ 'N' };
+  int        info;
+  LAPACK_dtrtri(&uplo, &diag, &n, A.data(), &n, &info);
 }
 
 
