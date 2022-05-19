@@ -128,7 +128,7 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, sampler="Full", seed=1, write_img=True)
+        Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
         .multi_resolution(1, [4, 4, 4])
         .asgd()
         .instance(Collection.LEARN, 1)
