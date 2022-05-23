@@ -20,6 +20,7 @@
 
 #include "itkTransformPenaltyTerm.h"
 #include "itkImageGridSampler.h"
+#include "plastimatch/bspline_regularize.h"
 #include "plastimatch/regularization_parms.h"
 #include "plastimatch/bspline_xform.h"
 
@@ -169,6 +170,7 @@ private:
   void
   operator=(const Self &) = delete;
 
+  Bspline_regularize   m_BSplineRegularize{};
   Regularization_parms m_RegularizationParameters{};
   Bspline_xform        m_BsplineXform{};
 };

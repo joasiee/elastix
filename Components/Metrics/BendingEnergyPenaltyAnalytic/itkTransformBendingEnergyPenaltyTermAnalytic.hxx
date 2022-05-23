@@ -65,6 +65,8 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Initialize(
 
   this->m_BsplineXform.initialize(&plmImageHeader, gridSpacing);
   free(this->m_BsplineXform.coeff);
+
+  this->m_BSplineRegularize.initialize(&this->m_RegularizationParameters, &this->m_BsplineXform);
 }
 
 template <class TFixedImage, class TScalarType>
