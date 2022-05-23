@@ -28,7 +28,7 @@ def full_eval():
         params = (
             Parameters.from_base(mesh_size=5, seed=seed, sampler="Full")
             .multi_resolution(1, p_sched=[4, 4, 4])
-            .gomea(fos=-6, partial_evals=True)
+            .asgd()
             .stopping_criteria(iterations=[1000])
         )
         yield params

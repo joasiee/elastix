@@ -56,7 +56,7 @@ class SaveStrategyWandb(SaveStrategy):
             self._log_buffer()
 
     def save_custom(self, metric: str, value) -> None:
-        wandb.log({metric: value})
+        wandb.log({metric: value}, commit=False)
 
     def close(self) -> None:
         self._log_buffer()
