@@ -88,3 +88,4 @@ if __name__ == "__main__":
     queue = ExperimentQueue()
     for experiment in yield_experiments(Collection.LEARN, 1, "fulleval_learn", full_eval):
         queue.push(experiment)
+        break
