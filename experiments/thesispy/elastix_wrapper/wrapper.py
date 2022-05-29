@@ -34,7 +34,7 @@ def run(
     try:
         execute_elastix(params_file, out_dir, params)
     except subprocess.CalledProcessError as err:
-        err_msg = err.stderr.decode('utf-8').strip('\n')
+        err_msg = err.stderr.decode("utf-8").strip("\n")
         logger.error(
             f"Something went wrong while running elastix at: {str(run_dir)}: {err_msg}"
         )
@@ -45,7 +45,12 @@ def run(
 
     if save_strategy:
         if params.compute_tre:
-            tre = compute_tre(out_dir, params.lms_fixed_path, params.lms_moving_path, params.fixed_path)
+            tre = compute_tre(
+                out_dir,
+                params.lms_fixed_path,
+                params.lms_moving_path,
+                params.fixed_path,
+            )
             logger.info(f"TRE: {tre}")
             wd.sv_strategy.save_custom("TRE", tre)
         wd.stop()
@@ -57,38 +62,31 @@ def run(
 
 def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Path):
     params_file = out_dir / "TransformParameters.0.txt"
-    points_file = out_dir / "lms_points.txt"
-    lms_fixed = np.loadtxt(lms_fixed)
-    lms_moving = np.loadtxt(lms_moving)
+    lms_moving = np.loadtxt(lms_moving, skiprows=2)
     image = nib.load(img_fixed)
     spacing = np.array(image.header.get_zooms())
 
-    with open(points_file, "wb") as file:
-        n_points = len(lms_fixed)
-        file.write(b"index\n")
-        file.write(bytes(str(n_points), encoding="utf-8") + b"\n")
-        np.savetxt(file, lms_fixed, fmt='%f')
-
     try:
-        execute_transformix(params_file, points_file, out_dir)
+        execute_transformix(params_file, lms_fixed, out_dir)
     except subprocess.CalledProcessError as err:
-        err_msg = err.stderr.decode('utf-8').strip('\n')
+        err_msg = err.stderr.decode("utf-8").strip("\n")
         logger.error(
             f"Something went wrong while running transformix at: {str(out_dir)}, {err_msg}"
         )
         return
 
     warped_points = out_dir / "outputpoints.txt"
-    lms_fixed_warped = np.zeros(lms_fixed.shape)
+    lms_fixed_warped = np.zeros(lms_moving.shape)
     with open(warped_points) as file:
         lines = file.readlines()
         for i, line in enumerate(lines):
             s = line.split(";")[3]
-            s = s[s.find("[")+1:s.find("]")].split(" ")
+            s = s[s.find("[") + 1 : s.find("]")].split(" ")
             index = np.array([float(s[1]), float(s[2]), float(s[3])])
             lms_fixed_warped[i] = index
 
     return np.linalg.norm((lms_fixed_warped - lms_moving) * spacing, axis=1).mean()
+
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
     with time_limit(params["MaxTimeSeconds"]):
@@ -107,8 +105,17 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         ]
         if params.fixedmask_path and params["UseMask"]:
             args += ["-fMask", str(params.fixedmask_path)]
+        if params.lms_fixed_path and params.lms_moving_path:
+            args += [
+                "-fp",
+                str(params.lms_fixed_path.resolve()),
+                "-mp",
+                str(params.lms_moving_path.resolve()),
+            ]
 
-        subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        subprocess.run(
+            args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE
+        )
 
 
 def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
@@ -132,6 +139,6 @@ if __name__ == "__main__":
         .multi_resolution(1, [4, 4, 4])
         .asgd()
         .instance(Collection.LEARN, 1)
-        .stopping_criteria(iterations=[3000])
+        .stopping_criteria(iterations=[500])
     )
     run(params, Path("output/" + str(params)), SaveStrategy())

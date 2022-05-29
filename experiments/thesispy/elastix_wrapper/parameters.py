@@ -68,7 +68,7 @@ class Parameters:
     def multi_metric(
         self,
         metric0: str = "AdvancedMeanSquares",
-        metric1: str = "TransformBendingEnergyPenalty",
+        metric1: str = "TransformBendingEnergyPenaltyAnalytic",
         weight0: float = 1.0,
         weight1: float = 1.0,
     ) -> Parameters:

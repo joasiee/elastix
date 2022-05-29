@@ -83,6 +83,17 @@ def grid_experiment():
         )
         yield params
 
+def tre_divergence():
+    for gridsize in [2, 5, 7]:
+        params = (
+            Parameters.from_base(mesh_size=gridsize, sampler="Full", seed=1)
+            .multi_resolution(1, [4,4,4])
+            .multi_metric(metric1="CorrespondingPointsEuclideanDistanceMetric", weight1=0.0)
+            .asgd()
+            .stopping_criteria(iterations=50000)
+        )
+        yield params
+
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
