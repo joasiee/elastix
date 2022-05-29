@@ -31,8 +31,9 @@ namespace itk
 template <class TFixedImage, class TScalarType>
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::TransformBendingEnergyPenaltyTermAnalytic()
 {
-  this->m_RegularizationParameters.implementation = 'b';
-  this->m_RegularizationParameters.curvature_penalty = 1.0f;
+  this->m_RegularizationParameters.implementation = 'c';
+  this->m_RegularizationParameters.curvature_penalty =
+    1.0f; // lambda, true weight is set further up in combinationimagetoimagemetric
 }
 
 template <class TFixedImage, class TScalarType>
@@ -41,12 +42,13 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Initialize(
 {
   if (Self::FixedImageDimension != 3)
   {
+    itkExceptionMacro(<< "Analytic bending energy can only be used when registering 3D volumes.");
     return;
   }
 
   this->Superclass::Initialize();
 
-  const CombinationTransformType *         comboPtr = dynamic_cast<const CombinationTransformType *>(this->GetTransform());
+  const CombinationTransformType *   comboPtr = dynamic_cast<const CombinationTransformType *>(this->GetTransform());
   const BSplineOrder3TransformType * bsplinePtr =
     dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
 
@@ -65,7 +67,7 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Initialize(
   }
 
   this->m_BsplineXform.initialize(&plmImageHeader, gridSpacing);
-  free(this->m_BsplineXform.coeff);
+  this->m_BsplineScore.set_num_coeff(this->m_BsplineXform.num_coeff);
 
   this->m_BSplineRegularize.initialize(&this->m_RegularizationParameters, &this->m_BsplineXform);
 }
@@ -74,9 +76,12 @@ template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::MeasureType
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters) const
 {
-  MeasureType measure = NumericTraits<MeasureType>::Zero;
+  this->m_BsplineXform.coeff_ = parameters.data_block();
+  this->m_BsplineScore.reset_score();
+  this->m_BSplineRegularize.compute_score(
+    &this->m_BsplineScore, &this->m_RegularizationParameters, &this->m_BsplineXform);
 
-  return measure;
+  return static_cast<MeasureType>(this->m_BsplineScore.rmetric);
 }
 
 /**
@@ -88,9 +93,9 @@ typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Me
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
                                                                               const int              fosIndex) const
 {
-  MeasureType measure = NumericTraits<MeasureType>::Zero;
-
-  return measure;
+  this->m_BsplineXform.coeff_ = parameters.data_block();
+  return this->m_BSplineRegularize.compute_score_analytic_omp_regions(
+    this->m_BSplinePointsRegions[fosIndex + 1], &this->m_RegularizationParameters, &this->m_BSplineRegularize, &this->m_BsplineXform);
 } // end GetValuePartial()
 
 
@@ -119,7 +124,28 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValueAnd
   const ParametersType & parameters,
   MeasureType &          value,
   DerivativeType &       derivative) const
-{} // end GetValueAndDerivative()
+{
+  this->m_BsplineXform.coeff_ = parameters.data_block();
+  this->m_BsplineScore.total_grad = derivative.data_block();
+  this->m_BsplineScore.reset_score();
+  this->m_BSplineRegularize.compute_score(
+    &this->m_BsplineScore, &this->m_RegularizationParameters, &this->m_BsplineXform);
+  value = static_cast<MeasureType>(this->m_BsplineScore.rmetric);
+} // end GetValueAndDerivative()
+
+/**
+ * ******************* GetValueAndDerivative *******************
+ */
+
+template <class TFixedImage, class TScalarType>
+void
+TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::InitPartialEvaluations(int ** sets,
+                                                                                            int *  set_length,
+                                                                                            int    length)
+{
+  this->Superclass::InitPartialEvaluations(sets, set_length, length);
+  this->m_SubfunctionSamplers.clear();
+}
 
 
 } // end namespace itk

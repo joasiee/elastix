@@ -23,6 +23,7 @@
 #include "plastimatch/bspline_regularize.h"
 #include "plastimatch/regularization_parms.h"
 #include "plastimatch/bspline_xform.h"
+#include "plastimatch/bspline_score.h"
 
 namespace itk
 {
@@ -147,6 +148,9 @@ public:
                         MeasureType &          value,
                         DerivativeType &       derivative) const override;
 
+  void
+  InitPartialEvaluations(int ** sets, int * set_length, int length) override;
+
 protected:
   /** Typedefs for indices and points. */
   using typename Superclass::FixedImageIndexType;
@@ -170,9 +174,10 @@ private:
   void
   operator=(const Self &) = delete;
 
-  Bspline_regularize   m_BSplineRegularize{};
-  Regularization_parms m_RegularizationParameters{};
-  Bspline_xform        m_BsplineXform{};
+  mutable Bspline_regularize m_BSplineRegularize{};
+  Regularization_parms       m_RegularizationParameters{};
+  mutable Bspline_xform      m_BsplineXform{};
+  mutable Bspline_score      m_BsplineScore{};
 };
 
 } // end namespace itk

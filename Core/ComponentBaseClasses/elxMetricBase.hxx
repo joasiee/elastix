@@ -247,7 +247,7 @@ template <class TElastix>
 void
 MetricBase<TElastix>::SelectNewSamples()
 {
-  if (this->GetAdvancedMetricImageSampler())
+  if (this->GetAdvancedMetricImageSampler() && this->GetAdvancedMetricUseImageSampler())
   {
     /** Force the metric to base its computation on a new subset of image samples. */
     this->GetAdvancedMetricImageSampler()->SelectNewSamplesOnUpdate();
@@ -255,16 +255,6 @@ MetricBase<TElastix>::SelectNewSamples()
     AdvancedMetricType * thisAsMetricWithSampler = dynamic_cast<AdvancedMetricType *>(this);
     thisAsMetricWithSampler->SelectNewSamplesSubfunctionSamplers();
   }
-  else
-  {
-    /** Not every metric may have implemented this, so give a warning when this
-     * method is called for a metric without sampler support.
-     * To avoid the warning, this method may be overridden by a subclass.
-     */
-    xl::xout["warning"] << "WARNING: The NewSamplesEveryIteration option was set to \"true\", but "
-                        << this->GetComponentLabel() << " does not use a sampler." << std::endl;
-  }
-
 } // end SelectNewSamples()
 
 

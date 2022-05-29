@@ -42,9 +42,9 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
-                "-f",
-                "cbct.mha",
                 "-m",
+                "cbct.mha",
+                "-f",
                 "ct.mhd",
                 "-p",
                 "params.txt",
