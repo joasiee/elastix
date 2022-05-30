@@ -51,6 +51,9 @@ run/**/out
 random_seed.dat
 *.pkl
 
+#superbuild
+external
+
 .env
 *.pyc
 

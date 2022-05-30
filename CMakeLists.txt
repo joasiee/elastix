@@ -1,9 +1,15 @@
 # Minimum CMake version. Equal to ITK 5.0.1 ITK_OLDEST_VALIDATED_POLICIES_VERSION,
 # and to the CMake version used to build the elastix 5.0.0 Linux binaries.
 cmake_minimum_required( VERSION 3.10.2 )
-include(CMakeDefaultCache.txt)
-
 project( elastix )
+
+option (USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
+if(USE_SUPERBUILD)
+  include("CMake/SuperBuild.cmake")
+  return()
+endif()
+
+include(CMakeDefaultCache.txt)
 set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/include")
@@ -35,6 +41,8 @@ if(DEFINED ENV{ITK_HOME})
   set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE})
   set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE} CACHE STRING "")
 endif()
+
+message(${ITK_DIR})
 
 # Find ITK.
 find_package( ITK 5.3 REQUIRED COMPONENTS

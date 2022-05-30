@@ -1,0 +1,4213 @@
+diff --git a/.gitignore b/.gitignore
+index cfe5e452..ddfc8a34 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -3,3 +3,4 @@
+ GPATH
+ GRTAGS
+ GTAGS
++build
+\ No newline at end of file
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 3845a58e..f4b25655 100755
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -64,7 +64,7 @@ include (SuperbuildOptions)
+ ##-----------------------------------------------------------------------------
+ ##  Set C++ compiler standard
+ ##-----------------------------------------------------------------------------
+-sb_set(CMAKE_CXX_STANDARD 11)
++sb_set(CMAKE_CXX_STANDARD 14)
+ sb_set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ 
+ ##-----------------------------------------------------------------------------
+diff --git a/libs/devillard/CMakeLists.txt b/libs/devillard/CMakeLists.txt
+index 9452929a..a53b6cf3 100755
+--- a/libs/devillard/CMakeLists.txt
++++ b/libs/devillard/CMakeLists.txt
+@@ -4,4 +4,4 @@ SET (LIBDEVILLARD_SRC
+   wirth.cpp
+   )
+ 
+-plm_add_static_library (devillard "${LIBDEVILLARD_SRC}" "" "" "")
++# plm_add_static_library (devillard "${LIBDEVILLARD_SRC}" "" "" "")
+diff --git a/libs/inih-r29/CMakeLists.txt b/libs/inih-r29/CMakeLists.txt
+index 0db78353..81a26b53 100644
+--- a/libs/inih-r29/CMakeLists.txt
++++ b/libs/inih-r29/CMakeLists.txt
+@@ -5,4 +5,4 @@ SET (LIBINIH_SRC
+     INIReader.cpp
+     )
+ 
+-plm_add_static_library (inih "${LIBINIH_SRC}" "" "" "")
++# plm_add_static_library (inih "${LIBINIH_SRC}" "" "" "")
+diff --git a/libs/liblbfgs-1.9/CMakeLists.txt b/libs/liblbfgs-1.9/CMakeLists.txt
+index d39d08c6..a49b1d79 100644
+--- a/libs/liblbfgs-1.9/CMakeLists.txt
++++ b/libs/liblbfgs-1.9/CMakeLists.txt
+@@ -8,4 +8,4 @@ set (LIBLBFGS_LIBRARY_SRC
+   )
+ include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+ 
+-plm_add_static_library (lbfgs "${LIBLBFGS_LIBRARY_SRC}" "" "" "")
++# plm_add_static_library (lbfgs "${LIBLBFGS_LIBRARY_SRC}" "" "" "")
+diff --git a/libs/lua-5.1.4/CMakeLists.txt b/libs/lua-5.1.4/CMakeLists.txt
+index 959c3d68..c497ad2e 100644
+--- a/libs/lua-5.1.4/CMakeLists.txt
++++ b/libs/lua-5.1.4/CMakeLists.txt
+@@ -94,8 +94,8 @@ ENDIF(CMAKE_SYSTEM MATCHES "Linux.*")
+ ## SET_TARGET_PROPERTIES(lua PROPERTIES COMPILE_FLAGS "${LUA_C_FLAGS}")
+ 
+ set (LUA_LIBRARY_SRC ${LUA_STANDARD_LIBRARY} ${LUA_CORE})
+-plm_add_static_library (lua "${LUA_LIBRARY_SRC}" 
+-    "" "" "")
++# plm_add_static_library (lua "${LUA_LIBRARY_SRC}" 
++#     "" "" "")
+ 
+ SET_TARGET_PROPERTIES(lua PROPERTIES COMPILE_FLAGS "${LUA_C_FLAGS}")
+ 
+diff --git a/libs/nkidecompress/CMakeLists.txt b/libs/nkidecompress/CMakeLists.txt
+index b315be01..0368f940 100644
+--- a/libs/nkidecompress/CMakeLists.txt
++++ b/libs/nkidecompress/CMakeLists.txt
+@@ -4,4 +4,4 @@ set (NKIDECOMPRESS_SRC
+     nkidecompress.cxx
+     )
+ 
+-plm_add_static_library (nkidecompress "${NKIDECOMPRESS_SRC}" "" "" "")
++# plm_add_static_library (nkidecompress "${NKIDECOMPRESS_SRC}" "" "" "")
+diff --git a/libs/specfun/CMakeLists.txt b/libs/specfun/CMakeLists.txt
+index 0db868bf..b01e95fe 100644
+--- a/libs/specfun/CMakeLists.txt
++++ b/libs/specfun/CMakeLists.txt
+@@ -5,4 +5,4 @@ set (SPECFUN_LIBRARY_C_SRC
+   mpbdv.c
+   )
+ 
+-plm_add_static_library (specfun "${SPECFUN_LIBRARY_C_SRC}" "" "" "")
++# plm_add_static_library (specfun "${SPECFUN_LIBRARY_C_SRC}" "" "" "")
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index f8493164..6e007fa9 100755
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -25,7 +25,7 @@ endif ()
+ 
+ sb_set (PLM_USING_SUPERBUILD OFF)
+ if (PLM_CONFIG_ENABLE_PLASTIMATCH)
+-  if (NOT ITK_FOUND OR NOT DCMTK_FOUND)
++  if (NOT ITK_FOUND OR (NOT DCMTK_FOUND AND PLM_CONFIG_ENABLE_DCMTK))
+     if (PLM_CONFIG_ENABLE_SUPERBUILD)
+       set (proj plastimatch)
+       set (PLM_USING_SUPERBUILD ON)
+diff --git a/src/plastimatch/CMakeLists.txt b/src/plastimatch/CMakeLists.txt
+index 2cfea19e..88c1040c 100644
+--- a/src/plastimatch/CMakeLists.txt
++++ b/src/plastimatch/CMakeLists.txt
+@@ -60,7 +60,7 @@ check_include_files ("sys/stat.h" HAVE_SYS_STAT_H)
+ ##-----------------------------------------------------------------------------
+ find_package (DCMTK_wrap)
+ set (PLM_DCM_USE_DCMTK 0)
+-if (DCMTK_FOUND)
++if (DCMTK_FOUND AND PLM_CONFIG_ENABLE_DCMTK)
+   set (PLM_DCM_USE_DCMTK 1)
+ endif ()
+ 
+@@ -296,6 +296,7 @@ endif ()
+ ##-----------------------------------------------------------------------------
+ ##  CONFIGURE INCLUDE FILES
+ ##-----------------------------------------------------------------------------
++set(SHARED_PTR_USE_MEMORY ON)
+ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_config.h.in
+   ${PLM_BINARY_DIR}/plm_config.h)
+ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_version.h.in
+diff --git a/src/plastimatch/base/CMakeLists.txt b/src/plastimatch/base/CMakeLists.txt
+index 0fa650bc..94f54c79 100755
+--- a/src/plastimatch/base/CMakeLists.txt
++++ b/src/plastimatch/base/CMakeLists.txt
+@@ -76,7 +76,6 @@ set (PLMBASE_LIBRARY_SRC
+   itk_warp.cxx itk_warp.h
+   make_string.h
+   mc_dose.cxx mc_dose.h
+-  metadata.cxx metadata.h
+   mha_io.cxx mha_io.h
+   nki_io.cxx nki_io.h
+   parameter_parser.cxx parameter_parser.h
+@@ -164,6 +163,7 @@ if (PLM_DCM_USE_DCMTK)
+     dcmtk_file.cxx dcmtk_file.h
+     dcmtk_image.cxx
+     dcmtk_metadata.cxx dcmtk_metadata.h
++    metadata.cxx metadata.h
+     dcmtk_module.cxx dcmtk_module.h
+     dcmtk_rdd.cxx dcmtk_rdd.h
+     dcmtk_rtdose.cxx dcmtk_rtdose.h
+diff --git a/src/plastimatch/base/bspline_xform.cxx b/src/plastimatch/base/bspline_xform.cxx
+index afdba9de..0da0d2f1 100644
+--- a/src/plastimatch/base/bspline_xform.cxx
++++ b/src/plastimatch/base/bspline_xform.cxx
+@@ -25,9 +25,10 @@
+ #include "volume_header.h"
+ #include "volume_macros.h"
+ 
+-Bspline_xform::Bspline_xform ()
++Bspline_xform::Bspline_xform()
+ {
+     this->coeff = 0;
++    this->coeff_ = 0;
+ 
+     this->lut_type = LUT_3D_ALIGNED;
+ 
+@@ -45,25 +46,31 @@ Bspline_xform::Bspline_xform ()
+     this->uz_lut = 0;
+ }
+ 
+-Bspline_xform::~Bspline_xform ()
++Bspline_xform::~Bspline_xform()
+ {
+-    if (this->coeff) {
+-        free (this->coeff);
++    if (this->coeff)
++    {
++        free(this->coeff);
+     }
+-    if (this->q_lut) {
+-        free (this->q_lut);
++    if (this->q_lut)
++    {
++        free(this->q_lut);
+     }
+-    if (this->c_lut) {
+-        free (this->c_lut);
++    if (this->c_lut)
++    {
++        free(this->c_lut);
+     }
+-    if (this->bx_lut) {
+-        free (this->bx_lut);
++    if (this->bx_lut)
++    {
++        free(this->bx_lut);
+     }
+-    if (this->by_lut) {
+-        free (this->by_lut);
++    if (this->by_lut)
++    {
++        free(this->by_lut);
+     }
+-    if (this->bz_lut) {
+-        free (this->bz_lut);
++    if (this->bz_lut)
++    {
++        free(this->bz_lut);
+     }
+     delete[] ux_lut;
+     delete[] uy_lut;
+@@ -71,26 +78,27 @@ Bspline_xform::~Bspline_xform ()
+ }
+ 
+ static float
+-bspline_basis_eval (
+-    int t_idx, 
+-    int vox_idx, 
++bspline_basis_eval(
++    int t_idx,
++    int vox_idx,
+     int vox_per_rgn)
+ {
+-                                
++
+     float i = (float)vox_idx / vox_per_rgn;
+ 
+-    switch(t_idx) {
++    switch (t_idx)
++    {
+     case 0:
+-        return (1.0/6.0) * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
++        return (1.0 / 6.0) * (-1.0 * i * i * i + 3.0 * i * i - 3.0 * i + 1.0);
+         break;
+     case 1:
+-        return (1.0/6.0) * (+ 3.0 * i*i*i - 6.0 * i*i           + 4.0);
++        return (1.0 / 6.0) * (+3.0 * i * i * i - 6.0 * i * i + 4.0);
+         break;
+     case 2:
+-        return (1.0/6.0) * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
++        return (1.0 / 6.0) * (-3.0 * i * i * i + 3.0 * i * i + 3.0 * i + 1.0);
+         break;
+     case 3:
+-        return (1.0/6.0) * (+ 1.0 * i*i*i);
++        return (1.0 / 6.0) * (+1.0 * i * i * i);
+         break;
+     default:
+         return 0.0;
+@@ -98,176 +106,196 @@ bspline_basis_eval (
+     }
+ }
+ 
+-void
+-Bspline_xform::save (const char* filename)
++void Bspline_xform::save(const char *filename)
+ {
+-    FILE* fp;
+-
+-    make_parent_directories (filename);
+-    fp = fopen (filename, "wb");
+-    if (!fp) return;
+-
+-    fprintf (fp, "MGH_GPUIT_BSP <experimental>\n");
+-    fprintf (fp, "img_origin = %f %f %f\n", 
+-        this->img_origin[0], this->img_origin[1], this->img_origin[2]);
+-    fprintf (fp, "img_spacing = %f %f %f\n", 
+-        this->img_spacing[0], this->img_spacing[1], this->img_spacing[2]);
+-    fprintf (fp, "img_dim = %u %u %u\n", 
+-        (unsigned int) this->img_dim[0], (unsigned int) this->img_dim[1], 
+-        (unsigned int) this->img_dim[2]);
+-    fprintf (fp, "roi_offset = %d %d %d\n", 
+-        (unsigned int) this->roi_offset[0], (unsigned int) this->roi_offset[1], 
+-        (unsigned int) this->roi_offset[2]);
+-    fprintf (fp, "roi_dim = %d %d %d\n", 
+-        (unsigned int) this->roi_dim[0], (unsigned int) this->roi_dim[1], 
+-        (unsigned int) this->roi_dim[2]);
+-    fprintf (fp, "vox_per_rgn = %d %d %d\n", 
+-        (unsigned int) this->vox_per_rgn[0], 
+-        (unsigned int) this->vox_per_rgn[1], 
+-        (unsigned int) this->vox_per_rgn[2]);
+-    float *direction_cosines = this->dc.get_matrix ();
+-    fprintf (fp, "direction_cosines = %f %f %f %f %f %f %f %f %f\n", 
+-        direction_cosines[0], 
+-        direction_cosines[1], 
+-        direction_cosines[2], 
+-        direction_cosines[3], 
+-        direction_cosines[4], 
+-        direction_cosines[5], 
+-        direction_cosines[6], 
+-        direction_cosines[7], 
+-        direction_cosines[8]);
++    FILE *fp;
++
++    make_parent_directories(filename);
++    fp = fopen(filename, "wb");
++    if (!fp)
++        return;
++
++    fprintf(fp, "MGH_GPUIT_BSP <experimental>\n");
++    fprintf(fp, "img_origin = %f %f %f\n",
++            this->img_origin[0], this->img_origin[1], this->img_origin[2]);
++    fprintf(fp, "img_spacing = %f %f %f\n",
++            this->img_spacing[0], this->img_spacing[1], this->img_spacing[2]);
++    fprintf(fp, "img_dim = %u %u %u\n",
++            (unsigned int)this->img_dim[0], (unsigned int)this->img_dim[1],
++            (unsigned int)this->img_dim[2]);
++    fprintf(fp, "roi_offset = %d %d %d\n",
++            (unsigned int)this->roi_offset[0], (unsigned int)this->roi_offset[1],
++            (unsigned int)this->roi_offset[2]);
++    fprintf(fp, "roi_dim = %d %d %d\n",
++            (unsigned int)this->roi_dim[0], (unsigned int)this->roi_dim[1],
++            (unsigned int)this->roi_dim[2]);
++    fprintf(fp, "vox_per_rgn = %d %d %d\n",
++            (unsigned int)this->vox_per_rgn[0],
++            (unsigned int)this->vox_per_rgn[1],
++            (unsigned int)this->vox_per_rgn[2]);
++    float *direction_cosines = this->dc.get_matrix();
++    fprintf(fp, "direction_cosines = %f %f %f %f %f %f %f %f %f\n",
++            direction_cosines[0],
++            direction_cosines[1],
++            direction_cosines[2],
++            direction_cosines[3],
++            direction_cosines[4],
++            direction_cosines[5],
++            direction_cosines[6],
++            direction_cosines[7],
++            direction_cosines[8]);
+     /* No need to save grid_spac */
+ 
+     /* This dumps in itk-like planar format */
+-    for (int i = 0; i < 3; i++) {
+-        for (int j = 0; j < this->num_coeff / 3; j++) {
+-            fprintf (fp, "%.20f\n", this->coeff[j*3 + i]);
++    for (int i = 0; i < 3; i++)
++    {
++        for (int j = 0; j < this->num_coeff / 3; j++)
++        {
++            fprintf(fp, "%.20f\n", this->coeff[j * 3 + i]);
+         }
+     }
+ 
+-    fclose (fp);
++    fclose(fp);
+ }
+ 
+-Bspline_xform* 
+-bspline_xform_load (const char* filename)
++Bspline_xform *
++bspline_xform_load(const char *filename)
+ {
+     int rc;
+-    float img_origin[3] = {      /* Image origin (in mm) */
+-        0., 0., 0. };
+-    float img_spacing[3] = {     /* Image spacing (in mm) */
+-        1., 1., 1. };
+-    unsigned int a, b, c;        /* For fscanf */
+-    plm_long img_dim[3] = {      /* Image size (in vox) */
+-        0, 0, 0 };
+-    plm_long roi_offset[3] = {   /* Position of first vox in ROI (in vox) */
+-        0, 0, 0 };
+-    plm_long roi_dim[3] = {      /* Dimension of ROI (in vox) */
+-        0, 0, 0 };
+-    plm_long vox_per_rgn[3] = {  /* Knot spacing (in vox) */
+-        0, 0, 0 };
+-    float dc[9] = {              /* Direction cosines */
+-        1., 0., 0., 0., 1., 0., 0., 0., 1. };
+-
+-    std::ifstream ifs (filename);
+-    if (!ifs.is_open()) {
++    float img_origin[3] = {/* Image origin (in mm) */
++                           0., 0., 0.};
++    float img_spacing[3] = {/* Image spacing (in mm) */
++                            1., 1., 1.};
++    unsigned int a, b, c;  /* For fscanf */
++    plm_long img_dim[3] = {/* Image size (in vox) */
++                           0, 0, 0};
++    plm_long roi_offset[3] = {/* Position of first vox in ROI (in vox) */
++                              0, 0, 0};
++    plm_long roi_dim[3] = {/* Dimension of ROI (in vox) */
++                           0, 0, 0};
++    plm_long vox_per_rgn[3] = {/* Knot spacing (in vox) */
++                               0, 0, 0};
++    float dc[9] = {/* Direction cosines */
++                   1., 0., 0., 0., 1., 0., 0., 0., 1.};
++
++    std::ifstream ifs(filename);
++    if (!ifs.is_open())
++    {
+         return 0;
+     }
+ 
+     /* Check magic number */
+     std::string line;
+-    getline (ifs, line);
+-    if (!string_starts_with (line, "MGH_GPUIT_BSP")) {
++    getline(ifs, line);
++    if (!string_starts_with(line, "MGH_GPUIT_BSP"))
++    {
+         return 0;
+     }
+ 
+     /* Parse header */
+-    while (true) {
+-        getline (ifs, line);
+-        if (!ifs.good()) {
+-            logfile_printf ("Error parsing bspline xform\n");
++    while (true)
++    {
++        getline(ifs, line);
++        if (!ifs.good())
++        {
++            logfile_printf("Error parsing bspline xform\n");
+             return 0;
+         }
+ 
+-        if (line.find('=') == std::string::npos) {
++        if (line.find('=') == std::string::npos)
++        {
+             /* No "=" found.  Better be the first coefficient. */
+             break;
+         }
+-        
+-        rc = sscanf (line.c_str(), "img_origin = %f %f %f\n", 
+-            &img_origin[0], &img_origin[1], &img_origin[2]);
+-        if (rc == 3) continue;
+ 
+-        rc = sscanf (line.c_str(), "img_spacing = %f %f %f\n", 
+-            &img_spacing[0], &img_spacing[1], &img_spacing[2]);
+-        if (rc == 3) continue;
++        rc = sscanf(line.c_str(), "img_origin = %f %f %f\n",
++                    &img_origin[0], &img_origin[1], &img_origin[2]);
++        if (rc == 3)
++            continue;
++
++        rc = sscanf(line.c_str(), "img_spacing = %f %f %f\n",
++                    &img_spacing[0], &img_spacing[1], &img_spacing[2]);
++        if (rc == 3)
++            continue;
+ 
+-        rc = sscanf (line.c_str(), "img_dim = %d %d %d\n", &a, &b, &c);
+-        if (rc == 3) {
++        rc = sscanf(line.c_str(), "img_dim = %d %d %d\n", &a, &b, &c);
++        if (rc == 3)
++        {
+             img_dim[0] = a;
+             img_dim[1] = b;
+             img_dim[2] = c;
+             continue;
+         }
+ 
+-        rc = sscanf (line.c_str(), "roi_offset = %d %d %d\n", &a, &b, &c);
+-        if (rc == 3) {
++        rc = sscanf(line.c_str(), "roi_offset = %d %d %d\n", &a, &b, &c);
++        if (rc == 3)
++        {
+             roi_offset[0] = a;
+             roi_offset[1] = b;
+             roi_offset[2] = c;
+             continue;
+         }
+ 
+-        rc = sscanf (line.c_str(), "roi_dim = %d %d %d\n", &a, &b, &c);
+-        if (rc == 3) {
++        rc = sscanf(line.c_str(), "roi_dim = %d %d %d\n", &a, &b, &c);
++        if (rc == 3)
++        {
+             roi_dim[0] = a;
+             roi_dim[1] = b;
+             roi_dim[2] = c;
+             continue;
+         }
+ 
+-        rc = sscanf (line.c_str(), "vox_per_rgn = %d %d %d\n", &a, &b, &c);
+-        if (rc == 3) {
++        rc = sscanf(line.c_str(), "vox_per_rgn = %d %d %d\n", &a, &b, &c);
++        if (rc == 3)
++        {
+             vox_per_rgn[0] = a;
+             vox_per_rgn[1] = b;
+             vox_per_rgn[2] = c;
+             continue;
+         }
+ 
+-        rc = sscanf (line.c_str(), "direction_cosines = %f %f %f %f %f %f %f %f %f\n",
+-            &dc[0], &dc[1], &dc[2], &dc[3], &dc[4],
+-            &dc[5], &dc[6], &dc[7], &dc[8]);
+-        if (rc == 9) continue;
++        rc = sscanf(line.c_str(), "direction_cosines = %f %f %f %f %f %f %f %f %f\n",
++                    &dc[0], &dc[1], &dc[2], &dc[3], &dc[4],
++                    &dc[5], &dc[6], &dc[7], &dc[8]);
++        if (rc == 9)
++            continue;
+ 
+-        logfile_printf ("Error loading bxf file\n%s\n", line.c_str());
++        logfile_printf("Error loading bxf file\n%s\n", line.c_str());
+         return 0;
+     }
+ 
+     /* Allocate memory and build LUTs */
+-    Bspline_xform* bxf = new Bspline_xform;
+-    bxf->initialize (img_origin, img_spacing, img_dim,
+-        roi_offset, roi_dim, vox_per_rgn, dc);
++    Bspline_xform *bxf = new Bspline_xform;
++    bxf->initialize(img_origin, img_spacing, img_dim,
++                    roi_offset, roi_dim, vox_per_rgn, dc);
+ 
+-    if (bxf->num_coeff < 1) {
+-        logfile_printf ("Error loading bxf file, no coefficients\n");
++    if (bxf->num_coeff < 1)
++    {
++        logfile_printf("Error loading bxf file, no coefficients\n");
+         delete bxf;
+         return 0;
+     }
+ 
+     /* Load from itk-like planar format */
+-    for (int i = 0; i < 3; i++) {
+-        for (int j = 0; j < bxf->num_coeff / 3; j++) {
++    for (int i = 0; i < 3; i++)
++    {
++        for (int j = 0; j < bxf->num_coeff / 3; j++)
++        {
+             /* The first line is already loaded from before */
+-            if (i != 0 || j != 0) {
+-                getline (ifs, line);
++            if (i != 0 || j != 0)
++            {
++                getline(ifs, line);
+             }
+-            if (!ifs.good()) {
+-                logfile_printf ("Error parsing bspline xform (idx = %d,%d): %s\n", i, j, filename);
++            if (!ifs.good())
++            {
++                logfile_printf("Error parsing bspline xform (idx = %d,%d): %s\n", i, j, filename);
+                 delete bxf;
+                 return 0;
+             }
+-            rc = sscanf (line.c_str(), "%f", &bxf->coeff[j*3 + i]);
+-            if (rc != 1) {
+-                logfile_printf ("Error parsing bspline xform (idx = %d,%d): %s\n", i, j, filename);
++            rc = sscanf(line.c_str(), "%lf", &bxf->coeff[j * 3 + i]);
++            if (rc != 1)
++            {
++                logfile_printf("Error parsing bspline xform (idx = %d,%d): %s\n", i, j, filename);
+                 delete bxf;
+                 return 0;
+             }
+@@ -281,85 +309,96 @@ bspline_xform_load (const char* filename)
+ /* -----------------------------------------------------------------------
+    Debugging routines
+    ----------------------------------------------------------------------- */
+-void
+-bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn)
++void bspline_xform_dump_coeff(Bspline_xform *bxf, const char *fn)
+ {
+     int i;
+-    FILE* fp = fopen (fn,"wb");
+-    for (i = 0; i < bxf->num_coeff; i++) {
+-        fprintf (fp, "%20.20f\n", bxf->coeff[i]);
++    FILE *fp = fopen(fn, "wb");
++    for (i = 0; i < bxf->num_coeff; i++)
++    {
++        fprintf(fp, "%20.20f\n", bxf->coeff[i]);
+     }
+-    fclose (fp);
++    fclose(fp);
+ }
+ 
+-void
+-bspline_xform_dump_luts (Bspline_xform* bxf)
++void bspline_xform_dump_luts(Bspline_xform *bxf)
+ {
+     plm_long i, j, k, p;
+     int tx, ty, tz;
+-    FILE* fp = fopen ("qlut.txt","wb");
++    FILE *fp = fopen("qlut.txt", "wb");
+ 
+     /* Dump q_lut */
+-    for (k = 0, p = 0; k < bxf->vox_per_rgn[2]; k++) {
+-        for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
+-            for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
+-                fprintf (fp, "%3d %3d %3d\n", 
+-                    (unsigned int) k, (unsigned int) j, (unsigned int) i);
+-                for (tz = 0; tz < 4; tz++) {
+-                    for (ty = 0; ty < 4; ty++) {
+-                        for (tx = 0; tx < 4; tx++) {
+-                            fprintf (fp, " %f", bxf->q_lut[p++]);
++    for (k = 0, p = 0; k < bxf->vox_per_rgn[2]; k++)
++    {
++        for (j = 0; j < bxf->vox_per_rgn[1]; j++)
++        {
++            for (i = 0; i < bxf->vox_per_rgn[0]; i++)
++            {
++                fprintf(fp, "%3d %3d %3d\n",
++                        (unsigned int)k, (unsigned int)j, (unsigned int)i);
++                for (tz = 0; tz < 4; tz++)
++                {
++                    for (ty = 0; ty < 4; ty++)
++                    {
++                        for (tx = 0; tx < 4; tx++)
++                        {
++                            fprintf(fp, " %f", bxf->q_lut[p++]);
+                         }
+                     }
+                 }
+-                fprintf (fp, "\n");
++                fprintf(fp, "\n");
+             }
+         }
+     }
+-    fclose (fp);
++    fclose(fp);
+ 
+     /* Test q_lut */
+-#if defined (commentout)
+-    printf ("Testing q_lut\n");
+-    for (j = 0; j < bxf->vox_per_rgn[2] 
+-                 * bxf->vox_per_rgn[1] 
+-                 * bxf->vox_per_rgn[0]; j++) {
++#if defined(commentout)
++    printf("Testing q_lut\n");
++    for (j = 0; j < bxf->vox_per_rgn[2] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[0]; j++)
++    {
+         float sum = 0.0;
+-        for (i = j*64; i < (j+1)*64; i++) {
++        for (i = j * 64; i < (j + 1) * 64; i++)
++        {
+             sum += bxf->q_lut[i];
+         }
+-        if (fabs(sum-1.0) > 1.e-7) {
+-            printf ("%g ", fabs(sum-1.0));
++        if (fabs(sum - 1.0) > 1.e-7)
++        {
++            printf("%g ", fabs(sum - 1.0));
+         }
+     }
+-    printf ("\n");
++    printf("\n");
+ #endif
+ 
+-    fp = fopen ("clut.txt","wb");
++    fp = fopen("clut.txt", "wb");
+     p = 0;
+-    for (k = 0; k < bxf->rdims[2]; k++) {
+-        for (j = 0; j < bxf->rdims[1]; j++) {
+-            for (i = 0; i < bxf->rdims[0]; i++) {
+-                                
+-                fprintf (fp, "%3u %3u %3u\n", 
+-                    (unsigned int) k, (unsigned int) j, (unsigned int) i);
+-                
+-                for (tz = 0; tz < 4; tz++) {
+-                    for (ty = 0; ty < 4; ty++) {
+-                        for (tx = 0; tx < 4; tx++) {
+-                            fprintf (fp, " %u", (unsigned int) bxf->c_lut[p++]);
++    for (k = 0; k < bxf->rdims[2]; k++)
++    {
++        for (j = 0; j < bxf->rdims[1]; j++)
++        {
++            for (i = 0; i < bxf->rdims[0]; i++)
++            {
++
++                fprintf(fp, "%3u %3u %3u\n",
++                        (unsigned int)k, (unsigned int)j, (unsigned int)i);
++
++                for (tz = 0; tz < 4; tz++)
++                {
++                    for (ty = 0; ty < 4; ty++)
++                    {
++                        for (tx = 0; tx < 4; tx++)
++                        {
++                            fprintf(fp, " %u", (unsigned int)bxf->c_lut[p++]);
+                         }
+                     }
+                 }
+-                fprintf (fp, "\n");
++                fprintf(fp, "\n");
+             }
+         }
+     }
+-    fclose (fp);
++    fclose(fp);
+ }
+ 
+-void
+-Bspline_xform::allocate ()
++void Bspline_xform::allocate()
+ {
+     plm_long d;
+     plm_long i, j, k, p;
+@@ -367,91 +406,97 @@ Bspline_xform::allocate ()
+     float *A, *B, *C;
+ 
+     /* Allocate coefficients */
+-    this->coeff = (float*) malloc (sizeof(float) * this->num_coeff);
+-    memset (this->coeff, 0, sizeof(float) * this->num_coeff);
++    this->coeff = (double *)malloc(sizeof(double) * this->num_coeff);
++    memset(this->coeff, 0, sizeof(double) * this->num_coeff);
+ 
+     /* Create q_lut */
+-    this->q_lut = (float*) malloc (sizeof(float) 
+-        * this->vox_per_rgn[0] 
+-        * this->vox_per_rgn[1] 
+-        * this->vox_per_rgn[2] 
+-        * 64);
+-    if (!this->q_lut) {
+-        print_and_exit ("Error allocating memory for q_lut\n");
++    this->q_lut = (float *)malloc(sizeof(float) * this->vox_per_rgn[0] * this->vox_per_rgn[1] * this->vox_per_rgn[2] * 64);
++    if (!this->q_lut)
++    {
++        print_and_exit("Error allocating memory for q_lut\n");
+     }
+ 
+-    A = (float*) malloc (sizeof(float) * this->vox_per_rgn[0] * 4);
+-    B = (float*) malloc (sizeof(float) * this->vox_per_rgn[1] * 4);
+-    C = (float*) malloc (sizeof(float) * this->vox_per_rgn[2] * 4);
++    A = (float *)malloc(sizeof(float) * this->vox_per_rgn[0] * 4);
++    B = (float *)malloc(sizeof(float) * this->vox_per_rgn[1] * 4);
++    C = (float *)malloc(sizeof(float) * this->vox_per_rgn[2] * 4);
+ 
+-    for (i = 0; i < this->vox_per_rgn[0]; i++) {
+-        float ii = ((float) i) / this->vox_per_rgn[0];
+-        float t3 = ii*ii*ii;
+-        float t2 = ii*ii;
++    for (i = 0; i < this->vox_per_rgn[0]; i++)
++    {
++        float ii = ((float)i) / this->vox_per_rgn[0];
++        float t3 = ii * ii * ii;
++        float t2 = ii * ii;
+         float t1 = ii;
+-        A[i*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+-        A[i*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+-        A[i*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+-        A[i*4+3] = (1.0/6.0) * (+ 1.0 * t3);
++        A[i * 4 + 0] = (1.0 / 6.0) * (-1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
++        A[i * 4 + 1] = (1.0 / 6.0) * (+3.0 * t3 - 6.0 * t2 + 4.0);
++        A[i * 4 + 2] = (1.0 / 6.0) * (-3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
++        A[i * 4 + 3] = (1.0 / 6.0) * (+1.0 * t3);
+     }
+ 
+-    for (j = 0; j < this->vox_per_rgn[1]; j++) {
+-        float jj = ((float) j) / this->vox_per_rgn[1];
+-        float t3 = jj*jj*jj;
+-        float t2 = jj*jj;
++    for (j = 0; j < this->vox_per_rgn[1]; j++)
++    {
++        float jj = ((float)j) / this->vox_per_rgn[1];
++        float t3 = jj * jj * jj;
++        float t2 = jj * jj;
+         float t1 = jj;
+-        B[j*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+-        B[j*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+-        B[j*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+-        B[j*4+3] = (1.0/6.0) * (+ 1.0 * t3);
++        B[j * 4 + 0] = (1.0 / 6.0) * (-1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
++        B[j * 4 + 1] = (1.0 / 6.0) * (+3.0 * t3 - 6.0 * t2 + 4.0);
++        B[j * 4 + 2] = (1.0 / 6.0) * (-3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
++        B[j * 4 + 3] = (1.0 / 6.0) * (+1.0 * t3);
+     }
+ 
+-    for (k = 0; k < this->vox_per_rgn[2]; k++) {
+-        float kk = ((float) k) / this->vox_per_rgn[2];
+-        float t3 = kk*kk*kk;
+-        float t2 = kk*kk;
++    for (k = 0; k < this->vox_per_rgn[2]; k++)
++    {
++        float kk = ((float)k) / this->vox_per_rgn[2];
++        float t3 = kk * kk * kk;
++        float t2 = kk * kk;
+         float t1 = kk;
+-        C[k*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+-        C[k*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+-        C[k*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+-        C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
++        C[k * 4 + 0] = (1.0 / 6.0) * (-1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
++        C[k * 4 + 1] = (1.0 / 6.0) * (+3.0 * t3 - 6.0 * t2 + 4.0);
++        C[k * 4 + 2] = (1.0 / 6.0) * (-3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
++        C[k * 4 + 3] = (1.0 / 6.0) * (+1.0 * t3);
+     }
+ 
+     p = 0;
+-    for (k = 0; k < this->vox_per_rgn[2]; k++) {
+-        for (j = 0; j < this->vox_per_rgn[1]; j++) {
+-            for (i = 0; i < this->vox_per_rgn[0]; i++) {
+-                for (tz = 0; tz < 4; tz++) {
+-                    for (ty = 0; ty < 4; ty++) {
+-                        for (tx = 0; tx < 4; tx++) {
+-                            this->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
++    for (k = 0; k < this->vox_per_rgn[2]; k++)
++    {
++        for (j = 0; j < this->vox_per_rgn[1]; j++)
++        {
++            for (i = 0; i < this->vox_per_rgn[0]; i++)
++            {
++                for (tz = 0; tz < 4; tz++)
++                {
++                    for (ty = 0; ty < 4; ty++)
++                    {
++                        for (tx = 0; tx < 4; tx++)
++                        {
++                            this->q_lut[p++] = A[i * 4 + tx] * B[j * 4 + ty] * C[k * 4 + tz];
+                         }
+                     }
+                 }
+             }
+         }
+     }
+-    free (C);
+-    free (B);
+-    free (A);
+-        
++    free(C);
++    free(B);
++    free(A);
++
+     /* Create c_lut */
+-    this->c_lut = (plm_long*) malloc (sizeof(plm_long) 
+-        * this->rdims[0] 
+-        * this->rdims[1] 
+-        * this->rdims[2] 
+-        * 64);
++    this->c_lut = (plm_long *)malloc(sizeof(plm_long) * this->rdims[0] * this->rdims[1] * this->rdims[2] * 64);
+     p = 0;
+-    for (k = 0; k < this->rdims[2]; k++) {
+-        for (j = 0; j < this->rdims[1]; j++) {
+-            for (i = 0; i < this->rdims[0]; i++) {
+-                for (tz = 0; tz < 4; tz++) {
+-                    for (ty = 0; ty < 4; ty++) {
+-                        for (tx = 0; tx < 4; tx++) {
+-                            this->c_lut[p++] = 
+-                                + (k + tz) * this->cdims[0] * this->cdims[1]
+-                                + (j + ty) * this->cdims[0] 
+-                                + (i + tx);
++    for (k = 0; k < this->rdims[2]; k++)
++    {
++        for (j = 0; j < this->rdims[1]; j++)
++        {
++            for (i = 0; i < this->rdims[0]; i++)
++            {
++                for (tz = 0; tz < 4; tz++)
++                {
++                    for (ty = 0; ty < 4; ty++)
++                    {
++                        for (tx = 0; tx < 4; tx++)
++                        {
++                            this->c_lut[p++] =
++                                +(k + tz) * this->cdims[0] * this->cdims[1] + (j + ty) * this->cdims[0] + (i + tx);
+                         }
+                     }
+                 }
+@@ -460,137 +505,145 @@ Bspline_xform::allocate ()
+     }
+ 
+     /* Create b_luts */
+-    this->bx_lut = (float*)malloc(4*this->vox_per_rgn[0]*sizeof(float));
+-    this->by_lut = (float*)malloc(4*this->vox_per_rgn[1]*sizeof(float));
+-    this->bz_lut = (float*)malloc(4*this->vox_per_rgn[2]*sizeof(float));
+-
+-    for (int j=0; j<4; j++) {
+-        for (int i=0; i<this->vox_per_rgn[0]; i++) {
+-            this->bx_lut[i*4+j] = bspline_basis_eval (
++    this->bx_lut = (float *)malloc(4 * this->vox_per_rgn[0] * sizeof(float));
++    this->by_lut = (float *)malloc(4 * this->vox_per_rgn[1] * sizeof(float));
++    this->bz_lut = (float *)malloc(4 * this->vox_per_rgn[2] * sizeof(float));
++
++    for (int j = 0; j < 4; j++)
++    {
++        for (int i = 0; i < this->vox_per_rgn[0]; i++)
++        {
++            this->bx_lut[i * 4 + j] = bspline_basis_eval(
+                 j, i, this->vox_per_rgn[0]);
+         }
+-        for (int i=0; i<this->vox_per_rgn[1]; i++) {
+-            this->by_lut[i*4+j] = bspline_basis_eval (
++        for (int i = 0; i < this->vox_per_rgn[1]; i++)
++        {
++            this->by_lut[i * 4 + j] = bspline_basis_eval(
+                 j, i, this->vox_per_rgn[1]);
+         }
+-        for (int i=0; i<this->vox_per_rgn[2]; i++) {
+-            this->bz_lut[i*4+j] = bspline_basis_eval (
++        for (int i = 0; i < this->vox_per_rgn[2]; i++)
++        {
++            this->bz_lut[i * 4 + j] = bspline_basis_eval(
+                 j, i, this->vox_per_rgn[2]);
+         }
+     }
+ 
+-    logfile_printf ("rdims = (%d,%d,%d)\n", 
+-        this->rdims[0], this->rdims[1], this->rdims[2]);
+-    logfile_printf ("vox_per_rgn = (%d,%d,%d)\n", 
+-        this->vox_per_rgn[0], this->vox_per_rgn[1], this->vox_per_rgn[2]);
+-    logfile_printf ("cdims = (%d %d %d)\n", 
+-        this->cdims[0], this->cdims[1], this->cdims[2]);
++    logfile_printf("rdims = (%d,%d,%d)\n",
++                   this->rdims[0], this->rdims[1], this->rdims[2]);
++    logfile_printf("vox_per_rgn = (%d,%d,%d)\n",
++                   this->vox_per_rgn[0], this->vox_per_rgn[1], this->vox_per_rgn[2]);
++    logfile_printf("cdims = (%d %d %d)\n",
++                   this->cdims[0], this->cdims[1], this->cdims[2]);
+ }
+ 
+-void
+-Bspline_xform::initialize 
+-(
+-    float img_origin[3],          /* Image origin (in mm) */
+-    float img_spacing[3],         /* Image spacing (in mm) */
+-    plm_long img_dim[3],          /* Image size (in vox) */
+-    plm_long roi_offset[3],       /* Position of first vox in ROI (in vox) */
+-    plm_long roi_dim[3],          /* Dimension of ROI (in vox) */
+-    plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
+-    float direction_cosines[9]    /* Direction cosines */
++void Bspline_xform::initialize(
++    float img_origin[3],       /* Image origin (in mm) */
++    float img_spacing[3],      /* Image spacing (in mm) */
++    plm_long img_dim[3],       /* Image size (in vox) */
++    plm_long roi_offset[3],    /* Position of first vox in ROI (in vox) */
++    plm_long roi_dim[3],       /* Dimension of ROI (in vox) */
++    plm_long vox_per_rgn[3],   /* Knot spacing (in vox) */
++    float direction_cosines[9] /* Direction cosines */
+ )
+ {
+-    logfile_printf ("bspline_xform_initialize\n");
++    logfile_printf("bspline_xform_initialize\n");
+ 
+     /* Initialize base class members */
+-    this->set (img_origin, img_spacing, img_dim, roi_offset,
+-        roi_dim, vox_per_rgn, direction_cosines);
++    this->set(img_origin, img_spacing, img_dim, roi_offset,
++              roi_dim, vox_per_rgn, direction_cosines);
+ 
+     /* Allocate and initialize coefficients and LUTs */
+-    this->allocate ();
++    this->allocate();
+ }
+ 
+-void
+-Bspline_xform::initialize 
+-(
++void Bspline_xform::initialize(
+     const Plm_image_header *pih,
+-    const float grid_spac[3]
+-)
++    const float grid_spac[3])
+ {
+-    logfile_printf ("bspline_xform_initialize\n");
++    logfile_printf("bspline_xform_initialize\n");
+ 
+     /* Initialize base class members */
+-    this->set (pih, grid_spac);
++    this->set(pih, grid_spac);
+ 
+     /* Allocate and initialize coefficients and LUTs */
+-    this->allocate ();
++    this->allocate();
+ }
+ 
+ /* -----------------------------------------------------------------------
+-   This extends the bspline grid.  Note, that the new roi_offset 
+-    in the bxf will not be the same as the one requested, because 
+-    bxf routines implicitly require that the first voxel of the 
+-    ROI matches the position of the control point. 
++   This extends the bspline grid.  Note, that the new roi_offset
++    in the bxf will not be the same as the one requested, because
++    bxf routines implicitly require that the first voxel of the
++    ROI matches the position of the control point.
+    ----------------------------------------------------------------------- */
+ /* GCS -- Is there an implicit assumption that the roi_origin > 0? */
+-void
+-bspline_xform_extend (
+-    Bspline_xform* bxf,      /* Output: bxf is initialized */
+-    int new_roi_offset[3],   /* Position of first vox in ROI (in vox) */
+-    int new_roi_dim[3]       /* Dimension of ROI (in vox) */
++void bspline_xform_extend(
++    Bspline_xform *bxf,    /* Output: bxf is initialized */
++    int new_roi_offset[3], /* Position of first vox in ROI (in vox) */
++    int new_roi_dim[3]     /* Dimension of ROI (in vox) */
+ )
+ {
+     int d;
+     int roi_offset_diff[3];
+     int roi_corner_diff[3];
+-    int eb[3];  /* # of control points to "extend before" existing grid */
+-    int ea[3];  /* # of control points to "extend after" existing grid */
++    int eb[3]; /* # of control points to "extend before" existing grid */
++    int ea[3]; /* # of control points to "extend after" existing grid */
+     int extend_needed = 0;
+     int new_rdims[3];
+     int new_cdims[3];
+     plm_long new_num_knots;
+     plm_long new_num_coeff;
+-    float* new_coeff;
++    double *new_coeff;
+     plm_long old_idx;
+     plm_long i, j, k;
+ 
+-    for (d = 0; d < 3; d++) {
++    for (d = 0; d < 3; d++)
++    {
+         roi_offset_diff[d] = new_roi_offset[d] - bxf->roi_offset[d];
+-        roi_corner_diff[d] = (new_roi_offset[d] + new_roi_dim[d]) 
+-            - (bxf->roi_offset[d] + bxf->roi_offset[d]);
++        roi_corner_diff[d] = (new_roi_offset[d] + new_roi_dim[d]) - (bxf->roi_offset[d] + bxf->roi_offset[d]);
+ 
+-        if (roi_offset_diff[d] < 0) {
+-            eb[d] = (bxf->vox_per_rgn[d] - roi_offset_diff[d] - 1) 
+-                / bxf->vox_per_rgn[d];
++        if (roi_offset_diff[d] < 0)
++        {
++            eb[d] = (bxf->vox_per_rgn[d] - roi_offset_diff[d] - 1) / bxf->vox_per_rgn[d];
+             extend_needed = 1;
+-        } else {
++        }
++        else
++        {
+             eb[d] = 0;
+         }
+-        if (roi_corner_diff[d] > 0) {
+-            ea[d] = (bxf->vox_per_rgn[d] + roi_corner_diff[d] - 1) 
+-                / bxf->vox_per_rgn[d];
++        if (roi_corner_diff[d] > 0)
++        {
++            ea[d] = (bxf->vox_per_rgn[d] + roi_corner_diff[d] - 1) / bxf->vox_per_rgn[d];
+             extend_needed = 1;
+-        } else {
++        }
++        else
++        {
+             ea[d] = 0;
+         }
+     }
+ 
+-    if (extend_needed) {
++    if (extend_needed)
++    {
+         /* Allocate new memory */
+-        for (d = 0; d < 3; d++) {
++        for (d = 0; d < 3; d++)
++        {
+             new_rdims[d] = bxf->rdims[d] + ea[d] + eb[d];
+             new_cdims[d] = bxf->cdims[d] + ea[d] + eb[d];
+         }
+         new_num_knots = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2];
+         new_num_coeff = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2] * 3;
+-        new_coeff = (float*) malloc (sizeof(float) * new_num_coeff);
+-        memset (new_coeff, 0, sizeof(float) * new_num_coeff);
++        new_coeff = (double *)malloc(sizeof(double) * new_num_coeff);
++        memset(new_coeff, 0, sizeof(double) * new_num_coeff);
+ 
+         /* Copy coefficients to new memory */
+-        for (old_idx = 0, k = 0; k < bxf->cdims[2]; k++) {
+-            for (j = 0; j < bxf->cdims[1]; j++) {
+-                for (i = 0; i < bxf->cdims[0]; i++) {
++        for (old_idx = 0, k = 0; k < bxf->cdims[2]; k++)
++        {
++            for (j = 0; j < bxf->cdims[1]; j++)
++            {
++                for (i = 0; i < bxf->cdims[0]; i++)
++                {
+                     plm_long new_idx = 3 * (((((k + eb[2]) * new_cdims[1]) + (j + eb[1])) * new_cdims[0]) + (i + eb[0]));
+-                    for (d = 0; d < 3; d++, old_idx++, new_idx++) {
++                    for (d = 0; d < 3; d++, old_idx++, new_idx++)
++                    {
+                         new_coeff[new_idx] = bxf->coeff[old_idx];
+                     }
+                 }
+@@ -598,10 +651,11 @@ bspline_xform_extend (
+         }
+ 
+         /* Free old memory */
+-        free (bxf->coeff);
++        free(bxf->coeff);
+ 
+         /* Copy over new data into bxf */
+-        for (d = 0; d < 3; d++) {
++        for (d = 0; d < 3; d++)
++        {
+             bxf->rdims[d] = new_rdims[d];
+             bxf->cdims[d] = new_cdims[d];
+         }
+@@ -610,64 +664,63 @@ bspline_xform_extend (
+         bxf->coeff = new_coeff;
+ 
+         /* Special consideration to ROI */
+-        for (d = 0; d < 3; d++) {
++        for (d = 0; d < 3; d++)
++        {
+             bxf->roi_offset[d] = bxf->roi_offset[d] - eb[d] * bxf->vox_per_rgn[d];
+             bxf->roi_dim[d] = new_roi_dim[d] + (new_roi_offset[d] - bxf->roi_offset[d]);
+         }
+     }
+ }
+ 
+-void
+-Bspline_xform::fill_coefficients (float val)
++void Bspline_xform::fill_coefficients(float val)
+ {
+     int i;
+ 
+-    for (i = 0; i < this->num_coeff; i++) {
++    for (i = 0; i < this->num_coeff; i++)
++    {
+         this->coeff[i] = val;
+     }
+ }
+ 
+-void
+-Bspline_xform::jitter_if_zero ()
++void Bspline_xform::jitter_if_zero()
+ {
+     /*   The MI algorithm will get stuck for a set of coefficients all equaling
+      *   zero due to the method we use to compute the cost function gradient.
+      *   However, it is possible we could be inheriting coefficients from a
+      *   prior stage, so we must check for inherited coefficients before
+      *   applying an initial offset to the coefficient array. */
+-    for (int i = 0; i < this->num_coeff; i++) {
+-        if (this->coeff[i] != 0.0f) {
++    for (int i = 0; i < this->num_coeff; i++)
++    {
++        if (this->coeff[i] != 0.0f)
++        {
+             return;
+         }
+     }
+-    fill_coefficients (0.01f);
++    fill_coefficients(0.01f);
+ }
+ 
+ /* Set volume header from B-spline Xform */
+-void 
+-Bspline_xform::get_volume_header (Volume_header *vh)
++void Bspline_xform::get_volume_header(Volume_header *vh)
+ {
+-    vh->set (this->img_dim, this->img_origin, this->img_spacing, 
+-        this->dc.get_matrix());
++    vh->set(this->img_dim, this->img_origin, this->img_spacing,
++            this->dc.get_matrix());
+ }
+ 
+ Plm_image_header
+-Bspline_xform::get_plm_image_header ()
++Bspline_xform::get_plm_image_header()
+ {
+-    return Plm_image_header (this->img_dim, this->img_origin, this->img_spacing, 
+-        this->dc.get_matrix());
++    return Plm_image_header(this->img_dim, this->img_origin, this->img_spacing,
++                            this->dc.get_matrix());
+ }
+ 
+-void
+-Bspline_xform::log_header ()
++void Bspline_xform::log_header()
+ {
+-    logfile_printf ("BSPLINE XFORM HEADER\n");
+-    logfile_printf ("vox_per_rgn = %d %d %d\n", 
+-        this->vox_per_rgn[0], this->vox_per_rgn[1], this->vox_per_rgn[2]);
+-    logfile_printf ("roi_offset = %d %d %d\n", 
+-        this->roi_offset[0], this->roi_offset[1], this->roi_offset[2]);
+-    logfile_printf ("roi_dim = %d %d %d\n", 
+-        this->roi_dim[0], this->roi_dim[1], this->roi_dim[2]);
+-    logfile_printf ("img_dc = %s\n", this->dc.get_string().c_str());
++    logfile_printf("BSPLINE XFORM HEADER\n");
++    logfile_printf("vox_per_rgn = %d %d %d\n",
++                   this->vox_per_rgn[0], this->vox_per_rgn[1], this->vox_per_rgn[2]);
++    logfile_printf("roi_offset = %d %d %d\n",
++                   this->roi_offset[0], this->roi_offset[1], this->roi_offset[2]);
++    logfile_printf("roi_dim = %d %d %d\n",
++                   this->roi_dim[0], this->roi_dim[1], this->roi_dim[2]);
++    logfile_printf("img_dc = %s\n", this->dc.get_string().c_str());
+ }
+-
+diff --git a/src/plastimatch/base/bspline_xform.h b/src/plastimatch/base/bspline_xform.h
+index fa7078d3..514a0831 100644
+--- a/src/plastimatch/base/bspline_xform.h
++++ b/src/plastimatch/base/bspline_xform.h
+@@ -13,93 +13,97 @@
+ class Volume;
+ class Volume_header;
+ 
+-/*! \brief 
+- * The Bspline_xform class encapsulates the B-spline coefficients 
+- * used by native registration and warping algorithms.  Information 
+- * describing the B-spline 
++/*! \brief
++ * The Bspline_xform class encapsulates the B-spline coefficients
++ * used by native registration and warping algorithms.  Information
++ * describing the B-spline
+  * geometry is held in the base class: Bspline_header.
+  */
+ class PLMBASE_API Bspline_xform
+     : public Bspline_header
+ {
+ public:
+-    SMART_POINTER_SUPPORT (Bspline_xform);
++    SMART_POINTER_SUPPORT(Bspline_xform);
++
+ public:
+-    Bspline_xform ();
+-    ~Bspline_xform ();
++    Bspline_xform();
++    ~Bspline_xform();
++
+ public:
+-    enum Lut_type {
++    enum Lut_type
++    {
+         LUT_3D_ALIGNED,
+         LUT_1D_ALIGNED,
+         LUT_1D_UNALIGNED
+     };
++
+ public:
+     /** Array of B-spline coefficients. */
+-    float* coeff;
++    double *coeff;
++    const double *coeff_;
+ 
+     /** Choose which kind of LUT is used */
+     Lut_type lut_type;
+ 
+     /* Aligned grid (3D) LUTs */
+-    plm_long* cidx_lut;          /* Lookup volume for region number */
+-    plm_long* c_lut;             /* Lookup table for control point indices */
+-    plm_long* qidx_lut;          /* Lookup volume for region offset */
+-    float* q_lut;                /* Lookup table for influence multipliers */
++    plm_long *cidx_lut; /* Lookup volume for region number */
++    plm_long *c_lut;    /* Lookup table for control point indices */
++    plm_long *qidx_lut; /* Lookup volume for region offset */
++    float *q_lut;       /* Lookup table for influence multipliers */
+ 
+     /* Aligned grid (1D) LUTs */
+-    float *bx_lut;               /* LUT for influence multiplier in x dir */
+-    float *by_lut;               /* LUT for influence multiplier in y dir */
+-    float *bz_lut;               /* LUT for influence multiplier in z dir */
++    float *bx_lut; /* LUT for influence multiplier in x dir */
++    float *by_lut; /* LUT for influence multiplier in y dir */
++    float *bz_lut; /* LUT for influence multiplier in z dir */
+ 
+     /* Unaligned grid (1D) LUTs */
+-    float *ux_lut;               /* LUT for influence multiplier in x dir */
+-    float *uy_lut;               /* LUT for influence multiplier in y dir */
+-    float *uz_lut;               /* LUT for influence multiplier in z dir */
++    float *ux_lut; /* LUT for influence multiplier in x dir */
++    float *uy_lut; /* LUT for influence multiplier in y dir */
++    float *uz_lut; /* LUT for influence multiplier in z dir */
+ 
+ public:
+     /** Initialize B-spline geometry and allocate memory for coefficients.
+-        This version of the function gets used when loading a B-Spline 
++        This version of the function gets used when loading a B-Spline
+         from file. */
+-    void initialize (
+-        float img_origin[3],          /* Image origin (in mm) */
+-        float img_spacing[3],         /* Image spacing (in mm) */
+-        plm_long img_dim[3],          /* Image size (in vox) */
+-        plm_long roi_offset[3],       /* Position of first vox in ROI (in vox) */
+-        plm_long roi_dim[3],	      /* Dimension of ROI (in vox) */
+-        plm_long vox_per_rgn[3],      /* Knot spacing (in vox) */
+-        float direction_cosines[9]    /* Direction cosines */
++    void initialize(
++        float img_origin[3],       /* Image origin (in mm) */
++        float img_spacing[3],      /* Image spacing (in mm) */
++        plm_long img_dim[3],       /* Image size (in vox) */
++        plm_long roi_offset[3],    /* Position of first vox in ROI (in vox) */
++        plm_long roi_dim[3],       /* Dimension of ROI (in vox) */
++        plm_long vox_per_rgn[3],   /* Knot spacing (in vox) */
++        float direction_cosines[9] /* Direction cosines */
+     );
+     /** Initialize B-spline geometry and allocate memory for coefficients.
+-        This version of the function gets used when creating a B-Spline 
+-        with a specified grid spacing. 
++        This version of the function gets used when creating a B-Spline
++        with a specified grid spacing.
+         \param pih The image geometry associated with B-spline
+         \param grid_spac The B-Spline grid spacing (in mm)
+     */
+-    void initialize (
++    void initialize(
+         const Plm_image_header *pih,
+-        const float grid_spac[3]
+-    );
+-    void save (const char* filename);
+-    void fill_coefficients (float val);
+-    /*! \brief This function jitters the coefficients if they are all zero. 
+-     *  It is used to prevent local minima artifact when optimizing an MI cost 
++        const float grid_spac[3]);
++    void save(const char *filename);
++    void fill_coefficients(float val);
++    /*! \brief This function jitters the coefficients if they are all zero.
++     *  It is used to prevent local minima artifact when optimizing an MI cost
+      *  function for images with the same geometry.
+      */
+-    void jitter_if_zero ();
+-    void get_volume_header (Volume_header *vh);
+-    Plm_image_header get_plm_image_header ();
+-    void log_header ();
++    void jitter_if_zero();
++    void get_volume_header(Volume_header *vh);
++    Plm_image_header get_plm_image_header();
++    void log_header();
++
+ protected:
+     /** Allocate and initialize coefficients and LUTs
+      */
+-    void allocate ();
++    void allocate();
+ };
+ 
+-PLMBASE_C_API Bspline_xform* bspline_xform_load (const char* filename);
++PLMBASE_C_API Bspline_xform *bspline_xform_load(const char *filename);
+ 
+ /* Debugging routines */
+-PLMBASE_C_API void bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn);
+-PLMBASE_C_API void bspline_xform_dump_luts (Bspline_xform* bxf);
+-
++PLMBASE_C_API void bspline_xform_dump_coeff(Bspline_xform *bxf, const char *fn);
++PLMBASE_C_API void bspline_xform_dump_luts(Bspline_xform *bxf);
+ 
+ #endif
+diff --git a/src/plastimatch/base/bspline_xform_legacy.cxx b/src/plastimatch/base/bspline_xform_legacy.cxx
+index fa6a620e..33f88cbb 100644
+--- a/src/plastimatch/base/bspline_xform_legacy.cxx
++++ b/src/plastimatch/base/bspline_xform_legacy.cxx
+@@ -101,7 +101,7 @@ bspline_xform_legacy_load (const char* filename)
+     /* This loads from itk-like planar format */
+     for (int i = 0; i < 3; i++) {
+         for (int j = 0; j < bxf->num_coeff / 3; j++) {
+-            rc = fscanf (fp, "%f\n", &bxf->coeff[j*3 + i]);
++            rc = fscanf (fp, "%lf\n", &bxf->coeff[j*3 + i]);
+             if (rc != 1) {
+                 logfile_printf ("Error parsing input xform (idx = %d,%d): %s\n", i, j, filename);
+                 goto free_exit;
+diff --git a/src/plastimatch/base/itk_image.h b/src/plastimatch/base/itk_image.h
+index 2c633948..722a0af9 100644
+--- a/src/plastimatch/base/itk_image.h
++++ b/src/plastimatch/base/itk_image.h
+@@ -21,6 +21,20 @@ typedef itk::Size < 3 > SizeType;
+ typedef itk::Vector < double, 3 > SpacingType;
+ typedef itk::VariableLengthVector<unsigned char> UCharVecType;
+ 
++typedef itk::Matrix < double, 2, 2 > NullDirectionType;
++typedef itk::Index < 2 >  NullIndexType;
++typedef itk::Point < double, 2 >  NullOriginType;
++typedef itk::ImageRegion < 2 > NullRegionType;
++typedef itk::Size < 2 > NullSizeType;
++typedef itk::Vector < double, 2 > NullSpacingType;
++
++typedef itk::Matrix < double, 4, 4 > Null2DirectionType;
++typedef itk::Index < 4 >  Null2IndexType;
++typedef itk::Point < double, 4 >  Null2OriginType;
++typedef itk::ImageRegion < 4 > Null2RegionType;
++typedef itk::Size < 4 > Null2SizeType;
++typedef itk::Vector < double, 4 > Null2SpacingType;
++
+ /* -----------------------------------------------------------------------
+    Function prototypes
+    ----------------------------------------------------------------------- */
+diff --git a/src/plastimatch/base/plm_image_header.h b/src/plastimatch/base/plm_image_header.h
+index a12a3e17..45fa88fa 100644
+--- a/src/plastimatch/base/plm_image_header.h
++++ b/src/plastimatch/base/plm_image_header.h
+@@ -16,12 +16,13 @@ class Plm_image_header_private;
+ class Volume;
+ class Volume_header;
+ 
+-/*! \brief 
+- * The Plm_image_header class defines the geometry of an image.  
+- * It defines image origin, spacing, dimensions, and direction cosines, 
++/*! \brief
++ * The Plm_image_header class defines the geometry of an image.
++ * It defines image origin, spacing, dimensions, and direction cosines,
+  * but does not contain image voxels.
+  */
+-class PLMBASE_API Plm_image_header {
++class PLMBASE_API Plm_image_header
++{
+ public:
+     Plm_image_header_private *d_ptr;
+ 
+@@ -32,126 +33,134 @@ private:
+     DirectionType m_direction;
+ 
+ public:
+-    Plm_image_header ();
+-    Plm_image_header (plm_long dim[3], float origin[3], float spacing[3]);
+-    Plm_image_header (plm_long dim[3], float origin[3], float spacing[3],
+-        float direction_cosines[9]);
+-    Plm_image_header (const RegionType& region, const OriginType& origin,
+-        const SpacingType& spacing, const DirectionType& direction);
+-    Plm_image_header (Plm_image *pli);
+-    Plm_image_header (const Plm_image& pli);
+-    Plm_image_header (const Plm_image::Pointer& pli);
+-    Plm_image_header (const Volume_header& vh);
+-    Plm_image_header (const Volume::Pointer& vol);
+-    Plm_image_header (const Volume& vol);
+-    Plm_image_header (const Volume* vol);
+-    Plm_image_header (Volume* vol);
+-    template<class T> Plm_image_header (T image);
+-    Plm_image_header (const Plm_image_header&);
+-    ~Plm_image_header ();
++    Plm_image_header();
++    Plm_image_header(plm_long dim[3], float origin[3], float spacing[3]);
++    Plm_image_header(plm_long dim[3], float origin[3], float spacing[3],
++                     float direction_cosines[9]);
++    Plm_image_header(const RegionType &region, const OriginType &origin,
++                     const SpacingType &spacing, const DirectionType &direction);
++    Plm_image_header(const NullRegionType &region, const NullOriginType &origin,
++                     const NullSpacingType &spacing, const NullDirectionType &direction)
++    {}
++    Plm_image_header(const Null2RegionType &region, const Null2OriginType &origin,
++                     const Null2SpacingType &spacing, const Null2DirectionType &direction)
++    {}
++    Plm_image_header(Plm_image *pli);
++    Plm_image_header(const Plm_image &pli);
++    Plm_image_header(const Plm_image::Pointer &pli);
++    Plm_image_header(const Volume_header &vh);
++    Plm_image_header(const Volume::Pointer &vol);
++    Plm_image_header(const Volume &vol);
++    Plm_image_header(const Volume *vol);
++    Plm_image_header(Volume *vol);
++    template <class T>
++    Plm_image_header(T image);
++    Plm_image_header(const Plm_image_header &);
++    ~Plm_image_header();
+ 
+ public:
+-    const Plm_image_header& operator= (const Plm_image_header&);
++    const Plm_image_header &operator=(const Plm_image_header &);
+ 
+ public:
+     /* Getters and Setters */
+-    int dim (int d) const;
+-    float origin (int d) const;
+-    float spacing (int d) const;
+-    void set_dim (const plm_long dim[3]);
+-    void set_origin (const float origin[3]);
+-    void set_origin (const OriginType& origin) {
++    int dim(int d) const;
++    float origin(int d) const;
++    float spacing(int d) const;
++    void set_dim(const plm_long dim[3]);
++    void set_origin(const float origin[3]);
++    void set_origin(const OriginType &origin)
++    {
+         m_origin = origin;
+     }
+-    void set_spacing (const float spacing[3]);
+-    void set_direction_cosines (
++    void set_spacing(const float spacing[3]);
++    void set_direction_cosines(
+         const float direction_cosines[9]);
+-    void set_direction_cosines (
+-        const Direction_cosines& dc);
+-    void set (const Plm_image_header& src);
+-    void set (
++    void set_direction_cosines(
++        const Direction_cosines &dc);
++    void set(const Plm_image_header &src);
++    void set(
+         const plm_long dim[3],
+         const float origin[3],
+         const float spacing[3],
+-        const Direction_cosines& dc);
+-    void set (
++        const Direction_cosines &dc);
++    void set(
+         const plm_long dim[3],
+         const float origin[3],
+         const float spacing[3],
+         const float direction_cosines[9]);
+-    void set_from_gpuit (
++    void set_from_gpuit(
+         const plm_long dim[3],
+         const float origin[3],
+         const float spacing[3],
+         const float direction_cosines[9]);
+-    void set_from_gpuit_bspline (Bspline_xform *bxf);
+-    void set_from_plm_image (const Plm_image *pli);
+-    void set_from_plm_image (const Plm_image& pli);
+-    void set_from_plm_image (const Plm_image::Pointer& pli);
+-    void set_from_volume_header (const Volume_header& vh);
+-    void set (const Volume_header& vh);
+-    void set (const Volume::Pointer& vol);
+-    void set (const Volume& vol);
+-    void set (const Volume* vol);
+-    void set (const RegionType& region, const OriginType& origin,
+-        const SpacingType& spacing, const DirectionType& direction);
+-    template<class T> void set_from_itk_image (const T& image);
+-    template<class T> void set_from_itk_image (const T* image);
+-    const OriginType& GetOrigin () const;
+-    const SpacingType& GetSpacing () const;
+-    const RegionType& GetRegion () const;
+-    const DirectionType& GetDirection () const;
+-    const SizeType& GetSize (void) const;
+-    void get_volume_header (Volume_header *vh) const;
+-    void get_origin (float origin[3]) const;
+-    void get_spacing (float spacing[3]) const;
+-    void get_dim (plm_long dim[3]) const;
+-    void get_direction_cosines (float direction_cosines[9]) const;
++    void set_from_gpuit_bspline(Bspline_xform *bxf);
++    void set_from_plm_image(const Plm_image *pli);
++    void set_from_plm_image(const Plm_image &pli);
++    void set_from_plm_image(const Plm_image::Pointer &pli);
++    void set_from_volume_header(const Volume_header &vh);
++    void set(const Volume_header &vh);
++    void set(const Volume::Pointer &vol);
++    void set(const Volume &vol);
++    void set(const Volume *vol);
++    void set(const RegionType &region, const OriginType &origin,
++             const SpacingType &spacing, const DirectionType &direction);
++    template <class T>
++    void set_from_itk_image(const T &image);
++    template <class T>
++    void set_from_itk_image(const T *image);
++    const OriginType &GetOrigin() const;
++    const SpacingType &GetSpacing() const;
++    const RegionType &GetRegion() const;
++    const DirectionType &GetDirection() const;
++    const SizeType &GetSize(void) const;
++    void get_volume_header(Volume_header *vh) const;
++    void get_origin(float origin[3]) const;
++    void get_spacing(float spacing[3]) const;
++    void get_dim(plm_long dim[3]) const;
++    void get_direction_cosines(float direction_cosines[9]) const;
+ 
+     /* Algorithms */
+-    static void clone (Plm_image_header *dest, const Plm_image_header *src);
++    static void clone(Plm_image_header *dest, const Plm_image_header *src);
+ 
+-    /*! \brief Expand existing geometry to contain the 
+-      specified point.  Only origin and dimensions can change, 
++    /*! \brief Expand existing geometry to contain the
++      specified point.  Only origin and dimensions can change,
+       spacing and direction cosines will stay the same. */
+-    void expand_to_contain (const FloatPoint3DType& position);
++    void expand_to_contain(const FloatPoint3DType &position);
+ 
+-    /*! \brief Create a new geometry that can contain both 
+-      the reference and compare image, with direction cosines 
++    /*! \brief Create a new geometry that can contain both
++      the reference and compare image, with direction cosines
+       and voxel spacing of the reference image */
+-    void set_geometry_to_contain (
+-        const Plm_image_header& reference_pih,
+-        const Plm_image_header& compare_pih);
++    void set_geometry_to_contain(
++        const Plm_image_header &reference_pih,
++        const Plm_image_header &compare_pih);
+ 
+-    void print (void) const;
++    void print(void) const;
+ 
+-    /*! \brief Return true if the two headers are the same. 
+-      Tolerance on origin and spacing can be specified 
++    /*! \brief Return true if the two headers are the same.
++      Tolerance on origin and spacing can be specified
+       using the threshold parameter */
+-    static bool compare (const Plm_image_header *pli1, const Plm_image_header *pli2, 
+-        float threshold = 1e-5);
+-    static bool compare (const Plm_image_header& pli1, const Plm_image_header& pli2, 
+-        float threshold = 1e-5);
++    static bool compare(const Plm_image_header *pli1, const Plm_image_header *pli2,
++                        float threshold = 1e-5);
++    static bool compare(const Plm_image_header &pli1, const Plm_image_header &pli2,
++                        float threshold = 1e-5);
+ 
+-    FloatPoint3DType get_index (const FloatPoint3DType& pos) const;
+-    FloatPoint3DType get_position (const float index[3]) const;
+-    void get_image_center (float center[3]) const;
++    FloatPoint3DType get_index(const FloatPoint3DType &pos) const;
++    FloatPoint3DType get_position(const float index[3]) const;
++    void get_image_center(float center[3]) const;
+ 
+     /*! \brief Get the number of voxels in the image */
+-    plm_long get_num_voxels () const;
+-    /*! \brief Get the physical extent (size) of the image, from 
+-      first voxel center to last voxel center.  Extent is zero 
++    plm_long get_num_voxels() const;
++    /*! \brief Get the physical extent (size) of the image, from
++      first voxel center to last voxel center.  Extent is zero
+       if only one voxel. */
+-    void get_image_extent (float extent[3]) const;
++    void get_image_extent(float extent[3]) const;
+ };
+ 
+ /* -----------------------------------------------------------------------
+    Global functions
+    ----------------------------------------------------------------------- */
+-void
+-direction_cosines_from_itk (
++void direction_cosines_from_itk(
+     float direction_cosines[9],
+-    DirectionType* itk_direction
+-);
++    DirectionType *itk_direction);
+ 
+ #endif
+diff --git a/src/plastimatch/base/segmentation.cxx b/src/plastimatch/base/segmentation.cxx
+index c1890ada..96aa83e0 100644
+--- a/src/plastimatch/base/segmentation.cxx
++++ b/src/plastimatch/base/segmentation.cxx
+@@ -32,6 +32,7 @@
+ #include "string_util.h"
+ #include "warp_parms.h"
+ #include "xio_structures.h"
++#include "iomanip"
+ 
+ class Segmentation_private {
+ public:
+diff --git a/src/plastimatch/cli/CMakeLists.txt b/src/plastimatch/cli/CMakeLists.txt
+index 4da900e5..224fda78 100644
+--- a/src/plastimatch/cli/CMakeLists.txt
++++ b/src/plastimatch/cli/CMakeLists.txt
+@@ -91,8 +91,8 @@ set (PLM_CLI_LIBRARIES ${PLASTIMATCH_LIBS} plmclp)
+ #  ""
+ #  "")
+ #add_library (plmclp STATIC ${PLMCLP_LIBRARY_SRC})
+-plm_add_executable_v3 (plastimatch "${PLASTIMATCH_SRC}"
+-  "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
++# plm_add_executable_v3 (plastimatch "${PLASTIMATCH_SRC}"
++#   "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+ # plm_add_executable_v3 (landmark_warp "${LANDMARK_WARP_SRC}" 
+ #   "" "${PLM_CLI_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+ # plm_add_executable_v3 (drr "${DRR_SRC}" 
+diff --git a/src/plastimatch/cuda/CMakeLists.txt b/src/plastimatch/cuda/CMakeLists.txt
+index fd0ccba8..a9365301 100644
+--- a/src/plastimatch/cuda/CMakeLists.txt
++++ b/src/plastimatch/cuda/CMakeLists.txt
+@@ -36,24 +36,24 @@ set (PLMCUDA_LIBRARY_DEPENDENCIES
+ ##-----------------------------------------------------------------------------
+ ##  SPECIAL BUILD RULES: CUDA
+ ##-----------------------------------------------------------------------------
+-if (CUDA_FOUND)
+-  if (PLM_USE_GPU_PLUGINS)
+-    plm_add_gpu_plugin_library (plmcuda "${PLMCUDA_LIBRARY_SRC}")
+-    target_link_libraries (plmcuda
+-      ${PLMCUDA_LIBRARY_DEPENDENCIES}
+-      )
+-  else ()
+-    cuda_compile (CUDA_WRAPPERS ${PLMCUDA_LIBRARY_SRC})
+-    set (PLMCUDA_LIBRARY_SRC
+-      ${PLMCUDA_LIBRARY_SRC}
+-      ${CUDA_WRAPPERS}
+-      )
+-    plm_add_library (
+-      plmcuda
+-      "${PLMCUDA_LIBRARY_SRC}" 
+-      "${PLMCUDA_LIBRARY_DEPENDENCIES}"
+-      ""
+-      "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
+-      "")
+-  endif ()
+-endif ()
++# if (CUDA_FOUND)
++#   if (PLM_USE_GPU_PLUGINS)
++#     plm_add_gpu_plugin_library (plmcuda "${PLMCUDA_LIBRARY_SRC}")
++#     target_link_libraries (plmcuda
++#       ${PLMCUDA_LIBRARY_DEPENDENCIES}
++#       )
++#   else ()
++#     cuda_compile (CUDA_WRAPPERS ${PLMCUDA_LIBRARY_SRC})
++#     set (PLMCUDA_LIBRARY_SRC
++#       ${PLMCUDA_LIBRARY_SRC}
++#       ${CUDA_WRAPPERS}
++#       )
++#     plm_add_library (
++#       plmcuda
++#       "${PLMCUDA_LIBRARY_SRC}" 
++#       "${PLMCUDA_LIBRARY_DEPENDENCIES}"
++#       ""
++#       "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
++#       "")
++#   endif ()
++# endif ()
+diff --git a/src/plastimatch/dose/CMakeLists.txt b/src/plastimatch/dose/CMakeLists.txt
+index cba09c80..6628f222 100755
+--- a/src/plastimatch/dose/CMakeLists.txt
++++ b/src/plastimatch/dose/CMakeLists.txt
+@@ -46,10 +46,10 @@ set (PLMDOSE_LIBRARY_DEPENDENCIES
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+-plm_add_library (
+-  plmdose
+-  "${PLMDOSE_LIBRARY_SRC}" 
+-  "${PLMDOSE_LIBRARY_DEPENDENCIES}"
+-  ""
+-  "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
+-  "")
++# plm_add_library (
++#   plmdose
++#   "${PLMDOSE_LIBRARY_SRC}" 
++#   "${PLMDOSE_LIBRARY_DEPENDENCIES}"
++#   ""
++#   "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
++#   "")
+diff --git a/src/plastimatch/opencl/CMakeLists.txt b/src/plastimatch/opencl/CMakeLists.txt
+index a761dcd2..8739939d 100644
+--- a/src/plastimatch/opencl/CMakeLists.txt
++++ b/src/plastimatch/opencl/CMakeLists.txt
+@@ -12,16 +12,16 @@ set (PLMOPENCL_LIBRARY_SRC
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+-if (OpenCL_FOUND)
+-  set (PLMOPENCL_LIBRARY_DEPENDENCIES
+-    plmsys
+-    ${OpenCL_LIBRARIES}
+-    )
+-  plm_add_library (
+-    plmopencl
+-    "${PLMOPENCL_LIBRARY_SRC}" 
+-    "${PLMOPENCL_LIBRARY_DEPENDENCIES}"
+-    "${PLMOPENCL_LIBRARY_LDFLAGS}"
+-    "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
+-    "")
+-endif ()
++# if (OpenCL_FOUND)
++#   set (PLMOPENCL_LIBRARY_DEPENDENCIES
++#     plmsys
++#     ${OpenCL_LIBRARIES}
++#     )
++#   plm_add_library (
++#     plmopencl
++#     "${PLMOPENCL_LIBRARY_SRC}" 
++#     "${PLMOPENCL_LIBRARY_DEPENDENCIES}"
++#     "${PLMOPENCL_LIBRARY_LDFLAGS}"
++#     "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
++#     "")
++# endif ()
+diff --git a/src/plastimatch/qt/CMakeLists.txt b/src/plastimatch/qt/CMakeLists.txt
+index 01e54976..0b7bc5e6 100644
+--- a/src/plastimatch/qt/CMakeLists.txt
++++ b/src/plastimatch/qt/CMakeLists.txt
+@@ -83,22 +83,22 @@ endif ()
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+-if (ITK_FOUND AND QT4_FOUND)
+-  set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 
+-    ${QT_QTSQL_LIBRARIES} ${QT4_LIBRARIES})
+-  plm_add_executable_v3 (cview "${CRYSTALVIEW_SRC}"
+-    "${QT4_INCLUDE_DIRS}" "${CRYSTALVIEW_LIBRARIES}"
+-    "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-endif ()
+-if (ITK_FOUND AND QT4_FOUND AND QT_QTSQL_FOUND)
+-  if (PLM_CONFIG_ENABLE_PLASTIMATCH_QT)
+-    set (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
+-      ${QT_QTSQL_LIBRARIES} ${QT4_LIBRARIES})
+-    plm_add_executable_v3 (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
+-      "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_QT_LIBRARIES}" 
+-      "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-  endif ()
+-endif ()
++# if (ITK_FOUND AND QT4_FOUND)
++#   set (CRYSTALVIEW_LIBRARIES ${PLASTIMATCH_LIBS} 
++#     ${QT_QTSQL_LIBRARIES} ${QT4_LIBRARIES})
++#   plm_add_executable_v3 (cview "${CRYSTALVIEW_SRC}"
++#     "${QT4_INCLUDE_DIRS}" "${CRYSTALVIEW_LIBRARIES}"
++#     "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
++# endif ()
++# if (ITK_FOUND AND QT4_FOUND AND QT_QTSQL_FOUND)
++#   if (PLM_CONFIG_ENABLE_PLASTIMATCH_QT)
++#     set (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
++#       ${QT_QTSQL_LIBRARIES} ${QT4_LIBRARIES})
++#     plm_add_executable_v3 (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
++#       "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_QT_LIBRARIES}" 
++#       "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
++#   endif ()
++# endif ()
+ 
+ ##-----------------------------------------------------------------------------
+ ##  BUILD QT DESIGNER PLUGINS
+diff --git a/src/plastimatch/reconstruct/CMakeLists.txt b/src/plastimatch/reconstruct/CMakeLists.txt
+index 67475faa..6c173f1e 100644
+--- a/src/plastimatch/reconstruct/CMakeLists.txt
++++ b/src/plastimatch/reconstruct/CMakeLists.txt
+@@ -73,13 +73,13 @@ endif ()
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+-plm_add_library (
+-  plmreconstruct
+-  "${PLMRECONSTRUCT_LIBRARY_SRC}" 
+-  "${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}"
+-  "${PLMRECONSTRUCT_LIBRARY_LDFLAGS}"
+-  "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
+-  "")
++# plm_add_library (
++#   plmreconstruct
++#   "${PLMRECONSTRUCT_LIBRARY_SRC}" 
++#   "${PLMRECONSTRUCT_LIBRARY_DEPENDENCIES}"
++#   "${PLMRECONSTRUCT_LIBRARY_LDFLAGS}"
++#   "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
++#   "")
+ 
+ 
+ if (CUDA_FOUND)
+diff --git a/src/plastimatch/register/CMakeLists.txt b/src/plastimatch/register/CMakeLists.txt
+index cef129e0..79e25d34 100644
+--- a/src/plastimatch/register/CMakeLists.txt
++++ b/src/plastimatch/register/CMakeLists.txt
+@@ -160,6 +160,16 @@ if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
+   plm_set_sse2_flags (bspline.cxx bspline_gm.cxx bspline_mi.cxx bspline_mse.cxx)
+ endif ()
+ 
++set (PLMREGISTER_LIBRARY_HEADERS
++  "${PLM_BINARY_DIR}/plmregister_config.h"
++  )
++foreach (ARG ${PLMREGISTER_LIBRARY_SRC})
++  string (REGEX MATCH ".*\\.h$" TMP "${ARG}")
++  if (TMP)
++    list (APPEND PLMREGISTER_LIBRARY_HEADERS "${TMP}")
++  endif ()
++endforeach ()
++
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+@@ -169,7 +179,8 @@ plm_add_library (
+   "${PLMREGISTER_LIBRARY_DEPENDENCIES}"
+   "${PLMREGISTER_LIBRARY_LDFLAGS}"
+   "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
+-  "")
++  "${PLMREGISTER_LIBRARY_HEADERS}"
++  )
+ 
+ # because plmregistercuda is dynamically loaded (not linked)
+ # CMake needs to be told explicitly that plmregister
+diff --git a/src/plastimatch/register/bspline_regularize.cxx b/src/plastimatch/register/bspline_regularize.cxx
+index 39d844c5..822562e2 100644
+--- a/src/plastimatch/register/bspline_regularize.cxx
++++ b/src/plastimatch/register/bspline_regularize.cxx
+@@ -7,7 +7,7 @@
+ #include "bspline_regularize.h"
+ #include "print_and_exit.h"
+ 
+-Bspline_regularize::Bspline_regularize ()
++Bspline_regularize::Bspline_regularize()
+ {
+     /* all methods */
+     this->reg_parms = 0;
+@@ -34,93 +34,91 @@ Bspline_regularize::Bspline_regularize ()
+     this->cond = 0;
+ }
+ 
+-Bspline_regularize::~Bspline_regularize ()
++Bspline_regularize::~Bspline_regularize()
+ {
+-    if (!reg_parms) {
++    if (!reg_parms)
++    {
+         return;
+     }
+ 
+     /* Don't free reg_parms, fixed, moving, bxf; you don't own them */
+ 
+     /* Semi-analytic method has LUTs to free */
+-    free (this->q_dxdyz_lut);
+-    free (this->q_xdydz_lut);
+-    free (this->q_dxydz_lut);
+-    free (this->q_d2xyz_lut);
+-    free (this->q_xd2yz_lut);
+-    free (this->q_xyd2z_lut);
++    free(this->q_dxdyz_lut);
++    free(this->q_xdydz_lut);
++    free(this->q_dxydz_lut);
++    free(this->q_d2xyz_lut);
++    free(this->q_xd2yz_lut);
++    free(this->q_xyd2z_lut);
+ 
+     /* Numeric method has Q matrices to free */
+-    free (this->QX_mats);
+-    free (this->QY_mats);
+-    free (this->QZ_mats);
+-    free (this->QX);
+-    free (this->QY);
+-    free (this->QZ);
+-    free (this->V_mats);
+-    free (this->V);
+-    free (this->cond);
++    free(this->QX_mats);
++    free(this->QY_mats);
++    free(this->QZ_mats);
++    free(this->QX);
++    free(this->QY);
++    free(this->QZ);
++    free(this->V_mats);
++    free(this->V);
++    free(this->cond);
+ }
+ 
+-void
+-Bspline_regularize::initialize (
++void Bspline_regularize::initialize(
+     const Regularization_parms *reg_parms,
+-    Bspline_xform* bxf
+-)
++    Bspline_xform *bxf)
+ {
+     this->reg_parms = reg_parms;
+     this->bxf = bxf;
+ 
+-    switch (reg_parms->implementation) {
++    switch (reg_parms->implementation)
++    {
+     case 'a':
+-	this->numeric_init (bxf);
++        this->numeric_init(bxf);
+         break;
+     case 'b':
+-	this->analytic_init(bxf,reg_parms);
++        this->analytic_init(bxf, reg_parms);
++        break;
+     case 'c':
+-        this->analytic_init (bxf,reg_parms);
++        this->analytic_init(bxf, reg_parms);
+         break;
+     case 'd':
+-	this->semi_analytic_init (bxf);
++        this->semi_analytic_init(bxf);
+         break;
+     default:
+-        print_and_exit (
++        print_and_exit(
+             "Error: unknown reg_parms->implementation (%c)\n",
+-            reg_parms->implementation
+-        );
++            reg_parms->implementation);
+         break;
+     }
+ }
+ 
+-void
+-Bspline_regularize::compute_score (
+-    Bspline_score *bspline_score,    /* Gets updated */
+-    const Regularization_parms* reg_parms,
+-    const Bspline_xform* bxf
+-)
++void Bspline_regularize::compute_score(
++    Bspline_score *bspline_score, /* Gets updated */
++    const Regularization_parms *reg_parms,
++    const Bspline_xform *bxf) const
+ {
+-    switch (reg_parms->implementation) {
++    switch (reg_parms->implementation)
++    {
+     case 'a':
+-        this->compute_score_numeric (bspline_score, reg_parms, this, bxf);
++        this->compute_score_numeric(bspline_score, reg_parms, this, bxf);
+         break;
+     case 'b':
+-        this->compute_score_analytic (bspline_score, reg_parms, this, bxf);
++        this->compute_score_analytic(bspline_score, reg_parms, this, bxf);
+         break;
+     case 'c':
+ #if (OPENMP_FOUND)
+-        this->compute_score_analytic_omp (bspline_score, reg_parms, this, bxf);
++        this->compute_score_analytic_omp(bspline_score, reg_parms, this, bxf);
+ #else
+-        this->compute_score_analytic (bspline_score, reg_parms, this, bxf);
++        this->compute_score_analytic(bspline_score, reg_parms, this, bxf);
+ #endif
+         break;
+     case 'd':
+-        this->compute_score_semi_analytic (bspline_score, reg_parms, this, bxf);
++        this->compute_score_semi_analytic(bspline_score, reg_parms, this, bxf);
+         break;
+     default:
+-        print_and_exit (
++        print_and_exit(
+             "Error: unknown reg_parms->implementation (%c)\n",
+-            reg_parms->implementation
+-        );
++            reg_parms->implementation);
+         break;
+     }
+ }
+diff --git a/src/plastimatch/register/bspline_regularize.h b/src/plastimatch/register/bspline_regularize.h
+index eab472ba..456d58aa 100644
+--- a/src/plastimatch/register/bspline_regularize.h
++++ b/src/plastimatch/register/bspline_regularize.h
+@@ -7,101 +7,109 @@
+ #include "plmregister_config.h"
+ #include "regularization_parms.h"
+ #include "volume.h"
++#include <vector>
+ 
+ class Bspline_score;
+ class Bspline_xform;
+ 
+-class PLMREGISTER_API Bspline_regularize {
++class PLMREGISTER_API Bspline_regularize
++{
+ public:
+-    SMART_POINTER_SUPPORT (Bspline_regularize);
++    SMART_POINTER_SUPPORT(Bspline_regularize);
++
+ public:
+-    Bspline_regularize ();
+-    ~Bspline_regularize ();
++    Bspline_regularize();
++    ~Bspline_regularize();
++
+ public:
+     /* all methods */
+     const Regularization_parms *reg_parms;
+     Bspline_xform *bxf;
+ 
+-    Volume* fixed_stiffness;
++    Volume *fixed_stiffness;
+ 
+     /* numeric methods */
+-    float* q_dxdyz_lut;          /* LUT for influence of dN1/dx*dN2/dy*N3 */
+-    float* q_xdydz_lut;          /* LUT for influence of N1*dN2/dy*dN3/dz */
+-    float* q_dxydz_lut;          /* LUT for influence of dN1/dx*N2*dN3/dz */
+-    float* q_d2xyz_lut;          /* LUT for influence of (d2N1/dx2)*N2*N3 */
+-    float* q_xd2yz_lut;          /* LUT for influence of N1*(d2N2/dy2)*N3 */
+-    float* q_xyd2z_lut;          /* LUT for influence of N1*N2*(d2N3/dz2) */
++    float *q_dxdyz_lut; /* LUT for influence of dN1/dx*dN2/dy*N3 */
++    float *q_xdydz_lut; /* LUT for influence of N1*dN2/dy*dN3/dz */
++    float *q_dxydz_lut; /* LUT for influence of dN1/dx*N2*dN3/dz */
++    float *q_d2xyz_lut; /* LUT for influence of (d2N1/dx2)*N2*N3 */
++    float *q_xd2yz_lut; /* LUT for influence of N1*(d2N2/dy2)*N3 */
++    float *q_xyd2z_lut; /* LUT for influence of N1*N2*(d2N3/dz2) */
+ 
+     /* analytic methods */
+-    double* QX_mats;    /* Three 4x4 matrices */
+-    double* QY_mats;    /* Three 4x4 matrices */
+-    double* QZ_mats;    /* Three 4x4 matrices */
+-    double** QX;
+-    double** QY;
+-    double** QZ;
+-    double* V_mats;     /* The 6 64x64 V matricies */
+-    double** V;
+-    double* cond;
++    double *QX_mats; /* Three 4x4 matrices */
++    double *QY_mats; /* Three 4x4 matrices */
++    double *QZ_mats; /* Three 4x4 matrices */
++    double **QX;
++    double **QY;
++    double **QZ;
++    double *V_mats; /* The 6 64x64 V matricies */
++    double **V;
++    double *cond;
++
+ public:
+-    void initialize (
+-        const Regularization_parms* reg_parms,
+-        Bspline_xform* bxf
+-    );
+-    void compute_score (
+-        Bspline_score* bsp_score,    /* Gets updated */
+-        const Regularization_parms* reg_parms,
+-        const Bspline_xform* bxf
+-    );
++    void initialize(
++        const Regularization_parms *reg_parms,
++        Bspline_xform *bxf);
++    void compute_score(
++        Bspline_score *bsp_score, /* Gets updated */
++        const Regularization_parms *reg_parms,
++        const Bspline_xform *bxf) const;
++    double compute_score_analytic_omp_regions(
++        std::vector<int> regions,
++        const Regularization_parms *reg_parms,
++        const Bspline_regularize *rst,
++        const Bspline_xform *bxf) const;
+ 
+ protected:
+-    void numeric_init (
+-        const Bspline_xform* bxf);
+-    void compute_score_numeric (
+-        Bspline_score *bscore, 
+-        const Regularization_parms *parms, 
++    void numeric_init(
++        const Bspline_xform *bxf);
++    void compute_score_numeric(
++        Bspline_score *bscore,
++        const Regularization_parms *parms,
+         const Bspline_regularize *rst,
+-        const Bspline_xform* bxf);
++        const Bspline_xform *bxf) const;
+ 
+-    void analytic_init (
+-        const Bspline_xform* bxf,
+-	const Regularization_parms* reg_parms);
+-    void compute_score_analytic (
+-        Bspline_score *bspline_score, 
+-        const Regularization_parms* reg_parms,
+-        const Bspline_regularize* rst,
+-        const Bspline_xform* bxf);
+-    void compute_score_analytic_omp (
+-        Bspline_score *bspline_score, 
+-        const Regularization_parms* reg_parms,
+-        const Bspline_regularize* rst,
+-        const Bspline_xform* bxf);
++    void analytic_init(
++        const Bspline_xform *bxf,
++        const Regularization_parms *reg_parms);
++    void compute_score_analytic(
++        Bspline_score *bspline_score,
++        const Regularization_parms *reg_parms,
++        const Bspline_regularize *rst,
++        const Bspline_xform *bxf) const;
++    void compute_score_analytic_omp(
++        Bspline_score *bspline_score,
++        const Regularization_parms *reg_parms,
++        const Bspline_regularize *rst,
++        const Bspline_xform *bxf) const;
+ 
+-    void semi_analytic_init (
+-        const Bspline_xform* bxf);
+-    void create_qlut_grad (
+-        const Bspline_xform* bxf,
++    void semi_analytic_init(
++        const Bspline_xform *bxf);
++    void create_qlut_grad(
++        const Bspline_xform *bxf,
+         const float img_spacing[3],
+         const plm_long vox_per_rgn[3]);
+-    void hessian_component (
+-        float out[3], 
+-        const Bspline_xform* bxf, 
+-        plm_long p[3], 
+-        plm_long qidx, 
+-        int derive1, 
++    void hessian_component(
++        float out[3],
++        const Bspline_xform *bxf,
++        plm_long p[3],
++        plm_long qidx,
++        int derive1,
+         int derive2);
+-    void hessian_update_grad (
+-        Bspline_score *bscore, 
+-        const Bspline_xform* bxf, 
+-        plm_long p[3], 
+-        plm_long qidx, 
+-        float dc_dv[3], 
+-        int derive1, 
++    void hessian_update_grad(
++        Bspline_score *bscore,
++        const Bspline_xform *bxf,
++        plm_long p[3],
++        plm_long qidx,
++        float dc_dv[3],
++        int derive1,
+         int derive2);
+-    void compute_score_semi_analytic (
+-        Bspline_score *bscore, 
+-        const Regularization_parms *parms, 
++    void compute_score_semi_analytic(
++        Bspline_score *bscore,
++        const Regularization_parms *parms,
+         const Bspline_regularize *rst,
+-        const Bspline_xform* bxf);
++        const Bspline_xform *bxf) const;
+ };
+ 
+ #endif
+diff --git a/src/plastimatch/register/bspline_regularize_analytic.cxx b/src/plastimatch/register/bspline_regularize_analytic.cxx
+index d51328b4..2a2385d6 100644
+--- a/src/plastimatch/register/bspline_regularize_analytic.cxx
++++ b/src/plastimatch/register/bspline_regularize_analytic.cxx
+@@ -18,116 +18,119 @@
+ #include "plm_timer.h"
+ #include "volume.h"
+ 
+-void
+-print_matrix (double* mat, int m, int n)
++void print_matrix(double *mat, int m, int n)
+ {
+-    int i,j;
++    int i, j;
+ 
+-    for (j=0; j<n; j++) {
+-        for (i=0; i<m; i++) {
+-            printf ("%1.3e ", mat[m*j+i]);
++    for (j = 0; j < n; j++)
++    {
++        for (i = 0; i < m; i++)
++        {
++            printf("%1.3e ", mat[m * j + i]);
+         }
+-        printf ("\n");
++        printf("\n");
+     }
+ }
+ 
+-void
+-compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
++void compute_coeff_from_vf(Bspline_xform *bxf, Volume *vol)
+ {
+     plm_long i, j, k;
+-    int a,b,c,z;
++    int a, b, c, z;
+     int idx_poi, cidx, pidx, qidx;
+     float *vec_poi;
+-    float *img = (float*) vol->img;
++    float *img = (float *)vol->img;
+ 
+     plm_long p[3];
+     float q[3];
+-    float* q_lut;
+-    plm_long* c_lut;
++    float *q_lut;
++    plm_long *c_lut;
+ 
+-    for (k = 0; k < vol->dim[2]; k++) {
++    for (k = 0; k < vol->dim[2]; k++)
++    {
+         p[2] = k / bxf->vox_per_rgn[2];
+         q[2] = k % bxf->vox_per_rgn[2];
+-        for (j = 0; j < vol->dim[1]; j++) {
++        for (j = 0; j < vol->dim[1]; j++)
++        {
+             p[1] = j / bxf->vox_per_rgn[1];
+             q[1] = j % bxf->vox_per_rgn[1];
+-            for (i = 0; i < vol->dim[0]; i++) {
++            for (i = 0; i < vol->dim[0]; i++)
++            {
+                 p[0] = i / bxf->vox_per_rgn[0];
+                 q[0] = i % bxf->vox_per_rgn[0];
+ 
+-                pidx = volume_index (bxf->rdims, p[0], p[1], p[2]);
+-                qidx = volume_index (bxf->vox_per_rgn, q[0], q[1], q[2]);
++                pidx = volume_index(bxf->rdims, p[0], p[1], p[2]);
++                qidx = volume_index(bxf->vox_per_rgn, q[0], q[1], q[2]);
+ 
+-                idx_poi = volume_index (vol->dim, i, j, k);
+-                vec_poi = &img[3*idx_poi];
++                idx_poi = volume_index(vol->dim, i, j, k);
++                vec_poi = &img[3 * idx_poi];
+ 
+-                q_lut = &bxf->q_lut[qidx*64];
+-                c_lut = &bxf->c_lut[pidx*64];
++                q_lut = &bxf->q_lut[qidx * 64];
++                c_lut = &bxf->c_lut[pidx * 64];
+ 
+                 z = 0;
+-                for (c = 0; c < 4; c++) {
+-                    for (b = 0; b < 4; b++) {
+-                        for (a = 0; a < 4; a++) {
++                for (c = 0; c < 4; c++)
++                {
++                    for (b = 0; b < 4; b++)
++                    {
++                        for (a = 0; a < 4; a++)
++                        {
+                             cidx = 3 * c_lut[z];
+-                            bxf->coeff[cidx+0] += vec_poi[0] * q_lut[z];
+-                            bxf->coeff[cidx+1] += vec_poi[1] * q_lut[z];
+-                            bxf->coeff[cidx+2] += vec_poi[2] * q_lut[z];
++                            bxf->coeff[cidx + 0] += vec_poi[0] * q_lut[z];
++                            bxf->coeff[cidx + 1] += vec_poi[1] * q_lut[z];
++                            bxf->coeff[cidx + 2] += vec_poi[2] * q_lut[z];
+                             z++;
+                         }
+                     }
+                 }
+ 
+             } /* i < vol-dim[0] */
+-        } /* j < vol->dim[1] */
+-    } /* k < vol->dim[2] */
++        }     /* j < vol->dim[1] */
++    }         /* k < vol->dim[2] */
+ }
+ 
+ #if (OPENMP_FOUND)
+-void
+-reg_sort_sets (
+-    double* cond,
+-    double* sets,
+-    plm_long* k_lut,
+-    const Bspline_xform* bxf
+-)
++void reg_sort_sets(
++    double *cond,
++    double *sets,
++    plm_long *k_lut,
++    const Bspline_xform *bxf)
+ {
+     int sidx, kidx;
+ 
+     /* Rackem' Up */
+-    for (sidx=0; sidx<64; sidx++) {
++    for (sidx = 0; sidx < 64; sidx++)
++    {
+         kidx = k_lut[sidx];
+ 
+-        cond[3*(64*kidx+sidx)+0] = sets[3*sidx+0];
+-        cond[3*(64*kidx+sidx)+1] = sets[3*sidx+1];
+-        cond[3*(64*kidx+sidx)+2] = sets[3*sidx+2];
++        cond[3 * (64 * kidx + sidx) + 0] = sets[3 * sidx + 0];
++        cond[3 * (64 * kidx + sidx) + 1] = sets[3 * sidx + 1];
++        cond[3 * (64 * kidx + sidx) + 2] = sets[3 * sidx + 2];
+     }
+ }
+ #endif
+ 
+-
+ #if (OPENMP_FOUND)
+-void
+-reg_update_grad (
+-    Bspline_score* ssd,
+-    double* cond,
+-    const Bspline_xform* bxf
+-)
++void reg_update_grad(
++    Bspline_score *ssd,
++    double *cond,
++    const Bspline_xform *bxf)
+ {
+     int kidx, sidx;
+-
+-    for (kidx=0; kidx < bxf->num_knots; kidx++) {
+-        for (sidx=0; sidx<64; sidx++) {
+-            ssd->total_grad[3*kidx+0] += cond[3*(64*kidx+sidx)+0];
+-            ssd->total_grad[3*kidx+1] += cond[3*(64*kidx+sidx)+1];
+-            ssd->total_grad[3*kidx+2] += cond[3*(64*kidx+sidx)+2];
++    plm_long n_knots = static_cast<plm_long>(bxf->num_knots);
++
++    for (kidx = 0; kidx < bxf->num_knots; kidx++)
++    {
++        for (sidx = 0; sidx < 64; sidx++)
++        {
++            ssd->total_grad[kidx] += cond[3 * (64 * kidx + sidx) + 0];
++            ssd->total_grad[n_knots + kidx] += cond[3 * (64 * kidx + sidx) + 1];
++            ssd->total_grad[2 * n_knots + kidx] += cond[3 * (64 * kidx + sidx) + 2];
+         }
+     }
+ }
+ #endif
+ 
+-
+-void 
+-find_knots_3 (plm_long* knots, plm_long tile_num, const plm_long* cdims)
++void find_knots_3(plm_long *knots, plm_long tile_num, const plm_long *cdims)
+ {
+     int tile_loc[3];
+     int i, j, k;
+@@ -140,10 +143,11 @@ find_knots_3 (plm_long* knots, plm_long tile_num, const plm_long* cdims)
+     // the tile in the control grid.
+     tile_loc[0] = tile_num % num_tiles_x;
+     tile_loc[1] = ((tile_num - tile_loc[0]) / num_tiles_x) % num_tiles_y;
+-    tile_loc[2] = ((((tile_num - tile_loc[0]) / num_tiles_x) / 
+-			    num_tiles_y) % num_tiles_z);
++    tile_loc[2] = ((((tile_num - tile_loc[0]) / num_tiles_x) /
++                    num_tiles_y) %
++                   num_tiles_z);
+ 
+-    /* GCS 2011-07-14: Why not remove the below three lines, and let i,j,k 
++    /* GCS 2011-07-14: Why not remove the below three lines, and let i,j,k
+        run from 0 to 3? */
+     // Tiles do not start on the edges of the grid, so we
+     // push them to the center of the control grid.
+@@ -154,204 +158,193 @@ find_knots_3 (plm_long* knots, plm_long tile_num, const plm_long* cdims)
+     // Find 64 knots' [x,y,z] coordinates
+     // and convert into a linear knot index
+     for (k = -1; k < 3; k++)
+-    	for (j = -1; j < 3; j++)
+-    	    for (i = -1; i < 3; i++) {
+-    		knots[idx++] = (cdims[0]*cdims[1]*(tile_loc[2]+k)) +
+-                           (cdims[0]*(tile_loc[1]+j)) +
+-                           (tile_loc[0]+i);
+-        }
+-
++        for (j = -1; j < 3; j++)
++            for (i = -1; i < 3; i++)
++            {
++                knots[idx++] = (cdims[0] * cdims[1] * (tile_loc[2] + k)) +
++                               (cdims[0] * (tile_loc[1] + j)) +
++                               (tile_loc[0] + i);
++            }
+ }
+ 
+-void
+-eval_integral (double* V, double* Qn1, double* Qn2, double gs)
++void eval_integral(double *V, double *Qn1, double *Qn2, double gs)
+ {
+-    int i,j;
++    int i, j;
+     double S[16];
+ 
+     double I[7] = {
+         gs,
+-        (1.0/2.0) * (gs * gs),
+-        (1.0/3.0) * (gs * gs * gs),
+-        (1.0/4.0) * (gs * gs * gs * gs),
+-        (1.0/5.0) * (gs * gs * gs * gs * gs),
+-        (1.0/6.0) * (gs * gs * gs * gs * gs * gs),
+-        (1.0/7.0) * (gs * gs * gs * gs * gs * gs * gs)
+-    };
++        (1.0 / 2.0) * (gs * gs),
++        (1.0 / 3.0) * (gs * gs * gs),
++        (1.0 / 4.0) * (gs * gs * gs * gs),
++        (1.0 / 5.0) * (gs * gs * gs * gs * gs),
++        (1.0 / 6.0) * (gs * gs * gs * gs * gs * gs),
++        (1.0 / 7.0) * (gs * gs * gs * gs * gs * gs * gs)};
+ 
+     // Generate 16 4x4 matrix by taking the outer
+     // product of the each row in the Q matrix with
+     // every other row in the Q matrix. We use these
+     // to generate each element in V.
+-    for (j=0; j<4; j++) {
+-        for (i=0; i<4; i++) {
+-            vec_outer (S, Qn1+(4*j), Qn2+(4*i), 4);
+-            V[4*j + i] = (I[0] *  S[ 0])
+-                       + (I[1] * (S[ 1] + S[ 4]))
+-                       + (I[2] * (S[ 2] + S[ 5] + S[ 8]))
+-                       + (I[3] * (S[ 3] + S[ 6] + S[ 9] + S[12]))
+-                       + (I[4] * (S[ 7] + S[10] + S[13]))
+-                       + (I[5] * (S[11] + S[14]))
+-                       + (I[6] * (S[15]));
++    for (j = 0; j < 4; j++)
++    {
++        for (i = 0; i < 4; i++)
++        {
++            vec_outer(S, Qn1 + (4 * j), Qn2 + (4 * i), 4);
++            V[4 * j + i] = (I[0] * S[0]) + (I[1] * (S[1] + S[4])) + (I[2] * (S[2] + S[5] + S[8])) + (I[3] * (S[3] + S[6] + S[9] + S[12])) + (I[4] * (S[7] + S[10] + S[13])) + (I[5] * (S[11] + S[14])) + (I[6] * (S[15]));
+         }
+     }
+ }
+ 
+-void
+-init_analytic (double **QX, double **QY, double **QZ, 
+-    const Bspline_xform* bxf)
++void init_analytic(double **QX, double **QY, double **QZ,
++                   const Bspline_xform *bxf)
+ {
+     double rx, ry, rz;
+ 
+     double B[16] = {
+-        1.0/6.0, -1.0/2.0,  1.0/2.0, -1.0/6.0,
+-        2.0/3.0,  0.0    , -1.0    ,  1.0/2.0,
+-        1.0/6.0,  1.0/2.0,  1.0/2.0, -1.0/2.0,
+-        0.0    ,  0.0    ,  0.0    ,  1.0/6.0
+-    };
++        1.0 / 6.0, -1.0 / 2.0, 1.0 / 2.0, -1.0 / 6.0,
++        2.0 / 3.0, 0.0, -1.0, 1.0 / 2.0,
++        1.0 / 6.0, 1.0 / 2.0, 1.0 / 2.0, -1.0 / 2.0,
++        0.0, 0.0, 0.0, 1.0 / 6.0};
+ 
+     /* grid spacing */
+-    rx = 1.0/bxf->grid_spac[0];
+-    ry = 1.0/bxf->grid_spac[1];
+-    rz = 1.0/bxf->grid_spac[2];
++    rx = 1.0 / bxf->grid_spac[0];
++    ry = 1.0 / bxf->grid_spac[1];
++    rz = 1.0 / bxf->grid_spac[2];
+ 
+     double RX[16] = {
+-        1.0, 0.0,   0.0,      0.0,
+-        0.0,  rx,   0.0,      0.0,
+-        0.0, 0.0, rx*rx,      0.0,
+-        0.0, 0.0,   0.0, rx*rx*rx
+-    };
++        1.0, 0.0, 0.0, 0.0,
++        0.0, rx, 0.0, 0.0,
++        0.0, 0.0, rx * rx, 0.0,
++        0.0, 0.0, 0.0, rx * rx * rx};
+ 
+     double RY[16] = {
+-        1.0, 0.0,   0.0,      0.0,
+-        0.0,  ry,   0.0,      0.0,
+-        0.0, 0.0, ry*ry,      0.0,
+-        0.0, 0.0,   0.0, ry*ry*ry
+-    };
++        1.0, 0.0, 0.0, 0.0,
++        0.0, ry, 0.0, 0.0,
++        0.0, 0.0, ry * ry, 0.0,
++        0.0, 0.0, 0.0, ry * ry * ry};
+ 
+     double RZ[16] = {
+-        1.0, 0.0,   0.0,      0.0,
+-        0.0,  rz,   0.0,      0.0,
+-        0.0, 0.0, rz*rz,      0.0,
+-        0.0, 0.0,   0.0, rz*rz*rz
+-    };
++        1.0, 0.0, 0.0, 0.0,
++        0.0, rz, 0.0, 0.0,
++        0.0, 0.0, rz * rz, 0.0,
++        0.0, 0.0, 0.0, rz * rz * rz};
+ 
+     double delta1[16] = {
+         0.0, 0.0, 0.0, 0.0,
+         1.0, 0.0, 0.0, 0.0,
+         0.0, 2.0, 0.0, 0.0,
+-        0.0, 0.0, 3.0, 0.0
+-    };
++        0.0, 0.0, 3.0, 0.0};
+ 
+     double delta2[16] = {
+         0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0,
+         2.0, 0.0, 0.0, 0.0,
+-        0.0, 6.0, 0.0, 0.0
+-    };
+-    
++        0.0, 6.0, 0.0, 0.0};
++
+     double delta3[16] = {
+         0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0,
+         0.0, 0.0, 0.0, 0.0,
+-        6.0, 0.0, 0.0, 0.0
+-    };
++        6.0, 0.0, 0.0, 0.0};
+ 
+     // Let's call Q the product of the recripocal grid spacing
+     // matrix (R) and the B-spline coefficient matrix (B).
+-    mat_mult_mat (QX[0], B, 4, 4, RX, 4, 4);
+-    mat_mult_mat (QY[0], B, 4, 4, RY, 4, 4);
+-    mat_mult_mat (QZ[0], B, 4, 4, RZ, 4, 4);
++    mat_mult_mat(QX[0], B, 4, 4, RX, 4, 4);
++    mat_mult_mat(QY[0], B, 4, 4, RY, 4, 4);
++    mat_mult_mat(QZ[0], B, 4, 4, RZ, 4, 4);
+ 
+     // Get the product of QX, QY, QZ and delta.
+     //   QX1 is the  first-order derivative of X
+     //   QX2 is the second-order derivative of X
+     //   QY1 is the  first-order derivative of Y
+     //   ... etc
+-    mat_mult_mat (QX[1], QX[0], 4, 4, delta1, 4, 4);    
+-    mat_mult_mat (QX[2], QX[0], 4, 4, delta2, 4, 4);
+-    mat_mult_mat (QX[3], QX[0], 4, 4, delta3, 4, 4);
+-    mat_mult_mat (QY[1], QY[0], 4, 4, delta1, 4, 4);    
+-    mat_mult_mat (QY[2], QY[0], 4, 4, delta2, 4, 4);    
+-    mat_mult_mat (QY[3], QY[0], 4, 4, delta3, 4, 4);
+-    mat_mult_mat (QZ[1], QZ[0], 4, 4, delta1, 4, 4);    
+-    mat_mult_mat (QZ[2], QZ[0], 4, 4, delta2, 4, 4);    
+-    mat_mult_mat (QZ[3], QZ[0], 4, 4, delta3, 4, 4);
++    mat_mult_mat(QX[1], QX[0], 4, 4, delta1, 4, 4);
++    mat_mult_mat(QX[2], QX[0], 4, 4, delta2, 4, 4);
++    mat_mult_mat(QX[3], QX[0], 4, 4, delta3, 4, 4);
++    mat_mult_mat(QY[1], QY[0], 4, 4, delta1, 4, 4);
++    mat_mult_mat(QY[2], QY[0], 4, 4, delta2, 4, 4);
++    mat_mult_mat(QY[3], QY[0], 4, 4, delta3, 4, 4);
++    mat_mult_mat(QZ[1], QZ[0], 4, 4, delta1, 4, 4);
++    mat_mult_mat(QZ[2], QZ[0], 4, 4, delta2, 4, 4);
++    mat_mult_mat(QZ[3], QZ[0], 4, 4, delta3, 4, 4);
+ }
+ 
+-void
+-get_Vmatrix (double* V, double* X, double* Y, double* Z)
++void get_Vmatrix(double *V, double *X, double *Y, double *Z)
+ {
+-    int i,j;
+-    double tmp[256];       /* 16 x 16 matrix */
++    int i, j;
++    double tmp[256]; /* 16 x 16 matrix */
+ 
+     /* Calculate the temporary 16*16 matrix */
+-    for (j=0; j<4; j++) {
+-        for (i=0; i<4; i++) {
+-            tmp[16*(j+ 0) + (i+ 0)] = Y[4*0 + 0] * Z[4*j + i];
+-            tmp[16*(j+ 0) + (i+ 4)] = Y[4*0 + 1] * Z[4*j + i];
+-            tmp[16*(j+ 0) + (i+ 8)] = Y[4*0 + 2] * Z[4*j + i];
+-            tmp[16*(j+ 0) + (i+12)] = Y[4*0 + 3] * Z[4*j + i];
+-
+-            tmp[16*(j+ 4) + (i+ 0)] = Y[4*1 + 0] * Z[4*j + i];
+-            tmp[16*(j+ 4) + (i+ 4)] = Y[4*1 + 1] * Z[4*j + i];
+-            tmp[16*(j+ 4) + (i+ 8)] = Y[4*1 + 2] * Z[4*j + i];
+-            tmp[16*(j+ 4) + (i+12)] = Y[4*1 + 3] * Z[4*j + i];
+-
+-            tmp[16*(j+ 8) + (i+ 0)] = Y[4*2 + 0] * Z[4*j + i];
+-            tmp[16*(j+ 8) + (i+ 4)] = Y[4*2 + 1] * Z[4*j + i];
+-            tmp[16*(j+ 8) + (i+ 8)] = Y[4*2 + 2] * Z[4*j + i];
+-            tmp[16*(j+ 8) + (i+12)] = Y[4*2 + 3] * Z[4*j + i];
+-
+-            tmp[16*(j+12) + (i+ 0)] = Y[4*3 + 0] * Z[4*j + i];
+-            tmp[16*(j+12) + (i+ 4)] = Y[4*3 + 1] * Z[4*j + i];
+-            tmp[16*(j+12) + (i+ 8)] = Y[4*3 + 2] * Z[4*j + i];
+-            tmp[16*(j+12) + (i+12)] = Y[4*3 + 3] * Z[4*j + i];
++    for (j = 0; j < 4; j++)
++    {
++        for (i = 0; i < 4; i++)
++        {
++            tmp[16 * (j + 0) + (i + 0)] = Y[4 * 0 + 0] * Z[4 * j + i];
++            tmp[16 * (j + 0) + (i + 4)] = Y[4 * 0 + 1] * Z[4 * j + i];
++            tmp[16 * (j + 0) + (i + 8)] = Y[4 * 0 + 2] * Z[4 * j + i];
++            tmp[16 * (j + 0) + (i + 12)] = Y[4 * 0 + 3] * Z[4 * j + i];
++
++            tmp[16 * (j + 4) + (i + 0)] = Y[4 * 1 + 0] * Z[4 * j + i];
++            tmp[16 * (j + 4) + (i + 4)] = Y[4 * 1 + 1] * Z[4 * j + i];
++            tmp[16 * (j + 4) + (i + 8)] = Y[4 * 1 + 2] * Z[4 * j + i];
++            tmp[16 * (j + 4) + (i + 12)] = Y[4 * 1 + 3] * Z[4 * j + i];
++
++            tmp[16 * (j + 8) + (i + 0)] = Y[4 * 2 + 0] * Z[4 * j + i];
++            tmp[16 * (j + 8) + (i + 4)] = Y[4 * 2 + 1] * Z[4 * j + i];
++            tmp[16 * (j + 8) + (i + 8)] = Y[4 * 2 + 2] * Z[4 * j + i];
++            tmp[16 * (j + 8) + (i + 12)] = Y[4 * 2 + 3] * Z[4 * j + i];
++
++            tmp[16 * (j + 12) + (i + 0)] = Y[4 * 3 + 0] * Z[4 * j + i];
++            tmp[16 * (j + 12) + (i + 4)] = Y[4 * 3 + 1] * Z[4 * j + i];
++            tmp[16 * (j + 12) + (i + 8)] = Y[4 * 3 + 2] * Z[4 * j + i];
++            tmp[16 * (j + 12) + (i + 12)] = Y[4 * 3 + 3] * Z[4 * j + i];
+         }
+     }
+ 
+     /* Calculate the 64*64 V matrix */
+-    for (j=0; j<16; j++) {
+-        for (i=0; i<16; i++) {
+-            V[64*(j+ 0) + (i+ 0)] = X[4*0 + 0] * tmp[16*j + i];
+-            V[64*(j+ 0) + (i+16)] = X[4*0 + 1] * tmp[16*j + i];
+-            V[64*(j+ 0) + (i+32)] = X[4*0 + 2] * tmp[16*j + i];
+-            V[64*(j+ 0) + (i+48)] = X[4*0 + 3] * tmp[16*j + i];
+-
+-            V[64*(j+16) + (i+ 0)] = X[4*1 + 0] * tmp[16*j + i];
+-            V[64*(j+16) + (i+16)] = X[4*1 + 1] * tmp[16*j + i];
+-            V[64*(j+16) + (i+32)] = X[4*1 + 2] * tmp[16*j + i];
+-            V[64*(j+16) + (i+48)] = X[4*1 + 3] * tmp[16*j + i];
+-
+-            V[64*(j+32) + (i+ 0)] = X[4*2 + 0] * tmp[16*j + i];
+-            V[64*(j+32) + (i+16)] = X[4*2 + 1] * tmp[16*j + i];
+-            V[64*(j+32) + (i+32)] = X[4*2 + 2] * tmp[16*j + i];
+-            V[64*(j+32) + (i+48)] = X[4*2 + 3] * tmp[16*j + i];
+-
+-            V[64*(j+48) + (i+ 0)] = X[4*3 + 0] * tmp[16*j + i];
+-            V[64*(j+48) + (i+16)] = X[4*3 + 1] * tmp[16*j + i];
+-            V[64*(j+48) + (i+32)] = X[4*3 + 2] * tmp[16*j + i];
+-            V[64*(j+48) + (i+48)] = X[4*3 + 3] * tmp[16*j + i];
++    for (j = 0; j < 16; j++)
++    {
++        for (i = 0; i < 16; i++)
++        {
++            V[64 * (j + 0) + (i + 0)] = X[4 * 0 + 0] * tmp[16 * j + i];
++            V[64 * (j + 0) + (i + 16)] = X[4 * 0 + 1] * tmp[16 * j + i];
++            V[64 * (j + 0) + (i + 32)] = X[4 * 0 + 2] * tmp[16 * j + i];
++            V[64 * (j + 0) + (i + 48)] = X[4 * 0 + 3] * tmp[16 * j + i];
++
++            V[64 * (j + 16) + (i + 0)] = X[4 * 1 + 0] * tmp[16 * j + i];
++            V[64 * (j + 16) + (i + 16)] = X[4 * 1 + 1] * tmp[16 * j + i];
++            V[64 * (j + 16) + (i + 32)] = X[4 * 1 + 2] * tmp[16 * j + i];
++            V[64 * (j + 16) + (i + 48)] = X[4 * 1 + 3] * tmp[16 * j + i];
++
++            V[64 * (j + 32) + (i + 0)] = X[4 * 2 + 0] * tmp[16 * j + i];
++            V[64 * (j + 32) + (i + 16)] = X[4 * 2 + 1] * tmp[16 * j + i];
++            V[64 * (j + 32) + (i + 32)] = X[4 * 2 + 2] * tmp[16 * j + i];
++            V[64 * (j + 32) + (i + 48)] = X[4 * 2 + 3] * tmp[16 * j + i];
++
++            V[64 * (j + 48) + (i + 0)] = X[4 * 3 + 0] * tmp[16 * j + i];
++            V[64 * (j + 48) + (i + 16)] = X[4 * 3 + 1] * tmp[16 * j + i];
++            V[64 * (j + 48) + (i + 32)] = X[4 * 3 + 2] * tmp[16 * j + i];
++            V[64 * (j + 48) + (i + 48)] = X[4 * 3 + 3] * tmp[16 * j + i];
+         }
+     }
+ }
+ 
+-void
+-scale_Vmatrix(double* V, double lambda)
++void scale_Vmatrix(double *V, double lambda)
+ {
+-	int j;
+-	for (j=0;j<4096;j++) {
+-		V[j] = lambda * V[j];
+-	}
++    int j;
++    for (j = 0; j < 4096; j++)
++    {
++        V[j] = lambda * V[j];
++    }
+ }
+-void
+-scale_Vmatrix_omp(double* V, double lambda)
++void scale_Vmatrix_omp(double *V, double lambda)
+ {
+-	int j;
+-#pragma omp parallel for 
+-	for (j=0;j<4096;j++) {
+-		V[j] = lambda * V[j];
+-	}
++    int j;
++#pragma omp parallel for
++    for (j = 0; j < 4096; j++)
++    {
++        V[j] = lambda * V[j];
++    }
+ }
+ 
+ /* Employs my "world famous" thread safe "condense" control-point
+@@ -360,63 +353,64 @@ scale_Vmatrix_omp(double* V, double lambda)
+  * sum-reduction capabilities */
+ #if (OPENMP_FOUND)
+ double
+-region_smoothness_omp (
+-    double* sets,
+-    const Regularization_parms* reg_parms,    
+-    const Bspline_xform* bxf,
+-    double* V, 
+-    plm_long* knots
+-)
++region_smoothness_omp(
++    double *sets,
++    const Regularization_parms *reg_parms,
++    const Bspline_xform *bxf,
++    double *V,
++    plm_long *knots)
+ {
+-    double S = 0.0;         /* Region smoothness */
++    double S = 0.0; /* Region smoothness */
+     double X[64] = {0};
+     double Y[64] = {0};
+     double Z[64] = {0};
++    plm_long n_knots = static_cast<plm_long>(bxf->num_knots);
+     int i, j;
+ 
+-    for (j=0; j<64; j++) {
+-    	/* S = pVp operation ----------------------------- */
+-        for (i=0; i<64; i++) {
+-            X[j] += bxf->coeff[3*knots[i]+0] * V[64*j + i];
+-            Y[j] += bxf->coeff[3*knots[i]+1] * V[64*j + i];
+-            Z[j] += bxf->coeff[3*knots[i]+2] * V[64*j + i];
++    for (j = 0; j < 64; j++)
++    {
++        /* S = pVp operation ----------------------------- */
++        for (i = 0; i < 64; i++)
++        {
++            X[j] += bxf->coeff_[knots[i]] * V[64 * j + i];
++            Y[j] += bxf->coeff_[n_knots + knots[i]] * V[64 * j + i];
++            Z[j] += bxf->coeff_[2 * n_knots + knots[i]] * V[64 * j + i];
+         }
+ 
+-        S += X[j] * bxf->coeff[3*knots[j]+0];
+-        S += Y[j] * bxf->coeff[3*knots[j]+1];
+-        S += Z[j] * bxf->coeff[3*knots[j]+2];
++        S += X[j] * bxf->coeff_[knots[j]];
++        S += Y[j] * bxf->coeff_[n_knots + knots[j]];
++        S += Z[j] * bxf->coeff_[2 * n_knots + knots[j]];
+         /* ------------------------------------------------ */
+ 
+         /* dS/dp = 2Vp operation */
+-        sets[3*j+0] += 2 * X[j];
+-        sets[3*j+1] += 2 * Y[j];
+-        sets[3*j+2] += 2 * Z[j];
++        sets[3 * j + 0] += 2 * X[j];
++        sets[3 * j + 1] += 2 * Y[j];
++        sets[3 * j + 2] += 2 * Z[j];
+     }
+ 
+     return S;
+ }
+ #endif
+ 
+-void
+-region_smoothness_elastic (
+-    Bspline_score *bspline_score, 
+-    const Regularization_parms* reg_parms,    
+-    const Bspline_xform* bxf,
+-    double* V9,
+-    double* V10,
+-    double* V11,
+-    double* V12,
+-    double* V13,
+-    double* V14,
+-    double* V15,
+-    double* V16,
+-    double* V17,
+-    double* V18,
+-    double* V19,
+-    double* V20,	    
+-    plm_long* knots)
++void region_smoothness_elastic(
++    Bspline_score *bspline_score,
++    const Regularization_parms *reg_parms,
++    const Bspline_xform *bxf,
++    double *V9,
++    double *V10,
++    double *V11,
++    double *V12,
++    double *V13,
++    double *V14,
++    double *V15,
++    double *V16,
++    double *V17,
++    double *V18,
++    double *V19,
++    double *V20,
++    plm_long *knots)
+ {
+-    double S = 0.0;         /* Region smoothness */
++    double S = 0.0; /* Region smoothness */
+     double X1[64] = {0};
+     double Y1[64] = {0};
+     double X2[64] = {0};
+@@ -438,87 +432,89 @@ region_smoothness_elastic (
+     double X9[64] = {0};
+     double Y9[64] = {0};
+     double Z9[64] = {0};
+-    
+-     int i,j;
+-
+-    for (j=0; j<64; j++) {
+-    	/* S = pVp operation ----------------------------- */
+-        for (i=0; i<64; i++) {
+-            X1[j] += bxf->coeff[3*knots[i]+0] * V9[64*j + i];
+-            X2[j] += bxf->coeff[3*knots[i]+0] * V10[64*j + i];
+-            X3[j] += bxf->coeff[3*knots[i]+0] * V11[64*j + i];
+-            X4[j] += bxf->coeff[3*knots[i]+0] * V12[64*j + i];
+-            Y5[j] += bxf->coeff[3*knots[i]+1] * V13[64*j + i];
+-            Y6[j] += bxf->coeff[3*knots[i]+1] * V14[64*j + i];
+-            Y1[j] += bxf->coeff[3*knots[i]+1] * V9[64*j + i];
+-            Y2[j] += bxf->coeff[3*knots[i]+1] * V10[64*j + i];
+-            Z3[j] += bxf->coeff[3*knots[i]+2] * V11[64*j + i];
+-            Z4[j] += bxf->coeff[3*knots[i]+2] * V12[64*j + i];
+-            Z5[j] += bxf->coeff[3*knots[i]+2] * V13[64*j + i];
+-            Z6[j] += bxf->coeff[3*knots[i]+2] * V14[64*j + i];
+-	    X7[j] += bxf->coeff[3*knots[i]+0] * V15[64*j + i];
+-	    Y8[j] += bxf->coeff[3*knots[i]+1] * V16[64*j + i];
+-	    Z9[j] += bxf->coeff[3*knots[i]+2] * V17[64*j + i];
+-	    Y7[j] += bxf->coeff[3*knots[i]+1] * V18[64*j + i];
+-	    Z7[j] += bxf->coeff[3*knots[i]+2] * V18[64*j + i];
+-	    X8[j] += bxf->coeff[3*knots[i]+0] * V19[64*j + i];
+-            Z8[j] += bxf->coeff[3*knots[i]+2] * V19[64*j + i];
+-            X9[j] += bxf->coeff[3*knots[i]+0] * V20[64*j + i];
+-	    Y9[j] += bxf->coeff[3*knots[i]+1] * V20[64*j + i];
+-	}
+-
+-        S += X1[j] * bxf->coeff[3*knots[j]+1];
+-        S += X2[j] * bxf->coeff[3*knots[j]+1];
+-        S += X3[j] * bxf->coeff[3*knots[j]+2];
+-	S += X4[j] * bxf->coeff[3*knots[j]+2];
+-        S += Y5[j] * bxf->coeff[3*knots[j]+2];
+-        S += Y6[j] * bxf->coeff[3*knots[j]+2];
+-	S += X7[j] * bxf->coeff[3*knots[j]+0];
+-	S += Y8[j] * bxf->coeff[3*knots[j]+1];
+-	S += Z9[j] * bxf->coeff[3*knots[j]+2];
+-        S += Y7[j] * bxf->coeff[3*knots[j]+1];
+-    	S += Z7[j] * bxf->coeff[3*knots[j]+2];
+-    	S += X8[j] * bxf->coeff[3*knots[j]+0];
+-    	S += Z8[j] * bxf->coeff[3*knots[j]+2];
+-    	S += X9[j] * bxf->coeff[3*knots[j]+0];
+-    	S += Y9[j] * bxf->coeff[3*knots[j]+1];
+-
+-	/* ------------------------------------------------ */
++
++    int i, j;
++    plm_long n_knots = static_cast<plm_long>(bxf->num_knots);
++
++    for (j = 0; j < 64; j++)
++    {
++        /* S = pVp operation ----------------------------- */
++        for (i = 0; i < 64; i++)
++        {
++            X1[j] += bxf->coeff_[knots[i]] * V9[64 * j + i];
++            X2[j] += bxf->coeff_[knots[i]] * V10[64 * j + i];
++            X3[j] += bxf->coeff_[knots[i]] * V11[64 * j + i];
++            X4[j] += bxf->coeff_[knots[i]] * V12[64 * j + i];
++            Y5[j] += bxf->coeff_[n_knots + knots[i]] * V13[64 * j + i];
++            Y6[j] += bxf->coeff_[n_knots + knots[i]] * V14[64 * j + i];
++            Y1[j] += bxf->coeff_[n_knots + knots[i]] * V9[64 * j + i];
++            Y2[j] += bxf->coeff_[n_knots + knots[i]] * V10[64 * j + i];
++            Z3[j] += bxf->coeff_[2 * n_knots + knots[i]] * V11[64 * j + i];
++            Z4[j] += bxf->coeff_[2 * n_knots + knots[i]] * V12[64 * j + i];
++            Z5[j] += bxf->coeff_[2 * n_knots + knots[i]] * V13[64 * j + i];
++            Z6[j] += bxf->coeff_[2 * n_knots + knots[i]] * V14[64 * j + i];
++            X7[j] += bxf->coeff_[knots[i]] * V15[64 * j + i];
++            Y8[j] += bxf->coeff_[n_knots + knots[i]] * V16[64 * j + i];
++            Z9[j] += bxf->coeff_[2 * n_knots + knots[i]] * V17[64 * j + i];
++            Y7[j] += bxf->coeff_[n_knots + knots[i]] * V18[64 * j + i];
++            Z7[j] += bxf->coeff_[2 * n_knots + knots[i]] * V18[64 * j + i];
++            X8[j] += bxf->coeff_[knots[i]] * V19[64 * j + i];
++            Z8[j] += bxf->coeff_[2 * n_knots + knots[i]] * V19[64 * j + i];
++            X9[j] += bxf->coeff_[knots[i]] * V20[64 * j + i];
++            Y9[j] += bxf->coeff_[n_knots + knots[i]] * V20[64 * j + i];
++        }
++
++        S += X1[j] * bxf->coeff_[n_knots + knots[j]];
++        S += X2[j] * bxf->coeff_[n_knots + knots[j]];
++        S += X3[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += X4[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += Y5[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += Y6[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += X7[j] * bxf->coeff_[knots[j]];
++        S += Y8[j] * bxf->coeff_[n_knots + knots[j]];
++        S += Z9[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += Y7[j] * bxf->coeff_[n_knots + knots[j]];
++        S += Z7[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += X8[j] * bxf->coeff_[knots[j]];
++        S += Z8[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += X9[j] * bxf->coeff_[knots[j]];
++        S += Y9[j] * bxf->coeff_[n_knots + knots[j]];
++
++        /* ------------------------------------------------ */
+ 
+         /* dS/dp = Vp operation */
+-	bspline_score->total_grad[3*knots[j]+0] += Y1[j] + Y2[j] + Z3[j] + 
+-		Z4[j] + 2 * X7[j] + 2 * X8[j] + 2 * X9[j];
+-        bspline_score->total_grad[3*knots[j]+1] += X1[j] + X2[j] + Z5[j] + 
+-		Z6[j] + 2 * Y7[j] + 2 * Y8[j] + 2 * Y9[j];
+-        bspline_score->total_grad[3*knots[j]+2] += X3[j] + X4[j] + Y5[j] + 
+-		Y6[j] + 2 * Z7[j] + 2 * Z8[j] + 2 * Z9[j];
++        bspline_score->total_grad[knots[j]] += Y1[j] + Y2[j] + Z3[j] +
++                                               Z4[j] + 2 * X7[j] + 2 * X8[j] + 2 * X9[j];
++        bspline_score->total_grad[n_knots + knots[j]] += X1[j] + X2[j] + Z5[j] +
++                                                         Z6[j] + 2 * Y7[j] + 2 * Y8[j] + 2 * Y9[j];
++        bspline_score->total_grad[2 * n_knots + knots[j]] += X3[j] + X4[j] + Y5[j] +
++                                                             Y6[j] + 2 * Z7[j] + 2 * Z8[j] + 2 * Z9[j];
+     }
+ 
+     bspline_score->rmetric += S;
+ }
+ #if (OPENMP_FOUND)
+ double
+-region_smoothness_elastic_omp (
+-    double* sets,
+-    const Regularization_parms* reg_parms,    
+-    const Bspline_xform* bxf,
+-    double* V9,
+-    double* V10,
+-    double* V11,
+-    double* V12,
+-    double* V13,
+-    double* V14,
+-    double* V15,
+-    double* V16,
+-    double* V17,
+-    double* V18,
+-    double* V19,
+-    double* V20,
+-
+-    plm_long* knots
+-)
++region_smoothness_elastic_omp(
++    double *sets,
++    const Regularization_parms *reg_parms,
++    const Bspline_xform *bxf,
++    double *V9,
++    double *V10,
++    double *V11,
++    double *V12,
++    double *V13,
++    double *V14,
++    double *V15,
++    double *V16,
++    double *V17,
++    double *V18,
++    double *V19,
++    double *V20,
++
++    plm_long *knots)
+ {
+-    double S = 0.0;         /* Region smoothness */
++    double S = 0.0; /* Region smoothness */
+     double X1[64] = {0};
+     double Y1[64] = {0};
+     double X2[64] = {0};
+@@ -540,127 +536,132 @@ region_smoothness_elastic_omp (
+     double X9[64] = {0};
+     double Y9[64] = {0};
+     double Z9[64] = {0};
+-    
++
++    plm_long n_knots = static_cast<plm_long>(bxf->num_knots);
+     int i, j;
+ 
+-    for (j=0; j<64; j++) {
+-    	/* S = pVp operation ----------------------------- */
+-        for (i=0; i<64; i++) {
+-            X1[j] += bxf->coeff[3*knots[i]+0] * V9[64*j + i];
+-            X2[j] += bxf->coeff[3*knots[i]+0] * V10[64*j + i];
+-            X3[j] += bxf->coeff[3*knots[i]+0] * V11[64*j + i];
+-            X4[j] += bxf->coeff[3*knots[i]+0] * V12[64*j + i];
+-            Y5[j] += bxf->coeff[3*knots[i]+1] * V13[64*j + i];
+-            Y6[j] += bxf->coeff[3*knots[i]+1] * V14[64*j + i];
+-            Y1[j] += bxf->coeff[3*knots[i]+1] * V9[64*j + i];
+-            Y2[j] += bxf->coeff[3*knots[i]+1] * V10[64*j + i];
+-            Z3[j] += bxf->coeff[3*knots[i]+2] * V11[64*j + i];
+-            Z4[j] += bxf->coeff[3*knots[i]+2] * V12[64*j + i];
+-            Z5[j] += bxf->coeff[3*knots[i]+2] * V13[64*j + i];
+-            Z6[j] += bxf->coeff[3*knots[i]+2] * V14[64*j + i];
+-            X7[j] += bxf->coeff[3*knots[i]+0] * V15[64*j + i]; //(mu + lambda/2)
+-	    Y8[j] += bxf->coeff[3*knots[i]+1] * V16[64*j + i];
+-	    Z9[j] += bxf->coeff[3*knots[i]+2] * V17[64*j + i];
+-	    Y7[j] += bxf->coeff[3*knots[i]+1] * V18[64*j + i]; //(mu/2)
+-       	    Z7[j] += bxf->coeff[3*knots[i]+2] * V18[64*j + i];
+-	    X8[j] += bxf->coeff[3*knots[i]+0] * V19[64*j + i];
+-	    Z8[j] += bxf->coeff[3*knots[i]+2] * V19[64*j + i];
+-     	    X9[j] += bxf->coeff[3*knots[i]+0] * V20[64*j + i];
+-	    Y9[j] += bxf->coeff[3*knots[i]+1] * V20[64*j + i];
++    for (j = 0; j < 64; j++)
++    {
++        /* S = pVp operation ----------------------------- */
++        for (i = 0; i < 64; i++)
++        {
++            X1[j] += bxf->coeff_[knots[i]] * V9[64 * j + i];
++            X2[j] += bxf->coeff_[knots[i]] * V10[64 * j + i];
++            X3[j] += bxf->coeff_[knots[i]] * V11[64 * j + i];
++            X4[j] += bxf->coeff_[knots[i]] * V12[64 * j + i];
++            Y5[j] += bxf->coeff_[n_knots + knots[i]] * V13[64 * j + i];
++            Y6[j] += bxf->coeff_[n_knots + knots[i]] * V14[64 * j + i];
++            Y1[j] += bxf->coeff_[n_knots + knots[i]] * V9[64 * j + i];
++            Y2[j] += bxf->coeff_[n_knots + knots[i]] * V10[64 * j + i];
++            Z3[j] += bxf->coeff_[2 * n_knots + knots[i]] * V11[64 * j + i];
++            Z4[j] += bxf->coeff_[2 * n_knots + knots[i]] * V12[64 * j + i];
++            Z5[j] += bxf->coeff_[2 * n_knots + knots[i]] * V13[64 * j + i];
++            Z6[j] += bxf->coeff_[2 * n_knots + knots[i]] * V14[64 * j + i];
++            X7[j] += bxf->coeff_[knots[i]] * V15[64 * j + i]; //(mu + lambda/2)
++            Y8[j] += bxf->coeff_[n_knots + knots[i]] * V16[64 * j + i];
++            Z9[j] += bxf->coeff_[2 * n_knots + knots[i]] * V17[64 * j + i];
++            Y7[j] += bxf->coeff_[n_knots + knots[i]] * V18[64 * j + i]; //(mu/2)
++            Z7[j] += bxf->coeff_[2 * n_knots + knots[i]] * V18[64 * j + i];
++            X8[j] += bxf->coeff_[knots[i]] * V19[64 * j + i];
++            Z8[j] += bxf->coeff_[2 * n_knots + knots[i]] * V19[64 * j + i];
++            X9[j] += bxf->coeff_[knots[i]] * V20[64 * j + i];
++            Y9[j] += bxf->coeff_[n_knots + knots[i]] * V20[64 * j + i];
+         }
+ 
+-        S += X1[j] * bxf->coeff[3*knots[j]+1];
+-        S += X2[j] * bxf->coeff[3*knots[j]+1];
+-        S += X3[j] * bxf->coeff[3*knots[j]+2];
+-	S += X4[j] * bxf->coeff[3*knots[j]+2];
+-        S += Y5[j] * bxf->coeff[3*knots[j]+2];
+-        S += Y6[j] * bxf->coeff[3*knots[j]+2];
+-        S += X7[j] * bxf->coeff[3*knots[j]+0];
+-	S += Y8[j] * bxf->coeff[3*knots[j]+1];
+-	S += Z9[j] * bxf->coeff[3*knots[j]+2];
+-        S += Y7[j] * bxf->coeff[3*knots[j]+1];
+-        S += Z7[j] * bxf->coeff[3*knots[j]+2];
+-        S += X8[j] * bxf->coeff[3*knots[j]+0];
+-        S += Z8[j] * bxf->coeff[3*knots[j]+2];
+-        S += X9[j] * bxf->coeff[3*knots[j]+0];
+-        S += Y9[j] * bxf->coeff[3*knots[j]+1];
+- 
+-	/* ------------------------------------------------ */
++        S += X1[j] * bxf->coeff_[n_knots + knots[j]];
++        S += X2[j] * bxf->coeff_[n_knots + knots[j]];
++        S += X3[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += X4[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += Y5[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += Y6[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += X7[j] * bxf->coeff_[knots[j]];
++        S += Y8[j] * bxf->coeff_[n_knots + knots[j]];
++        S += Z9[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += Y7[j] * bxf->coeff_[n_knots + knots[j]];
++        S += Z7[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += X8[j] * bxf->coeff_[knots[j]];
++        S += Z8[j] * bxf->coeff_[2 * n_knots + knots[j]];
++        S += X9[j] * bxf->coeff_[knots[j]];
++        S += Y9[j] * bxf->coeff_[n_knots + knots[j]];
++
++        /* ------------------------------------------------ */
+ 
+         /* dS/dp = 2Vp operation */
+-        sets[3*j+0] += Y1[j] + Y2[j] + Z3[j] + Z4[j] + 2 * X7[j] + 2 * X8[j] + 
+-		2 * X9[j];
+-        sets[3*j+1] += X1[j] + X2[j] + Z5[j] + Z6[j] + 2 * Y8[j] + 2 * Y7[j] + 
+-		2 * Y9[j];
+-        sets[3*j+2] += X3[j] + X4[j] + Y5[j] + Y6[j] + 2 * Z9[j] + 2 * Z7[j] + 
+-		2 * Z8[j];
++        sets[3 * j + 0] += Y1[j] + Y2[j] + Z3[j] + Z4[j] + 2 * X7[j] + 2 * X8[j] +
++                           2 * X9[j];
++        sets[3 * j + 1] += X1[j] + X2[j] + Z5[j] + Z6[j] + 2 * Y8[j] + 2 * Y7[j] +
++                           2 * Y9[j];
++        sets[3 * j + 2] += X3[j] + X4[j] + Y5[j] + Y6[j] + 2 * Z9[j] + 2 * Z7[j] +
++                           2 * Z8[j];
+     }
+     return S;
+ }
+ #endif
+ 
+-void
+-region_smoothness (
+-    Bspline_score *bspline_score, 
+-    const Regularization_parms* reg_parms,    
+-    const Bspline_xform* bxf,
+-    double* V, 
+-    plm_long* knots)
++void region_smoothness(
++    Bspline_score *bspline_score,
++    const Regularization_parms *reg_parms,
++    const Bspline_xform *bxf,
++    double *V,
++    plm_long *knots)
+ {
+-    double S = 0.0;         /* Region smoothness */
++    double S = 0.0; /* Region smoothness */
+     double X[64] = {0};
+     double Y[64] = {0};
+     double Z[64] = {0};
+-    int i,j;
+-
+-    for (j=0; j<64; j++) {
+-    	/* S = pVp operation ----------------------------- */
+-        for (i=0; i<64; i++) {
+-            X[j] += bxf->coeff[3*knots[i]+0] * V[64*j + i];
+-            Y[j] += bxf->coeff[3*knots[i]+1] * V[64*j + i];
+-            Z[j] += bxf->coeff[3*knots[i]+2] * V[64*j + i];
++    plm_long n_knots = static_cast<plm_long>(bxf->num_knots);
++    int i, j;
++
++    for (j = 0; j < 64; j++)
++    {
++        /* S = pVp operation ----------------------------- */
++        for (i = 0; i < 64; i++)
++        {
++            X[j] += bxf->coeff_[knots[i]] * V[64 * j + i];
++            Y[j] += bxf->coeff_[n_knots + knots[i]] * V[64 * j + i];
++            Z[j] += bxf->coeff_[2 * n_knots + knots[i]] * V[64 * j + i];
+         }
+ 
+-        S += X[j] * bxf->coeff[3*knots[j]+0];
+-        S += Y[j] * bxf->coeff[3*knots[j]+1];
+-        S += Z[j] * bxf->coeff[3*knots[j]+2];
++        S += X[j] * bxf->coeff_[knots[j]];
++        S += Y[j] * bxf->coeff_[n_knots + knots[j]];
++        S += Z[j] * bxf->coeff_[2 * n_knots + knots[j]];
+         /* ------------------------------------------------ */
+ 
+         /* dS/dp = 2Vp operation */
+-	bspline_score->total_grad[3*knots[j]+0] += 2 * X[j];
+-        bspline_score->total_grad[3*knots[j]+1] += 2 * Y[j];
+-        bspline_score->total_grad[3*knots[j]+2] += 2 * Z[j];
++        bspline_score->total_grad[knots[j]] += 2 * X[j];
++        bspline_score->total_grad[n_knots + knots[j]] += 2 * Y[j];
++        bspline_score->total_grad[2 * n_knots + knots[j]] += 2 * Z[j];
+     }
+ 
+     bspline_score->rmetric += S;
+ }
+-void
+-Bspline_regularize::analytic_init (
+-    const Bspline_xform* bxf,
+-    const Regularization_parms* reg_parms)
++
++void Bspline_regularize::analytic_init(
++    const Bspline_xform *bxf,
++    const Regularization_parms *reg_parms)
+ {
+-    double X[256];                      /* 16 x 16 matrix */
+-    double Y[256];                      /* 16 x 16 matrix */
+-    double Z[256];                      /* 16 x 16 matrix */
++    double X[256]; /* 16 x 16 matrix */
++    double Y[256]; /* 16 x 16 matrix */
++    double Z[256]; /* 16 x 16 matrix */
+     double gs[3];
+ 
+-    this->cond = (double*)malloc(3*64*bxf->num_knots*sizeof(double));
++    this->cond = (double *)malloc(3 * 64 * bxf->num_knots * sizeof(double));
+ 
+     gs[0] = (double)bxf->grid_spac[0];
+     gs[1] = (double)bxf->grid_spac[1];
+     gs[2] = (double)bxf->grid_spac[2];
+ 
+-    this->QX_mats = (double*)malloc (4 * 16 * sizeof (double));
+-    this->QY_mats = (double*)malloc (4 * 16 * sizeof (double));
+-    this->QZ_mats = (double*)malloc (4 * 16 * sizeof (double));
++    this->QX_mats = (double *)malloc(4 * 16 * sizeof(double));
++    this->QY_mats = (double *)malloc(4 * 16 * sizeof(double));
++    this->QZ_mats = (double *)malloc(4 * 16 * sizeof(double));
+ 
+-    memset (this->QX_mats, 0, 4*16*sizeof(double));
+-    memset (this->QY_mats, 0, 4*16*sizeof(double));
+-    memset (this->QZ_mats, 0, 4*16*sizeof(double));
++    memset(this->QX_mats, 0, 4 * 16 * sizeof(double));
++    memset(this->QY_mats, 0, 4 * 16 * sizeof(double));
++    memset(this->QZ_mats, 0, 4 * 16 * sizeof(double));
+ 
+-    this->QX = (double**)malloc (4 * sizeof (double*));
+-    this->QY = (double**)malloc (4 * sizeof (double*));
+-    this->QZ = (double**)malloc (4 * sizeof (double*));
++    this->QX = (double **)malloc(4 * sizeof(double *));
++    this->QY = (double **)malloc(4 * sizeof(double *));
++    this->QZ = (double **)malloc(4 * sizeof(double *));
+ 
+     /* 4x4 matrices */
+     this->QX[0] = this->QX_mats;
+@@ -678,15 +679,15 @@ Bspline_regularize::analytic_init (
+     this->QZ[2] = this->QZ[1] + 16;
+     this->QZ[3] = this->QZ[2] + 16;
+ 
+-    init_analytic (this->QX, this->QY, this->QZ, bxf);
++    init_analytic(this->QX, this->QY, this->QZ, bxf);
+ 
+     /* The below should probably be wrapped into init_analytic() */
+-    this->V_mats = (double*)malloc (32*4096 * sizeof (double));
+-    this->V = (double**)malloc (32 * sizeof (double*));
++    this->V_mats = (double *)malloc(32 * 4096 * sizeof(double));
++    this->V = (double **)malloc(32 * sizeof(double *));
+ 
+     /* The fifteen 64 x 64 V matrices */
+-    /*V[0] - V[5] -> Curvature, V[6] - V[8] -> Diffusion, 
+-     * V[9] - V[14] -> Linear Elastic , 
++    /*V[0] - V[5] -> Curvature, V[6] - V[8] -> Diffusion,
++     * V[9] - V[14] -> Linear Elastic ,
+      * V[15] - V[20] -> Linear Elastic with complex weights (Diffusion)*/
+     this->V[0] = this->V_mats;
+     this->V[1] = this->V[0] + 4096;
+@@ -702,7 +703,7 @@ Bspline_regularize::analytic_init (
+     this->V[11] = this->V[10] + 4096;
+     this->V[12] = this->V[11] + 4096;
+     this->V[13] = this->V[12] + 4096;
+-    this->V[14] = this->V[13] + 4096;   
++    this->V[14] = this->V[13] + 4096;
+     this->V[15] = this->V[14] + 4096;
+     this->V[16] = this->V[15] + 4096;
+     this->V[17] = this->V[16] + 4096;
+@@ -712,7 +713,7 @@ Bspline_regularize::analytic_init (
+     this->V[21] = this->V[20] + 4096;
+     this->V[22] = this->V[21] + 4096;
+     this->V[23] = this->V[22] + 4096;
+-    this->V[24] = this->V[23] + 4096;   
++    this->V[24] = this->V[23] + 4096;
+     this->V[25] = this->V[24] + 4096;
+     this->V[26] = this->V[25] + 4096;
+     this->V[27] = this->V[26] + 4096;
+@@ -721,339 +722,375 @@ Bspline_regularize::analytic_init (
+     this->V[30] = this->V[29] + 4096;
+     this->V[31] = this->V[30] + 4096;
+ 
++    eval_integral(X, this->QX[2], this->QX[2], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[0], X, Y, Z);
++    scale_Vmatrix(this->V[0], reg_parms->curvature_penalty);
+ 
+-    eval_integral (X, this->QX[2], this->QX[2], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[0], X, Y, Z);
+-    scale_Vmatrix(this->V[0], reg_parms->curvature_penalty); 
+-
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[2], this->QY[2], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[1], X, Y, Z);
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[2], this->QY[2], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[1], X, Y, Z);
+     scale_Vmatrix(this->V[1], reg_parms->curvature_penalty);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[2], this->QZ[2], gs[2]);
+-    get_Vmatrix (this->V[2], X, Y, Z);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[2], this->QZ[2], gs[2]);
++    get_Vmatrix(this->V[2], X, Y, Z);
+     scale_Vmatrix(this->V[2], reg_parms->curvature_penalty);
+-    
+-    eval_integral (X, this->QX[1], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[3], X, Y, Z);
+-    scale_Vmatrix(this->V[3], reg_parms->curvature_penalty * 
+-		    reg_parms->curvature_mixed_weight);
+-    
+-    eval_integral (X, this->QX[1], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[4], X, Y, Z);
++
++    eval_integral(X, this->QX[1], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[3], X, Y, Z);
++    scale_Vmatrix(this->V[3], reg_parms->curvature_penalty *
++                                  reg_parms->curvature_mixed_weight);
++
++    eval_integral(X, this->QX[1], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[4], X, Y, Z);
+     scale_Vmatrix(this->V[4], reg_parms->curvature_penalty *
+-		    reg_parms->curvature_mixed_weight);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[5], X, Y, Z);
++                                  reg_parms->curvature_mixed_weight);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[5], X, Y, Z);
+     scale_Vmatrix(this->V[5], reg_parms->curvature_penalty *
+-		    reg_parms->curvature_mixed_weight);
+-    
+-    eval_integral (X, this->QX[1], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[6], X, Y, Z);
++                                  reg_parms->curvature_mixed_weight);
++
++    eval_integral(X, this->QX[1], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[6], X, Y, Z);
+     scale_Vmatrix(this->V[6], reg_parms->diffusion_penalty);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[7], X, Y, Z);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[7], X, Y, Z);
+     scale_Vmatrix(this->V[7], reg_parms->diffusion_penalty);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[8], X, Y, Z);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[8], X, Y, Z);
+     scale_Vmatrix(this->V[8], reg_parms->diffusion_penalty);
+-    
+-    eval_integral (X, this->QX[1], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[9], X, Y, Z);
+-    scale_Vmatrix(this->V[9], reg_parms->lame_coefficient_1 * 
+-		    reg_parms->linear_elastic_multiplier);
+-    
+-    eval_integral (X, this->QX[0], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[10], X, Y, Z);
+-    scale_Vmatrix(this->V[10], reg_parms->lame_coefficient_2 * 
+-		    reg_parms->linear_elastic_multiplier);
+-    
+-    eval_integral (X, this->QX[1], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[11], X, Y, Z);
+-    scale_Vmatrix(this->V[11], reg_parms->lame_coefficient_1 * 
+-		    reg_parms->linear_elastic_multiplier);
+-    
+-    eval_integral (X, this->QX[0], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[12], X, Y, Z);
+-    scale_Vmatrix(this->V[12], reg_parms->lame_coefficient_2 * 
+-		    reg_parms->linear_elastic_multiplier);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[13], X, Y, Z);
+-    scale_Vmatrix(this->V[13], reg_parms->lame_coefficient_1 * 
+-		    reg_parms->linear_elastic_multiplier);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[14], X, Y, Z);
+-    scale_Vmatrix(this->V[14], reg_parms->lame_coefficient_2 * 
+-		    reg_parms->linear_elastic_multiplier);
+-    
+-    eval_integral (X, this->QX[1], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[15], X, Y, Z);
++
++    eval_integral(X, this->QX[1], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[9], X, Y, Z);
++    scale_Vmatrix(this->V[9], reg_parms->lame_coefficient_1 *
++                                  reg_parms->linear_elastic_multiplier);
++
++    eval_integral(X, this->QX[0], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[10], X, Y, Z);
++    scale_Vmatrix(this->V[10], reg_parms->lame_coefficient_2 *
++                                   reg_parms->linear_elastic_multiplier);
++
++    eval_integral(X, this->QX[1], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[11], X, Y, Z);
++    scale_Vmatrix(this->V[11], reg_parms->lame_coefficient_1 *
++                                   reg_parms->linear_elastic_multiplier);
++
++    eval_integral(X, this->QX[0], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[12], X, Y, Z);
++    scale_Vmatrix(this->V[12], reg_parms->lame_coefficient_2 *
++                                   reg_parms->linear_elastic_multiplier);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[13], X, Y, Z);
++    scale_Vmatrix(this->V[13], reg_parms->lame_coefficient_1 *
++                                   reg_parms->linear_elastic_multiplier);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[14], X, Y, Z);
++    scale_Vmatrix(this->V[14], reg_parms->lame_coefficient_2 *
++                                   reg_parms->linear_elastic_multiplier);
++
++    eval_integral(X, this->QX[1], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[15], X, Y, Z);
+     scale_Vmatrix(this->V[15], (reg_parms->linear_elastic_multiplier) *
+-		    (2*reg_parms->lame_coefficient_1 +
+-		     reg_parms->lame_coefficient_2)/2);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[16], X, Y, Z);
++                                   (2 * reg_parms->lame_coefficient_1 +
++                                    reg_parms->lame_coefficient_2) /
++                                   2);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[16], X, Y, Z);
+     scale_Vmatrix(this->V[16], (reg_parms->linear_elastic_multiplier) *
+-		    (2*reg_parms->lame_coefficient_1 + 
+-		     reg_parms->lame_coefficient_2)/2);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[17], X, Y, Z);
++                                   (2 * reg_parms->lame_coefficient_1 +
++                                    reg_parms->lame_coefficient_2) /
++                                   2);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[17], X, Y, Z);
+     scale_Vmatrix(this->V[17], (reg_parms->linear_elastic_multiplier) *
+-		    (2*reg_parms->lame_coefficient_1 +
+-		     reg_parms->lame_coefficient_2)/2);
+-
+-    eval_integral (X, this->QX[1], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[18], X, Y, Z);
++                                   (2 * reg_parms->lame_coefficient_1 +
++                                    reg_parms->lame_coefficient_2) /
++                                   2);
++
++    eval_integral(X, this->QX[1], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[18], X, Y, Z);
+     scale_Vmatrix(this->V[18], (reg_parms->linear_elastic_multiplier) *
+-		    (reg_parms->lame_coefficient_1)/2);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[19], X, Y, Z);
++                                   (reg_parms->lame_coefficient_1) / 2);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[19], X, Y, Z);
+     scale_Vmatrix(this->V[19], (reg_parms->linear_elastic_multiplier) *
+-		    (reg_parms->lame_coefficient_1)/2);
+-    
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[20], X, Y, Z);
++                                   (reg_parms->lame_coefficient_1) / 2);
++
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[20], X, Y, Z);
+     scale_Vmatrix(this->V[20], (reg_parms->linear_elastic_multiplier) *
+-		    (reg_parms->lame_coefficient_1)/2);
++                                   (reg_parms->lame_coefficient_1) / 2);
+ 
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[21], X, Y, Z);
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[21], X, Y, Z);
+     scale_Vmatrix(this->V[21], reg_parms->total_displacement_penalty);
+ 
+-    eval_integral (X, this->QX[3], this->QX[3], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[22], X, Y, Z);
++    eval_integral(X, this->QX[3], this->QX[3], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[22], X, Y, Z);
+     scale_Vmatrix(this->V[22], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[3], this->QY[3], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[23], X, Y, Z);
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[3], this->QY[3], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[23], X, Y, Z);
+     scale_Vmatrix(this->V[23], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[3], this->QZ[3], gs[2]);
+-    get_Vmatrix (this->V[24], X, Y, Z);
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[3], this->QZ[3], gs[2]);
++    get_Vmatrix(this->V[24], X, Y, Z);
+     scale_Vmatrix(this->V[24], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[2], this->QX[2], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[25], X, Y, Z);
++    eval_integral(X, this->QX[2], this->QX[2], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[25], X, Y, Z);
+     scale_Vmatrix(this->V[25], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[2], this->QX[2], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[26], X, Y, Z);
++    eval_integral(X, this->QX[2], this->QX[2], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[26], X, Y, Z);
+     scale_Vmatrix(this->V[26], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[2], this->QY[2], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[27], X, Y, Z);
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[2], this->QY[2], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[27], X, Y, Z);
+     scale_Vmatrix(this->V[27], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[1], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[2], this->QY[2], gs[1]);
+-    eval_integral (Z, this->QZ[0], this->QZ[0], gs[2]);
+-    get_Vmatrix (this->V[28], X, Y, Z);
++    eval_integral(X, this->QX[1], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[2], this->QY[2], gs[1]);
++    eval_integral(Z, this->QZ[0], this->QZ[0], gs[2]);
++    get_Vmatrix(this->V[28], X, Y, Z);
+     scale_Vmatrix(this->V[28], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[1], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[0], this->QY[0], gs[1]);
+-    eval_integral (Z, this->QZ[2], this->QZ[2], gs[2]);
+-    get_Vmatrix (this->V[29], X, Y, Z);
++    eval_integral(X, this->QX[1], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[0], this->QY[0], gs[1]);
++    eval_integral(Z, this->QZ[2], this->QZ[2], gs[2]);
++    get_Vmatrix(this->V[29], X, Y, Z);
+     scale_Vmatrix(this->V[29], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[0], this->QX[0], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[2], this->QZ[2], gs[2]);
+-    get_Vmatrix (this->V[30], X, Y, Z);
++    eval_integral(X, this->QX[0], this->QX[0], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[2], this->QZ[2], gs[2]);
++    get_Vmatrix(this->V[30], X, Y, Z);
+     scale_Vmatrix(this->V[30], reg_parms->third_order_penalty);
+ 
+-    eval_integral (X, this->QX[1], this->QX[1], gs[0]);
+-    eval_integral (Y, this->QY[1], this->QY[1], gs[1]);
+-    eval_integral (Z, this->QZ[1], this->QZ[1], gs[2]);
+-    get_Vmatrix (this->V[31], X, Y, Z);
++    eval_integral(X, this->QX[1], this->QX[1], gs[0]);
++    eval_integral(Y, this->QY[1], this->QY[1], gs[1]);
++    eval_integral(Z, this->QZ[1], this->QZ[1], gs[2]);
++    get_Vmatrix(this->V[31], X, Y, Z);
+     scale_Vmatrix(this->V[31], reg_parms->third_order_penalty);
+ 
+-    printf ("Regularizer initialized\n");
++    printf("Regularizer initialized\n");
+ }
+-    
+-    
++
+ /* flavor 'c' */
+ 
+ #if (OPENMP_FOUND)
+-void
+-Bspline_regularize::compute_score_analytic_omp (
+-    Bspline_score *bspline_score, 
+-    const Regularization_parms* reg_parms,
+-    const Bspline_regularize* rst,
+-    const Bspline_xform* bxf)
++void Bspline_regularize::compute_score_analytic_omp(
++    Bspline_score *bspline_score,
++    const Regularization_parms *reg_parms,
++    const Bspline_regularize *rst,
++    const Bspline_xform *bxf) const
+ {
+     plm_long i, n;
+ 
+     double S = 0.0;
+ 
+-    Plm_timer* timer = new Plm_timer;
+-    timer->start ();
+-
+-    memset (rst->cond, 0, 3*64*bxf->num_knots * sizeof (double));
++    memset(rst->cond, 0, 3 * 64 * bxf->num_knots * sizeof(double));
+ 
+     // Total number of regions in grid
+     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
+ 
+     bspline_score->rmetric = 0.0;
+ 
+-#pragma omp parallel for reduction(+:S)
+-    for (i=0; i<n; i++) {
++#pragma omp parallel for reduction(+ \
++                                   : S)
++    for (i = 0; i < n; i++)
++    {
+         plm_long knots[64];
+-        double sets[3*64];
+-
+-        memset (sets, 0, 3*64*sizeof (double));
+-
+-        find_knots_3 (knots, i, bxf->cdims);
+-
+-        S += region_smoothness_omp (sets, reg_parms, bxf ,rst->V[0], knots);
+-        S += region_smoothness_omp (sets, reg_parms, bxf ,rst->V[1], knots);
+-        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[2], knots);
+-        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[3], knots);
+-        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[4], knots);
+-        S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[5], knots);
+-	S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[6], knots);
+-	S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[7], knots);
+-	S += region_smoothness_omp (sets, reg_parms, bxf, rst->V[8], knots);
+-	S += region_smoothness_elastic_omp (sets, reg_parms, bxf, rst->V[9], 
+-			rst->V[10], rst->V[11], rst->V[12], rst->V[13], 
+-			rst->V[14], rst->V[15], rst->V[16], rst->V[17], 
+-			rst->V[18], rst->V[19], rst->V[20], knots);
+-        S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[21], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[22], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[23], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[24], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[25], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[26], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[27], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[28], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[29], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[30], knots);
+-	S+= region_smoothness_omp (sets, reg_parms, bxf, rst->V[31], knots);
+-	reg_sort_sets (rst->cond, sets, knots, bxf);
++        double sets[3 * 64];
++
++        memset(sets, 0, 3 * 64 * sizeof(double));
++
++        find_knots_3(knots, i, bxf->cdims);
++
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[0], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[1], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[2], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[3], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[4], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[5], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[6], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[7], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[8], knots);
++        S += region_smoothness_elastic_omp(sets, reg_parms, bxf, rst->V[9],
++                                           rst->V[10], rst->V[11], rst->V[12], rst->V[13],
++                                           rst->V[14], rst->V[15], rst->V[16], rst->V[17],
++                                           rst->V[18], rst->V[19], rst->V[20], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[21], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[22], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[23], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[24], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[25], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[26], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[27], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[28], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[29], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[30], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[31], knots);
++        reg_sort_sets(rst->cond, sets, knots, bxf);
+     }
+-    
+-    reg_update_grad (bspline_score, rst->cond, bxf);
++
++    reg_update_grad(bspline_score, rst->cond, bxf);
+ 
+     bspline_score->rmetric = S;
+-    bspline_score->time_rmetric = timer->report ();
+-    delete timer;
+ }
+-#endif
+ 
++double Bspline_regularize::compute_score_analytic_omp_regions(
++    std::vector<int> regions,
++    const Regularization_parms *reg_parms,
++    const Bspline_regularize *rst,
++    const Bspline_xform *bxf) const
++{
++    plm_long i;
++    double S = 0.0;
++
++#pragma omp parallel for reduction(+ \
++                                   : S)
++    for (i = 0; i < regions.size(); ++i)
++    {
++        plm_long knots[64];
++        double sets[3 * 64];
++        find_knots_3(knots, regions[i], bxf->cdims);
++
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[0], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[1], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[2], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[3], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[4], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[5], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[6], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[7], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[8], knots);
++        S += region_smoothness_elastic_omp(sets, reg_parms, bxf, rst->V[9],
++                                           rst->V[10], rst->V[11], rst->V[12], rst->V[13],
++                                           rst->V[14], rst->V[15], rst->V[16], rst->V[17],
++                                           rst->V[18], rst->V[19], rst->V[20], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[21], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[22], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[23], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[24], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[25], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[26], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[27], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[28], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[29], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[30], knots);
++        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[31], knots);
++    }
++
++    return S;
++}
++#endif
+ 
+ /* flavor 'b' */
+-void
+-Bspline_regularize::compute_score_analytic (
+-    Bspline_score *bspline_score, 
+-    const Regularization_parms* reg_parms,
+-    const Bspline_regularize* rst,
+-    const Bspline_xform* bxf)
++void Bspline_regularize::compute_score_analytic(
++    Bspline_score *bspline_score,
++    const Regularization_parms *reg_parms,
++    const Bspline_regularize *rst,
++    const Bspline_xform *bxf) const
+ {
+     plm_long i, n;
+     plm_long knots[64];
+ 
+-    Plm_timer* timer = new Plm_timer;
+-    timer->start ();
+-
+     // Total number of regions in grid
+     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
+ 
+     bspline_score->rmetric = 0.0;
+ 
+-    for (i=0; i<n; i++) {
++    for (i = 0; i < n; i++)
++    {
+         // Get the set of 64 control points for this region
+-        find_knots_3 (knots, i, bxf->cdims);
+-
+-        region_smoothness (bspline_score, reg_parms, bxf, rst->V[0], knots);
+-        region_smoothness (bspline_score, reg_parms, bxf, rst->V[1], knots);
+-        region_smoothness (bspline_score, reg_parms, bxf, rst->V[2], knots);
+-        region_smoothness (bspline_score, reg_parms, bxf, rst->V[3], knots);
+-        region_smoothness (bspline_score, reg_parms, bxf, rst->V[4], knots);
+-        region_smoothness (bspline_score, reg_parms, bxf, rst->V[5], knots);
+-        region_smoothness (bspline_score, reg_parms, bxf, rst->V[6], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[7], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[8], knots);
+-	region_smoothness_elastic (bspline_score, reg_parms, bxf, rst->V[9], 
+-			rst->V[10], rst->V[11], rst->V[12], rst->V[13], 
+-			rst->V[14], rst->V[15], rst->V[16], rst->V[17], 
+-			rst->V[18], rst->V[19], rst->V[20], knots);
+-    	region_smoothness (bspline_score, reg_parms, bxf, rst->V[21], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[22], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[23], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[24], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[25], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[26], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[27], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[28], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[29], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[30], knots);
+-	region_smoothness (bspline_score, reg_parms, bxf, rst->V[31], knots);
++        find_knots_3(knots, i, bxf->cdims);
++
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[0], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[1], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[2], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[3], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[4], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[5], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[6], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[7], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[8], knots);
++        region_smoothness_elastic(bspline_score, reg_parms, bxf, rst->V[9],
++                                  rst->V[10], rst->V[11], rst->V[12], rst->V[13],
++                                  rst->V[14], rst->V[15], rst->V[16], rst->V[17],
++                                  rst->V[18], rst->V[19], rst->V[20], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[21], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[22], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[23], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[24], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[25], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[26], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[27], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[28], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[29], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[30], knots);
++        region_smoothness(bspline_score, reg_parms, bxf, rst->V[31], knots);
+     }
+-
+-    bspline_score->time_rmetric = timer->report ();
+-    delete timer;
+ }
+diff --git a/src/plastimatch/register/bspline_regularize_numeric.cxx b/src/plastimatch/register/bspline_regularize_numeric.cxx
+index a7899f72..5cb1ca4e 100644
+--- a/src/plastimatch/register/bspline_regularize_numeric.cxx
++++ b/src/plastimatch/register/bspline_regularize_numeric.cxx
+@@ -384,7 +384,7 @@ Bspline_regularize::compute_score_numeric (
+     Bspline_score *bscore, 
+     const Regularization_parms *parms, 
+     const Bspline_regularize *rst,
+-    const Bspline_xform* bxf)
++    const Bspline_xform* bxf) const
+ {
+     Volume *vf = bspline_compute_vf (bxf);
+     bscore->rmetric = 0.0;
+diff --git a/src/plastimatch/register/bspline_regularize_semi_analytic.cxx b/src/plastimatch/register/bspline_regularize_semi_analytic.cxx
+index 54af7065..565c29b9 100644
+--- a/src/plastimatch/register/bspline_regularize_semi_analytic.cxx
++++ b/src/plastimatch/register/bspline_regularize_semi_analytic.cxx
+@@ -416,7 +416,7 @@ Bspline_regularize::compute_score_semi_analytic (
+     const Regularization_parms *parms, 
+     const Bspline_regularize *rst,
+     const Bspline_xform* bxf
+-)
++) const
+ {
+     double grad_score;
+     plm_long ri, rj, rk;
+diff --git a/src/plastimatch/register/bspline_score.cxx b/src/plastimatch/register/bspline_score.cxx
+index a70eff7c..059c6977 100644
+--- a/src/plastimatch/register/bspline_score.cxx
++++ b/src/plastimatch/register/bspline_score.cxx
+@@ -10,6 +10,7 @@ Bspline_score::Bspline_score ()
+ {
+     this->total_score = 0;
+     this->total_grad = 0;
++    this->total_grad_plm = 0;
+ 
+     this->lmetric = 0;
+     this->rmetric = 0;
+@@ -26,7 +27,7 @@ Bspline_score::Bspline_score ()
+ Bspline_score::~Bspline_score ()
+ {
+     delete[] curr_smetric_grad;
+-    delete[] total_grad;
++    delete[] total_grad_plm;
+ }
+ 
+ void
+@@ -35,8 +36,9 @@ Bspline_score::set_num_coeff (plm_long num_coeff)
+     this->num_coeff = num_coeff;
+     delete[] this->curr_smetric_grad;
+     delete[] this->total_grad;
+-    this->curr_smetric_grad = new float[num_coeff];
+-    this->total_grad = new float[num_coeff];
++    this->curr_smetric_grad = new double[num_coeff];
++    this->total_grad = new double[num_coeff];
++    this->total_grad_plm = this->total_grad;
+ }
+ 
+ void
+@@ -49,14 +51,14 @@ void
+ Bspline_score::reset_score ()
+ {
+     this->total_score = 0;
+-    memset (this->total_grad, 0, this->num_coeff * sizeof(float));
++    memset (this->total_grad, 0, this->num_coeff * sizeof(double));
+     this->lmetric = 0;
+     this->rmetric = 0;
+     
+     this->metric_record.clear();
+     this->curr_num_vox = 0;
+     this->curr_smetric = 0;
+-    memset (this->curr_smetric_grad, 0, this->num_coeff * sizeof(float));
++    memset (this->curr_smetric_grad, 0, this->num_coeff * sizeof(double));
+     this->time_rmetric = 0;
+ }
+ 
+@@ -115,7 +117,7 @@ Bspline_score::update_total_grad_b (
+ 
+ void
+ Bspline_score::update_grad (
+-    float *grad,
++    double *grad,
+     const Bspline_xform* bxf, 
+     const plm_long p[3],
+     plm_long qidx,
+@@ -144,7 +146,7 @@ Bspline_score::update_grad (
+ 
+ void
+ Bspline_score::update_grad_b (
+-    float *grad,
++    double *grad,
+     const Bspline_xform* bxf, 
+     plm_long pidx, 
+     plm_long qidx, 
+diff --git a/src/plastimatch/register/bspline_score.h b/src/plastimatch/register/bspline_score.h
+index a01abc9d..4b0137e4 100644
+--- a/src/plastimatch/register/bspline_score.h
++++ b/src/plastimatch/register/bspline_score.h
+@@ -37,7 +37,8 @@ public:
+     ~Bspline_score ();
+ public:
+     float total_score;     /* Total Score (sent to optimizer) */
+-    float* total_grad;     /* Total cost function gradient */
++    double* total_grad;     /* Total cost function gradient */
++    double* total_grad_plm;
+ 
+     float lmetric;         /* Landmark metric */
+     float rmetric;         /* Regularization metric */
+@@ -49,7 +50,7 @@ public:
+     plm_long num_coeff;    /* Size of gradient vector = num coefficents */
+ 
+     float curr_smetric;         /* Current smetric value */
+-    float* curr_smetric_grad;   /* Gradient of score for current smetric */
++    double* curr_smetric_grad;   /* Gradient of score for current smetric */
+     plm_long curr_num_vox;      /* Number of voxel with correspondence */
+ 
+     /* Time to compute regularization metric */
+@@ -81,13 +82,13 @@ public:
+         const float dc_dv[3]);
+ protected:
+     void update_grad (
+-        float *grad,
++        double *grad,
+         const Bspline_xform* bxf, 
+         const plm_long p[3],
+         plm_long qidx,
+         const float dc_dv[3]);
+     void update_grad_b (
+-        float *grad,
++        double *grad,
+         const Bspline_xform *bxf, 
+         plm_long pidx, 
+         plm_long qidx, 
+diff --git a/src/plastimatch/register/regularization_parms.h b/src/plastimatch/register/regularization_parms.h
+index 3ec0c9fd..1a78b217 100644
+--- a/src/plastimatch/register/regularization_parms.h
++++ b/src/plastimatch/register/regularization_parms.h
+@@ -38,7 +38,7 @@ public:
+         this->lame_coefficient_2 = 0.f;
+         this->linear_elastic_multiplier = 1.f;
+         this->third_order_penalty = 0.f;
+-	this->curvature_mixed_weight = 1.f;
++	    this->curvature_mixed_weight = 1.f;
+     }
+ };
+ 
+diff --git a/src/plastimatch/script/CMakeLists.txt b/src/plastimatch/script/CMakeLists.txt
+index 8465210f..164e103c 100644
+--- a/src/plastimatch/script/CMakeLists.txt
++++ b/src/plastimatch/script/CMakeLists.txt
+@@ -75,9 +75,9 @@ endif ()
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+-plm_add_library (
+-  plmscript
+-  "${PLMSCRIPT_LIBRARY_SRC}" 
+-  "${PLMSCRIPT_LIBRARY_DEPENDENCIES}"
+-  ""
+-  "")
++# plm_add_library (
++#   plmscript
++#   "${PLMSCRIPT_LIBRARY_SRC}" 
++#   "${PLMSCRIPT_LIBRARY_DEPENDENCIES}"
++#   ""
++#   "")
+diff --git a/src/plastimatch/segment/CMakeLists.txt b/src/plastimatch/segment/CMakeLists.txt
+index 08bc8f67..3c0debe1 100644
+--- a/src/plastimatch/segment/CMakeLists.txt
++++ b/src/plastimatch/segment/CMakeLists.txt
+@@ -53,10 +53,10 @@ endif ()
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+-plm_add_library (
+-  plmsegment
+-  "${PLMSEGMENT_LIBRARY_SRC}" 
+-  "${PLMSEGMENT_LIBRARY_DEPENDENCIES}"
+-  "${PLMSEGMENT_LIBRARY_LDFLAGS}"
+-  "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
+-  "")
++# plm_add_library (
++#   plmsegment
++#   "${PLMSEGMENT_LIBRARY_SRC}" 
++#   "${PLMSEGMENT_LIBRARY_DEPENDENCIES}"
++#   "${PLMSEGMENT_LIBRARY_LDFLAGS}"
++#   "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
++#   "")
+diff --git a/src/plastimatch/standalone/CMakeLists.txt b/src/plastimatch/standalone/CMakeLists.txt
+index 45eff9c0..b0b9a659 100644
+--- a/src/plastimatch/standalone/CMakeLists.txt
++++ b/src/plastimatch/standalone/CMakeLists.txt
+@@ -214,84 +214,84 @@ endif()
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+-if (ITK_FOUND)
+-  plm_add_executable_v3 (compute_distance "${COMPUTE_DISTANCE_SRC}" 
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  plm_add_executable_v3 (dicom_info "${DICOM_INFO_SRC}"
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  plm_add_executable_v3 (landmark_diff "${LANDMARK_DIFF_SRC}" 
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  plm_add_executable_v3 (merge_vfs  "${MERGE_VFS_SRC}"
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  plm_add_executable_v3 (shuffle_mha "${SHUFFLE_MHA_SRC}"
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  if (PLM_BUILD_VISCOUS)
+-    plm_add_executable_v3 (viscous "${VISCOUS_SRC}"
+-      "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  endif ()
+-#  plm_add_executable_v3 (vf_invert "${VF_INVERT_SRC}"
+-#    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  plm_add_executable_v3 (wed "${WED_SRC}" 
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  if (PLM_DCM_USE_DCMTK)
+-    plm_add_executable_v3 (xvi_archive "${XVI_ARCHIVE_SRC}" 
+-      "" "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-  endif ()
+-endif ()
+-
+-if (QT4_FOUND)
+-  set (QT4_INCLUDE_DIRS ${QT_QTGUI_INCLUDE_DIR}
+-    ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
+-  set (QT4_LIBRARIES ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY})
+-  # plm_add_executable_v3 (nki2mha_converter "${nki2mha_converter_SRC}"
+-  #   "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+-  #   "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-  if (DCMTK_FOUND)
+-    plm_add_executable_v3 (gamma_gui "${GAMMA_GUI_SRC}"
+-      "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+-      "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-    plm_add_executable_v3 (beamdata_gen_gui "${BEAMDATA_GEN_GUI_SRC}" 
+-      "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+-      "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-  endif ()
+-  plm_add_executable_v3 (register_gui "${REGISTER_GUI_SRC}" 
+-    "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
+-    "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-endif()
++# if (ITK_FOUND)
++#   plm_add_executable_v3 (compute_distance "${COMPUTE_DISTANCE_SRC}" 
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   plm_add_executable_v3 (dicom_info "${DICOM_INFO_SRC}"
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   plm_add_executable_v3 (landmark_diff "${LANDMARK_DIFF_SRC}" 
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   plm_add_executable_v3 (merge_vfs  "${MERGE_VFS_SRC}"
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   plm_add_executable_v3 (shuffle_mha "${SHUFFLE_MHA_SRC}"
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   if (PLM_BUILD_VISCOUS)
++#     plm_add_executable_v3 (viscous "${VISCOUS_SRC}"
++#       "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   endif ()
++# #  plm_add_executable_v3 (vf_invert "${VF_INVERT_SRC}"
++# #    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   plm_add_executable_v3 (wed "${WED_SRC}" 
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   if (PLM_DCM_USE_DCMTK)
++#     plm_add_executable_v3 (xvi_archive "${XVI_ARCHIVE_SRC}" 
++#       "" "${XVI_ARCHIVE_LIBRARIES}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++#   endif ()
++# endif ()
+ 
+-plm_add_executable_v3 (check_grad "${CHECK_GRAD_SRC}" 
+-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-plm_add_executable_v3 (demons "${DEMONS_SRC}" 
+-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-plm_add_executable_v3 (dlib_train "${DLIB_TRAIN_SRC}" 
+-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-plm_add_executable_v3 (hnd_to_pfm "${HND_TO_PFM_SRC}" 
+-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-plm_add_executable_v3 (bragg_curve "${BRAGG_CURVE_SRC}" 
+-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+-plm_add_executable_v3 (sobp "${SOBP_SRC}" 
+-  "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++# if (QT4_FOUND)
++#   set (QT4_INCLUDE_DIRS ${QT_QTGUI_INCLUDE_DIR}
++#     ${QT_INCLUDE_DIR} ${QT_QTCORE_INCLUDE_DIR})
++#   set (QT4_LIBRARIES ${QT_QTGUI_LIBRARY} ${QT_QTCORE_LIBRARY})
++#   # plm_add_executable_v3 (nki2mha_converter "${nki2mha_converter_SRC}"
++#   #   "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
++#   #   "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
++#   if (DCMTK_FOUND)
++#     plm_add_executable_v3 (gamma_gui "${GAMMA_GUI_SRC}"
++#       "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
++#       "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
++#     plm_add_executable_v3 (beamdata_gen_gui "${BEAMDATA_GEN_GUI_SRC}" 
++#       "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
++#       "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
++#   endif ()
++#   plm_add_executable_v3 (register_gui "${REGISTER_GUI_SRC}" 
++#     "${QT4_INCLUDE_DIRS}" "${PLASTIMATCH_LIBS};${QT4_LIBRARIES}"
++#     "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
++# endif()
+ 
+-# plm_add_executable_v3 (fdk "${FDK_SRC}" 
+-#   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
+-if (CUDA_FOUND)
+-  plm_add_executable_v3 (cuda_probe "${CUDA_PROBE_SRC}" 
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-endif ()
++# plm_add_executable_v3 (check_grad "${CHECK_GRAD_SRC}" 
++#   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++# plm_add_executable_v3 (demons "${DEMONS_SRC}" 
++#   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++# plm_add_executable_v3 (dlib_train "${DLIB_TRAIN_SRC}" 
++#   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++# plm_add_executable_v3 (hnd_to_pfm "${HND_TO_PFM_SRC}" 
++#   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++# plm_add_executable_v3 (bragg_curve "${BRAGG_CURVE_SRC}" 
++#   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
++# plm_add_executable_v3 (sobp "${SOBP_SRC}" 
++#   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_NEVER})
+ 
+-# if (MATLAB_FOUND)
+-#   mex_target (mex_drr "${MEX_DRR_SRC}"
+-#   "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}")
++# # plm_add_executable_v3 (fdk "${FDK_SRC}" 
++# #   "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_ALWAYS})
++# if (CUDA_FOUND)
++#   plm_add_executable_v3 (cuda_probe "${CUDA_PROBE_SRC}" 
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+ # endif ()
+ 
+-if (OpenCL_FOUND)
+-  plm_add_executable_v3 (opencl_probe "${OPENCL_PROBE_SRC}"
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-endif ()
++# # if (MATLAB_FOUND)
++# #   mex_target (mex_drr "${MEX_DRR_SRC}"
++# #   "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}")
++# # endif ()
++
++# if (OpenCL_FOUND)
++#   plm_add_executable_v3 (opencl_probe "${OPENCL_PROBE_SRC}"
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
++# endif ()
+ 
+ # dicom_uid requires dcmtk
+-if (DCMTK_FOUND)
+-  plm_add_executable_v3 (dicom_uid "${DICOM_UID_SRC}" 
+-    "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
+-endif ()
++# if (DCMTK_FOUND)
++#   plm_add_executable_v3 (dicom_uid "${DICOM_UID_SRC}" 
++#     "" "${PLASTIMATCH_LIBS}" "${PLASTIMATCH_LDFLAGS}" ${INSTALL_IF_NOT_DEBIAN})
++# endif ()
+ 
+diff --git a/src/plastimatch/util/CMakeLists.txt b/src/plastimatch/util/CMakeLists.txt
+index b6ec9f9a..933504cb 100644
+--- a/src/plastimatch/util/CMakeLists.txt
++++ b/src/plastimatch/util/CMakeLists.txt
+@@ -115,13 +115,13 @@ endif ()
+ ##-----------------------------------------------------------------------------
+ ##  BUILD TARGETS
+ ##-----------------------------------------------------------------------------
+-plm_add_library (
+-  plmutil
+-  "${PLMUTIL_LIBRARY_SRC}" 
+-  "${PLMUTIL_LIBRARY_DEPENDENCIES}"
+-  "${PLMUTIL_LIBRARY_LDFLAGS}"
+-  "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
+-  "${PLMUTIL_LIBRARY_HEADERS}")
++# plm_add_library (
++#   plmutil
++#   "${PLMUTIL_LIBRARY_SRC}" 
++#   "${PLMUTIL_LIBRARY_DEPENDENCIES}"
++#   "${PLMUTIL_LIBRARY_LDFLAGS}"
++#   "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
++#   "${PLMUTIL_LIBRARY_HEADERS}")
+ 
+ # because plmutilcuda is dynamically loaded (not linked)
+ # CMake needs to be told explicitly that plmutil
