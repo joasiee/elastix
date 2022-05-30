@@ -37,6 +37,42 @@
             ]
         },
         {
+            "name": "learn-1",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/bin/elastix",
+            "args": [
+                "-f",
+                "scans/01_Fixed.nii.gz",
+                "-fMask",
+                "masks/01_Fixed.nii.gz",
+                "-m",
+                "scans/01_Moving.nii.gz",
+                "-fp",
+                "landmarks/01_Fixed.txt",
+                "-mp",
+                "landmarks/01_Moving.txt",
+                "-p",
+                "${workspaceFolder}/run/learn/params.txt",
+                "-out",
+                "${workspaceFolder}/run/learn/out",
+                "-threads",
+                "$OMP_NUM_THREADS",
+            ],
+            "stopAtEntry": false,
+            "cwd": "/home/joasiee/instances/learn",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
             "name": "medium",
             "type": "cppdbg",
             "request": "launch",

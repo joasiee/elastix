@@ -647,7 +647,8 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::SetImageSampler(ImageS
   for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
   {
     Superclass * metricAsAdvanced = dynamic_cast<Superclass *>(this->GetMetric(i));
-    metricAsAdvanced->SetImageSampler(_arg);
+    if (metricAsAdvanced)
+      metricAsAdvanced->SetImageSampler(_arg);
   }
 }
 
@@ -669,7 +670,8 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::SetUseImageSampler(con
   for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
   {
     Superclass * metricAsAdvanced = dynamic_cast<Superclass *>(this->GetMetric(i));
-    metricAsAdvanced->SetUseImageSampler(_arg);
+    if (metricAsAdvanced)
+      metricAsAdvanced->SetUseImageSampler(_arg);
   }
 }
 

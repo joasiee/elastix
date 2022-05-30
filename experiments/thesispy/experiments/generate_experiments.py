@@ -88,15 +88,14 @@ def tre_divergence():
         params = (
             Parameters.from_base(mesh_size=gridsize, sampler="Full", seed=1)
             .multi_resolution(1, [4,4,4])
-            .multi_metric(metric1="CorrespondingPointsEuclideanDistanceMetric", weight1=0.0)
+            .multi_metric(metric0="AdvancedNormalizedCorrelation", metric1="CorrespondingPointsEuclideanDistanceMetric", weight1=0.0)
             .asgd()
-            .stopping_criteria(iterations=50000)
+            .stopping_criteria(iterations=25000)
         )
         yield params
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in yield_experiments(Collection.LEARN, 1, "fulleval_learn", full_eval):
+    for experiment in yield_experiments(Collection.LEARN, 1, "tre_divergence_learn", tre_divergence):
         queue.push(experiment)
-        break

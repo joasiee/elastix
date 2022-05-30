@@ -135,10 +135,15 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
+        Parameters.from_base(mesh_size=2, sampler="Full", seed=1)
         .multi_resolution(1, [4, 4, 4])
+        .multi_metric(
+            metric0="AdvancedNormalizedCorrelation",
+            metric1="CorrespondingPointsEuclideanDistanceMetric",
+            weight1=0.0,
+        )
         .asgd()
+        .stopping_criteria(iterations=500)
         .instance(Collection.LEARN, 1)
-        .stopping_criteria(iterations=[500])
     )
     run(params, Path("output/" + str(params)), SaveStrategy())
