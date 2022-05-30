@@ -1034,8 +1034,9 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   for (i = 0; i < n_regions; ++i)
   {
     ImageSamplerInputImageRegionType & region = this->m_BSplineFOSRegions[i];
-    ImageSamplerPointer                subfunctionSampler =
-      this->PctInsideFixedMask(region) < 0.05 ? ImageFullSamplerType::New() : this->m_ImageSampler->Clone();
+    ImageSamplerPointer subfunctionSampler = !this->m_ImageSampler || this->PctInsideFixedMask(region) < 0.05
+                                               ? ImageFullSamplerType::New()
+                                               : this->m_ImageSampler->Clone();
 
     subfunctionSampler->SetInput(this->GetFixedImage());
     subfunctionSampler->SetInputImageRegion(region);

@@ -506,7 +506,7 @@ template <class TElastix>
 void
 AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOriginal()
 {
-  itk::TimeProbe timer2, timer3;
+  itk::TimeProbe timer2{}, timer3{};
 
   /** Get the user input. */
   const double delta = this->GetMaximumStepLength();

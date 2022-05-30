@@ -123,6 +123,14 @@ if( ELASTIX_USE_EIGEN )
   add_definitions( -DELASTIX_USE_EIGEN )
 endif()
 
+find_package(BLAS REQUIRED)
+
+find_package(LAPACK REQUIRED)
+
+find_package(Boost REQUIRED)
+
+find_package(Plastimatch REQUIRED)
+
 #---------------------------------------------------------------------
 # Find OpenMP
 mark_as_advanced( ELASTIX_USE_OPENMP )

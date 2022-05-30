@@ -62,9 +62,9 @@ def convergence_experiment():
 def pareto_experiment():
     for _ in range(100):
         weight0 = 1
-        weight1 = random.uniform(1, 5000)
+        weight1 = int(random.uniform(1, 1000.5))
         params = (
-            Parameters.from_base(mesh_size=2, sampling_p=0.05)
+            Parameters.from_base(mesh_size=4, sampling_p=0.05)
             .multi_resolution(1, p_sched=[7, 7, 7])
             .multi_metric(weight0=weight0, weight1=weight1)
             .asgd()

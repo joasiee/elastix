@@ -55,5 +55,6 @@ random_seed.dat
 *.pyc
 
 temp
+
 perf.data
 perf.data.old

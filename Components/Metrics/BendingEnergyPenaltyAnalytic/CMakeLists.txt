@@ -1,0 +1,10 @@
+
+ADD_ELXCOMPONENT( TransformBendingEnergyPenaltyAnalytic
+ elxTransformBendingEnergyPenaltyTermAnalytic.h
+ elxTransformBendingEnergyPenaltyTermAnalytic.hxx
+ elxTransformBendingEnergyPenaltyTermAnalytic.cxx
+ itkTransformBendingEnergyPenaltyTermAnalytic.h
+ itkTransformBendingEnergyPenaltyTermAnalytic.hxx
+)
+
+target_link_libraries(TransformBendingEnergyPenaltyAnalytic plmsys plmbase plmregister)
