@@ -37,12 +37,10 @@ if(ELASTIX_USE_OPENCL)
   list(APPEND _GPU_depends ITKGPUCommon)
 endif()
 
-if(DEFINED ENV{ITK_HOME})
+if(NOT DEFINED ITK_DIR AND DEFINED ENV{ITK_HOME})
   set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE})
   set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE} CACHE STRING "")
 endif()
-
-message(${ITK_DIR})
 
 # Find ITK.
 find_package( ITK 5.3 REQUIRED COMPONENTS

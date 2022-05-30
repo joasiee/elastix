@@ -48,8 +48,8 @@ ExternalProject_Add(
     DEPENDS itk
     GIT_REPOSITORY https://gitlab.com/plastimatch/plastimatch.git
     GIT_TAG 3734adbfdb0b4cdce733ef1275b4e76093ffc6d5
-    PATCH_COMMAND ${GIT_EXECUTABLE} apply --check ${PLASTIMATCH_PATCH} && ${GIT_EXECUTABLE} apply ${PLASTIMATCH_PATCH}
-    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/plastimatch-build --target plmregister
+    PATCH_COMMAND (${GIT_EXECUTABLE} apply --check ${PLASTIMATCH_PATCH} && ${GIT_EXECUTABLE} apply ${PLASTIMATCH_PATCH}) || echo "patch applied."
+    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/plastimatch-build --config Release --target plmregister
     PREFIX ${DEPENDENCIES_PREFIX}
     INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${PLASTIMATCH_ARGS} ${EXTRA_CMAKE_ARGS}
