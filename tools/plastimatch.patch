@@ -121,7 +121,7 @@ index 2cfea19e..88c1040c 100644
    ${PLM_BINARY_DIR}/plm_config.h)
  configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_version.h.in
 diff --git a/src/plastimatch/base/CMakeLists.txt b/src/plastimatch/base/CMakeLists.txt
-index 0fa650bc..94f54c79 100755
+index 0fa650bc..20ce1bf9 100755
 --- a/src/plastimatch/base/CMakeLists.txt
 +++ b/src/plastimatch/base/CMakeLists.txt
 @@ -76,7 +76,6 @@ set (PLMBASE_LIBRARY_SRC
@@ -132,14 +132,14 @@ index 0fa650bc..94f54c79 100755
    mha_io.cxx mha_io.h
    nki_io.cxx nki_io.h
    parameter_parser.cxx parameter_parser.h
-@@ -164,6 +163,7 @@ if (PLM_DCM_USE_DCMTK)
-     dcmtk_file.cxx dcmtk_file.h
-     dcmtk_image.cxx
-     dcmtk_metadata.cxx dcmtk_metadata.h
-+    metadata.cxx metadata.h
-     dcmtk_module.cxx dcmtk_module.h
-     dcmtk_rdd.cxx dcmtk_rdd.h
-     dcmtk_rtdose.cxx dcmtk_rtdose.h
+@@ -155,6 +154,7 @@ set (PLMBASE_LIBRARY_SRC
+   xio_structures.cxx xio_structures.h
+   xio_studyset.cxx xio_studyset.h
+   xpm.cxx xpm.h xpm_p.h
++  metadata.cxx metadata.h
+   )
+ 
+ if (PLM_DCM_USE_DCMTK)
 diff --git a/src/plastimatch/base/bspline_xform.cxx b/src/plastimatch/base/bspline_xform.cxx
 index afdba9de..0da0d2f1 100644
 --- a/src/plastimatch/base/bspline_xform.cxx
@@ -1788,10 +1788,80 @@ index 67475faa..6c173f1e 100644
  
  if (CUDA_FOUND)
 diff --git a/src/plastimatch/register/CMakeLists.txt b/src/plastimatch/register/CMakeLists.txt
-index cef129e0..79e25d34 100644
+index cef129e0..7bf46233 100644
 --- a/src/plastimatch/register/CMakeLists.txt
 +++ b/src/plastimatch/register/CMakeLists.txt
-@@ -160,6 +160,16 @@ if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
+@@ -22,33 +22,10 @@ endif ()
+ ##  SOURCE FILES
+ ##-----------------------------------------------------------------------------
+ set (PLMREGISTER_LIBRARY_SRC
+-  bspline.cxx bspline.h
+-  bspline_loop.txx
+-  bspline_landmarks.cxx bspline_landmarks.h
+-  bspline_gm.cxx bspline_gm.h
+-  bspline_gm.txx
+-  bspline_mi.cxx bspline_mi.h
+-  bspline_mi.txx
+-  bspline_mse.cxx bspline_mse.h
+-  bspline_mse.txx
+-  bspline_optimize.cxx bspline_optimize.h
+-  bspline_optimize_lbfgsb.cxx bspline_optimize_lbfgsb.h
+-  bspline_optimize_liblbfgs.cxx bspline_optimize_liblbfgs.h
+-  bspline_optimize_nlopt.cxx bspline_optimize_nlopt.h
+-  bspline_optimize_steepest.cxx bspline_optimize_steepest.h
+   bspline_parms.cxx bspline_parms.h
+   bspline_score.cxx bspline_score.h 
+-  bspline_stage.cxx bspline_stage.h 
+-  bspline_state.cxx bspline_state.h 
+   bspline_regularize.cxx bspline_regularize.h 
+   bspline_regularize_analytic.cxx bspline_regularize_analytic.h
+-  bspline_regularize_numeric.cxx bspline_regularize_numeric.h
+-  bspline_regularize_semi_analytic.cxx
+-  demons.cxx demons.h
+-  demons_cpu.cxx
+-  demons_opencl_p.h
+-  demons_state.cxx demons_state.h
+-  gpuit_demons.cxx gpuit_demons.h
+   groupwise_parms.cxx groupwise_parms.h
+   histogram.cxx histogram.h
+   itk_align_center.cxx itk_align_center.h 
+@@ -69,21 +46,10 @@ set (PLMREGISTER_LIBRARY_SRC
+   metric_parms.cxx metric_parms.h 
+   metric_state.cxx metric_state.h
+   process_parms.cxx process_parms.h
+-  rbf_cluster.cxx rbf_cluster.h
+-  rbf_gauss.cxx rbf_gauss.h
+-  rbf_wendland.cxx rbf_wendland.h
+-  registration.cxx registration.h
+-  registration_data.cxx registration_data.h
+-  registration_parms.cxx registration_parms.h
+-  registration_resample.cxx registration_resample.h 
+-  registration_similarity_data.h
+-  registration_util.cxx registration_util.h 
+   shared_parms.cxx shared_parms.h
+   similarity_metric_type.cxx similarity_metric_type.h
+   stage_parms.cxx stage_parms.h
+-  translation_grid_search.cxx translation_grid_search.h 
+-  translation_mi.cxx translation_mi.h 
+-  translation_mse.cxx translation_mse.h 
++  regularization_parms.h
+   )
+ 
+ if (OpenCL_FOUND)
+@@ -107,11 +73,9 @@ set (PLMREGISTER_LIBRARY_DEPENDENCIES)
+ 
+ set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+   ${PLMREGISTER_LIBRARY_DEPENDENCIES}
+-  ${libLBFGS_LIBRARY}
+   plmbase
+   plmsys
+-  plmutil
+-  )
++)
+ 
+ if (CUDA_FOUND)
+   set (PLMREGISTER_LIBRARY_DEPENDENCIES 
+@@ -160,6 +124,16 @@ if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
    plm_set_sse2_flags (bspline.cxx bspline_gm.cxx bspline_mi.cxx bspline_mse.cxx)
  endif ()
  
@@ -1808,7 +1878,7 @@ index cef129e0..79e25d34 100644
  ##-----------------------------------------------------------------------------
  ##  BUILD TARGETS
  ##-----------------------------------------------------------------------------
-@@ -169,7 +179,8 @@ plm_add_library (
+@@ -169,7 +143,8 @@ plm_add_library (
    "${PLMREGISTER_LIBRARY_DEPENDENCIES}"
    "${PLMREGISTER_LIBRARY_LDFLAGS}"
    "${PLASTIMATCH_INCLUDE_DIRECTORIES}"
@@ -1819,7 +1889,7 @@ index cef129e0..79e25d34 100644
  # because plmregistercuda is dynamically loaded (not linked)
  # CMake needs to be told explicitly that plmregister
 diff --git a/src/plastimatch/register/bspline_regularize.cxx b/src/plastimatch/register/bspline_regularize.cxx
-index 39d844c5..822562e2 100644
+index 39d844c5..6a12e0f4 100644
 --- a/src/plastimatch/register/bspline_regularize.cxx
 +++ b/src/plastimatch/register/bspline_regularize.cxx
 @@ -7,7 +7,7 @@
@@ -1897,7 +1967,7 @@ index 39d844c5..822562e2 100644
 +    {
      case 'a':
 -	this->numeric_init (bxf);
-+        this->numeric_init(bxf);
++        // this->numeric_init(bxf);
          break;
      case 'b':
 -	this->analytic_init(bxf,reg_parms);
@@ -1909,7 +1979,7 @@ index 39d844c5..822562e2 100644
          break;
      case 'd':
 -	this->semi_analytic_init (bxf);
-+        this->semi_analytic_init(bxf);
++        // this->semi_analytic_init(bxf);
          break;
      default:
 -        print_and_exit (
@@ -1938,7 +2008,7 @@ index 39d844c5..822562e2 100644
 +    {
      case 'a':
 -        this->compute_score_numeric (bspline_score, reg_parms, this, bxf);
-+        this->compute_score_numeric(bspline_score, reg_parms, this, bxf);
++        // this->compute_score_numeric(bspline_score, reg_parms, this, bxf);
          break;
      case 'b':
 -        this->compute_score_analytic (bspline_score, reg_parms, this, bxf);
@@ -1955,7 +2025,7 @@ index 39d844c5..822562e2 100644
          break;
      case 'd':
 -        this->compute_score_semi_analytic (bspline_score, reg_parms, this, bxf);
-+        this->compute_score_semi_analytic(bspline_score, reg_parms, this, bxf);
++        // this->compute_score_semi_analytic(bspline_score, reg_parms, this, bxf);
          break;
      default:
 -        print_and_exit (

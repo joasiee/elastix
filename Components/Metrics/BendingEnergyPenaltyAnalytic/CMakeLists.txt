@@ -7,4 +7,5 @@ ADD_ELXCOMPONENT( TransformBendingEnergyPenaltyAnalytic
  itkTransformBendingEnergyPenaltyTermAnalytic.hxx
 )
 
+target_include_directories(TransformBendingEnergyPenaltyAnalytic PRIVATE ${Plastimatch_INCLUDE_DIR})
 target_link_libraries(TransformBendingEnergyPenaltyAnalytic plmsys plmbase plmregister)

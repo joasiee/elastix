@@ -13,6 +13,7 @@ include(CMakeDefaultCache.txt)
 set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/include")
+list(APPEND CMAKE_PREFIX_PATH ${Plastimatch_INCLUDE_DIR})
 
 if( BUILD_SHARED_LIBS )
   message(FATAL_ERROR "Elastix does not support BUILD_SHARED_LIBS")
