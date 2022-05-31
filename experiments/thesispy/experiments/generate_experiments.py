@@ -26,10 +26,11 @@ def sampling_p_range():
 def full_eval():
     for seed in [i for i in range(1, 6)]:
         params = (
-            Parameters.from_base(mesh_size=5, seed=seed, sampler="Full")
-            .multi_resolution(1, p_sched=[4, 4, 4])
-            .asgd()
-            .stopping_criteria(iterations=[1000])
+            Parameters.from_base(mesh_size=4, seed=seed, sampler="Full")
+            .multi_resolution(1, p_sched=[5, 5, 5])
+            .multi_metric(weight1=0.1)
+            .gomea(fos=-6, partial_evals=True)
+            .stopping_criteria(iterations=[200])
         )
         yield params
 
@@ -97,5 +98,5 @@ def tre_divergence():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in yield_experiments(Collection.LEARN, 1, "tre_divergence_learn", tre_divergence):
+    for experiment in yield_experiments(Collection.LEARN, 1, "full_eval_learn_regularized", full_eval):
         queue.push(experiment)
