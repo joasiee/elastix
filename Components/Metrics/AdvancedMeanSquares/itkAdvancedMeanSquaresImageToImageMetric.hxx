@@ -210,9 +210,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
 /** Loop over the fixed image samples to calculate the mean squares. */
-#ifdef ELASTIX_USE_OPENMP
-#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted)
-#endif
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted)
   for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */

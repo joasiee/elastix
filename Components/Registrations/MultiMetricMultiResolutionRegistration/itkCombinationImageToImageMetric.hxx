@@ -594,7 +594,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     {
       // The NumberOfThreadsPerMetric is changed after Initialize() so we save it before and then
       // set it on.
-      unsigned int nrOfThreadsPerMetric = testPtr1->GetNumberOfWorkUnits() / this->GetNumberOfMetrics();
+      unsigned int nrOfThreadsPerMetric = testPtr1->GetNumberOfWorkUnits();
       testPtr1->Initialize();
       testPtr1->SetNumberOfWorkUnits(nrOfThreadsPerMetric);
     }
@@ -739,7 +739,6 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   this->BeforeThreadedInit(parameters);
 
 /** Compute, store and combine all metric values. */
-#pragma omp parallel for num_threads(this->m_NumberOfMetrics) reduction(+ : measure)
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     /** Time the computation per metric. */
@@ -774,7 +773,6 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   this->BeforeThreadedInit(parameters);
 
 /** Compute, store and combine all metric values. */
-#pragma omp parallel for num_threads(this->m_NumberOfMetrics) reduction(+ : measure)
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     itk::TimeProbe timer;
