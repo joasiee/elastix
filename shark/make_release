@@ -22,5 +22,5 @@ ELASTIX_DIR=$PWD
 CMAKE_BUILD_TYPE=Release
 
 cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target elastix_exe transformix_exe
+cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target all
 
