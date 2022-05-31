@@ -121,7 +121,7 @@ index 2cfea19e..88c1040c 100644
    ${PLM_BINARY_DIR}/plm_config.h)
  configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_version.h.in
 diff --git a/src/plastimatch/base/CMakeLists.txt b/src/plastimatch/base/CMakeLists.txt
-index 0fa650bc..428a0ce8 100755
+index 0fa650bc..5004b304 100755
 --- a/src/plastimatch/base/CMakeLists.txt
 +++ b/src/plastimatch/base/CMakeLists.txt
 @@ -15,27 +15,13 @@ include_directories (AFTER ${NKIDECOMPRESS_INCLUDE_DIR})
@@ -152,7 +152,7 @@ index 0fa650bc..428a0ce8 100755
    image_stats.cxx image_stats.h
    interpolate.cxx interpolate.h
    interpolate_macros.h
-@@ -76,12 +62,9 @@ set (PLMBASE_LIBRARY_SRC
+@@ -76,12 +62,10 @@ set (PLMBASE_LIBRARY_SRC
    itk_warp.cxx itk_warp.h
    make_string.h
    mc_dose.cxx mc_dose.h
@@ -162,10 +162,11 @@ index 0fa650bc..428a0ce8 100755
    parameter_parser.cxx parameter_parser.h
    plm_file_format.cxx plm_file_format.h
 -  plm_image.cxx plm_image.h
++  plm_image.h
    plm_image_p.h
    plm_image_convert.cxx
    plm_image_header.cxx plm_image_header.h
-@@ -145,16 +128,7 @@ set (PLMBASE_LIBRARY_SRC
+@@ -145,16 +129,7 @@ set (PLMBASE_LIBRARY_SRC
    xform_convert.cxx xform_convert.h
    xform_legacy.cxx xform_legacy.h
    xform_point.cxx xform_point.h
@@ -183,7 +184,7 @@ index 0fa650bc..428a0ce8 100755
    )
  
  if (PLM_DCM_USE_DCMTK)
-@@ -206,7 +180,6 @@ endforeach ()
+@@ -206,7 +181,6 @@ endforeach ()
  ##-----------------------------------------------------------------------------
  set (PLMBASE_LIBRARY_DEPENDENCIES
    ${ITK_LIBRARIES}
