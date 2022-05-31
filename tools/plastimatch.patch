@@ -121,25 +121,76 @@ index 2cfea19e..88c1040c 100644
    ${PLM_BINARY_DIR}/plm_config.h)
  configure_file (${CMAKE_CURRENT_SOURCE_DIR}/sys/plm_version.h.in
 diff --git a/src/plastimatch/base/CMakeLists.txt b/src/plastimatch/base/CMakeLists.txt
-index 0fa650bc..20ce1bf9 100755
+index 0fa650bc..428a0ce8 100755
 --- a/src/plastimatch/base/CMakeLists.txt
 +++ b/src/plastimatch/base/CMakeLists.txt
-@@ -76,7 +76,6 @@ set (PLMBASE_LIBRARY_SRC
+@@ -15,27 +15,13 @@ include_directories (AFTER ${NKIDECOMPRESS_INCLUDE_DIR})
+ ##  SOURCE FILES
+ ##-----------------------------------------------------------------------------
+ set (PLMBASE_LIBRARY_SRC
+-  aperture.cxx aperture.h
+-  astroid_dose.cxx astroid_dose.h
+-  beam_geometry.cxx beam_geometry.h
+   bspline_header.cxx bspline_header.h
+   bspline_interpolate.cxx bspline_interpolate.h
+   bspline_warp.cxx bspline_warp.h
+   bspline_xform.cxx bspline_xform.h
+   bspline_xform_legacy.cxx bspline_xform_legacy.h
+-  clamp.h
+-  cxt_extract.cxx cxt_extract.h
+-  cxt_io.cxx cxt_io.h
+-  dicom_probe.cxx dicom_probe.h
+-  dicom_util.cxx dicom_util.h
+-  dicom.dic   # How to make sure this gets installed?
+   direction_cosines.cxx direction_cosines.h
+   direction_matrices.cxx direction_matrices.h
+-  exchkeys.cxx
+-  float_pair_list.cxx float_pair_list.h
+-  gaussian.cxx gaussian.h
+-  hnd_io.cxx hnd_io.h
+-  hnd_io_p.h
+   image_stats.cxx image_stats.h
+   interpolate.cxx interpolate.h
+   interpolate_macros.h
+@@ -76,12 +62,9 @@ set (PLMBASE_LIBRARY_SRC
    itk_warp.cxx itk_warp.h
    make_string.h
    mc_dose.cxx mc_dose.h
 -  metadata.cxx metadata.h
    mha_io.cxx mha_io.h
-   nki_io.cxx nki_io.h
+-  nki_io.cxx nki_io.h
    parameter_parser.cxx parameter_parser.h
-@@ -155,6 +154,7 @@ set (PLMBASE_LIBRARY_SRC
-   xio_structures.cxx xio_structures.h
-   xio_studyset.cxx xio_studyset.h
-   xpm.cxx xpm.h xpm_p.h
+   plm_file_format.cxx plm_file_format.h
+-  plm_image.cxx plm_image.h
+   plm_image_p.h
+   plm_image_convert.cxx
+   plm_image_header.cxx plm_image_header.h
+@@ -145,16 +128,7 @@ set (PLMBASE_LIBRARY_SRC
+   xform_convert.cxx xform_convert.h
+   xform_legacy.cxx xform_legacy.h
+   xform_point.cxx xform_point.h
+-  xio_ct.cxx xio_ct.h
+-  xio_ct_transform.cxx xio_ct_transform.h
+-  xio_demographic.cxx xio_demographic.h
+-  xio_dir.cxx xio_dir.h
+-  xio_dose.cxx xio_dose.h
+-  xio_patient.cxx xio_patient.h
+-  xio_plan.cxx xio_plan.h
+-  xio_structures.cxx xio_structures.h
+-  xio_studyset.cxx xio_studyset.h
+-  xpm.cxx xpm.h xpm_p.h
 +  metadata.cxx metadata.h
    )
  
  if (PLM_DCM_USE_DCMTK)
+@@ -206,7 +180,6 @@ endforeach ()
+ ##-----------------------------------------------------------------------------
+ set (PLMBASE_LIBRARY_DEPENDENCIES
+   ${ITK_LIBRARIES}
+-  nkidecompress
+   plmsys
+   )
+ if (DCMTK_FOUND)
 diff --git a/src/plastimatch/base/bspline_xform.cxx b/src/plastimatch/base/bspline_xform.cxx
 index afdba9de..0da0d2f1 100644
 --- a/src/plastimatch/base/bspline_xform.cxx
@@ -1346,6 +1397,108 @@ index 2c633948..722a0af9 100644
  /* -----------------------------------------------------------------------
     Function prototypes
     ----------------------------------------------------------------------- */
+diff --git a/src/plastimatch/base/plm_image_header.cxx b/src/plastimatch/base/plm_image_header.cxx
+index 0db2d718..00f81d37 100644
+--- a/src/plastimatch/base/plm_image_header.cxx
++++ b/src/plastimatch/base/plm_image_header.cxx
+@@ -59,24 +59,6 @@ Plm_image_header::Plm_image_header (
+     this->set (region, origin,spacing, direction);
+ }
+ 
+-Plm_image_header::Plm_image_header (Plm_image *pli) 
+-{
+-    d_ptr = new Plm_image_header_private;
+-    this->set_from_plm_image (pli);
+-}
+-
+-Plm_image_header::Plm_image_header (const Plm_image& pli) 
+-{
+-    d_ptr = new Plm_image_header_private;
+-    this->set_from_plm_image (pli);
+-}
+-
+-Plm_image_header::Plm_image_header (const Plm_image::Pointer& pli) 
+-{
+-    d_ptr = new Plm_image_header_private;
+-    this->set_from_plm_image (pli);
+-}
+-
+ Plm_image_header::Plm_image_header (const Volume_header& vh) 
+ {
+     d_ptr = new Plm_image_header_private;
+@@ -255,72 +237,6 @@ Plm_image_header::set_from_gpuit_bspline (Bspline_xform *bxf)
+ 	bxf->dc);
+ }
+ 
+-void
+-Plm_image_header::set_from_plm_image (const Plm_image *pli)
+-{
+-    switch (pli->m_type) {
+-    case PLM_IMG_TYPE_ITK_UCHAR:
+-	this->set_from_itk_image (pli->m_itk_uchar);
+-	break;
+-    case PLM_IMG_TYPE_ITK_USHORT:
+-	this->set_from_itk_image (pli->m_itk_ushort);
+-	break;
+-    case PLM_IMG_TYPE_ITK_SHORT:
+-	this->set_from_itk_image (pli->m_itk_short);
+-	break;
+-    case PLM_IMG_TYPE_ITK_ULONG:
+-	this->set_from_itk_image (pli->m_itk_uint32);
+-	break;
+-    case PLM_IMG_TYPE_ITK_LONG:
+-	this->set_from_itk_image (pli->m_itk_int32);
+-	break;
+-    case PLM_IMG_TYPE_ITK_UINT64:
+-	this->set_from_itk_image (pli->m_itk_uint64);
+-	break;
+-    case PLM_IMG_TYPE_ITK_INT64:
+-	this->set_from_itk_image (pli->m_itk_int64);
+-	break;
+-    case PLM_IMG_TYPE_ITK_FLOAT:
+-	this->set_from_itk_image (pli->m_itk_float);
+-	break;
+-    case PLM_IMG_TYPE_ITK_DOUBLE:
+-	this->set_from_itk_image (pli->m_itk_double);
+-	break;
+-    case PLM_IMG_TYPE_GPUIT_UCHAR:
+-    case PLM_IMG_TYPE_GPUIT_SHORT:
+-    case PLM_IMG_TYPE_GPUIT_UINT32:
+-    case PLM_IMG_TYPE_GPUIT_FLOAT:
+-    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+-    {
+-	const Volume* vol = pli->get_vol ();
+-	set_from_gpuit (vol->dim, vol->origin, vol->spacing,
+-	    vol->direction_cosines);
+-	break;
+-    }
+-    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+-	this->set_from_itk_image (pli->m_itk_uchar_vec);
+-	break;
+-    case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
+-    case PLM_IMG_TYPE_ITK_CHAR:
+-    default:
+-	print_and_exit ("Unhandled image type (%s) in set_from_plm_image\n",
+-	    plm_image_type_string (pli->m_type));
+-	break;
+-    }
+-}
+-
+-void
+-Plm_image_header::set_from_plm_image (const Plm_image& pli)
+-{
+-    this->set_from_plm_image (&pli);
+-}
+-
+-void
+-Plm_image_header::set_from_plm_image (const Plm_image::Pointer& pli)
+-{
+-    this->set_from_plm_image (pli.get());
+-}
+-
+ void
+ Plm_image_header::set (const Volume_header& vh)
+ {
 diff --git a/src/plastimatch/base/plm_image_header.h b/src/plastimatch/base/plm_image_header.h
 index a12a3e17..45fa88fa 100644
 --- a/src/plastimatch/base/plm_image_header.h
@@ -1598,6 +1751,28 @@ index c1890ada..96aa83e0 100644
  
  class Segmentation_private {
  public:
+diff --git a/src/plastimatch/base/volume_header.cxx b/src/plastimatch/base/volume_header.cxx
+index 7a3beb72..12946b8d 100644
+--- a/src/plastimatch/base/volume_header.cxx
++++ b/src/plastimatch/base/volume_header.cxx
+@@ -73,17 +73,6 @@ Volume_header::Volume_header (
+     this->set (pih);
+ }
+ 
+-Volume_header::Volume_header (
+-    const Plm_image::Pointer& img)
+-{
+-    this->d_ptr = new Volume_header_private;
+-    Plm_image_header pih (img);
+-    pih.get_dim (d_ptr->m_dim);
+-    pih.get_origin (d_ptr->m_origin);
+-    pih.get_spacing (d_ptr->m_spacing);
+-    d_ptr->m_direction_cosines.set (pih.GetDirection());
+-}
+-
+ Volume_header::~Volume_header ()
+ {
+     delete this->d_ptr;
 diff --git a/src/plastimatch/cli/CMakeLists.txt b/src/plastimatch/cli/CMakeLists.txt
 index 4da900e5..224fda78 100644
 --- a/src/plastimatch/cli/CMakeLists.txt
