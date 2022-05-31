@@ -20,35 +20,7 @@ git reset --hard && git pull origin develop
 CORES=16
 ELASTIX_DIR=$PWD
 CMAKE_BUILD_TYPE=Release
-WORKING_DIR=$PWD/temp
-INSTALL_DIR=$WORKING_DIR/install
-mkdir -p $INSTALL_DIR
-export ITK_HOME=$WORKING_DIR/ITK
 
-if [[ ! -z "${BUILD_EIGEN}" ]]
-then
-    cd $WORKING_DIR
-    # Configure and install Eigen3
-    wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
-    tar --bzip2 -xf eigen-3.4.0.tar.bz2 && cd eigen-3.4.0
-    cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_INSTALL_PREFIX:STRING=$INSTALL_DIR -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-    cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target install
-    cd $WORKING_DIR
-    rm eigen-3.4.0.tar.bz2 && rm -rf eigen-3.4.0
-fi
-
-if [[ ! -z "${BUILD_ITK}" ]]
-then
-    # Configure and install ITK
-    cd $WORKING_DIR
-    git clone https://github.com/joasiee/ITK.git
-    cd ITK && git checkout gomea && git pull origin gomea
-    cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
-    cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target all
-fi
-
-# Configure and install elastix
-cd $ELASTIX_DIR
-cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -DCMAKE_PREFIX_PATH:STRING=$INSTALL_DIR -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
+cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -H$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
 cmake --build $PWD/build/$CMAKE_BUILD_TYPE --parallel $CORES --config $CMAKE_BUILD_TYPE --target elastix_exe transformix_exe
 
