@@ -193,7 +193,7 @@ index 0fa650bc..5004b304 100755
    )
  if (DCMTK_FOUND)
 diff --git a/src/plastimatch/base/bspline_xform.cxx b/src/plastimatch/base/bspline_xform.cxx
-index afdba9de..0da0d2f1 100644
+index afdba9de..3f6e6dae 100644
 --- a/src/plastimatch/base/bspline_xform.cxx
 +++ b/src/plastimatch/base/bspline_xform.cxx
 @@ -25,9 +25,10 @@
@@ -475,14 +475,14 @@ index afdba9de..0da0d2f1 100644
 +                    &img_origin[0], &img_origin[1], &img_origin[2]);
 +        if (rc == 3)
 +            continue;
-+
+ 
+-        rc = sscanf (line.c_str(), "img_dim = %d %d %d\n", &a, &b, &c);
+-        if (rc == 3) {
 +        rc = sscanf(line.c_str(), "img_spacing = %f %f %f\n",
 +                    &img_spacing[0], &img_spacing[1], &img_spacing[2]);
 +        if (rc == 3)
 +            continue;
- 
--        rc = sscanf (line.c_str(), "img_dim = %d %d %d\n", &a, &b, &c);
--        if (rc == 3) {
++
 +        rc = sscanf(line.c_str(), "img_dim = %d %d %d\n", &a, &b, &c);
 +        if (rc == 3)
 +        {
@@ -891,7 +891,7 @@ index afdba9de..0da0d2f1 100644
                          }
                      }
                  }
-@@ -460,137 +505,145 @@ Bspline_xform::allocate ()
+@@ -460,137 +505,158 @@ Bspline_xform::allocate ()
      }
  
      /* Create b_luts */
@@ -995,6 +995,19 @@ index afdba9de..0da0d2f1 100644
  
      /* Allocate and initialize coefficients and LUTs */
 -    this->allocate ();
++    this->allocate();
++}
++
++void Bspline_xform::initialize_unaligned(
++    const Plm_image_header *pih,
++    const float grid_spac[3])
++{
++    logfile_printf("bspline_xform_initialize\n");
++
++    /* Initialize base class members */
++    this->set_unaligned(pih, grid_spac);
++
++    /* Allocate and initialize coefficients and LUTs */
 +    this->allocate();
  }
  
@@ -1107,7 +1120,7 @@ index afdba9de..0da0d2f1 100644
                          new_coeff[new_idx] = bxf->coeff[old_idx];
                      }
                  }
-@@ -598,10 +651,11 @@ bspline_xform_extend (
+@@ -598,10 +664,11 @@ bspline_xform_extend (
          }
  
          /* Free old memory */
@@ -1121,7 +1134,7 @@ index afdba9de..0da0d2f1 100644
              bxf->rdims[d] = new_rdims[d];
              bxf->cdims[d] = new_cdims[d];
          }
-@@ -610,64 +664,63 @@ bspline_xform_extend (
+@@ -610,64 +677,63 @@ bspline_xform_extend (
          bxf->coeff = new_coeff;
  
          /* Special consideration to ROI */
@@ -1213,10 +1226,10 @@ index afdba9de..0da0d2f1 100644
  }
 -
 diff --git a/src/plastimatch/base/bspline_xform.h b/src/plastimatch/base/bspline_xform.h
-index fa7078d3..514a0831 100644
+index fa7078d3..d58e82ae 100644
 --- a/src/plastimatch/base/bspline_xform.h
 +++ b/src/plastimatch/base/bspline_xform.h
-@@ -13,93 +13,97 @@
+@@ -13,93 +13,100 @@
  class Volume;
  class Volume_header;
  
@@ -1326,6 +1339,9 @@ index fa7078d3..514a0831 100644
 -    void fill_coefficients (float val);
 -    /*! \brief This function jitters the coefficients if they are all zero. 
 -     *  It is used to prevent local minima artifact when optimizing an MI cost 
++        const float grid_spac[3]);
++    void initialize_unaligned(
++        const Plm_image_header *pih,
 +        const float grid_spac[3]);
 +    void save(const char *filename);
 +    void fill_coefficients(float val);

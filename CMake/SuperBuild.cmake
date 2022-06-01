@@ -20,7 +20,7 @@ ExternalProject_Add(
     PREFIX ${DEPENDENCIES_PREFIX}
     INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS}
-    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/eigen-build --config Release --target all
+    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/eigen-build --config ${CMAKE_BUILD_TYPE} --target all
 )
 
 ExternalProject_Add(
@@ -30,7 +30,7 @@ ExternalProject_Add(
     PREFIX ${DEPENDENCIES_PREFIX}
     INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS}
-    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/itk-build --config Release --target all
+    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/itk-build --config ${CMAKE_BUILD_TYPE} --target all
     INSTALL_COMMAND ""
 )
 
@@ -49,7 +49,7 @@ ExternalProject_Add(
     GIT_REPOSITORY https://gitlab.com/plastimatch/plastimatch.git
     GIT_TAG 3734adbfdb0b4cdce733ef1275b4e76093ffc6d5
     PATCH_COMMAND ${GIT_EXECUTABLE} apply ${PLASTIMATCH_PATCH} || echo "patch already applied"
-    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/plastimatch-build --config Release --target plmregister
+    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/plastimatch-build --config ${CMAKE_BUILD_TYPE} --target plmregister
     PREFIX ${DEPENDENCIES_PREFIX}
     INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${PLASTIMATCH_ARGS} ${EXTRA_CMAKE_ARGS}

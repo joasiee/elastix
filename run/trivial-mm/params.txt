@@ -5,7 +5,7 @@
 (FixedImagePyramid "FixedRecursiveImagePyramid" "FixedRecursiveImagePyramid")
 (MovingImagePyramid "MovingRecursiveImagePyramid" "MovingRecursiveImagePyramid")
 (Interpolator "LinearInterpolator" "LinearInterpolator")
-(Metric "AdvancedMeanSquares" "CorrespondingPointsEuclideanDistanceMetric")
+(Metric "AdvancedMeanSquares" "TransformBendingEnergyPenaltyAnalytic")
 (Metric0Weight 1.0)
 (Metric1Weight 1.0)
 (Optimizer "AdaptiveStochasticGradientDescent") // AdaptiveStochasticGradientDescent

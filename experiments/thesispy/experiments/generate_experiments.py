@@ -1,3 +1,4 @@
+from pathlib import Path
 import random
 
 import numpy as np
@@ -99,4 +100,5 @@ def tre_divergence():
 if __name__ == "__main__":
     queue = ExperimentQueue()
     for experiment in yield_experiments(Collection.LEARN, 1, "full_eval_learn_regularized", full_eval):
-        queue.push(experiment)
+        experiment.params.write(Path())
+        break

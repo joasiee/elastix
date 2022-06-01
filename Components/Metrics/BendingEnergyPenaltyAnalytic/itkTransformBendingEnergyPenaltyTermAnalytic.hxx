@@ -66,7 +66,7 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Initialize(
     gridSpacing[d] = wrappedImage->GetSpacing()[d];
   }
 
-  this->m_BsplineXform.initialize(&plmImageHeader, gridSpacing);
+  this->m_BsplineXform.initialize_unaligned(&plmImageHeader, gridSpacing);
   this->m_BsplineScore.set_num_coeff(this->m_BsplineXform.num_coeff);
 
   this->m_BSplineRegularize.initialize(&this->m_RegularizationParameters, &this->m_BsplineXform);
