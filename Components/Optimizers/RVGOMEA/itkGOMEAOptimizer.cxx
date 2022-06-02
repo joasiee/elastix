@@ -1665,7 +1665,7 @@ GOMEAOptimizer::UpdatePosition()
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
   this->m_Value =
     m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
-  // this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]);
+  this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]); // TODO ?
 
   m_CurrentIteration++;
   this->InvokeEvent(IterationEvent());
