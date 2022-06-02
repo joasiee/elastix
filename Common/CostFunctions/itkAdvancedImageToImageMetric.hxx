@@ -1123,11 +1123,13 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
 
   this->m_BSplineFOSRegions.clear();
   this->m_BSplinePointsRegions.clear();
+  this->m_BSplinePointsRegionsNoMask.clear();
   this->m_BSplineRegionsToFosSets.clear();
 
   this->m_BSplineFOSRegions.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplinePointsRegions.resize(length + 1);
+  this->m_BSplinePointsRegionsNoMask.resize(length + 1);
 
   // iterate over these control points and calculate fixed image pixel regions
   ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(wrappedImage, coeffRegionCropped);
@@ -1177,6 +1179,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
   {
     if (this->m_SubfunctionSamplers[i])
       this->m_BSplinePointsRegions[0].push_back(i);
+
+    this->m_BSplinePointsRegionsNoMask[0].push_back(i);
   }
 
   // now compute mappings between control points and fos sets, and vice versa.
@@ -1213,11 +1217,16 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
         offset = this->m_BSplinePointOffsetMap[offset];
 
         // add region to mapping from fos sets to regions if not added yet and within mask.
-        if (!pointAdded[offset] && m_SubfunctionSamplers[offset])
+        if (!pointAdded[offset])
         {
-          this->m_BSplinePointsRegions[j + 1].push_back(offset);
-          this->m_BSplineRegionsToFosSets[offset].push_back(j);
+          this->m_BSplinePointsRegionsNoMask[j + 1].push_back(offset);
           pointAdded[offset] = true;
+
+          if (this->m_SubfunctionSamplers[offset])
+          {
+            this->m_BSplinePointsRegions[j + 1].push_back(offset);
+            this->m_BSplineRegionsToFosSets[offset].push_back(j);
+          }
         }
 
         ++imageIterator;

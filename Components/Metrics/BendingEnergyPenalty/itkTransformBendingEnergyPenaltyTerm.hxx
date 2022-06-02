@@ -130,7 +130,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
   }
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
-  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegionsNoMask[fosIndex + 1];
 
   /** Create and initialize some variables. */
   SpatialHessianType           spatialHessian;

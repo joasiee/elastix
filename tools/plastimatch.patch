@@ -2230,7 +2230,7 @@ index 39d844c5..6a12e0f4 100644
      }
  }
 diff --git a/src/plastimatch/register/bspline_regularize.h b/src/plastimatch/register/bspline_regularize.h
-index eab472ba..456d58aa 100644
+index eab472ba..37429900 100644
 --- a/src/plastimatch/register/bspline_regularize.h
 +++ b/src/plastimatch/register/bspline_regularize.h
 @@ -7,101 +7,109 @@
@@ -2315,7 +2315,7 @@ index eab472ba..456d58aa 100644
 +        const Regularization_parms *reg_parms,
 +        const Bspline_xform *bxf) const;
 +    double compute_score_analytic_omp_regions(
-+        std::vector<int> regions,
++        const std::vector<int> & regions,
 +        const Regularization_parms *reg_parms,
 +        const Bspline_regularize *rst,
 +        const Bspline_xform *bxf) const;
@@ -2413,7 +2413,7 @@ index eab472ba..456d58aa 100644
  
  #endif
 diff --git a/src/plastimatch/register/bspline_regularize_analytic.cxx b/src/plastimatch/register/bspline_regularize_analytic.cxx
-index d51328b4..2a2385d6 100644
+index d51328b4..3608eb71 100644
 --- a/src/plastimatch/register/bspline_regularize_analytic.cxx
 +++ b/src/plastimatch/register/bspline_regularize_analytic.cxx
 @@ -18,116 +18,119 @@
@@ -3967,7 +3967,7 @@ index d51328b4..2a2385d6 100644
 -#endif
  
 +double Bspline_regularize::compute_score_analytic_omp_regions(
-+    std::vector<int> regions,
++    const std::vector<int> & regions,
 +    const Regularization_parms *reg_parms,
 +    const Bspline_regularize *rst,
 +    const Bspline_xform *bxf) const

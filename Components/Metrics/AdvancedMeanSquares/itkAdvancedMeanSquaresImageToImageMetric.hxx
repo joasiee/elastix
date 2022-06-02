@@ -275,10 +275,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
 
     // std::cout << "samples: " << sampleContainerSize <<  ", numthreads: " << numThreads << "\n";
 
-#ifdef ELASTIX_USE_OPENMP
 /** Loop over the fixed image samples to calculate the mean squares. */
-#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) if (sampleContainerSize >= maxThreads)
-#endif
+#pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) if (sampleContainerSize >= maxThreads)
     for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
       /** Read fixed coordinates and initialize some variables. */

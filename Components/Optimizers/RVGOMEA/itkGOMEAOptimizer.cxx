@@ -1028,7 +1028,7 @@ GOMEAOptimizer::estimateFullCovarianceMatrixML(int population_index)
 void
 GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
 {
-  int vara, varb, i, j, k, m;
+  int    vara, varb, i, j, k, m;
   double cov;
 
   /* First do the maximum-likelihood estimate from data */
@@ -1177,7 +1177,9 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
   MeasureType obj_val_new = this->GetValue(populations[population_index][individual_index], fos_index);
   *obj_val = objective_values[population_index][individual_index] - *obj_val_partial + obj_val_new;
 
-  MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1);
+  // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1);
+  // if (abs(obj_val_full - *obj_val) > 1e-3)
+  //   std::cout << "WTF\n";
 
   ++m_NumberOfEvaluations;
   this->Modified();
@@ -1665,7 +1667,7 @@ GOMEAOptimizer::UpdatePosition()
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
   this->m_Value =
     m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
-  this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]); // TODO ?
+  // this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]); // TODO ?
 
   m_CurrentIteration++;
   this->InvokeEvent(IterationEvent());

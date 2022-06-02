@@ -32,8 +32,7 @@ template <class TFixedImage, class TScalarType>
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::TransformBendingEnergyPenaltyTermAnalytic()
 {
   this->m_RegularizationParameters.implementation = 'c';
-  this->m_RegularizationParameters.curvature_penalty =
-    1.0f; // lambda, true weight is set further up in combinationimagetoimagemetric
+  this->m_RegularizationParameters.curvature_penalty = 0.01f;
 }
 
 template <class TFixedImage, class TScalarType>
@@ -95,7 +94,7 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(co
 {
   this->m_BsplineXform.coeff_ = parameters.data_block();
   return this->m_BSplineRegularize.compute_score_analytic_omp_regions(
-    this->m_BSplinePointsRegions[fosIndex + 1], &this->m_RegularizationParameters, &this->m_BSplineRegularize, &this->m_BsplineXform);
+    this->m_BSplinePointsRegionsNoMask[fosIndex + 1], &this->m_RegularizationParameters, &this->m_BSplineRegularize, &this->m_BsplineXform);
 } // end GetValuePartial()
 
 
