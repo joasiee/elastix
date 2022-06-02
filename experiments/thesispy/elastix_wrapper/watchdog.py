@@ -97,6 +97,8 @@ class Watchdog(threading.Thread):
         r = 0
 
         while True:
+            time.sleep(1)
+
             if not os.path.exists(file_names[r]):
                 continue
             try:
@@ -122,8 +124,6 @@ class Watchdog(threading.Thread):
                 r += 1
             elif self._stop_event.is_set():
                 break
-
-            time.sleep(0.1)
 
     def stop(self):
         self._stop_event.set()

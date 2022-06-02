@@ -212,6 +212,8 @@ class Parameters:
                 self.compute_tre = True
                 self.lms_fixed_path = INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
                 self.lms_moving_path = INSTANCES_SRC / folder / "landmarks" / f"{moving.split('.')[0]}.txt"
+            else:
+                self.compute_tre = False
 
         return self
 

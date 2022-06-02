@@ -110,7 +110,7 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
         ]
         if params.fixedmask_path and params["UseMask"]:
             args += ["-fMask", str(params.fixedmask_path)]
-        if params.lms_fixed_path and params.lms_moving_path:
+        if params.compute_tre:
             args += [
                 "-fp",
                 str(params.lms_fixed_path.resolve()),
@@ -140,11 +140,10 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=4, seed=1, sampler="Full")
-        .multi_resolution(1, p_sched=[4, 4, 4])
-        .multi_metric(weight1=0.00001)
-        .asgd()
-        .stopping_criteria(iterations=[1000])
-        .instance(Collection.LEARN, 1)
+        Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
+        .multi_resolution(1, [5, 5, 5])
+        .gomea(fos=-6, partial_evals=True)
+        .stopping_criteria(500)
+        .instance(Collection.EMPIRE, 16)
     )
     run(params, Path("output/" + str(params)), SaveStrategy())

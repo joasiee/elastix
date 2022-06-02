@@ -76,11 +76,11 @@ def pareto_experiment():
 
 
 def grid_experiment():
-    for gridsize in [2, 3, 4, 5, 6, 7]:
+    for gridsize in [8, 9, 10]:
         params = (
-            Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
+            Parameters.from_base(mesh_size=gridsize, sampler="Full", seed=1)
             .multi_resolution(1, [5, 5, 5])
-            .gomea(partial_evals=True, fos=-6)
+            .gomea(fos=-6, partial_evals=True)
             .stopping_criteria(500)
         )
         yield params
@@ -99,5 +99,5 @@ def tre_divergence():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in yield_experiments(Collection.LEARN, 1, "full_eval_learn_regularized", full_eval):
+    for experiment in yield_experiments(Collection.EMPIRE, 16, "gridsizes_16", grid_experiment):
         queue.push(experiment)
