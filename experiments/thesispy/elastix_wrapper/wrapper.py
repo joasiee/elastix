@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import time
 import subprocess
 import logging
 
@@ -20,6 +21,8 @@ logger = logging.getLogger("Wrapper")
 def run(
     params: Parameters, run_dir: Path, save_strategy: SaveStrategy = None
 ) -> Dict[str, Any]:
+    time_start = time.perf_counter()
+
     run_dir.mkdir(parents=True)
     params_file = params.write(run_dir)
     out_dir = run_dir.joinpath(Path("out"))
@@ -57,7 +60,9 @@ def run(
         wd.join()
         wd.sv_strategy.close()
 
-    logger.info("Run ended successfully.")
+    time_end = time.perf_counter()
+
+    logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
 
 
 def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Path):
@@ -135,15 +140,11 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=2, sampler="Full", seed=1)
-        .multi_resolution(1, [4, 4, 4])
-        .multi_metric(
-            metric0="AdvancedNormalizedCorrelation",
-            metric1="CorrespondingPointsEuclideanDistanceMetric",
-            weight1=0.0,
-        )
+        Parameters.from_base(mesh_size=4, seed=1, sampler="Full")
+        .multi_resolution(1, p_sched=[4, 4, 4])
+        .multi_metric(weight1=0.00001)
         .asgd()
-        .stopping_criteria(iterations=500)
+        .stopping_criteria(iterations=[1000])
         .instance(Collection.LEARN, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy())

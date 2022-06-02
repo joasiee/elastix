@@ -29,9 +29,9 @@ def full_eval():
         params = (
             Parameters.from_base(mesh_size=4, seed=seed, sampler="Full")
             .multi_resolution(1, p_sched=[5, 5, 5])
-            .multi_metric(weight1=0.1)
-            .gomea(fos=-6, partial_evals=True)
-            .stopping_criteria(iterations=[200])
+            .multi_metric(weight1=0.00001)
+            .asgd()
+            .stopping_criteria(iterations=[10000])
         )
         yield params
 
@@ -100,5 +100,4 @@ def tre_divergence():
 if __name__ == "__main__":
     queue = ExperimentQueue()
     for experiment in yield_experiments(Collection.LEARN, 1, "full_eval_learn_regularized", full_eval):
-        experiment.params.write(Path())
-        break
+        queue.push(experiment)

@@ -57,22 +57,26 @@ class Dataset:
         if len(attrs) == 0:
             yield (), self.runs
         else:
-            query_parts = [set() for _ in range(len(attrs))]
-            unique_values = [set() for _ in range(len(attrs))]
+            query_parts = [[] for _ in range(len(attrs))]
+            unique_values = [[] for _ in range(len(attrs))]
             for i, attr in enumerate(attrs):
                 for run in self.runs:
                     if attr in run.config:
                         value = run.config[attr]
                         if isinstance(value, list):
                             value = tuple(value)
-                        unique_values[i].add(value)
+                        unique_values[i].append(value)
                         if isinstance(value, str):
-                            query_parts[i].add(f"{attr} == '{run.config[attr]}'")
+                            query_parts[i].append(f"{attr} == '{run.config[attr]}'")
                         else:
-                            query_parts[i].add(f"{attr} == {run.config[attr]}")
+                            query_parts[i].append(f"{attr} == {run.config[attr]}")
                     else:
-                        unique_values[i].add(None)
-                        query_parts[i].add(f"NOT {attr}")
+                        unique_values[i].append(None)
+                        query_parts[i].append(f"NOT {attr}")
+
+            for i in range(len(attrs)):
+                query_parts[i] = list(dict.fromkeys(query_parts[i]))
+                unique_values[i] = list(dict.fromkeys(unique_values[i]))
 
             for group, query_tuple in zip(
                 itertools.product(*unique_values), itertools.product(*query_parts)
