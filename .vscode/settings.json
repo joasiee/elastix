@@ -84,6 +84,7 @@
         "lu": "cpp",
         "core": "cpp",
         "strstream": "cpp",
-        "forward_list": "cpp"
+        "forward_list": "cpp",
+        "cholesky": "cpp"
     }
 }

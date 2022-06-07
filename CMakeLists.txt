@@ -119,24 +119,14 @@ if( ELASTIX_USE_OPENCL )
   add_definitions( -DELASTIX_USE_OPENCL )
 endif()
 
-#---------------------------------------------------------------------
-# Find Eigen
-mark_as_advanced( ELASTIX_USE_EIGEN )
-option( ELASTIX_USE_EIGEN "Use Eigen library." OFF )
-
-if( ELASTIX_USE_EIGEN )
-  find_package( Eigen3 REQUIRED )
-  include_directories( ${EIGEN3_INCLUDE_DIR} )
-  add_definitions( -DELASTIX_USE_EIGEN )
-endif()
-
+# find packages and include dirs
+find_package( Eigen3 REQUIRED )
 find_package(BLAS REQUIRED)
-
 find_package(LAPACK REQUIRED)
-
 find_package(Boost REQUIRED)
-
 find_package(Plastimatch REQUIRED)
+include_directories(${CMAKE_INCLUDE_PATH})
+
 
 #---------------------------------------------------------------------
 # Find OpenMP

@@ -1,7 +1,10 @@
 include(ExternalProject)
 find_package(Git REQUIRED)
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+find_package(Boost REQUIRED)
 
-set (DEPENDENCIES_PREFIX ${PROJECT_SOURCE_DIR}/external)
+set (DEPENDENCIES_PREFIX ${PROJECT_SOURCE_DIR}/build/external)
 set (PLASTIMATCH_PATCH ${PROJECT_SOURCE_DIR}/tools/plastimatch.patch)
 set (EXTRA_CMAKE_ARGS
     --no-warn-unused-cli
@@ -12,7 +15,6 @@ set (EXTRA_CMAKE_ARGS
     -DITK_DIR:STRING=${DEPENDENCIES_PREFIX}/src/itk-build
     -G ${CMAKE_GENERATOR}
 )
-
 
 ExternalProject_Add(
     eigen
@@ -57,8 +59,9 @@ ExternalProject_Add(
 
 set(ELASTIX_ARGS
     -DCMAKE_PREFIX_PATH:STRING=${DEPENDENCIES_PREFIX}/install
-    -DPlastimatch_INCLUDE_DIR:STRING=${DEPENDENCIES_PREFIX}/install/include
+    # -DPlastimatch_INCLUDE_DIR:STRING=${DEPENDENCIES_PREFIX}/install/include
     -DPlastimatch_DIR:STRING=${DEPENDENCIES_PREFIX}/install/lib/cmake
+    -DCMAKE_INCLUDE_PATH:STRING=${DEPENDENCIES_PREFIX}/install/include
 )
 
 ExternalProject_Add (

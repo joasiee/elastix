@@ -43,8 +43,8 @@
 #include <time.h>
 #include <sys/time.h>
 #include <eigen3/Eigen/Dense>
-#include <cblas.h>
-#include <lapack.h>
+#include <openblas/cblas.h>
+#include <openblas/lapack.h>
 
 using Eigen::MatrixXd;
 
