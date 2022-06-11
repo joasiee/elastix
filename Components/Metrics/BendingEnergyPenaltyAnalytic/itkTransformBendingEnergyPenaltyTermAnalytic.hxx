@@ -32,7 +32,7 @@ template <class TFixedImage, class TScalarType>
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::TransformBendingEnergyPenaltyTermAnalytic()
 {
   this->m_RegularizationParameters.implementation = 'c';
-  this->m_RegularizationParameters.curvature_penalty = 0.01f;
+  this->m_RegularizationParameters.curvature_penalty = 0.005f;
 }
 
 template <class TFixedImage, class TScalarType>
