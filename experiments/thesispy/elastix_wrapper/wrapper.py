@@ -19,7 +19,7 @@ logger = logging.getLogger("Wrapper")
 
 
 def run(
-    params: Parameters, run_dir: Path, save_strategy: SaveStrategy = None
+    params: Parameters, run_dir: Path, save_strategy: SaveStrategy = None, suppress_stdout: bool = True
 ) -> Dict[str, Any]:
     time_start = time.perf_counter()
 
@@ -35,7 +35,7 @@ def run(
 
     logger.info(f"Running elastix in: {str(run_dir)}")
     try:
-        execute_elastix(params_file, out_dir, params)
+        execute_elastix(params_file, out_dir, params, suppress_stdout)
     except subprocess.CalledProcessError as err:
         err_msg = err.stderr.decode("utf-8").strip("\n")
         logger.error(
@@ -93,7 +93,7 @@ def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Pat
     return np.linalg.norm((lms_fixed_warped - lms_moving) * spacing, axis=1).mean()
 
 
-def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
+def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True):
     with time_limit(params["MaxTimeSeconds"]):
         args = [
             ELASTIX,
@@ -118,8 +118,10 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters):
                 str(params.lms_moving_path.resolve()),
             ]
 
+        output = subprocess.DEVNULL if suppress_stdout else None
+
         subprocess.run(
-            args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE
+            args, check=True, stdout=output, stderr=subprocess.PIPE
         )
 
 
@@ -140,10 +142,11 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
-        .multi_resolution(1, [5, 5, 5])
-        .gomea(fos=-6, partial_evals=True)
-        .stopping_criteria(500)
-        .instance(Collection.EMPIRE, 16)
+        Parameters.from_base(mesh_size=5, sampler="Full", seed=1, write_img=True)
+        .multi_resolution(1, [4, 4, 4])
+        .multi_metric(weight1=0.04)
+        .asgd()
+        .stopping_criteria(0)
+        .instance(Collection.LEARN, 1)
     )
-    run(params, Path("output/" + str(params)), SaveStrategy())
+    run(params, Path("output/" + str(params)), SaveStrategy(), False)

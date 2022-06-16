@@ -96,8 +96,23 @@ def tre_divergence():
         )
         yield params
 
+def regularization_weight():
+    for weight in np.arange(200, 10200, 200):
+        weight = int(weight)
+        # weight = np.round(weight, 3)
+        params = (
+            Parameters.from_base(mesh_size=5, seed=1)
+            .multi_resolution(1, [4, 4, 4])
+            .multi_metric(metric1="TransformBendingEnergyPenalty", weight1=weight)
+            .asgd()
+            .stopping_criteria(iterations=10000)
+        )
+        yield params
+
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    for experiment in yield_experiments(Collection.EMPIRE, 16, "gridsizes_16", grid_experiment):
+    fn = regularization_weight
+
+    for experiment in yield_experiments(Collection.LEARN, 1, fn.__name__, fn):
         queue.push(experiment)

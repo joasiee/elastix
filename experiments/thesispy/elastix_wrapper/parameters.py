@@ -36,7 +36,7 @@ class Parameters:
     def from_base(
         cls,
         metric: str = "AdvancedMeanSquares",
-        sampler: str = "RandomCoordinate",
+        sampler: str = "Full",
         sampling_p: float = 0.05,
         use_mask: bool = True,
         mesh_size: List[int] | int = 12,
