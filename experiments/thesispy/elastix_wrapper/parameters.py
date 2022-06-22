@@ -157,10 +157,9 @@ class Parameters:
         voxel_dims = self.get_voxel_dimensions()
         if not isinstance(self["MeshSize"], List):
             self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
-        if (
-            "ImagePyramidSchedule" not in self.params
-            or not self["ImagePyramidSchedule"]
-        ):
+        if not self["GridSpacingSchedule"]:
+            self["GridSpacingSchedule"] = [1 for _ in range(self["NumberOfResolutions"])]
+        if not self["ImagePyramidSchedule"]:
             self["ImagePyramidSchedule"] = [
                 2**n
                 for n in range(self["NumberOfResolutions"] - 1, -1, -1)
@@ -276,8 +275,8 @@ class Parameters:
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
-        .multi_resolution(1, [5, 5, 5])
-        .gomea(partial_evals=True, fos=-6)
+        .multi_resolution(3)
+        .asgd()
         .stopping_criteria(500)
         .instance(Collection.LEARN, 1)
     )
