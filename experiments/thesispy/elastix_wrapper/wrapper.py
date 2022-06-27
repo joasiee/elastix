@@ -11,7 +11,7 @@ import nibabel as nib
 
 from thesispy.elastix_wrapper import TimeoutException, time_limit
 from thesispy.elastix_wrapper.parameters import Collection, Parameters
-from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
+from thesispy.elastix_wrapper.watchdog import SaveStrategy, SaveStrategyPrint, Watchdog
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 TRANSFORMIX = os.environ.get("TRANSFORMIX_EXECUTABLE")
@@ -19,7 +19,10 @@ logger = logging.getLogger("Wrapper")
 
 
 def run(
-    params: Parameters, run_dir: Path, save_strategy: SaveStrategy = None, suppress_stdout: bool = True
+    params: Parameters,
+    run_dir: Path,
+    save_strategy: SaveStrategy = None,
+    suppress_stdout: bool = True,
 ) -> Dict[str, Any]:
     time_start = time.perf_counter()
 
@@ -43,8 +46,10 @@ def run(
         )
     except TimeoutException:
         logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
+        params.compute_tre = False
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
+        params.compute_tre = False
 
     if save_strategy:
         if params.compute_tre:
@@ -93,7 +98,9 @@ def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Pat
     return np.linalg.norm((lms_fixed_warped - lms_moving) * spacing, axis=1).mean()
 
 
-def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True):
+def execute_elastix(
+    params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True
+):
     with time_limit(params["MaxTimeSeconds"]):
         args = [
             ELASTIX,
@@ -120,9 +127,7 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppre
 
         output = subprocess.DEVNULL if suppress_stdout else None
 
-        subprocess.run(
-            args, check=True, stdout=output, stderr=subprocess.PIPE
-        )
+        subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE)
 
 
 def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
@@ -142,11 +147,10 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, sampler="Full", seed=1, write_img=True)
-        .multi_resolution(1, [4, 4, 4])
-        .multi_metric(weight1=0.04)
-        .asgd()
-        .stopping_criteria(0)
+        Parameters.from_base(mesh_size=4, seed=1)
+        .multi_resolution(1, [5, 5, 5])
+        .gomea()
+        .stopping_criteria(iterations=30)
         .instance(Collection.LEARN, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)

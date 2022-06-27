@@ -19,6 +19,10 @@ class SaveStrategy:
     def close(self) -> None:
         pass
 
+class SaveStrategyPrint(SaveStrategy):
+    def save(self, headers, row, resolution) -> None:
+        print(f"R{resolution}: {headers} --- {row}")
+
 class SaveStrategyWandb(SaveStrategy):
     def __init__(self, experiment, run_dir: Path, batch_size: int = 1) -> None:
         wandb.init(project=experiment.project,
@@ -106,7 +110,7 @@ class Watchdog(threading.Thread):
             except pd.errors.EmptyDataError:
                 continue
 
-            if np.count_nonzero(resolution_results.isnull().values) > 1:
+            if np.count_nonzero(resolution_results.isnull().values) > 0:
                 continue
 
             headers = resolution_results.columns.values
@@ -118,7 +122,7 @@ class Watchdog(threading.Thread):
             line_counts[r] = len_values
 
             if len_diff > 0:
-                for row in values[len_values - len_diff :]:  
+                for row in values[len_values - len_diff :]:
                     self.sv_strategy.save(headers, row, r)
             elif r < self.n_resolutions - 1 and os.path.exists(file_names[r + 1]):
                 r += 1

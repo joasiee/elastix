@@ -29,9 +29,12 @@ template <class TElastix>
 void
 GOMEA<TElastix>::AfterEachIteration(void)
 {
+  float pdpct_mean = boost::accumulators::mean(this->m_PdPctMean);
+  pdpct_mean = isnan(pdpct_mean) ? 100.0f : pdpct_mean;
+
   /** Print some information. */
   this->GetIterationInfoAt("2:Metric") << this->m_Value;
-  this->GetIterationInfoAt("3a:PdPct") << boost::accumulators::mean(this->m_PdPctMean);
+  this->GetIterationInfoAt("3a:PdPct") << pdpct_mean;
   this->GetIterationInfoAt("3b:DistMult") << this->GetAverageDistributionMultiplier();
   this->m_PdPctMean = {};
 

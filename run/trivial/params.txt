@@ -8,7 +8,7 @@
 (ResampleInterpolator "FinalBSplineInterpolator")
 (Resampler "DefaultResampler")
 (Transform "RecursiveBSplineTransform")
-(NumberOfResolutions 3)
+(NumberOfResolutions 1)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 (BSplineInterpolationOrder 1)
@@ -19,12 +19,12 @@
 (ImageSampler "Full")
 (NumberOfSpatialSamples 400)
 (SamplingPercentage 0.05)
-(Optimizer "AdaptiveStochasticGradientDescent") // AdaptiveStochasticGradientDescent
+(Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (FinalGridSpacingInVoxels 15 15)
-(MaximumNumberOfIterations 1)
-(NewSamplesEveryIteration "true")
+(MaximumNumberOfIterations 5)
+
 (WriteSamplesEveryIteration "false")
 (WriteMeanPointsEveryIteration "false")
 
 (PartialEvaluations "true")
-(FosElementSize -6)
+(FosElementSize 1)

@@ -119,5 +119,7 @@ class Dataset:
     @staticmethod
     def load(project: str):
         path = DATASETS_PATH / f"{project}.pkl"
-        with path.open("rb") as file:
-            return pickle.load(file)
+        if path.exists():
+            with path.open("rb") as file:
+                return pickle.load(file)
+        return None

@@ -60,7 +60,7 @@
                 "$OMP_NUM_THREADS",
             ],
             "stopAtEntry": false,
-            "cwd": "/home/joasiee/Documents/instances/learn",
+            "cwd": "/home/joasiee/instances/learn",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",
