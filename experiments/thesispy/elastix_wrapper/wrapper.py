@@ -149,8 +149,8 @@ if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=4, seed=1)
         .multi_resolution(1, [5, 5, 5])
-        .gomea()
-        .stopping_criteria(iterations=30)
-        .instance(Collection.LEARN, 1)
+        .asgd()
+        .stopping_criteria(iterations=0)
+        .instance(Collection.LEARN, 2)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)

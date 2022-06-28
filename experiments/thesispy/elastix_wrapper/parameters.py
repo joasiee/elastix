@@ -1,10 +1,10 @@
 from __future__ import annotations
+from datetime import datetime
 
 import json
 from math import ceil
 import os
 import time
-import uuid
 from PIL import Image
 import nibabel as nib
 from enum import Enum
@@ -27,32 +27,29 @@ class Collection(str, Enum):
     EXAMPLES = "EXAMPLES"
 
 
+class GOMEAType(Enum):
+    GOMEA_FULL = -1
+    GOMEA_UNIVARIATE = 1
+    GOMEA_CP = -6
+
+
 class Parameters:
     def __init__(self, params) -> None:
         self.params = params
-        self.id = [str(int(time.time())), str(uuid.uuid1())[:8]]
+        self.id = [str(int(time.time())), str(datetime.now().microsecond)]
 
     @classmethod
     def from_base(
         cls,
         metric: str = "AdvancedMeanSquares",
-        sampler: str = "Full",
-        sampling_p: float = 0.05,
-        use_mask: bool = True,
         mesh_size: List[int] | int = 12,
         seed: int = None,
-        write_img=False,
     ):
         with BASE_PARAMS_PATH.open() as f:
             params: Dict[str, Any] = json.loads(f.read())
-        params["Metric"] = metric
-        params["ImageSampler"] = sampler
-        params["SamplingPercentage"] = sampling_p
-        params["UseMask"] = use_mask
-        params["MeshSize"] = mesh_size
-        params["RandomSeed"] = seed
-        params["WriteResultImage"] = write_img
-        return cls(params)
+        return cls(params).extra_args(
+            {"Metric": metric, "MeshSize": mesh_size, "RandomSeed": seed}
+        )
 
     @classmethod
     def from_json(cls, jsondump):
@@ -71,33 +68,32 @@ class Parameters:
         metric1: str = "TransformBendingEnergyPenaltyAnalytic",
         weight0: float = 1.0,
         weight1: float = 0.01,
+        params: Dict[str, Any] = None,
     ) -> Parameters:
-        self["Registration"] = "MultiMetricMultiResolutionRegistration"
         self.n_param("FixedImagePyramid", 2)
         self.n_param("MovingImagePyramid", 2)
         self.n_param("Interpolator", 2)
         self.n_param("ImageSampler", 2)
-        self["Metric"] = [metric0, metric1]
-        self["Metric0Weight"] = weight0
-        self["Metric1Weight"] = weight1
-        return self
+        return self.extra_args(
+            {
+                "Registration": "MultiMetricMultiResolutionRegistration",
+                "Metric": [metric0, metric1],
+                "Metric0Weight": weight0,
+                "Metric1Weight": weight1,
+                **params,
+            }
+        )
 
     def multi_resolution(
         self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None
     ) -> Parameters:
-        self["NumberOfResolutions"] = n
-        self["ImagePyramidSchedule"] = p_sched
-        self["GridSpacingSchedule"] = g_sched
-        return self
-
-    def optimizer(self, optim: str, params: Dict[str, Any] = None) -> Parameters:
-        self["Optimizer"] = optim
-        if "OptimizerName" not in self.params:
-            self["OptimizerName"] = optim
-        if params is not None:
-            for key, value in params.items():
-                self[key] = value
-        return self
+        return self.extra_args(
+            {
+                "NumberOfResolutions": n,
+                "ImagePyramidSchedule": p_sched,
+                "GridSpacingSchedule": g_sched,
+            }
+        )
 
     def stopping_criteria(
         self,
@@ -106,40 +102,52 @@ class Parameters:
         max_time_s: int = 0,
         fitness_var: float = 1e-9,
     ):
-        self["MaximumNumberOfIterations"] = iterations
-        self["MaxNumberOfEvaluations"] = evals
-        self["MaxTimeSeconds"] = max_time_s
-        self["FitnessVarianceTolerance"] = fitness_var
-        return self
+        return self.extra_args(
+            {
+                "MaximumNumberOfIterations": iterations,
+                "MaxNumberOfEvaluations": evals,
+                "MaxTimeSeconds": max_time_s,
+                "FitnessVarianceTolerance": fitness_var,
+            }
+        )
 
     def gomea(
         self,
-        fos: int = None,
+        fos: GOMEAType = GOMEAType.GOMEA_FULL,
         pop_size: List[int] | int = None,
-        partial_evals: bool = False,
+        shrinkage: bool = False,
     ) -> Parameters:
-        if partial_evals:
-            self["OptimizerName"] = "GOMEA-partial"
-        return self.optimizer(
-            "GOMEA",
+        pevals = False if fos == GOMEAType.GOMEA_FULL else True
+        return self.extra_args(
             {
-                "FosElementSize": fos,
+                "Optimizer": "GOMEA",
+                "OptimizerName": fos.name,
+                "FosElementSize": fos.value,
                 "BasePopulationSize": pop_size,
-                "PartialEvaluations": partial_evals,
-            },
+                "PartialEvaluations": pevals,
+                "UseShrinkage": shrinkage,
+            }
         )
 
-    def asgd(self):
-        return self.optimizer("AdaptiveStochasticGradientDescent")
+    def asgd(self, params: Dict[str, Any] = None):
+        return self.extra_args(
+            {"Optimizer": "AdaptiveStochasticGradientDescent", **params}
+        )
 
     def debug(self):
-        self["WritePyramidImagesAfterEachResolution"] = True
-        self["WriteSamplesEveryIteration"] = True
-        self["WriteMeanPointsEveryIteration"] = True
-        return self
+        return self.extra_args(
+            {
+                "WritePyramidImagesAfterEachResolution": True,
+                "WriteSamplesEveryIteration": True,
+                "WriteMeanPointsEveryIteration": True,
+                "WriteResultImage": True,
+            }
+        )
 
-    def shrinkage(self, val: bool):
-        self["UseShrinkage"] = val
+    def extra_args(self, params: Dict[str, Any] = None) -> Parameters:
+        if params is not None:
+            for key, value in params.items():
+                self[key] = value
         return self
 
     def prune(self):
@@ -155,16 +163,26 @@ class Parameters:
 
     def calc_voxel_params(self) -> Parameters:
         voxel_dims = self.get_voxel_dimensions()
+
         if not isinstance(self["MeshSize"], List):
             self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
         if not self["GridSpacingSchedule"]:
-            self["GridSpacingSchedule"] = [1 for _ in range(self["NumberOfResolutions"])]
+            self["GridSpacingSchedule"] = [
+                1 for _ in range(self["NumberOfResolutions"])
+            ]
         if not self["ImagePyramidSchedule"]:
             self["ImagePyramidSchedule"] = [
                 2**n
                 for n in range(self["NumberOfResolutions"] - 1, -1, -1)
                 for _ in range(len(voxel_dims))
             ]
+        elif len(self["ImagePyramidSchedule"]) == self["NumberOfResolutions"]:
+            self["ImagePyramidSchedule"] = [
+                self["ImagePyramidSchedule"][i]
+                for i in range(self["NumberOfResolutions"])
+                for _ in range(len(voxel_dims))
+            ]
+
         voxel_spacings = []
         total_samples = [1] * self["NumberOfResolutions"]
         for i, voxel_dim in enumerate(voxel_dims):
@@ -175,9 +193,14 @@ class Parameters:
                 )
 
         self["FinalGridSpacingInVoxels"] = voxel_spacings
-        self["NumberOfSpatialSamples"] = [
-            int(x * self["SamplingPercentage"]) for x in total_samples
-        ]
+
+        self["NumberOfSpatialSamples"] = total_samples
+        if self["ImageSampler"] != "Full":
+            self["NumberOfSpatialSamples"] = [
+                int(x * self["SamplingPercentage"])
+                for x in self["NumberOfSpatialSamples"]
+            ]
+
         return self
 
     def get_voxel_dimensions(self) -> List[int]:
@@ -201,16 +224,20 @@ class Parameters:
             folder = INSTANCES_CONFIG[collection]["folder"]
             fixed = f"{instance:02}_Fixed.{extension}"
             moving = f"{instance:02}_Moving.{extension}"
-            
+
             self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
             self.moving_path = INSTANCES_SRC / folder / "scans" / moving
-            
+
             if INSTANCES_CONFIG[collection]["masks"]:
                 self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
             if INSTANCES_CONFIG[collection]["landmarks"]:
                 self.compute_tre = True
-                self.lms_fixed_path = INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
-                self.lms_moving_path = INSTANCES_SRC / folder / "landmarks" / f"{moving.split('.')[0]}.txt"
+                self.lms_fixed_path = (
+                    INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
+                )
+                self.lms_moving_path = (
+                    INSTANCES_SRC / folder / "landmarks" / f"{moving.split('.')[0]}.txt"
+                )
             else:
                 self.compute_tre = False
 
@@ -274,10 +301,10 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, sampler="Full", seed=1)
-        .multi_resolution(3)
-        .asgd()
-        .stopping_criteria(500)
+        Parameters.from_base(mesh_size=5, seed=1)
+        .multi_resolution(3, [8, 5, 2])
+        .gomea(fos=GOMEAType.GOMEA_CP)
+        .stopping_criteria(iterations=300)
         .instance(Collection.LEARN, 1)
     )
     params.write(Path())

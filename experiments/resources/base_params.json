@@ -8,6 +8,7 @@
     "ResampleInterpolator": "FinalBSplineInterpolator",
     "Resampler": "DefaultResampler",
     "Transform": "RecursiveBSplineTransform",
+    "ImageSampler": "Full",
     "NumberOfResolutions": 1,
     "HowToCombineTransforms": "Compose",
     "UseDirectionCosines": "true",

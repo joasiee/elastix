@@ -1,5 +1,5 @@
 import numpy as np
-from thesispy.elastix_wrapper.parameters import Parameters, Collection
+from thesispy.elastix_wrapper.parameters import GOMEAType, Parameters, Collection
 from thesispy.experiments.experiment import Experiment, ExperimentQueue
 
 
@@ -23,12 +23,12 @@ def pd_pop_experiment():
 
 def gridsizes():
     for gridsize in range(2, 11):
-        for seed in range(5):
+        for seed in range(2, 11):
             params = (
                 Parameters.from_base(mesh_size=gridsize, sampler="Full", seed=seed)
                 .multi_resolution(1, [5, 5, 5])
                 .gomea()
-                .stopping_criteria(20)
+                .stopping_criteria(30)
             )
             yield params
 
@@ -76,13 +76,12 @@ def multi_resolution_settings():
 
 
 def fos_settings():
-    for setting in [-1, -6, 1]:
-        peval = True if setting != -1 else False
+    for setting in [GOMEAType.GOMEA_FULL]:
         for seed in range(10):
             params = (
                 Parameters.from_base(mesh_size=5, seed=seed)
                 .multi_resolution(1, [5, 5, 5])
-                .gomea(fos=setting, partial_evals=peval)
+                .gomea(fos=setting, pop_size=1000)
                 .stopping_criteria(iterations=300)
             )
             yield params
@@ -92,5 +91,5 @@ if __name__ == "__main__":
     queue = ExperimentQueue()
     fn = fos_settings
 
-    for experiment in yield_experiments(Collection.EMPIRE, 16, fn.__name__, fn):
+    for experiment in yield_experiments(Collection.LEARN, 2, fn.__name__, fn):
         queue.push(experiment)

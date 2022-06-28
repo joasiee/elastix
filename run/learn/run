@@ -1,0 +1,1 @@
+../../build/Release/bin/elastix -f $HOME/instances/learn/scans/01_Fixed.nii.gz -fMask $HOME/instances/learn/masks/01_Fixed.nii.gz -m $HOME/instances/learn/scans/01_Moving.nii.gz -p params.txt -out out -threads 16
