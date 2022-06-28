@@ -10,7 +10,7 @@ import numpy as np
 import nibabel as nib
 
 from thesispy.elastix_wrapper import TimeoutException, time_limit
-from thesispy.elastix_wrapper.parameters import Collection, Parameters
+from thesispy.elastix_wrapper.parameters import Collection, GOMEAType, Parameters
 from thesispy.elastix_wrapper.watchdog import SaveStrategy, SaveStrategyPrint, Watchdog
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
@@ -147,10 +147,10 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=4, seed=1)
+        Parameters.from_base(mesh_size=5, seed=1)
         .multi_resolution(1, [5, 5, 5])
-        .asgd()
-        .stopping_criteria(iterations=0)
+        .gomea(fos=GOMEAType.GOMEA_FULL, pop_size=1000)
+        .stopping_criteria(iterations=10)
         .instance(Collection.LEARN, 2)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)
