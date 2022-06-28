@@ -1757,7 +1757,9 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
         number_of_generations[population_index]++;
         this->UpdatePosition();
-        this->evaluatePopulation(population_index);
+
+        if (this->m_SubSampling)
+          this->evaluatePopulation(population_index);
 
         if (this->checkSubgenerationTerminationConditions())
         {

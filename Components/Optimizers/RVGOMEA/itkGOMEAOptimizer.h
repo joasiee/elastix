@@ -154,6 +154,7 @@ protected:
   StopConditionType m_StopCondition{ Unknown };
   unsigned int      m_NrOfParameters;
   unsigned int      m_ImageDimension;
+  bool m_SubSampling{ false };
 
   typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
   mutable MeanAccumulator                          m_PdPctMean;

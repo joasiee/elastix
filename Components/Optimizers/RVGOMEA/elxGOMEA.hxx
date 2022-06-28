@@ -23,6 +23,14 @@ GOMEA<TElastix>::BeforeRegistration(void)
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3a:PdPct") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3b:DistMult") << std::showpoint << std::fixed;
+
+  std::string sampler;
+  this->m_Configuration->ReadParameter(sampler, "ImageSampler", 0, true);
+
+  if (sampler != "Full")
+  {
+    this->m_SubSampling = true;
+  }
 }
 
 template <class TElastix>
