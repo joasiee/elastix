@@ -83,7 +83,7 @@ GOMEAOptimizer::initialize(void)
   if (m_BasePopulationSize == 0.0)
   {
     if (m_MaxNumberOfPopulations == 1)
-      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(20 + 30 * log2((double)m_NrOfParameters))
+      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(31.7 + 23.21 * log2((double)m_NrOfParameters))
                                                   : static_cast<int>(m_NrOfParameters * 10);
     else
       m_BasePopulationSize = 10;
