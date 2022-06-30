@@ -47,7 +47,7 @@ class Parameters:
     ):
         with BASE_PARAMS_PATH.open() as f:
             params: Dict[str, Any] = json.loads(f.read())
-        return cls(params).extra_args(
+        return cls(params).args(
             {"Metric": metric, "MeshSize": mesh_size, "RandomSeed": seed}
         )
 
@@ -74,20 +74,20 @@ class Parameters:
         self.n_param("MovingImagePyramid", 2)
         self.n_param("Interpolator", 2)
         self.n_param("ImageSampler", 2)
-        return self.extra_args(
+        return self.args(
             {
                 "Registration": "MultiMetricMultiResolutionRegistration",
                 "Metric": [metric0, metric1],
                 "Metric0Weight": weight0,
-                "Metric1Weight": weight1,
-                **params,
-            }
+                "Metric1Weight": weight1
+            },
+            params
         )
 
     def multi_resolution(
         self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None
     ) -> Parameters:
-        return self.extra_args(
+        return self.args(
             {
                 "NumberOfResolutions": n,
                 "ImagePyramidSchedule": p_sched,
@@ -102,7 +102,7 @@ class Parameters:
         max_time_s: int = 0,
         fitness_var: float = 1e-9,
     ):
-        return self.extra_args(
+        return self.args(
             {
                 "MaximumNumberOfIterations": iterations,
                 "MaxNumberOfEvaluations": evals,
@@ -118,7 +118,7 @@ class Parameters:
         shrinkage: bool = False,
     ) -> Parameters:
         pevals = False if fos == GOMEAType.GOMEA_FULL else True
-        return self.extra_args(
+        return self.args(
             {
                 "Optimizer": "GOMEA",
                 "OptimizerName": fos.name,
@@ -130,12 +130,13 @@ class Parameters:
         )
 
     def asgd(self, params: Dict[str, Any] = None):
-        return self.extra_args(
-            {"Optimizer": "AdaptiveStochasticGradientDescent", **params}
+        return self.args(
+            {"Optimizer": "AdaptiveStochasticGradientDescent"},
+            params
         )
 
     def debug(self):
-        return self.extra_args(
+        return self.args(
             {
                 "WritePyramidImagesAfterEachResolution": True,
                 "WriteSamplesEveryIteration": True,
@@ -144,9 +145,19 @@ class Parameters:
             }
         )
 
-    def extra_args(self, params: Dict[str, Any] = None) -> Parameters:
-        if params is not None:
-            for key, value in params.items():
+    def sampler(self, sampler, pct: float = 0.05):
+        return self.args(
+            {
+                "ImageSampler": sampler,
+                "SamplingPercentage": pct
+            }
+        )
+
+    def args(self, params: Dict[str, Any], extra_params: Dict[str, Any] = None) -> Parameters:
+        for key, value in params.items():
+            self[key] = value
+        if extra_params is not None:
+            for key, value in extra_params.items():
                 self[key] = value
         return self
 
@@ -302,7 +313,7 @@ class Parameters:
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, seed=1)
-        .multi_resolution(3, [8, 5, 2])
+        .multi_resolution(1, [4])
         .gomea(fos=GOMEAType.GOMEA_CP)
         .stopping_criteria(iterations=300)
         .instance(Collection.LEARN, 1)
