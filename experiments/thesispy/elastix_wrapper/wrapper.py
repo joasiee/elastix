@@ -58,6 +58,7 @@ def run(
                 params.lms_fixed_path,
                 params.lms_moving_path,
                 params.fixed_path,
+                params["Collection"]
             )
             logger.info(f"TRE: {tre}")
             wd.sv_strategy.save_custom("TRE", tre)
@@ -70,11 +71,14 @@ def run(
     logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
 
 
-def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Path):
+def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Path, collection: Collection):
     params_file = out_dir / "TransformParameters.0.txt"
     lms_moving = np.loadtxt(lms_moving, skiprows=2)
-    image = nib.load(img_fixed)
-    spacing = np.array(image.header.get_zooms())
+
+    spacing = np.ones(3)
+    if collection == Collection.LEARN:
+        image = nib.load(img_fixed)
+        spacing = np.array(image.header.get_zooms())
 
     try:
         execute_transformix(params_file, lms_fixed, out_dir)
@@ -147,10 +151,10 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, seed=1)
-        .multi_resolution(1, [5, 5, 5])
-        .gomea(fos=GOMEAType.GOMEA_FULL, pop_size=1000)
-        .stopping_criteria(iterations=10)
-        .instance(Collection.LEARN, 2)
+        Parameters.from_base(mesh_size=8, seed=1)
+        .asgd()
+        .stopping_criteria(100)
+        .debug()
+        .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)

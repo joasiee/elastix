@@ -26,14 +26,14 @@ main(int, char *[])
   CreateMovingImage(movingImage);
 
   // Write the two synthetic inputs
-  itk::WriteImage(fixedImage, "../Scenes/fixed.mha");
-  itk::WriteImage(movingImage, "../Scenes/moving.mha");
+  itk::WriteImage(fixedImage, "../Scenes/fixed.mhd");
+  itk::WriteImage(movingImage, "../Scenes/moving.mhd");
 
   return EXIT_SUCCESS;
 }
 
 void
-CreateFixedImage(ImageType::Pointer image)
+CreateMovingImage(ImageType::Pointer image)
 {
   using SpatialObjectType = itk::SpatialObject<Dimension>;
   using EllipseType = itk::EllipseSpatialObject<Dimension>;
@@ -88,7 +88,7 @@ CreateFixedImage(ImageType::Pointer image)
 }
 
 void
-CreateMovingImage(ImageType::Pointer image)
+CreateFixedImage(ImageType::Pointer image)
 {
   using SpatialObjectType = itk::SpatialObject<Dimension>;
   using EllipseType = itk::EllipseSpatialObject<Dimension>;

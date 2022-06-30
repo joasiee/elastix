@@ -25,6 +25,7 @@ class Collection(str, Enum):
     EMPIRE = "EMPIRE"
     LEARN = "LEARN"
     EXAMPLES = "EXAMPLES"
+    SYNTHETIC = "SYNTHETIC"
 
 
 class GOMEAType(Enum):
@@ -79,9 +80,9 @@ class Parameters:
                 "Registration": "MultiMetricMultiResolutionRegistration",
                 "Metric": [metric0, metric1],
                 "Metric0Weight": weight0,
-                "Metric1Weight": weight1
+                "Metric1Weight": weight1,
             },
-            params
+            params,
         )
 
     def multi_resolution(
@@ -130,10 +131,7 @@ class Parameters:
         )
 
     def asgd(self, params: Dict[str, Any] = None):
-        return self.args(
-            {"Optimizer": "AdaptiveStochasticGradientDescent"},
-            params
-        )
+        return self.args({"Optimizer": "AdaptiveStochasticGradientDescent"}, params)
 
     def debug(self):
         return self.args(
@@ -146,14 +144,11 @@ class Parameters:
         )
 
     def sampler(self, sampler, pct: float = 0.05):
-        return self.args(
-            {
-                "ImageSampler": sampler,
-                "SamplingPercentage": pct
-            }
-        )
+        return self.args({"ImageSampler": sampler, "SamplingPercentage": pct})
 
-    def args(self, params: Dict[str, Any], extra_params: Dict[str, Any] = None) -> Parameters:
+    def args(
+        self, params: Dict[str, Any], extra_params: Dict[str, Any] = None
+    ) -> Parameters:
         for key, value in params.items():
             self[key] = value
         if extra_params is not None:
@@ -177,16 +172,22 @@ class Parameters:
 
         if not isinstance(self["MeshSize"], List):
             self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
-        if not self["GridSpacingSchedule"]:
+
+        if "GridSpacingSchedule" not in self.params or not self["GridSpacingSchedule"]:
             self["GridSpacingSchedule"] = [
                 1 for _ in range(self["NumberOfResolutions"])
             ]
-        if not self["ImagePyramidSchedule"]:
+
+        if (
+            "ImagePyramidSchedule" not in self.params
+            or not self["ImagePyramidSchedule"]
+        ):
             self["ImagePyramidSchedule"] = [
                 2**n
                 for n in range(self["NumberOfResolutions"] - 1, -1, -1)
                 for _ in range(len(voxel_dims))
             ]
+
         elif len(self["ImagePyramidSchedule"]) == self["NumberOfResolutions"]:
             self["ImagePyramidSchedule"] = [
                 self["ImagePyramidSchedule"][i]
@@ -238,7 +239,8 @@ class Parameters:
 
             self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
             self.moving_path = INSTANCES_SRC / folder / "scans" / moving
-
+            
+            self.fixedmask_path = None
             if INSTANCES_CONFIG[collection]["masks"]:
                 self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
             if INSTANCES_CONFIG[collection]["landmarks"]:
@@ -313,9 +315,8 @@ class Parameters:
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, seed=1)
-        .multi_resolution(1, [4])
-        .gomea(fos=GOMEAType.GOMEA_CP)
-        .stopping_criteria(iterations=300)
-        .instance(Collection.LEARN, 1)
+        .asgd()
+        .stopping_criteria(500)
+        .instance(Collection.SYNTHETIC, 1)
     )
     params.write(Path())

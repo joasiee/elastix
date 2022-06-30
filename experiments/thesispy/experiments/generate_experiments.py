@@ -1,3 +1,4 @@
+from math import log2
 import numpy as np
 from thesispy.elastix_wrapper.parameters import GOMEAType, Parameters, Collection
 from thesispy.experiments.experiment import Experiment, ExperimentQueue
@@ -22,11 +23,12 @@ def pd_pop_experiment():
 
 
 def gridsizes():
-    for gridsize in range(2, 11):
-        for seed in range(2, 11):
+    # for gm in GOMEAType:
+    for gridsize in [12]:
+        for seed in range(5):
             params = (
-                Parameters.from_base(mesh_size=gridsize, sampler="Full", seed=seed)
-                .multi_resolution(1, [5, 5, 5])
+                Parameters.from_base(mesh_size=gridsize, seed=seed)
+                .multi_resolution(1, [3, 3, 3])
                 .gomea()
                 .stopping_criteria(30)
             )
@@ -86,10 +88,40 @@ def fos_settings():
             )
             yield params
 
+def pop_sizes_cp():
+    pop_size_fn = lambda n, n_params: int(31.7 + n * log2(n_params))
+    for meshsize in [2, 4, 6, 10, 16]:
+        nr_params = (meshsize + 3)**3 * 3
+        for n in [2**x for x in range(6+1)]:
+            params = (
+                Parameters.from_base(mesh_size=meshsize, seed=1)
+                .multi_resolution(1, [4, 4, 4])
+                .gomea(fos=GOMEAType.GOMEA_CP, pop_size=pop_size_fn(n, nr_params))
+                .stopping_criteria(iterations=100)
+            )
+            yield params
+
+def subsampling_percentage():
+    for seed in range(10):
+        for pct in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0]:
+            for gomea in [True, False]:
+                sampler = "Full" if pct == 1.0 else "RandomCoordinate"
+                params = (
+                    Parameters.from_base(mesh_size=5, seed=seed)
+                    .multi_resolution(1, [4])
+                    .sampler(sampler, pct=pct)
+                )
+                if gomea:
+                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=300)
+                else:
+                    params.asgd().stopping_criteria(iterations=15000)
+
+                yield params
+
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = fos_settings
+    fn = subsampling_percentage
 
-    for experiment in yield_experiments(Collection.LEARN, 2, fn.__name__, fn):
+    for experiment in yield_experiments(Collection.LEARN, 1, fn.__name__, fn):
         queue.push(experiment)
