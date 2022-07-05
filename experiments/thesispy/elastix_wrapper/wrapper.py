@@ -151,10 +151,11 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=8, seed=1)
-        .asgd()
+        Parameters.from_base(mesh_size=5, seed=1)
+        .gomea(GOMEAType.GOMEA_CP)
         .stopping_criteria(100)
         .debug()
+        .args({"ResampleInterpolator": "FinalLinearInterpolator"})
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)

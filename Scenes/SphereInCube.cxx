@@ -6,6 +6,19 @@
 #include "itkSpatialObjectToImageFilter.h"
 
 constexpr unsigned int Dimension = 3;
+
+constexpr int Padding = 2;
+constexpr int CubeSize = 25;
+constexpr int ImageSize = CubeSize + 2 * Padding;
+
+constexpr int SphereCenter = CubeSize / 2.0f + Padding;
+constexpr int SphereRadiusMoving = 0.9f * CubeSize / 2.0f;
+constexpr int SphereRadiusFixed = SphereRadiusMoving / 2.0f;
+
+constexpr int CubeIntensity = 200;
+constexpr int SphereIntensity = 100;
+constexpr int OutsideIntensity = 0;
+
 using PixelType = unsigned char;
 
 using ImageType = itk::Image<PixelType, Dimension>;
@@ -26,8 +39,8 @@ main(int, char *[])
   CreateMovingImage(movingImage);
 
   // Write the two synthetic inputs
-  itk::WriteImage(fixedImage, "../Scenes/fixed.mhd");
-  itk::WriteImage(movingImage, "../Scenes/moving.mhd");
+  itk::WriteImage(fixedImage, "../Scenes/01_Fixed.mhd");
+  itk::WriteImage(movingImage, "../Scenes/01_Moving.mhd");
 
   return EXIT_SUCCESS;
 }
@@ -42,9 +55,11 @@ CreateMovingImage(ImageType::Pointer image)
 
   // image filter
   SpatialObjectToImageFilterType::Pointer imageFilter = SpatialObjectToImageFilterType::New();
-  ImageType::SizeType                     size;
-  size.Fill(40);
+
+  ImageType::SizeType size;
+  size.Fill(ImageSize);
   imageFilter->SetSize(size);
+
   ImageType::SpacingType spacing;
   spacing.Fill(1);
   imageFilter->SetSpacing(spacing);
@@ -53,28 +68,28 @@ CreateMovingImage(ImageType::Pointer image)
   BoxType::Pointer cube = BoxType::New();
 
   BoxType::SizeType boxSize;
-  boxSize.Fill(35);
+  boxSize.Fill(CubeSize - 1);
   cube->SetSizeInObjectSpace(boxSize);
 
   BoxType::PointType boxPosition;
-  boxPosition.Fill(2.5);
+  boxPosition.Fill(Padding);
   cube->SetPositionInObjectSpace(boxPosition);
 
   // inner sphere
   EllipseType::Pointer sphere = EllipseType::New();
 
   EllipseType::ArrayType sphereRadius;
-  sphereRadius.Fill(14);
+  sphereRadius.Fill(SphereRadiusMoving);
   sphere->SetRadiusInObjectSpace(sphereRadius);
 
   EllipseType::PointType sphereCenter;
-  sphereCenter.Fill(20);
+  sphereCenter.Fill(SphereCenter);
   sphere->SetCenterInObjectSpace(sphereCenter);
 
   // image intensities
-  cube->SetDefaultInsideValue(255);
-  cube->SetDefaultOutsideValue(0);
-  sphere->SetDefaultInsideValue(100);
+  cube->SetDefaultInsideValue(CubeIntensity);
+  cube->SetDefaultOutsideValue(OutsideIntensity);
+  sphere->SetDefaultInsideValue(SphereIntensity);
 
   sphere->AddChild(cube);
   sphere->Update();
@@ -97,9 +112,11 @@ CreateFixedImage(ImageType::Pointer image)
 
   // image filter
   SpatialObjectToImageFilterType::Pointer imageFilter = SpatialObjectToImageFilterType::New();
-  ImageType::SizeType                     size;
-  size.Fill(40);
+
+  ImageType::SizeType size;
+  size.Fill(ImageSize);
   imageFilter->SetSize(size);
+
   ImageType::SpacingType spacing;
   spacing.Fill(1);
   imageFilter->SetSpacing(spacing);
@@ -108,28 +125,28 @@ CreateFixedImage(ImageType::Pointer image)
   BoxType::Pointer cube = BoxType::New();
 
   BoxType::SizeType boxSize;
-  boxSize.Fill(35);
+  boxSize.Fill(CubeSize - 1);
   cube->SetSizeInObjectSpace(boxSize);
 
   BoxType::PointType boxPosition;
-  boxPosition.Fill(2.5);
+  boxPosition.Fill(Padding);
   cube->SetPositionInObjectSpace(boxPosition);
 
   // inner sphere
   EllipseType::Pointer sphere = EllipseType::New();
 
   EllipseType::ArrayType sphereRadius;
-  sphereRadius.Fill(7);
+  sphereRadius.Fill(SphereRadiusFixed);
   sphere->SetRadiusInObjectSpace(sphereRadius);
 
   EllipseType::PointType sphereCenter;
-  sphereCenter.Fill(20);
+  sphereCenter.Fill(SphereCenter);
   sphere->SetCenterInObjectSpace(sphereCenter);
 
   // image intensities
-  cube->SetDefaultInsideValue(255);
-  cube->SetDefaultOutsideValue(0);
-  sphere->SetDefaultInsideValue(100);
+  cube->SetDefaultInsideValue(CubeIntensity);
+  cube->SetDefaultOutsideValue(OutsideIntensity);
+  sphere->SetDefaultInsideValue(SphereIntensity);
 
   sphere->AddChild(cube);
   sphere->Update();
