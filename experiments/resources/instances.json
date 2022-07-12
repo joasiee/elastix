@@ -20,7 +20,7 @@
     "SYNTHETIC": {
         "folder": "synthetic",
         "extension": "mhd",
-        "masks": false,
-        "landmarks": true
+        "masks": true,
+        "landmarks": false
     }
 }

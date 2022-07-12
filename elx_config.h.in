@@ -1,0 +1,3 @@
+#pragma once
+
+constexpr char elastix_BINARY_DIR[]{"@elastix_BINARY_DIR@"};

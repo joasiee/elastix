@@ -4,6 +4,9 @@
 #include "itkImage.h"
 #include "itkImageFileWriter.h"
 #include "itkSpatialObjectToImageFilter.h"
+#include "elx_config.h"
+
+constexpr char SceneId[]{ "01" };
 
 constexpr unsigned int Dimension = 3;
 
@@ -34,13 +37,28 @@ main(int, char *[])
   // Get the two images
   ImageType::Pointer fixedImage = ImageType::New();
   ImageType::Pointer movingImage = ImageType::New();
+  std::string        fixedPath;
+  std::string        movingPath;
 
   CreateFixedImage(fixedImage);
   CreateMovingImage(movingImage);
 
+  {
+    std::ostringstream oss;
+    oss << elastix_BINARY_DIR << "/Scenes/" << SceneId << "_Fixed.mhd";
+    fixedPath = oss.str();
+  }
+
+    {
+    std::ostringstream oss;
+    oss << elastix_BINARY_DIR << "/Scenes/" << SceneId << "_Moving.mhd";
+    movingPath = oss.str();
+  }
+
+
   // Write the two synthetic inputs
-  itk::WriteImage(fixedImage, "../Scenes/01_Fixed.mhd");
-  itk::WriteImage(movingImage, "../Scenes/01_Moving.mhd");
+  itk::WriteImage(fixedImage, fixedPath);
+  itk::WriteImage(movingImage, movingPath);
 
   return EXIT_SUCCESS;
 }

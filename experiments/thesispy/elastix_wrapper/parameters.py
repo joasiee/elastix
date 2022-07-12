@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 
 import json
+import logging
 from math import ceil
 import os
 import time
@@ -19,6 +20,8 @@ INSTANCES_SRC = Path(os.environ.get("INSTANCES_SRC"))
 
 with INSTANCE_CONFIG_PATH.open() as f:
     INSTANCES_CONFIG = json.loads(f.read())
+
+logger = logging.getLogger("Parameters")
 
 
 class Collection(str, Enum):
@@ -173,15 +176,12 @@ class Parameters:
         if not isinstance(self["MeshSize"], List):
             self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
 
-        if "GridSpacingSchedule" not in self.params or not self["GridSpacingSchedule"]:
+        if not self["GridSpacingSchedule"]:
             self["GridSpacingSchedule"] = [
                 1 for _ in range(self["NumberOfResolutions"])
             ]
 
-        if (
-            "ImagePyramidSchedule" not in self.params
-            or not self["ImagePyramidSchedule"]
-        ):
+        if not self["ImagePyramidSchedule"]:
             self["ImagePyramidSchedule"] = [
                 2**n
                 for n in range(self["NumberOfResolutions"] - 1, -1, -1)
@@ -229,35 +229,40 @@ class Parameters:
             raise Exception("Unknown how to extract dimensions from filetype.")
 
     def set_paths(self):
-        if "Collection" in self.params and "Instance" in self.params:
-            collection = self["Collection"]
-            instance = self["Instance"]
-            extension = INSTANCES_CONFIG[collection]["extension"]
-            folder = INSTANCES_CONFIG[collection]["folder"]
-            fixed = f"{instance:02}_Fixed.{extension}"
-            moving = f"{instance:02}_Moving.{extension}"
+        if not self["Collection"] or not self["Instance"]:
+            logger.info("Collection and/or instance not set yet, can't determine paths.")
+            return self
+        
+        collection = self["Collection"]
+        instance = self["Instance"]
+        extension = INSTANCES_CONFIG[collection]["extension"]
+        folder = INSTANCES_CONFIG[collection]["folder"]
+        fixed = f"{instance:02}_Fixed.{extension}"
+        moving = f"{instance:02}_Moving.{extension}"
 
-            self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
-            self.moving_path = INSTANCES_SRC / folder / "scans" / moving
-            
-            self.fixedmask_path = None
-            if INSTANCES_CONFIG[collection]["masks"]:
-                self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
-            if INSTANCES_CONFIG[collection]["landmarks"]:
-                self.compute_tre = True
-                self.lms_fixed_path = (
-                    INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
-                )
-                self.lms_moving_path = (
-                    INSTANCES_SRC / folder / "landmarks" / f"{moving.split('.')[0]}.txt"
-                )
-            else:
-                self.compute_tre = False
+        self.fixed_path = INSTANCES_SRC / folder / "scans" / fixed
+        self.moving_path = INSTANCES_SRC / folder / "scans" / moving
+
+        self.fixedmask_path = None
+        if INSTANCES_CONFIG[collection]["masks"]:
+            self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
+        if INSTANCES_CONFIG[collection]["landmarks"]:
+            self.compute_tre = True
+            self.lms_fixed_path = (
+                INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
+            )
+            self.lms_moving_path = (
+                INSTANCES_SRC / folder / "landmarks" / f"{moving.split('.')[0]}.txt"
+            )
+        else:
+            self.compute_tre = False
 
         return self
 
     def __getitem__(self, key) -> Any:
-        return self.params[key]
+        if key in self.params:
+            return self.params[key]
+        return False
 
     def __setitem__(self, key, value) -> None:
         self.params[key] = value

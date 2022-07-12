@@ -70,6 +70,9 @@ def run(
 
     logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
 
+    if params["WriteResultImage"]:
+        execute_visualize(out_dir)
+
 
 def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Path, collection: Collection):
     params_file = out_dir / "TransformParameters.0.txt"
@@ -148,14 +151,28 @@ def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
     ]
     subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
+def execute_visualize(out_dir: Path):
+    visualizers = ["vv", "mitk", "slicer"]
+    visualizer = None
+    for vis in visualizers:
+        if not subprocess.run(["command", "-v", vis]).returncode:
+            visualizer = vis
+            break
+    
+    if visualizer:
+        subprocess.run(
+            [visualizer, str((out_dir / "result.0.mhd").resolve())],
+            cwd=str(out_dir.resolve())
+        )
+
 
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, seed=1)
         .gomea(GOMEAType.GOMEA_CP)
-        .stopping_criteria(100)
+        .stopping_criteria(20)
         .debug()
         .args({"ResampleInterpolator": "FinalLinearInterpolator"})
-        .instance(Collection.SYNTHETIC, 1)
+        .instance(Collection.SYNTHETIC, 2)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)
