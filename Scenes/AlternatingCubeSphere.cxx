@@ -11,11 +11,11 @@ constexpr unsigned int Dimension = 3;
 
 constexpr int Padding = 5;
 constexpr int CubeSizeMoving = 19;
-constexpr int CubeSizeFixed = 0.8f * CubeSizeMoving;
+constexpr int CubeSizeFixed = 0.6f * CubeSizeMoving;
 constexpr int ImageSize = CubeSizeMoving + 2 * Padding;
 
 constexpr int SphereCenter = CubeSizeMoving / 2.0f + Padding;
-constexpr int SphereRadiusMoving = 0.7f * CubeSizeMoving / 2.0f;
+constexpr int SphereRadiusMoving = CubeSizeFixed / 2.0f;
 constexpr int SphereRadiusFixed = 1.3f * CubeSizeMoving / 2.0f;
 
 constexpr int CubeIntensity = 200;
@@ -310,7 +310,7 @@ WriteLandmarks()
   }
 
   //  cube
-  low = Padding;
+  low = Padding + (CubeSizeMoving - CubeSizeFixed) / 2.0f;
   high = low + CubeSizeFixed - 1;
 
   for (int i = 0; i < 6; ++i)
