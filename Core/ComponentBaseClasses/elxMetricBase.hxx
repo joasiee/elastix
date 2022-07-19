@@ -173,7 +173,8 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
     this->m_Configuration->ReadParameter(samplingPercentage, "SamplingPercentage", this->GetComponentLabel(), level, 0);
     thisAsAdvanced->SetSamplingPercentage(samplingPercentage);
 
-    this->m_Configuration->ReadParameter(m_WriteSamplesEveryIteration, "WriteSamplesEveryIteration", "", level, 0, true);
+    this->m_Configuration->ReadParameter(
+      m_WriteSamplesEveryIteration, "WriteSamplesEveryIteration", "", level, 0, true);
 
     if (m_WriteSamplesEveryIteration)
     {
@@ -225,17 +226,19 @@ void
 MetricBase<TElastix>::WriteSamplesOfIteration() const
 {
   const AdvancedMetricType * thisAsAdvanced = dynamic_cast<const AdvancedMetricType *>(this);
+  if (thisAsAdvanced->GetUseImageSampler())
+  {
+    const unsigned int itNr = this->m_Elastix->GetIterationCounter();
+    std::ofstream      outFile;
+    std::ostringstream makeFileName("");
+    makeFileName << this->m_SamplesOutDir << itNr << ".dat";
+    std::string fileName = makeFileName.str();
+    outFile.open(fileName.c_str());
 
-  const unsigned int itNr = this->m_Elastix->GetIterationCounter();
-  std::ofstream      outFile;
-  std::ostringstream makeFileName("");
-  makeFileName << this->m_SamplesOutDir << itNr << ".dat";
-  std::string fileName = makeFileName.str();
-  outFile.open(fileName.c_str());
+    thisAsAdvanced->WriteSamplesOfIteration(outFile);
 
-  thisAsAdvanced->WriteSamplesOfIteration(outFile);
-
-  outFile.close();
+    outFile.close();
+  }
 }
 
 
