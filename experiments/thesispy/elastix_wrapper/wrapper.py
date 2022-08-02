@@ -168,9 +168,9 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, seed=1)
-        .gomea(GOMEAType.GOMEA_CP)
-        .stopping_criteria(20)
+        Parameters.from_base(mesh_size=4, seed=1)
+        .asgd()
+        .stopping_criteria(1000)
         .debug()
         .args({"ResampleInterpolator": "FinalLinearInterpolator"})
         .instance(Collection.SYNTHETIC, 2)

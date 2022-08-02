@@ -23,7 +23,6 @@ def pd_pop_experiment():
 
 
 def gridsizes():
-    # for gm in GOMEAType:
     for gridsize in [12]:
         for seed in range(5):
             params = (
@@ -118,10 +117,22 @@ def subsampling_percentage():
 
                 yield params
 
+def pareto_front():
+    for seed in range(10):
+        for weight1 in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 5.0, 10.0]:
+            for gomea in [True, False]:
+                params = Parameters.from_base(mesh_size=4, seed=seed).multi_metric(weight1=weight1)
+                if gomea:
+                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=250)
+                else:
+                    params.asgd().stopping_criteria(iterations=10000)
+
+                yield params
+
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = subsampling_percentage
+    fn = pareto_front
 
-    for experiment in yield_experiments(Collection.LEARN, 1, fn.__name__, fn):
+    for experiment in yield_experiments(Collection.SYNTHETIC, 2, fn.__name__, fn):
         queue.push(experiment)
