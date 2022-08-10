@@ -798,6 +798,8 @@ void
 CombinationImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluation(const ParametersType & parameters,
                                                                                    int fosIndex) const
 {
+  this->BeforeThreadedInit(parameters);
+  
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     this->m_Metrics[i]->PreloadPartialEvaluation(parameters, fosIndex);

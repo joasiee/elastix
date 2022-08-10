@@ -14,7 +14,7 @@
 (BSplineInterpolationOrder 1)
 (FinalBSplineInterpolationOrder 3)
 (DefaultPixelValue 0)
-(Metric "TransformBendingEnergyPenaltyAnalytic") // TransformBendingEnergyPenaltyAnalytic
+(Metric "AdvancedMeanSquares") // TransformBendingEnergyPenaltyAnalytic
 (UseNormalization "true")
 (ImageSampler "Full")
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent

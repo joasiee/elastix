@@ -1175,9 +1175,9 @@ GOMEAOptimizer::costFunctionEvaluation(int population_index, int individual_inde
 
   obj_val = this->GetValue(populations[population_index][individual_index], fos_index, individual_index);
 
-  // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1, individual_index);
-  // if (abs(obj_val_full - obj_val) > 1e-5)
-  //   std::cout << "WTF\n";
+  MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1, individual_index);
+  if (abs(obj_val_full - obj_val) > 1e-5)
+    std::cout << "WTF\n";
 
   ++m_NumberOfEvaluations;
 }

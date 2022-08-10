@@ -5,10 +5,10 @@
 (FixedImagePyramid "FixedRecursiveImagePyramid" "FixedRecursiveImagePyramid")
 (MovingImagePyramid "MovingRecursiveImagePyramid" "MovingRecursiveImagePyramid")
 (Interpolator "LinearInterpolator" "LinearInterpolator")
-(Metric "AdvancedMeanSquares" "TransformBendingEnergyPenaltyAnalytic")
+(Metric "AdvancedMeanSquares" "TransformBendingEnergyPenalty")
 (Metric0Weight 1.0)
 (Metric1Weight 1.0)
-(Optimizer "AdaptiveStochasticGradientDescent") // AdaptiveStochasticGradientDescent
+(Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (ResampleInterpolator "FinalBSplineInterpolator")
 (FinalBSplineInterpolationOrder 3)
 (Resampler "DefaultResampler")
@@ -16,15 +16,14 @@
 (NumberOfResolutions 1)
 
 (FinalGridSpacingInVoxels 20 20)
-(BasePopulationSize 50)
+(BasePopulationSize 10)
 (HowToCombineTransforms "Compose")
 (UseDirectionCosines "true")
 
 (MaximumNumberOfIterations 5)
-//(PartialEvaluations "true")
-//(FosElementSize -6)
+(PartialEvaluations "true")
+(FosElementSize -6)
 
 (UseNormalization "true")
 (ImageSampler "Full" "Full")
-(NumberOfSpatialSamples 400)
 (DefaultPixelValue 0)
