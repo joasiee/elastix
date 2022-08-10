@@ -238,20 +238,18 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   return valid ? measure : NumericTraits<MeasureType>::max();
 } // end GetValue()
 
-
-/**
- * ******************* GetValuePartial *******************
- */
-
 template <class TFixedImage, class TMovingImage>
-typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
-                                                                           const int fosIndex) const
+Evaluation
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartial(
+  const TransformParametersType & parameters,
+  int                             fosIndex) const
 {
+  Evaluation result{ 2 };
+
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
   if (fosPoints.size() == 0)
-    return 0.0;
+    return result;
 
   const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
 
@@ -294,20 +292,25 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
     }
   }
 
-  const unsigned long totalSamples = this->GetNumberOfFixedImageSamples();
   const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
-
   if (fosIndex == -1)
   {
     const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
     this->m_MissedPixelsMean(pctMissed * 100.0);
   }
 
-  measure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
-  measure *= this->m_NormalizationFactor / static_cast<RealType>(totalSamples);
+  result[0] = measure * m_NormalizationFactor;
+  result[1] = numberOfPixelsCounted;
 
-  return measure;
-} // end GetValuePartial()
+  return result;
+}
+
+template <class TFixedImage, class TMovingImage>
+typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Evaluation & evaluation) const
+{  
+  return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : 0.0;
+}
 
 
 /**

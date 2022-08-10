@@ -32,7 +32,7 @@ template <class TFixedImage, class TScalarType>
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::TransformBendingEnergyPenaltyTermAnalytic()
 {
   this->m_RegularizationParameters.implementation = 'c';
-  this->m_RegularizationParameters.curvature_penalty = 0.005f;
+  this->m_RegularizationParameters.curvature_penalty = 0.1f;
 }
 
 template <class TFixedImage, class TScalarType>
@@ -81,22 +81,37 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(co
   this->m_BSplineRegularize.compute_score(
     &this->m_BsplineScore, &this->m_RegularizationParameters, &this->m_BsplineXform);
 
-  return static_cast<MeasureType>(this->m_BsplineScore.rmetric);
+  return static_cast<MeasureType>(this->m_BsplineScore.rmetric) / static_cast<RealType>(m_BsplineXform.num_knots);
 }
-
-/**
- * ******************* GetValuePartial *******************
- */
 
 template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
-                                                                              const int              fosIndex) const
+TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(const Evaluation & evaluation) const
 {
-  this->m_BsplineXform.coeff_ = parameters.data_block();
-  return this->m_BSplineRegularize.compute_score_analytic_omp_regions(
-    this->m_BSplinePointsRegionsNoMask[fosIndex + 1], &this->m_RegularizationParameters, &this->m_BSplineRegularize, &this->m_BsplineXform);
-} // end GetValuePartial()
+  return evaluation[0];
+}
+
+/**
+ * ******************* GetValue *******************
+ */
+
+template <class TFixedImage, class TScalarType>
+Evaluation
+TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValuePartial(const ParametersType & parameters,
+                                                                                     int fosIndex) const
+{
+  Evaluation result{ 1 };
+  m_BsplineXform.coeff_ = parameters.data_block();
+  result[0] =
+    m_BSplineRegularize.compute_score_analytic_omp_regions(this->m_BSplinePointsRegionsNoMask[fosIndex + 1],
+                                                                 &m_RegularizationParameters,
+                                                                 &m_BSplineRegularize,
+                                                                 &m_BsplineXform);
+
+  result[0] /= static_cast<RealType>(m_BsplineXform.num_knots);
+
+  return result;
+} // end GetValue()
 
 
 /**
@@ -141,9 +156,10 @@ template <class TFixedImage, class TScalarType>
 void
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::InitPartialEvaluations(int ** sets,
                                                                                             int *  set_length,
-                                                                                            int    length)
+                                                                                            int    length,
+                                                                                            int    pop_size)
 {
-  this->Superclass::InitPartialEvaluations(sets, set_length, length);
+  this->Superclass::InitPartialEvaluations(sets, set_length, length, pop_size);
   this->m_SubfunctionSamplers.clear();
 }
 

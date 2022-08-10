@@ -613,7 +613,8 @@ template <class TFixedImage, class TMovingImage>
 void
 CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets,
                                                                                  int *  set_length,
-                                                                                 int    length)
+                                                                                 int    length,
+                                                                                 int    pop_size)
 {
   /** Check if at least one (image)metric is provided */
   if (this->GetNumberOfMetrics() == 0)
@@ -625,7 +626,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations
   for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
   {
     SingleValuedCostFunctionType * costfunc = this->GetMetric(i);
-    costfunc->InitPartialEvaluations(sets, set_length, length);
+    costfunc->InitPartialEvaluations(sets, set_length, length, pop_size);
   }
 } // end InitPartialEvaluations()
 
@@ -738,7 +739,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 
   this->BeforeThreadedInit(parameters);
 
-/** Compute, store and combine all metric values. */
+  /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     /** Time the computation per metric. */
@@ -765,21 +766,22 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 template <class TFixedImage, class TMovingImage>
 typename CombinationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const ParametersType & parameters,
-                                                                   const int              fosIndex) const
+                                                                   int                    fosIndex,
+                                                                   int                    individualIndex) const
 {
   /** Initialise. */
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
   this->BeforeThreadedInit(parameters);
 
-/** Compute, store and combine all metric values. */
+  /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     itk::TimeProbe timer;
     timer.Start();
 
     /** Compute ... */
-    this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex);
+    this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex, individualIndex);
     timer.Stop();
     this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
 
@@ -790,6 +792,37 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   /** Return a value. */
   return measure;
 } // end GetValuePartial()
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluation(const ParametersType & parameters,
+                                                                                   int fosIndex) const
+{
+  for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
+  {
+    this->m_Metrics[i]->PreloadPartialEvaluation(parameters, fosIndex);
+  }
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::SavePartialEvaluation(int individualIndex)
+{
+  for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
+  {
+    this->m_Metrics[i]->SavePartialEvaluation(individualIndex);
+  }
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::CopyPartialEvaluation(int toCopy, int toChange)
+{
+  for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
+  {
+    this->m_Metrics[i]->CopyPartialEvaluation(toCopy, toChange);
+  }
+}
 
 
 /**

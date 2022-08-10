@@ -326,7 +326,21 @@ public:
   BeforeThreadedGetValueAndDerivative(const TransformParametersType & parameters) const;
 
   void
-  InitPartialEvaluations(int ** sets, int * set_length, int length) override;
+  InitPartialEvaluations(int ** sets, int * set_length, int length, int pop_size) override;
+
+  using Superclass::GetValue;
+
+  MeasureType
+  GetValue(const TransformParametersType & parameters, int fosIndex, int individualIndex) const override;
+
+  void
+  PreloadPartialEvaluation(const TransformParametersType & parameters, int fosIndex) const override;
+
+  void
+  SavePartialEvaluation(int individualIndex) override;
+
+  void
+  CopyPartialEvaluation(int toCopy, int toChange) override;
 
   void
   WriteSamplesOfIteration(std::ofstream & outFile) const;
@@ -385,6 +399,7 @@ protected:
   typedef typename ImageSampleContainerType::Element ImageSampleType;
   mutable ImageSamplerPointer                        m_ImageSampler{ nullptr };
   std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
+  std::vector<Evaluation>                            m_SolutionEvaluations;
   std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegions;
@@ -392,6 +407,7 @@ protected:
   std::vector<int>                                   m_BSplinePointOffsetMap;
   double                                             m_SamplingPercentage{ 0.05 };
   FOS                                                m_FOS{ 0 };
+  mutable Evaluation                                 m_PartialEvaluationHelper;
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };
@@ -660,13 +676,13 @@ private:
   ComputeFOSMapping();
 
   /** Private member variables. */
-  bool   m_UseImageSampler{ false };
-  bool   m_UseFixedImageLimiter{ false };
-  bool   m_UseMovingImageLimiter{ false };
-  bool   m_UseMovingImageDerivativeScales{ false };
-  bool   m_ScaleGradientWithRespectToMovingImageOrientation{ false };
-  bool   m_PartialEvaluations{ false };
-  double m_RequiredRatioOfValidSamples{ 0.25 };
+  bool           m_UseImageSampler{ false };
+  bool           m_UseFixedImageLimiter{ false };
+  bool           m_UseMovingImageLimiter{ false };
+  bool           m_UseMovingImageDerivativeScales{ false };
+  bool           m_ScaleGradientWithRespectToMovingImageOrientation{ false };
+  bool           m_PartialEvaluations{ false };
+  double         m_RequiredRatioOfValidSamples{ 0.25 };
   uint_least64_t m_IterationSeed;
 
 

@@ -14,17 +14,16 @@
 (BSplineInterpolationOrder 1)
 (FinalBSplineInterpolationOrder 3)
 (DefaultPixelValue 0)
-(Metric "AdvancedMeanSquares")
+(Metric "TransformBendingEnergyPenaltyAnalytic") // TransformBendingEnergyPenaltyAnalytic
 (UseNormalization "true")
 (ImageSampler "Full")
-(NumberOfSpatialSamples 400)
-(SamplingPercentage 0.05)
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
-(FinalGridSpacingInVoxels 15 15)
-(MaximumNumberOfIterations 5)
+(FinalGridSpacingInVoxels 10 10)
+(MaximumNumberOfIterations 10)
 
 (WriteSamplesEveryIteration "false")
 (WriteMeanPointsEveryIteration "false")
 
 (PartialEvaluations "true")
-(FosElementSize 1)
+(FosElementSize -6)
+(BasePopulationSize 10)

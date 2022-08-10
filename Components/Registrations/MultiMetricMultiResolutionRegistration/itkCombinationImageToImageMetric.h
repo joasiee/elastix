@@ -416,7 +416,7 @@ public:
   Initialize() override;
 
   void
-  InitPartialEvaluations(int ** sets, int * set_length, int length) override;
+  InitPartialEvaluations(int ** sets, int * set_length, int length, int pop_size) override;
 
   /**
    * Combine all sub metrics by adding them.
@@ -427,7 +427,16 @@ public:
   GetValue(const ParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const ParametersType & parameters, const int fosIndex) const override;
+  GetValue(const ParametersType & parameters, int fosIndex, int individualIndex) const override;
+
+  void
+  PreloadPartialEvaluation(const ParametersType & parameters, int fosIndex) const override;
+
+  void
+  SavePartialEvaluation(int individualIndex) override;
+
+  void
+  CopyPartialEvaluation(int toCopy, int toChange) override;
 
   /** The GetDerivative()-method. */
   void

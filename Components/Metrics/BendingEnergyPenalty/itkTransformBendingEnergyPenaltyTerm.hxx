@@ -119,14 +119,15 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
  */
 
 template <class TFixedImage, class TScalarType>
-typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const ParametersType & parameters,
-                                                                      const int              fosIndex) const
+Evaluation
+TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValuePartial(const ParametersType & parameters,
+                                                                             int                    fosIndex) const
 {
-  MeasureType measure = NumericTraits<MeasureType>::Zero;
+  Evaluation result{ 2 };
+  
   if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
   {
-    return measure;
+    return result;
   }
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
@@ -145,10 +146,13 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
   if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian() &&
       !this->m_AdvancedTransform->GetHasNonZeroJacobianOfSpatialHessian())
   {
-    return measure;
+    return result;
   }
 
   const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
+  MeasureType        measure = NumericTraits<MeasureType>::Zero;
+  double      numberOfPixelsCounted = 0.0;
+
 
   // iterate over these subfunction samplers and calculate mean squared diffs
   for (int i = 0; i < fosPoints.size(); ++i)
@@ -163,11 +167,9 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
     typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
     typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
 
-    unsigned long numberOfPixelsCounted = 0;
-    MeasureType   tmpMeasure = NumericTraits<MeasureType>::Zero;
 
 #ifdef ELASTIX_USE_OPENMP
-#  pragma omp parallel for reduction(+ : tmpMeasure, numberOfPixelsCounted) if (sampleContainerSize >= maxThreads)
+#  pragma omp parallel for reduction(+ : measure, numberOfPixelsCounted) if (sampleContainerSize >= maxThreads) private(spatialHessian, jacobianOfSpatialHessian, nonZeroJacobianIndices)
 #endif
     for (unsigned int i = 0; i < sampleContainerSize; ++i)
     {
@@ -195,16 +197,24 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
         /** Compute the contribution to the metric value of this point. */
         for (unsigned int k = 0; k < FixedImageDimension; ++k)
         {
-          tmpMeasure += vnl_math::sqr(A[k].frobenius_norm());
+          measure += vnl_math::sqr(A[k].frobenius_norm());
         }
       }
     }
-    tmpMeasure /= static_cast<RealType>(numberOfPixelsCounted);
-    measure += tmpMeasure;
   }
 
-  return measure;
+  result[0] = measure;
+  result[1] = numberOfPixelsCounted;
+
+  return result;
 } // end GetValuePartial()
+
+template <class TFixedImage, class TScalarType>
+typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
+TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Evaluation & evaluation) const
+{
+  return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : 0.0;
+}
 
 
 /**
@@ -692,7 +702,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::AfterThreadedGetVal
   else
   {
     const DerivativeValueType numPix = static_cast<DerivativeValueType>(this->m_NumberOfPixelsCounted);
-    const int spaceDimension = static_cast<int>(this->GetNumberOfParameters());
+    const int                 spaceDimension = static_cast<int>(this->GetNumberOfParameters());
 #  pragma omp parallel for
     for (int j = 0; j < spaceDimension; ++j)
     {

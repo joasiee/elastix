@@ -154,7 +154,7 @@ protected:
   StopConditionType m_StopCondition{ Unknown };
   unsigned int      m_NrOfParameters;
   unsigned int      m_ImageDimension;
-  bool m_SubSampling{ false };
+  bool              m_SubSampling{ false };
 
   typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
   mutable MeanAccumulator                          m_PdPctMean;
@@ -241,13 +241,9 @@ private:
   void
   evaluatePopulation(int population);
   void
-  costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val);
+  costFunctionEvaluation(const ParametersType & parameters, int individual_index, MeasureType & obj_val);
   void
-  costFunctionEvaluation(int           population_index,
-                         int           individual_index,
-                         int           fos_index,
-                         MeasureType * obj_val,
-                         MeasureType * obj_val_partial);
+  costFunctionEvaluation(int population_index, int individual_index, int fos_index, MeasureType & obj_val);
   void
   applyDistributionMultipliersToAllPopulations(void);
   void

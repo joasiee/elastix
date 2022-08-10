@@ -140,7 +140,10 @@ public:
   GetValue(const TransformParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const TransformParametersType & parameters, const int fosIndex) const override;
+  GetValue(const Evaluation & evaluation) const override;
+
+  Evaluation
+  GetValuePartial(const TransformParametersType & parameters, int fosIndex) const override;
 
   /** Get the derivatives of the match measure. */
   void
@@ -257,7 +260,7 @@ protected:
   CheckNumberOfSamples(unsigned long wanted, unsigned long found) const override;
 
   typedef accumulator_set<RealType, stats<tag::mean>> MeanAccumulator;
-  mutable MeanAccumulator                         m_MissedPixelsMean;
+  mutable MeanAccumulator                             m_MissedPixelsMean;
 
 private:
   AdvancedMeanSquaresImageToImageMetric(const Self &) = delete;

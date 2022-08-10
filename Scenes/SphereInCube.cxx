@@ -10,13 +10,13 @@ constexpr char SceneId[]{ "01" };
 
 constexpr unsigned int Dimension = 3;
 
-constexpr int Padding = 2;
-constexpr int CubeSize = 25;
+constexpr int Padding = 5;
+constexpr int CubeSize = 19;
 constexpr int ImageSize = CubeSize + 2 * Padding;
 
 constexpr int SphereCenter = CubeSize / 2.0f + Padding;
-constexpr int SphereRadiusMoving = 0.9f * CubeSize / 2.0f;
-constexpr int SphereRadiusFixed = SphereRadiusMoving / 2.0f;
+constexpr int SphereRadiusMoving = 0.8f * CubeSize / 2.0f;
+constexpr int SphereRadiusFixed = 0.5f * CubeSize / 2.0f;
 
 constexpr int CubeIntensity = 200;
 constexpr int SphereIntensity = 100;
@@ -29,6 +29,8 @@ using ImageType = itk::Image<PixelType, Dimension>;
 static void
 CreateFixedImage(ImageType::Pointer image);
 static void
+CreateFixedImageMask(ImageType::Pointer image);
+static void
 CreateMovingImage(ImageType::Pointer image);
 
 int
@@ -36,11 +38,14 @@ main(int, char *[])
 {
   // Get the two images
   ImageType::Pointer fixedImage = ImageType::New();
+  ImageType::Pointer fixedImageMask = ImageType::New();
   ImageType::Pointer movingImage = ImageType::New();
   std::string        fixedPath;
+  std::string        fixedMaskPath;
   std::string        movingPath;
 
   CreateFixedImage(fixedImage);
+  CreateFixedImageMask(fixedImageMask);
   CreateMovingImage(movingImage);
 
   {
@@ -49,7 +54,13 @@ main(int, char *[])
     fixedPath = oss.str();
   }
 
-    {
+  {
+    std::ostringstream oss;
+    oss << elastix_BINARY_DIR << "/Scenes/" << SceneId << "_FixedMask.mhd";
+    fixedMaskPath = oss.str();
+  }
+
+  {
     std::ostringstream oss;
     oss << elastix_BINARY_DIR << "/Scenes/" << SceneId << "_Moving.mhd";
     movingPath = oss.str();
@@ -58,6 +69,7 @@ main(int, char *[])
 
   // Write the two synthetic inputs
   itk::WriteImage(fixedImage, fixedPath);
+  itk::WriteImage(fixedImageMask, fixedMaskPath);
   itk::WriteImage(movingImage, movingPath);
 
   return EXIT_SUCCESS;
@@ -173,6 +185,49 @@ CreateFixedImage(ImageType::Pointer image)
   imageFilter->SetUseObjectValue(true);
 
   imageFilter->SetInput(sphere);
+  imageFilter->Update();
+  image->Graft(imageFilter->GetOutput());
+}
+
+void
+CreateFixedImageMask(ImageType::Pointer image)
+{
+  using SpatialObjectType = itk::SpatialObject<Dimension>;
+  using BoxType = itk::BoxSpatialObject<Dimension>;
+  using SpatialObjectToImageFilterType = itk::SpatialObjectToImageFilter<BoxType, ImageType>;
+
+  // image filter
+  SpatialObjectToImageFilterType::Pointer imageFilter = SpatialObjectToImageFilterType::New();
+
+  ImageType::SizeType size;
+  size.Fill(ImageSize);
+  imageFilter->SetSize(size);
+
+  ImageType::SpacingType spacing;
+  spacing.Fill(1);
+  imageFilter->SetSpacing(spacing);
+
+  // cube
+  BoxType::Pointer cube = BoxType::New();
+
+  BoxType::SizeType boxSize;
+  boxSize.Fill(CubeSize - 1);
+  cube->SetSizeInObjectSpace(boxSize);
+
+  BoxType::PointType boxPosition;
+  boxPosition.Fill(Padding);
+  cube->SetPositionInObjectSpace(boxPosition);
+
+  // image intensities
+  cube->SetDefaultInsideValue(1);
+  cube->SetDefaultOutsideValue(0);
+
+  cube->Update();
+
+  // write to image
+  imageFilter->SetUseObjectValue(true);
+
+  imageFilter->SetInput(cube);
   imageFilter->Update();
   image->Graft(imageFilter->GetOutput());
 }

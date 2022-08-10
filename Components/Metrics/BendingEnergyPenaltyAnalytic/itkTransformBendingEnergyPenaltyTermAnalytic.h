@@ -137,7 +137,10 @@ public:
   GetValue(const ParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const ParametersType & parameters, const int fosIndex) const override;
+  GetValue(const Evaluation & evaluation) const override;
+
+  Evaluation
+  GetValuePartial(const ParametersType & parameters, int fosIndex) const override;
 
   /** Get the penalty term derivative. */
   void
@@ -149,7 +152,7 @@ public:
                         DerivativeType &       derivative) const override;
 
   void
-  InitPartialEvaluations(int ** sets, int * set_length, int length) override;
+  InitPartialEvaluations(int ** sets, int * set_length, int length, int pop_size) override;
 
 protected:
   /** Typedefs for indices and points. */

@@ -1016,9 +1016,56 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsi
   return true;
 } // end CheckNumberOfSamples()
 
+/**
+ * ******************* GetValuePartial *******************
+ */
+
+template <class TFixedImage, class TMovingImage>
+typename AdvancedImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
+                                                                int                             fosIndex,
+                                                                int                             individualIndex) const
+{
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
+
+  Evaluation result = fosIndex == -1 ? this->GetValuePartial(parameters, fosIndex)
+                                     : m_SolutionEvaluations[individualIndex] - m_PartialEvaluationHelper +
+                                         this->GetValuePartial(parameters, fosIndex);
+  measure = this->GetValue(result);
+  m_PartialEvaluationHelper = std::move(result);
+
+  return measure;
+} // end GetValue()
+
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets, int * set_length, int length)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluation(
+  const TransformParametersType & parameters,
+  int                             fosIndex) const
+{
+  m_PartialEvaluationHelper = this->GetValuePartial(parameters, fosIndex);
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::SavePartialEvaluation(int individualIndex)
+{
+  m_SolutionEvaluations[individualIndex] = std::move(m_PartialEvaluationHelper);
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CopyPartialEvaluation(int toCopy, int toChange)
+{
+  m_SolutionEvaluations[toChange] = m_SolutionEvaluations[toCopy];
+}
+
+template <class TFixedImage, class TMovingImage>
+void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets,
+                                                                              int *  set_length,
+                                                                              int    length,
+                                                                              int    pop_size)
 {
   int i;
   using ImageFullSamplerType = ImageFullSampler<FixedImageType>;
@@ -1027,6 +1074,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
 
   int           n_regions = this->m_BSplineFOSRegions.size();
   unsigned long totalSamples = 0L;
+
+  this->m_SolutionEvaluations.resize(pop_size);
 
   this->m_SubfunctionSamplers.clear();
   this->m_SubfunctionSamplers.reserve(n_regions);

@@ -347,7 +347,8 @@ GOMEAOptimizer::initializeNewPopulation()
   {
     this->m_CostFunction->InitPartialEvaluations(linkage_model[number_of_populations]->sets,
                                                  linkage_model[number_of_populations]->set_length,
-                                                 linkage_model[number_of_populations]->length);
+                                                 linkage_model[number_of_populations]->length,
+                                                 population_sizes[0]);
   }
 
   this->initializePopulationAndFitnessValues(number_of_populations);
@@ -361,7 +362,6 @@ GOMEAOptimizer::initializeNewPopulation()
   this->computeRanksForOnePopulation(number_of_populations);
 
   ++number_of_populations;
-  this->Modified();
 }
 
 /**
@@ -451,10 +451,11 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     individual_NIS[population_index][j] = 0;
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
-      populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * 0.1 * random1DNormalUnit();
+      populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * 0.218 * random1DNormalUnit();
     }
 
-    this->costFunctionEvaluation(&populations[population_index][j], &objective_values[population_index][j]);
+    this->costFunctionEvaluation(populations[population_index][j], j, objective_values[population_index][j]);
+    this->SavePartialEvaluation(j);
   }
 }
 
@@ -1150,39 +1151,35 @@ GOMEAOptimizer::evaluatePopulation(int population)
   int i;
 
   for (i = 0; i < population_sizes[population]; ++i)
-    this->costFunctionEvaluation(&populations[population][i], &objective_values[population][i]);
+  {
+    this->costFunctionEvaluation(populations[population][i], i, objective_values[population][i]);
+    this->SavePartialEvaluation(i);
+  }
 }
 
 void
-GOMEAOptimizer::costFunctionEvaluation(ParametersType * parameters, MeasureType * obj_val)
+GOMEAOptimizer::costFunctionEvaluation(const ParametersType & parameters, int individual_index, MeasureType & obj_val)
 {
-  *obj_val = this->m_PartialEvaluations ? this->GetValue(*parameters, -1) : this->GetValue(*parameters);
+  obj_val = this->m_PartialEvaluations ? this->GetValue(parameters, -1, individual_index) : this->GetValue(parameters);
   ++m_NumberOfEvaluations;
-  this->Modified();
 }
 
 void
-GOMEAOptimizer::costFunctionEvaluation(int           population_index,
-                                       int           individual_index,
-                                       int           fos_index,
-                                       MeasureType * obj_val,
-                                       MeasureType * obj_val_partial)
+GOMEAOptimizer::costFunctionEvaluation(int population_index, int individual_index, int fos_index, MeasureType & obj_val)
 {
   if (!(this->m_PartialEvaluations))
   {
-    this->costFunctionEvaluation(&populations[population_index][individual_index], obj_val);
+    this->costFunctionEvaluation(populations[population_index][individual_index], individual_index, obj_val);
     return;
   }
 
-  MeasureType obj_val_new = this->GetValue(populations[population_index][individual_index], fos_index);
-  *obj_val = objective_values[population_index][individual_index] - *obj_val_partial + obj_val_new;
+  obj_val = this->GetValue(populations[population_index][individual_index], fos_index, individual_index);
 
-  // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1);
-  // if (abs(obj_val_full - *obj_val) > 1e-3)
+  // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1, individual_index);
+  // if (abs(obj_val_full - obj_val) > 1e-5)
   //   std::cout << "WTF\n";
 
   ++m_NumberOfEvaluations;
-  this->Modified();
 }
 
 /**
@@ -1372,21 +1369,22 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
                                                   short apply_AMS)
 {
   int      j, m, im, *indices, num_indices, *touched_indices, num_touched_indices;
-  double * individual_backup, obj_val, obj_val_partial, delta_AMS, shrink_factor;
-  short    improvement, any_improvement, out_of_range;
+  double * individual_backup, obj_val, delta_AMS, shrink_factor;
+  short    improvement, out_of_range;
   VectorXd result;
 
   delta_AMS = 2.0;
   improvement = 0;
-  any_improvement = 0;
   num_indices = linkage_model[population_index]->set_length[FOS_index];
   indices = linkage_model[population_index]->sets[FOS_index];
   num_touched_indices = num_indices;
   touched_indices = indices;
   individual_backup = (double *)Malloc(num_touched_indices * sizeof(double));
 
-  obj_val_partial =
-    m_PartialEvaluations ? this->GetValue(populations[population_index][individual_index], FOS_index) : 0.0;
+  if (m_PartialEvaluations)
+  {
+    this->PreloadPartialEvaluation(populations[population_index][individual_index], FOS_index);
+  }
 
   for (j = 0; j < num_touched_indices; j++)
     individual_backup[j] = populations[population_index][individual_index][touched_indices[j]];
@@ -1411,26 +1409,21 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
     }
   }
 
-  this->costFunctionEvaluation(population_index, individual_index, FOS_index, &obj_val, &obj_val_partial);
+  this->costFunctionEvaluation(population_index, individual_index, FOS_index, obj_val);
   improvement = obj_val < objective_values[population_index][individual_index];
-  if (improvement)
+  if (improvement || randomRealUniform01() < 0.05)
   {
-    any_improvement = 1;
     objective_values[population_index][individual_index] = obj_val;
+    this->SavePartialEvaluation(individual_index);
   }
-
-  if (!any_improvement && randomRealUniform01() >= 0.05)
+  else
   {
     for (j = 0; j < num_touched_indices; j++)
       populations[population_index][individual_index][touched_indices[j]] = individual_backup[j];
   }
-  else
-  {
-    objective_values[population_index][individual_index] = obj_val;
-  }
 
   free(individual_backup);
-  return (any_improvement);
+  return (improvement);
 }
 
 short
@@ -1452,10 +1445,11 @@ GOMEAOptimizer::applyAMS(int population_index, int individual_index)
                         mean_shift_vector[population_index][m]; //*distribution_multipliers[population_index][FOS_index]
   }
 
-  this->costFunctionEvaluation(&solution_AMS, &obj_val);
+  this->costFunctionEvaluation(solution_AMS, individual_index, obj_val);
   if (randomRealUniform01() < 0.05 || obj_val < objective_values[population_index][individual_index])
   {
     objective_values[population_index][individual_index] = obj_val;
+    this->SavePartialEvaluation(individual_index);
     for (m = 0; (unsigned)m < m_NrOfParameters; m++)
       populations[population_index][individual_index][m] = solution_AMS[m];
     improvement = 1;
@@ -1467,7 +1461,7 @@ void
 GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_index, int donor_index)
 {
   int     i, io, j, *order, *touched_indices, num_touched_indices;
-  double *FI_backup, obj_val, obj_val_partial, alpha;
+  double *FI_backup, obj_val, alpha;
   short   improvement;
 
   improvement = 0;
@@ -1480,7 +1474,10 @@ GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_ind
     for (io = 0; io < linkage_model[population_index]->length; io++)
     {
       i = order[io];
-      obj_val_partial = m_PartialEvaluations ? this->GetValue(populations[population_index][individual_index], i) : 0.0;
+      if (m_PartialEvaluations)
+      {
+        this->PreloadPartialEvaluation(populations[population_index][individual_index], i);
+      }
       touched_indices = linkage_model[population_index]->sets[i];
       num_touched_indices = linkage_model[population_index]->set_length[i];
       FI_backup = (double *)Malloc(num_touched_indices * sizeof(double));
@@ -1491,7 +1488,7 @@ GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_ind
           alpha * populations[population_index][individual_index][touched_indices[j]] +
           (1 - alpha) * populations[population_index][donor_index][touched_indices[j]];
       }
-      this->costFunctionEvaluation(population_index, individual_index, i, &obj_val, &obj_val_partial);
+      this->costFunctionEvaluation(population_index, individual_index, i, obj_val);
       improvement = obj_val < objective_values[population_index][individual_index];
       // printf("alpha=%.1e\tf=%.30e\n",alpha,obj_val);
 
@@ -1501,6 +1498,7 @@ GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_ind
       else
       {
         objective_values[population_index][individual_index] = obj_val;
+        this->SavePartialEvaluation(individual_index);
       }
 
       free(FI_backup);
@@ -1522,6 +1520,7 @@ GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_ind
     for (i = 0; (unsigned)i < m_NrOfParameters; i++)
       populations[population_index][individual_index][i] = populations[population_index][donor_index][i];
     objective_values[population_index][individual_index] = objective_values[population_index][donor_index];
+    this->CopyPartialEvaluation(donor_index, individual_index);
   }
 }
 
@@ -1665,8 +1664,7 @@ void
 GOMEAOptimizer::UpdatePosition()
 {
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
-  this->m_Value =
-    m_PartialEvaluations ? this->GetValue(this->GetCurrentPosition(), -1) : this->GetValue(this->GetCurrentPosition());
+  this->costFunctionEvaluation(this->GetCurrentPosition(), 0, this->m_Value);
   // this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]); // TODO ?
 
   m_CurrentIteration++;
