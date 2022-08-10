@@ -1050,7 +1050,8 @@ template <class TFixedImage, class TMovingImage>
 void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::SavePartialEvaluation(int individualIndex)
 {
-  m_SolutionEvaluations[individualIndex] = std::move(m_PartialEvaluationHelper);
+  if (m_PartialEvaluations)
+    m_SolutionEvaluations[individualIndex] = std::move(m_PartialEvaluationHelper);
 }
 
 template <class TFixedImage, class TMovingImage>
