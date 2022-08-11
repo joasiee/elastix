@@ -127,6 +127,12 @@ public:
   void
   BeforeEachResolution() override;
 
+  void
+  AfterEachIteration(void) override;
+
+  void
+  BeforeRegistration(void) override;
+
   /** Sets up a timer to measure the initialization time and
    * calls the Superclass' implementation.
    */

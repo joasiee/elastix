@@ -20,6 +20,11 @@
 
 #include "itkAdvancedImageToImageMetric.h"
 
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+using namespace boost::accumulators;
+
 namespace itk
 {
 /** \class AdvancedNormalizedCorrelationImageToImageMetric
@@ -158,6 +163,12 @@ public:
   MeasureType
   GetValue(const TransformParametersType & parameters) const override;
 
+  MeasureType
+  GetValue(const Evaluation & evaluation) const override;
+
+  Evaluation
+  GetValuePartial(const TransformParametersType & parameters, int fosIndex) const override;
+
   /** Get the derivatives of the match measure. */
   void
   GetDerivative(const TransformParametersType & parameters, DerivativeType & derivative) const override;
@@ -234,6 +245,9 @@ protected:
   static ITK_THREAD_RETURN_FUNCTION_CALL_CONVENTION
   AccumulateDerivativesThreaderCallback(void * arg);
 
+  typedef accumulator_set<RealType, stats<tag::mean>> MeanAccumulator;
+  mutable MeanAccumulator                             m_MissedPixelsMean;
+
 private:
   AdvancedNormalizedCorrelationImageToImageMetric(const Self &) = delete;
   void
@@ -277,6 +291,10 @@ private:
                     AlignedCorrelationGetValueAndDerivativePerThreadStruct);
   mutable AlignedCorrelationGetValueAndDerivativePerThreadStruct * m_CorrelationGetValueAndDerivativePerThreadVariables;
   mutable ThreadIdType m_CorrelationGetValueAndDerivativePerThreadVariablesSize;
+
+  enum IntermediateResults {
+    SFF, SMM, SFM, SF, SM, PIXELS
+  };
 };
 
 } // end namespace itk

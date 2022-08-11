@@ -268,6 +268,10 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   /** Check if enough samples were valid. */
   this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
 
+  const unsigned long numberOfPixelsMissed = sampleContainer->Size() - this->m_NumberOfPixelsCounted;
+  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainer->Size());
+  this->m_MissedPixelsMean(pctMissed * 100.0);
+
   /** If SubtractMean, then subtract things from sff, smm and sfm. */
   const RealType N = static_cast<RealType>(this->m_NumberOfPixelsCounted);
   if (this->m_SubtractMean && this->m_NumberOfPixelsCounted > 0)
@@ -295,6 +299,109 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
 
 } // end GetValue()
 
+template <class TFixedImage, class TMovingImage>
+auto
+AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
+  const Evaluation & evaluation) const -> MeasureType
+{
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
+
+  AccumulateType sff = evaluation[SFF];
+  AccumulateType smm = evaluation[SMM];
+  AccumulateType sfm = evaluation[SFM];
+
+  if (this->m_SubtractMean && evaluation[PIXELS] > 0)
+  {
+    sff -= (evaluation[SF] * evaluation[SF] / evaluation[PIXELS]);
+    smm -= (evaluation[SM] * evaluation[SM] / evaluation[PIXELS]);
+    sfm -= (evaluation[SF] * evaluation[SM] / evaluation[PIXELS]);
+  }
+
+  /** The denominator of the NC. */
+  const RealType denom = -1.0 * std::sqrt(sff * smm);
+
+  /** Calculate the measure value. */
+  if (evaluation[PIXELS] > 0 && denom < -1e-14)
+  {
+    measure = sfm / denom;
+  }
+  else
+  {
+    measure = NumericTraits<MeasureType>::Zero;
+  }
+
+  return measure;
+}
+
+template <class TFixedImage, class TMovingImage>
+auto
+AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartial(
+  const TransformParametersType & parameters,
+  int                             fosIndex) const -> Evaluation
+{
+  Evaluation result{ 6 };
+  this->BeforeThreadedGetValueAndDerivative(parameters);
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
+  if (fosPoints.size() == 0)
+    return result;
+
+  const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
+  unsigned long      sumNrPixels = 0L;
+
+  /** Create variables to store intermediate results. */
+  AccumulateType & sff = result[SFF];
+  AccumulateType & smm = result[SMM];
+  AccumulateType & sfm = result[SFM];
+  AccumulateType & sf = result[SF];
+  AccumulateType & sm = result[SM];
+  AccumulateType & pixels = result[PIXELS];
+
+  for (int i = 0; i < fosPoints.size(); ++i)
+  {
+    this->m_SubfunctionSamplers[fosPoints[i]]->Update();
+    ImageSampleContainerType & sampleContainer = *(this->m_SubfunctionSamplers[fosPoints[i]]->GetOutput());
+    const unsigned long        sampleContainerSize = sampleContainer.Size();
+    sumNrPixels += sampleContainerSize;
+
+    typename ImageSampleContainerType::ConstIterator threader_fiter;
+    typename ImageSampleContainerType::ConstIterator threader_fbegin = sampleContainer.Begin();
+    typename ImageSampleContainerType::ConstIterator threader_fend = sampleContainer.End();
+
+#pragma omp parallel for reduction(+ : sff, smm, sfm, sf, sm, pixels) if (sampleContainerSize >= maxThreads)
+    for (unsigned int i = 0; i < sampleContainerSize; ++i)
+    {
+      const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
+      RealType                    movingImageValue;
+      const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
+      const RealType &            fixedImageValue = static_cast<RealType>(sampleContainer[i].m_ImageValue);
+
+      if (this->IsInsideMovingMask(mappedPoint) &&
+          this->Superclass::EvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr))
+      {
+        sff += fixedImageValue * fixedImageValue;
+        smm += movingImageValue * movingImageValue;
+        sfm += fixedImageValue * movingImageValue;
+        if (this->m_SubtractMean)
+        {
+          sf += fixedImageValue;
+          sm += movingImageValue;
+        }
+        ++pixels;
+      }
+    }
+  }
+
+  if (fosIndex == -1)
+  {
+    this->CheckNumberOfSamples(sumNrPixels, pixels);
+  }
+
+  const unsigned long numberOfPixelsMissed = sumNrPixels - pixels;
+  const double        pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
+  this->m_MissedPixelsMean(pctMissed * 100.0);
+
+  return result;
+}
 
 /**
  * ******************* GetDerivative *******************
@@ -661,6 +768,10 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Afte
   /** Check if enough samples were valid. */
   ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
   this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
+
+  const unsigned long numberOfPixelsMissed = sampleContainer->Size() - this->m_NumberOfPixelsCounted;
+  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainer->Size());
+  this->m_MissedPixelsMean(pctMissed * 100.0);
 
   /** Accumulate values. */
   const AccumulateType zero = NumericTraits<AccumulateType>::Zero;

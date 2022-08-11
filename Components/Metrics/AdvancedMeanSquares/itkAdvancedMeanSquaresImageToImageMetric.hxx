@@ -292,12 +292,14 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
     }
   }
 
-  const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
   if (fosIndex == -1)
   {
-    const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
-    this->m_MissedPixelsMean(pctMissed * 100.0);
+    this->CheckNumberOfSamples(sumNrPixels, numberOfPixelsCounted);
   }
+
+  const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
+  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
+  this->m_MissedPixelsMean(pctMissed * 100.0);
 
   result[0] = measure * m_NormalizationFactor;
   result[1] = numberOfPixelsCounted;
@@ -308,7 +310,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
 template <class TFixedImage, class TMovingImage>
 typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Evaluation & evaluation) const
-{  
+{
   return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : 0.0;
 }
 
