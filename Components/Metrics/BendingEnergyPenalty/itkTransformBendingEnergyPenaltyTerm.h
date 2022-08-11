@@ -131,9 +131,9 @@ public:
   GetValue(const ParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const Evaluation & evaluation) const override;
+  GetValue(const IntermediateResults & evaluation) const override;
 
-  Evaluation
+  IntermediateResults
   GetValuePartial(const ParametersType & parameters, int fosIndex) const override;
 
   /** Get the penalty term derivative. */

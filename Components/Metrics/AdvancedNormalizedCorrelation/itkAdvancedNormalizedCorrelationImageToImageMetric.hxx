@@ -302,7 +302,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
 template <class TFixedImage, class TMovingImage>
 auto
 AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const Evaluation & evaluation) const -> MeasureType
+  const IntermediateResults & evaluation) const -> MeasureType
 {
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
@@ -337,9 +337,9 @@ template <class TFixedImage, class TMovingImage>
 auto
 AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartial(
   const TransformParametersType & parameters,
-  int                             fosIndex) const -> Evaluation
+  int                             fosIndex) const -> IntermediateResults
 {
-  Evaluation result{ 6 };
+  IntermediateResults result{ 6 };
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
   if (fosPoints.size() == 0)

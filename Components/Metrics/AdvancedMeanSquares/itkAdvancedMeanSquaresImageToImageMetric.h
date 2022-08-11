@@ -140,9 +140,9 @@ public:
   GetValue(const TransformParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const Evaluation & evaluation) const override;
+  GetValue(const IntermediateResults & evaluation) const override;
 
-  Evaluation
+  IntermediateResults
   GetValuePartial(const TransformParametersType & parameters, int fosIndex) const override;
 
   /** Get the derivatives of the match measure. */

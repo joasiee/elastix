@@ -86,7 +86,7 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(co
 
 template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(const Evaluation & evaluation) const
+TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(const IntermediateResults & evaluation) const
 {
   return evaluation[0];
 }
@@ -96,11 +96,11 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(co
  */
 
 template <class TFixedImage, class TScalarType>
-Evaluation
+IntermediateResults
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValuePartial(const ParametersType & parameters,
                                                                                      int fosIndex) const
 {
-  Evaluation result{ 1 };
+  IntermediateResults result{ 1 };
   m_BsplineXform.coeff_ = parameters.data_block();
   result[0] =
     m_BSplineRegularize.compute_score_analytic_omp_regions(this->m_BSplinePointsRegionsNoMask[fosIndex + 1],

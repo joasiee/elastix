@@ -1028,7 +1028,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
 {
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
-  Evaluation result = fosIndex == -1 ? this->GetValuePartial(parameters, fosIndex)
+  IntermediateResults result = fosIndex == -1 ? this->GetValuePartial(parameters, fosIndex)
                                      : m_SolutionEvaluations[individualIndex] - m_PartialEvaluationHelper +
                                          this->GetValuePartial(parameters, fosIndex);
   measure = this->GetValue(result);

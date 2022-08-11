@@ -119,11 +119,11 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
  */
 
 template <class TFixedImage, class TScalarType>
-Evaluation
+IntermediateResults
 TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValuePartial(const ParametersType & parameters,
                                                                              int                    fosIndex) const
 {
-  Evaluation result{ 2 };
+  IntermediateResults result{ 2 };
   
   if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
   {
@@ -211,7 +211,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValuePartial(con
 
 template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Evaluation & evaluation) const
+TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const IntermediateResults & evaluation) const
 {
   return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : 0.0;
 }

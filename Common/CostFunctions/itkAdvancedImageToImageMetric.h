@@ -399,7 +399,7 @@ protected:
   typedef typename ImageSampleContainerType::Element ImageSampleType;
   mutable ImageSamplerPointer                        m_ImageSampler{ nullptr };
   std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
-  std::vector<Evaluation>                            m_SolutionEvaluations;
+  std::vector<IntermediateResults>                            m_SolutionEvaluations;
   std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegions;
@@ -407,7 +407,7 @@ protected:
   std::vector<int>                                   m_BSplinePointOffsetMap;
   double                                             m_SamplingPercentage{ 0.05 };
   FOS                                                m_FOS{ 0 };
-  mutable Evaluation                                 m_PartialEvaluationHelper;
+  mutable IntermediateResults                                 m_PartialEvaluationHelper;
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };

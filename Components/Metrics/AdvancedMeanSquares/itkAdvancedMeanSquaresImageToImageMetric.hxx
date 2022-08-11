@@ -239,12 +239,12 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 } // end GetValue()
 
 template <class TFixedImage, class TMovingImage>
-Evaluation
+IntermediateResults
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartial(
   const TransformParametersType & parameters,
   int                             fosIndex) const
 {
-  Evaluation result{ 2 };
+  IntermediateResults result{ 2 };
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
@@ -309,7 +309,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
 
 template <class TFixedImage, class TMovingImage>
 typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Evaluation & evaluation) const
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const IntermediateResults & evaluation) const
 {
   return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : 0.0;
 }
