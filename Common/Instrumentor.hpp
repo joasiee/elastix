@@ -18,6 +18,7 @@
 #include <fstream>
 #include <string>
 #include <thread>
+#include <map>
 
 #define ALIAS_TEMPLATE_FUNC(highLevelF, lowLevelF)                                                                     \
   template <typename... Args>                                                                                          \
@@ -41,7 +42,24 @@ struct ProfileResult
 struct InstrumentationSession
 {
   std::string Name;
+  std::string Filename; // filepath without extension
 };
+
+template <typename A, typename B>
+std::pair<B, A>
+flipPair(const std::pair<A, B> & p)
+{
+  return std::pair<B, A>(p.second, p.first);
+}
+
+template <typename A, typename B>
+std::multimap<B, A, std::greater<long long>>
+flipMap(const std::map<A, B> & src)
+{
+  std::multimap<B, A, std::greater<long long>> dst;
+  std::transform(src.begin(), src.end(), std::inserter(dst, dst.begin()), flipPair<A, B>);
+  return dst;
+}
 
 class Instrumentor
 {
@@ -49,9 +67,9 @@ public:
   Instrumentor(const Instrumentor &) = delete;
 
   static void
-  beginSession(const std::string & name, const std::string & filepath)
+  beginSession(const std::string & name, const std::string & filename)
   {
-    get().beginSessionImpl(name, filepath);
+    get().beginSessionImpl(name, filename);
   }
 
   static void
@@ -80,28 +98,40 @@ private:
   }
 
   void
-  beginSessionImpl(const std::string & name, const std::string & filepath)
+  beginSessionImpl(const std::string & name, const std::string & filename)
   {
-    m_OutputStream.open(filepath);
-    writeHeader();
-    m_CurrentSession = new InstrumentationSession{ name };
+    if (!m_SessionActive)
+    {
+      m_SessionActive = true;
+      m_OutputStream.open(filename + ".json");
+      writeHeader();
+      m_CurrentSession = new InstrumentationSession{ name, filename };
+    }
   }
 
   void
   endSessionImpl()
   {
-    writeFooter();
-    m_OutputStream.close();
-    delete m_CurrentSession;
-    m_CurrentSession = nullptr;
-    m_ProfileCount = 0;
+    if (m_SessionActive)
+    {
+      writeFooter();
+      m_OutputStream.close();
+      writeSummary();
+      delete m_CurrentSession;
+      m_CurrentSession = nullptr;
+      m_ProfileCount = 0;
+      m_TotalTime = 0L;
+      m_SessionSummary = std::map<std::string, long long>{};
+      m_SessionActive = false;
+    }
   }
 
   void
   writeProfile(const ProfileResult & result)
   {
-    if (!m_OutputStream.is_open())
-        return;
+    if (!m_SessionActive)
+      return;
+
     if (m_ProfileCount++ > 0)
       m_OutputStream << ",";
 
@@ -119,6 +149,32 @@ private:
     m_OutputStream << "}";
 
     m_OutputStream.flush();
+
+    updateSummary(result);
+  }
+
+  void
+  updateSummary(const ProfileResult & result)
+  {
+    m_SessionSummary[result.Name] += result.End - result.Start;
+    m_TotalTime += result.End - result.Start;
+  }
+
+  void
+  writeSummary()
+  {
+    if (m_SessionActive && !m_OutputStream.is_open())
+    {
+      m_OutputStream.open(m_CurrentSession->Filename + ".txt");
+      std::multimap<long long, std::string, std::greater<long long>> sortedSummary = flipMap(m_SessionSummary);
+      for (auto const & x : sortedSummary)
+      {
+        double pct = (double)x.first / (double)m_TotalTime * 100.0;
+        m_OutputStream << x.second << " : " << x.first << " = " << pct << "(%)" << std::endl;
+      }
+      m_OutputStream.flush();
+      m_OutputStream.close();
+    }
   }
 
   void
@@ -135,9 +191,12 @@ private:
     m_OutputStream.flush();
   }
 
-  InstrumentationSession * m_CurrentSession;
-  std::ofstream            m_OutputStream;
-  int                      m_ProfileCount;
+  InstrumentationSession *         m_CurrentSession;
+  std::ofstream                    m_OutputStream;
+  int                              m_ProfileCount;
+  bool                             m_SessionActive;
+  std::map<std::string, long long> m_SessionSummary;
+  long long                        m_TotalTime;
 };
 
 class InstrumentationTimer
@@ -181,7 +240,7 @@ private:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef ELASTIX_ENABLE_PROFILING
-#  define PROFILE_BEGIN_SESSION(name, filepath) Instrumentor::beginSession(name, filepath)
+#  define PROFILE_BEGIN_SESSION(name, filename) Instrumentor::beginSession(name, filename)
 #  define PROFILE_END_SESSION() Instrumentor::endSession()
 #  define PROFILE_SCOPE(name) InstrumentationTimer CONCAT(timer, __LINE__)(name)
 #  define PROFILE_FUNCTION() PROFILE_SCOPE(__PRETTY_FUNCTION__)

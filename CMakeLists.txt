@@ -142,7 +142,7 @@ if( ELASTIX_USE_OPENMP )
 endif()
 
 mark_as_advanced( ELASTIX_ENABLE_PROFILING )
-option( ELASTIX_ENABLE_PROFILING "Profile GOMEA optimizer." ON )
+option( ELASTIX_ENABLE_PROFILING "Profile GOMEA optimizer." OFF )
 
 if( ELASTIX_ENABLE_PROFILING )
   add_definitions( -DELASTIX_ENABLE_PROFILING )

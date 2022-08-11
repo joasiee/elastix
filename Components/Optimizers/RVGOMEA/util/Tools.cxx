@@ -51,6 +51,7 @@ double  haveNextNextGaussian, nextNextGaussian;
 void *
 Malloc(long size)
 {
+  PROFILE_FUNCTION();
   void * result;
 
   result = (void *)malloc(size);
@@ -71,6 +72,7 @@ Malloc(long size)
 void
 shrunkCovariance(MatrixXd & emp_cov, const double shrinkage)
 {
+  PROFILE_FUNCTION();
   const int n = emp_cov.rows();
   const double mu = emp_cov.trace() / n;
   emp_cov = (1.0 - shrinkage) * emp_cov;
@@ -79,7 +81,8 @@ shrunkCovariance(MatrixXd & emp_cov, const double shrinkage)
 
 void
 shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size)
-{  
+{
+  PROFILE_FUNCTION();
   const int n = emp_cov.rows();
   const double mu = emp_cov.trace() / n;
   
@@ -100,6 +103,7 @@ shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size)
 float
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 {
+  PROFILE_FUNCTION();
   const char uplo{ 'L' };
   int        info;
 
@@ -118,6 +122,7 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 void
 lowerTriangularMatrixInverse(MatrixXd & A, const int n)
 {
+  PROFILE_FUNCTION();
   const char uplo{ 'L' };
   const char diag{ 'N' };
   int        info;
@@ -134,6 +139,7 @@ lowerTriangularMatrixInverse(MatrixXd & A, const int n)
 int *
 mergeSort(double * array, int array_size)
 {
+  PROFILE_FUNCTION();
   int i, *sorted, *tosort;
 
   sorted = (int *)Malloc(array_size * sizeof(int));
@@ -157,6 +163,7 @@ mergeSort(double * array, int array_size)
 void
 mergeSortWithinBounds(double * array, int * sorted, int * tosort, int p, int q)
 {
+  PROFILE_FUNCTION();
   int r;
 
   if (p < q)
@@ -170,6 +177,7 @@ mergeSortWithinBounds(double * array, int * sorted, int * tosort, int p, int q)
 void
 mergeSortWithinBoundsInt(int * array, int * sorted, int * tosort, int p, int q)
 {
+  PROFILE_FUNCTION();
   int r;
 
   if (p < q)
@@ -186,6 +194,7 @@ mergeSortWithinBoundsInt(int * array, int * sorted, int * tosort, int p, int q)
 void
 mergeSortMerge(double * array, int * sorted, int * tosort, int p, int r, int q)
 {
+  PROFILE_FUNCTION();
   int i, j, k, first;
 
   i = p;
@@ -223,6 +232,7 @@ mergeSortMerge(double * array, int * sorted, int * tosort, int p, int r, int q)
 int *
 mergeSortInt(int * array, int array_size)
 {
+  PROFILE_FUNCTION();
   int i, *sorted, *tosort;
 
   sorted = (int *)Malloc(array_size * sizeof(int));
@@ -243,6 +253,7 @@ mergeSortInt(int * array, int array_size)
 void
 mergeSortMergeInt(int * array, int * sorted, int * tosort, int p, int r, int q)
 {
+  PROFILE_FUNCTION();
   int i, j, k, first;
 
   i = p;
@@ -280,6 +291,7 @@ mergeSortMergeInt(int * array, int * sorted, int * tosort, int p, int r, int q)
 int *
 getRanks(double * array, int array_size)
 {
+  PROFILE_FUNCTION();
   int i, *sorted, *ranks;
 
   sorted = mergeSort(array, array_size);
@@ -294,6 +306,7 @@ getRanks(double * array, int array_size)
 int *
 getRanksFromSorted(int * sorted, int array_size)
 {
+  PROFILE_FUNCTION();
   int i, *ranks;
 
   ranks = (int *)Malloc(array_size * sizeof(int));
@@ -310,6 +323,7 @@ getRanksFromSorted(int * sorted, int array_size)
 double
 randomRealUniform01(void)
 {
+  PROFILE_FUNCTION();
   int64_t n26, n27;
   double  result;
 
@@ -341,6 +355,7 @@ randomInt(int maximum)
 double
 random1DNormalUnit(void)
 {
+  PROFILE_FUNCTION();
   double v1, v2, s, multiplier, value;
 
   if (haveNextNextGaussian)
@@ -386,6 +401,7 @@ random1DNormalParameterized(double mean, double variance)
 void
 initializeRandomNumberGenerator(void)
 {
+  PROFILE_FUNCTION();
   if (random_seed != 0)
   {
     random_seed_changing = random_seed;
@@ -412,6 +428,7 @@ initializeRandomNumberGenerator(void)
 int *
 randomPermutation(int n)
 {
+  PROFILE_FUNCTION();
   int i, j, dummy, *result;
 
   result = (int *)Malloc(n * sizeof(int));
@@ -437,6 +454,7 @@ randomPermutation(int n)
 int **
 allPermutations(int length, int * numberOfPermutations)
 {
+  PROFILE_FUNCTION();
   int ** result;
 
   result = allPermutationsSubroutine(0, length, numberOfPermutations);
@@ -450,6 +468,7 @@ allPermutations(int length, int * numberOfPermutations)
 int **
 allPermutationsSubroutine(int from, int length, int * numberOfPermutations)
 {
+  PROFILE_FUNCTION();
   int i, j, k, q, **result, **smallerResult, smallerNumberOfPermutations;
 
   (*numberOfPermutations) = 1;
@@ -512,6 +531,7 @@ max(double x, double y)
 double
 distanceEuclidean(double * x, double * y, int number_of_dimensions)
 {
+  PROFILE_FUNCTION();
   int    i;
   double value, result;
 
@@ -532,6 +552,7 @@ distanceEuclidean(double * x, double * y, int number_of_dimensions)
 double
 distanceEuclidean2D(double x1, double y1, double x2, double y2)
 {
+  PROFILE_FUNCTION();
   double result;
 
   result = (y1 - y2) * (y1 - y2) + (x1 - x2) * (x1 - x2);

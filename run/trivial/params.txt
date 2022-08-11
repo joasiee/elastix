@@ -19,7 +19,7 @@
 (ImageSampler "Full")
 (Optimizer "GOMEA") // AdaptiveStochasticGradientDescent
 (FinalGridSpacingInVoxels 10 10)
-(MaximumNumberOfIterations 30)
+(MaximumNumberOfIterations 5)
 
 (WriteSamplesEveryIteration "false")
 (WriteMeanPointsEveryIteration "false")

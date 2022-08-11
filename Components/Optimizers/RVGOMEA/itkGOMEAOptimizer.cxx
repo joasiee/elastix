@@ -48,7 +48,10 @@ GOMEAOptimizer::PrintSettings() const
 void
 GOMEAOptimizer::StartOptimization()
 {
+  PROFILE_BEGIN_SESSION("Startup", m_outFolderProfiling + "startup");
+  PROFILE_FUNCTION();
   itkDebugMacro("StartOptimization");
+
   this->m_NrOfParameters = this->GetCostFunction()->GetNumberOfParameters();
   this->SetCurrentPosition(this->GetInitialPosition());
   this->m_CurrentIteration = 0;
@@ -63,6 +66,7 @@ GOMEAOptimizer::StartOptimization()
 void
 GOMEAOptimizer::ResumeOptimization()
 {
+  PROFILE_FUNCTION();
   itkDebugMacro("ResumeOptimization");
   InvokeEvent(StartEvent());
   this->run();
@@ -71,6 +75,7 @@ GOMEAOptimizer::ResumeOptimization()
 void
 GOMEAOptimizer::StopOptimization()
 {
+  PROFILE_FUNCTION();
   itkDebugMacro("StopOptimization");
   InvokeEvent(EndEvent());
 }
@@ -78,6 +83,7 @@ GOMEAOptimizer::StopOptimization()
 void
 GOMEAOptimizer::initialize(void)
 {
+  PROFILE_FUNCTION();
   GOMEA::haveNextNextGaussian = 0;
 
   if (m_BasePopulationSize == 0.0)
@@ -280,6 +286,7 @@ GOMEAOptimizer::checkOptions(void)
 void
 GOMEAOptimizer::initializeMemory(void)
 {
+  PROFILE_FUNCTION();
   mean_vectors.resize(m_MaxNumberOfPopulations, ParametersType(m_NrOfParameters, 0.0));
   mean_shift_vector.resize(m_MaxNumberOfPopulations, ParametersType(m_NrOfParameters, 0.0));
 
@@ -305,6 +312,7 @@ GOMEAOptimizer::initializeMemory(void)
 void
 GOMEAOptimizer::initializeNewPopulationMemory(int population_index)
 {
+  PROFILE_FUNCTION();
   int i;
 
   if (population_index == 0)
@@ -344,6 +352,7 @@ GOMEAOptimizer::initializeNewPopulationMemory(int population_index)
 void
 GOMEAOptimizer::initializeNewPopulation()
 {
+  PROFILE_FUNCTION();
   this->initializeNewPopulationMemory(number_of_populations);
 
   if (this->m_PartialEvaluations)
@@ -373,6 +382,7 @@ GOMEAOptimizer::initializeNewPopulation()
 void
 GOMEAOptimizer::initializeFOS(int population_index)
 {
+  PROFILE_FUNCTION();
   int    i;
   FILE * file;
   FOS *  new_FOS;
@@ -436,6 +446,7 @@ GOMEAOptimizer::initializeFOS(int population_index)
 void
 GOMEAOptimizer::initializeDistributionMultipliers(int population_index)
 {
+  PROFILE_FUNCTION();
   distribution_multipliers[population_index] = Array<double>(linkage_model[population_index]->length, 1.0);
 
   distribution_multiplier_increase = 1.0 / m_DistributionMultiplierDecrease;
@@ -447,6 +458,7 @@ GOMEAOptimizer::initializeDistributionMultipliers(int population_index)
 void
 GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
 {
+  PROFILE_FUNCTION();
   int j, k;
 
   for (j = 0; j < population_sizes[population_index]; j++)
@@ -467,6 +479,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
 FOS *
 GOMEAOptimizer::learnLinkageTreeRVGOMEA(int population_index)
 {
+  PROFILE_FUNCTION();
   int   i;
   FOS * new_FOS;
 
@@ -558,6 +571,7 @@ GOMEAOptimizer::computeRanksForOnePopulation(int population_index)
 short
 GOMEAOptimizer::checkTerminationCondition(void)
 {
+  PROFILE_FUNCTION();
   short allTrue;
   int   i;
 
@@ -592,6 +606,7 @@ GOMEAOptimizer::checkTerminationCondition(void)
 short
 GOMEAOptimizer::checkSubgenerationTerminationConditions(void)
 {
+  PROFILE_FUNCTION();
   if (this->checkNumberOfEvaluationsTerminationCondition())
     return (1);
 
@@ -608,6 +623,7 @@ GOMEAOptimizer::checkSubgenerationTerminationConditions(void)
 short
 GOMEAOptimizer::checkNumberOfEvaluationsTerminationCondition(void)
 {
+  PROFILE_FUNCTION();
   if (m_NumberOfEvaluations >= m_MaxNumberOfEvaluations && m_MaxNumberOfEvaluations > 0)
   {
     this->m_StopCondition = MaximumNumberOfEvaluationsTermination;
@@ -624,6 +640,7 @@ GOMEAOptimizer::checkNumberOfEvaluationsTerminationCondition(void)
 short
 GOMEAOptimizer::checkNumberOfIterationsTerminationCondition(void)
 {
+  PROFILE_FUNCTION();
   if (m_CurrentIteration >= m_MaximumNumberOfIterations && m_MaximumNumberOfIterations > 0)
   {
     this->m_StopCondition = MaximumNumberOfIterationsTermination;
@@ -636,6 +653,7 @@ GOMEAOptimizer::checkNumberOfIterationsTerminationCondition(void)
 void
 GOMEAOptimizer::checkAverageFitnessTerminationCondition(void)
 {
+  PROFILE_FUNCTION();
   int      i, j;
   double * average_objective_values;
 
@@ -1791,7 +1809,7 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 #ifdef ELASTIX_ENABLE_PROFILING
         std::string profileName = "Generation " + std::to_string(number_of_generations[population_index]);
         std::string profileFile =
-          m_outFolderProfiling + std::to_string(number_of_generations[population_index]) + ".json";
+          m_outFolderProfiling + "gen_" + std::to_string(number_of_generations[population_index]);
 #endif
         PROFILE_BEGIN_SESSION(profileName, profileFile);
 
@@ -1824,10 +1842,13 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 void
 GOMEAOptimizer::runAllPopulations()
 {
+  PROFILE_FUNCTION();
   while (!this->checkTerminationCondition())
   {
     if (number_of_populations < m_MaxNumberOfPopulations)
       this->initializeNewPopulation();
+
+    PROFILE_END_SESSION();
 
     this->generationalStepAllPopulations();
   }
@@ -1879,6 +1900,7 @@ GOMEAOptimizer::GetAverageDistributionMultiplier() const
 void
 GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
 {
+  PROFILE_FUNCTION();
   if (this->distribution_multipliers.size() > 0)
   {
     for (const double & distm : this->distribution_multipliers[0])
@@ -1896,6 +1918,7 @@ GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
 void
 GOMEAOptimizer::run(void)
 {
+  PROFILE_FUNCTION();
   this->PrintSettings();
   this->runAllPopulations();
   this->ezilaitini();

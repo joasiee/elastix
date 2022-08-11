@@ -34,7 +34,7 @@
 #include "itkSingleValuedNonLinearOptimizer.h"
 #include "./util/Tools.h"
 #include "./util/FOS.h"
-#include "./util/Instrumentor.hpp"
+#include "Instrumentor.hpp"
 #include "itkArray.h"
 #include "itkArray2D.h"
 #include "itkMatrix.h"

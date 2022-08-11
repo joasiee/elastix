@@ -45,6 +45,7 @@
 #include <eigen3/Eigen/Dense>
 #include <cblas.h>
 #include <lapack.h>
+#include "Instrumentor.hpp"
 
 using Eigen::MatrixXd;
 
