@@ -7,6 +7,7 @@ ADD_ELXCOMPONENT(GOMEA
   itkGOMEAOptimizer.cxx
   util/FOS.h
   util/Tools.h
+  util/Instrumentor.hpp
   util/FOS.cxx
   util/Tools.cxx
 )

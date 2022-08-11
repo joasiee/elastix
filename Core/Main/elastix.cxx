@@ -36,6 +36,7 @@
 #include <limits>
 #include <queue>
 #include <vector>
+#include <filesystem>
 
 
 constexpr const char * elastixHelpText =
@@ -182,6 +183,7 @@ main(int argc, char ** argv)
 
         /** Save this information. */
         outFolder = value;
+        std::filesystem::create_directory(outFolder);
 
       } // end if key == "-out"
 
@@ -201,6 +203,10 @@ main(int argc, char ** argv)
     } // end else (so, if key does not equal "-p")
 
   } // end for loop
+
+  #ifdef ELASTIX_ENABLE_PROFILING
+    std::filesystem::create_directory(outFolder + "profiling_output");
+  #endif
 
   /** The argv0 argument, required for finding the component.dll/so's. */
   argMap.insert(ArgumentMapEntryType("-argv0", argv[0]));

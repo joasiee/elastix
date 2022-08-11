@@ -138,6 +138,7 @@ GOMEAOptimizer::initialize(void)
 int *
 GOMEAOptimizer::mergeSortFitness(double * objectives, int number_of_solutions)
 {
+  PROFILE_FUNCTION();
   int i, *sorted, *tosort;
 
   sorted = (int *)Malloc(number_of_solutions * sizeof(int));
@@ -162,6 +163,7 @@ GOMEAOptimizer::mergeSortFitness(double * objectives, int number_of_solutions)
 void
 GOMEAOptimizer::mergeSortFitnessWithinBounds(double * objectives, int * sorted, int * tosort, int p, int q)
 {
+  PROFILE_FUNCTION();
   int r;
 
   if (p < q)
@@ -179,6 +181,7 @@ GOMEAOptimizer::mergeSortFitnessWithinBounds(double * objectives, int * sorted, 
 void
 GOMEAOptimizer::mergeSortFitnessMerge(double * objectives, int * sorted, int * tosort, int p, int r, int q)
 {
+  PROFILE_FUNCTION();
   int i, j, k, first;
 
   i = p;
@@ -488,6 +491,7 @@ GOMEAOptimizer::learnLinkageTreeRVGOMEA(int population_index)
 void
 GOMEAOptimizer::inheritDistributionMultipliers(FOS * new_FOS, FOS * prev_FOS, double * multipliers)
 {
+  PROFILE_FUNCTION();
   int      i, *permutation;
   double * multipliers_copy;
 
@@ -511,6 +515,7 @@ GOMEAOptimizer::inheritDistributionMultipliers(FOS * new_FOS, FOS * prev_FOS, do
 void
 GOMEAOptimizer::computeRanksForAllPopulations(void)
 {
+  PROFILE_FUNCTION();
   int i;
 
   for (i = 0; i < number_of_populations; i++)
@@ -523,6 +528,7 @@ GOMEAOptimizer::computeRanksForAllPopulations(void)
 void
 GOMEAOptimizer::computeRanksForOnePopulation(int population_index)
 {
+  PROFILE_FUNCTION();
   int i, *sorted, rank;
 
   if (!populations_terminated[population_index])
@@ -660,6 +666,7 @@ GOMEAOptimizer::checkAverageFitnessTerminationCondition(void)
 void
 GOMEAOptimizer::determineBestSolutionInCurrentPopulations(int * population_of_best, int * index_of_best)
 {
+  PROFILE_FUNCTION();
   int i, j;
 
   (*population_of_best) = 0;
@@ -684,6 +691,7 @@ GOMEAOptimizer::determineBestSolutionInCurrentPopulations(int * population_of_be
 void
 GOMEAOptimizer::checkFitnessVarianceTermination(void)
 {
+  PROFILE_FUNCTION();
   int i;
 
   for (i = 0; i < number_of_populations; i++)
@@ -703,6 +711,7 @@ GOMEAOptimizer::checkFitnessVarianceTermination(void)
 short
 GOMEAOptimizer::checkFitnessVarianceTerminationSinglePopulation(int population_index)
 {
+  PROFILE_FUNCTION();
   int    i;
   double objective_avg, objective_var;
 
@@ -733,6 +742,7 @@ GOMEAOptimizer::checkFitnessVarianceTerminationSinglePopulation(int population_i
 void
 GOMEAOptimizer::checkDistributionMultiplierTerminationCondition(void)
 {
+  PROFILE_FUNCTION();
   int   i, j;
   short converged;
 
@@ -767,6 +777,7 @@ GOMEAOptimizer::checkDistributionMultiplierTerminationCondition(void)
 void
 GOMEAOptimizer::makeSelections(void)
 {
+  PROFILE_FUNCTION();
   int i;
 
   for (i = 0; i < number_of_populations; i++)
@@ -780,6 +791,7 @@ GOMEAOptimizer::makeSelections(void)
 void
 GOMEAOptimizer::makeSelectionsForOnePopulation(int population_index)
 {
+  PROFILE_FUNCTION();
   int i, j, *sorted;
 
   sorted = mergeSort(ranks[population_index].data_block(), population_sizes[population_index]);
@@ -809,6 +821,7 @@ GOMEAOptimizer::makeSelectionsForOnePopulation(int population_index)
 void
 GOMEAOptimizer::makeSelectionsForOnePopulationUsingDiversityOnRank0(int population_index)
 {
+  PROFILE_FUNCTION();
   int i, j, number_of_rank0_solutions, *preselection_indices, *selection_indices, index_of_farthest,
     number_selected_so_far;
   double *nn_distances, distance_of_farthest, value;
@@ -914,6 +927,7 @@ GOMEAOptimizer::makeSelectionsForOnePopulationUsingDiversityOnRank0(int populati
 void
 GOMEAOptimizer::makePopulation(int population_index)
 {
+  PROFILE_FUNCTION();
   if (populations_terminated[population_index])
     return;
 
@@ -935,6 +949,7 @@ GOMEAOptimizer::makePopulation(int population_index)
 void
 GOMEAOptimizer::estimateParameters(int population_index)
 {
+  PROFILE_FUNCTION();
   if (!populations_terminated[population_index])
   {
     this->estimateMeanVectorML(population_index);
@@ -958,6 +973,7 @@ GOMEAOptimizer::estimateParameters(int population_index)
 void
 GOMEAOptimizer::estimateParametersML(int population_index)
 {
+  PROFILE_FUNCTION();
   int i, j;
 
   /* Change the focus of the search to the best solution */
@@ -976,6 +992,7 @@ GOMEAOptimizer::estimateParametersML(int population_index)
 void
 GOMEAOptimizer::estimateMeanVectorML(int population_index)
 {
+  PROFILE_FUNCTION();
   unsigned int i, j;
   double       new_mean;
 
@@ -1003,6 +1020,7 @@ GOMEAOptimizer::estimateMeanVectorML(int population_index)
 void
 GOMEAOptimizer::estimateFullCovarianceMatrixML(int population_index)
 {
+  PROFILE_FUNCTION();
   int    i, j, m;
   double cov;
 
@@ -1029,6 +1047,7 @@ GOMEAOptimizer::estimateFullCovarianceMatrixML(int population_index)
 void
 GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
 {
+  PROFILE_FUNCTION();
   int    vara, varb, i, j, k, m;
   double cov;
 
@@ -1072,6 +1091,7 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
 void
 GOMEAOptimizer::initializeCovarianceMatrices(int population_index)
 {
+  PROFILE_FUNCTION();
   int j;
 
   decomposed_covariance_matrices[population_index].resize(linkage_model[population_index]->length);
@@ -1091,6 +1111,7 @@ GOMEAOptimizer::initializeCovarianceMatrices(int population_index)
 void
 GOMEAOptimizer::copyBestSolutionsToAllPopulations(void)
 {
+  PROFILE_FUNCTION();
   int i;
 
   for (i = 0; i < number_of_populations; i++)
@@ -1104,6 +1125,7 @@ GOMEAOptimizer::copyBestSolutionsToAllPopulations(void)
 void
 GOMEAOptimizer::copyBestSolutionsToPopulation(int population_index)
 {
+  PROFILE_FUNCTION();
   int k;
 
   if (!populations_terminated[population_index])
@@ -1118,6 +1140,7 @@ GOMEAOptimizer::copyBestSolutionsToPopulation(int population_index)
 void
 GOMEAOptimizer::getBestInPopulation(int population_index, int * individual_index)
 {
+  PROFILE_FUNCTION();
   int i;
 
   *individual_index = 0;
@@ -1129,6 +1152,7 @@ GOMEAOptimizer::getBestInPopulation(int population_index, int * individual_index
 void
 GOMEAOptimizer::getOverallBest(int * population_index, int * individual_index)
 {
+  PROFILE_FUNCTION();
   int i, best_individual_index;
 
   *population_index = 0;
@@ -1148,6 +1172,7 @@ GOMEAOptimizer::getOverallBest(int * population_index, int * individual_index)
 void
 GOMEAOptimizer::evaluatePopulation(int population)
 {
+  PROFILE_FUNCTION();
   int i;
 
   for (i = 0; i < population_sizes[population]; ++i)
@@ -1160,6 +1185,7 @@ GOMEAOptimizer::evaluatePopulation(int population)
 void
 GOMEAOptimizer::costFunctionEvaluation(const ParametersType & parameters, int individual_index, MeasureType & obj_val)
 {
+  PROFILE_FUNCTION();
   obj_val = this->m_PartialEvaluations ? this->GetValue(parameters, -1, individual_index) : this->GetValue(parameters);
   ++m_NumberOfEvaluations;
 }
@@ -1167,6 +1193,7 @@ GOMEAOptimizer::costFunctionEvaluation(const ParametersType & parameters, int in
 void
 GOMEAOptimizer::costFunctionEvaluation(int population_index, int individual_index, int fos_index, MeasureType & obj_val)
 {
+  PROFILE_FUNCTION();
   if (!(this->m_PartialEvaluations))
   {
     this->costFunctionEvaluation(populations[population_index][individual_index], individual_index, obj_val);
@@ -1188,6 +1215,7 @@ GOMEAOptimizer::costFunctionEvaluation(int population_index, int individual_inde
 void
 GOMEAOptimizer::applyDistributionMultipliersToAllPopulations(void)
 {
+  PROFILE_FUNCTION();
   int i;
 
   for (i = 0; i < number_of_populations; i++)
@@ -1197,6 +1225,7 @@ GOMEAOptimizer::applyDistributionMultipliersToAllPopulations(void)
 void
 GOMEAOptimizer::applyDistributionMultipliers(int population_index)
 {
+  PROFILE_FUNCTION();
   int j, k, m;
 
   if (!populations_terminated[population_index])
@@ -1211,6 +1240,7 @@ GOMEAOptimizer::applyDistributionMultipliers(int population_index)
 void
 GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillAllPopulations(void)
 {
+  PROFILE_FUNCTION();
   int i;
 
   for (i = 0; i < number_of_populations; i++)
@@ -1224,6 +1254,7 @@ GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillAllPopulations(void)
 void
 GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulation(int population_index)
 {
+  PROFILE_FUNCTION();
   short generationalImprovement, *FOS_element_caused_improvement, all_multipliers_leq_one, *individual_improved,
     apply_AMS;
   int    oj, i, j, k, *fos_order, number_of_AMS_solutions, best_individual_index;
@@ -1310,6 +1341,7 @@ GOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulation(int population_i
 void
 GOMEAOptimizer::computeParametersForSampling(int population_index)
 {
+  PROFILE_FUNCTION();
   int i;
 
   if (!use_univariate_FOS)
@@ -1331,7 +1363,7 @@ GOMEAOptimizer::computeParametersForSampling(int population_index)
 void
 GOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index, int FOS_index, VectorXd & result)
 {
-
+  PROFILE_FUNCTION();
   short    ready;
   int      i, num_indices, *indices;
   VectorXd z;
@@ -1368,6 +1400,7 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
                                                   int   individual_index,
                                                   short apply_AMS)
 {
+  PROFILE_FUNCTION();
   int      j, m, im, *indices, num_indices, *touched_indices, num_touched_indices;
   double * individual_backup, obj_val, delta_AMS, shrink_factor;
   short    improvement, out_of_range;
@@ -1429,6 +1462,7 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
 short
 GOMEAOptimizer::applyAMS(int population_index, int individual_index)
 {
+  PROFILE_FUNCTION();
   short          out_of_range, improvement;
   double         shrink_factor, delta_AMS, obj_val;
   ParametersType solution_AMS;
@@ -1460,6 +1494,7 @@ GOMEAOptimizer::applyAMS(int population_index, int individual_index)
 void
 GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_index, int donor_index)
 {
+  PROFILE_FUNCTION();
   int     i, io, j, *order, *touched_indices, num_touched_indices;
   double *FI_backup, obj_val, alpha;
   short   improvement;
@@ -1532,6 +1567,7 @@ GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_ind
 short
 GOMEAOptimizer::adaptDistributionMultipliers(int population_index, int FOS_index)
 {
+  PROFILE_FUNCTION();
   short  improvementForFOSElement;
   int    i, j;
   double st_dev_ratio, increase_for_FOS_element, decrease_for_FOS_element;
@@ -1576,6 +1612,7 @@ GOMEAOptimizer::generationalImprovementForOnePopulationForFOSElement(int      po
                                                                      int      FOS_index,
                                                                      double * st_dev_ratio)
 {
+  PROFILE_FUNCTION();
   int      i, j, index_best_population, number_of_improvements, *indices, num_indices;
   double * average_parameters_of_improvements;
   short    generationalImprovement;
@@ -1627,6 +1664,7 @@ GOMEAOptimizer::generationalImprovementForOnePopulationForFOSElement(int      po
 double
 GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parameters, int FOS_index)
 {
+  PROFILE_FUNCTION();
   int      i, *indices, num_indices;
   double   result;
   VectorXd x_min_mu, z;
@@ -1663,6 +1701,7 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
 void
 GOMEAOptimizer::UpdatePosition()
 {
+  PROFILE_FUNCTION();
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
   this->costFunctionEvaluation(this->GetCurrentPosition(), 0, this->m_Value);
   // this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]); // TODO ?
@@ -1749,6 +1788,13 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
     {
       if (!populations_terminated[population_index])
       {
+#ifdef ELASTIX_ENABLE_PROFILING
+        std::string profileName = "Generation " + std::to_string(number_of_generations[population_index]);
+        std::string profileFile =
+          m_outFolderProfiling + std::to_string(number_of_generations[population_index]) + ".json";
+#endif
+        PROFILE_BEGIN_SESSION(profileName, profileFile);
+
         this->makeSelectionsForOnePopulation(population_index);
 
         this->makePopulation(population_index);
@@ -1758,6 +1804,8 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
         if (this->m_SubSampling)
           this->evaluatePopulation(population_index);
+
+        PROFILE_END_SESSION();
 
         if (this->checkSubgenerationTerminationConditions())
         {
@@ -1788,6 +1836,7 @@ GOMEAOptimizer::runAllPopulations()
 const std::string
 GOMEAOptimizer::GetStopConditionDescription() const
 {
+  PROFILE_FUNCTION();
   m_StopConditionDescription.str("");
   switch (m_StopCondition)
   {
@@ -1816,6 +1865,7 @@ GOMEAOptimizer::GetStopConditionDescription() const
 double
 GOMEAOptimizer::GetAverageDistributionMultiplier() const
 {
+  PROFILE_FUNCTION();
   if (this->distribution_multipliers.size() > 0)
   {
     const int pop = number_of_populations - 1;

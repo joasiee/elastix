@@ -26,4 +26,4 @@
 
 (PartialEvaluations "true")
 (FosElementSize -6)
-(BasePopulationSize 50)
+(BasePopulationSize 10)

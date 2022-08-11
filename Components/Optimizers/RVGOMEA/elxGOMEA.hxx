@@ -31,6 +31,8 @@ GOMEA<TElastix>::BeforeRegistration(void)
   {
     this->m_SubSampling = true;
   }
+
+  m_outFolderProfiling = this->m_Configuration->GetCommandLineArgument("-out") + "profiling_output/";
 }
 
 template <class TElastix>

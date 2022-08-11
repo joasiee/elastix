@@ -34,6 +34,7 @@
 #include "itkSingleValuedNonLinearOptimizer.h"
 #include "./util/Tools.h"
 #include "./util/FOS.h"
+#include "./util/Instrumentor.hpp"
 #include "itkArray.h"
 #include "itkArray2D.h"
 #include "itkMatrix.h"
@@ -158,6 +159,8 @@ protected:
 
   typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
   mutable MeanAccumulator                          m_PdPctMean;
+
+  std::string m_outFolderProfiling;
 
 private:
   void

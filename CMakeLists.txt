@@ -141,6 +141,13 @@ if( ELASTIX_USE_OPENMP )
   endif()
 endif()
 
+mark_as_advanced( ELASTIX_ENABLE_PROFILING )
+option( ELASTIX_ENABLE_PROFILING "Profile GOMEA optimizer." ON )
+
+if( ELASTIX_ENABLE_PROFILING )
+  add_definitions( -DELASTIX_ENABLE_PROFILING )
+endif()
+
 #----------------------------------------------------------------------
 # Check for the SuiteSparse package
 # We need to do that here, because the link_directories should be set
