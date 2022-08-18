@@ -45,7 +45,7 @@ class Parameters:
     @classmethod
     def from_base(
         cls,
-        metric: str = "AdvancedMeanSquares",
+        metric: str = "AdvancedNormalizedCorrelation",
         mesh_size: List[int] | int = 12,
         seed: int = None,
     ):
@@ -68,7 +68,7 @@ class Parameters:
 
     def multi_metric(
         self,
-        metric0: str = "AdvancedMeanSquares",
+        metric0: str = "AdvancedNormalizedCorrelation",
         metric1: str = "TransformBendingEnergyPenaltyAnalytic",
         weight0: float = 1.0,
         weight1: float = 0.01,
