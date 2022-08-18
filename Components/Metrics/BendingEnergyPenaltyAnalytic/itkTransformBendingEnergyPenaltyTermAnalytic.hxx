@@ -86,7 +86,8 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(co
 
 template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(const IntermediateResults & evaluation) const
+TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(
+  const IntermediateResults & evaluation) const
 {
   return evaluation[0];
 }
@@ -102,11 +103,10 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValuePar
 {
   IntermediateResults result{ 1 };
   m_BsplineXform.coeff_ = parameters.data_block();
-  result[0] =
-    m_BSplineRegularize.compute_score_analytic_omp_regions(this->m_BSplinePointsRegionsNoMask[fosIndex + 1],
-                                                                 &m_RegularizationParameters,
-                                                                 &m_BSplineRegularize,
-                                                                 &m_BsplineXform);
+  result[0] = m_BSplineRegularize.compute_score_analytic_omp_regions(this->m_BSplinePointsRegionsNoMask[fosIndex + 1],
+                                                                     &m_RegularizationParameters,
+                                                                     &m_BSplineRegularize,
+                                                                     &m_BsplineXform);
 
   result[0] /= static_cast<RealType>(m_BsplineXform.num_knots);
 
@@ -145,11 +145,11 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValueAnd
   this->m_BsplineScore.reset_score();
   this->m_BSplineRegularize.compute_score(
     &this->m_BsplineScore, &this->m_RegularizationParameters, &this->m_BsplineXform);
-  value = static_cast<MeasureType>(this->m_BsplineScore.rmetric);
+  value = static_cast<MeasureType>(this->m_BsplineScore.rmetric) / static_cast<RealType>(m_BsplineXform.num_knots);
 } // end GetValueAndDerivative()
 
 /**
- * ******************* GetValueAndDerivative *******************
+ * ******************* InitPartialEvaluations *******************
  */
 
 template <class TFixedImage, class TScalarType>
