@@ -1,12 +1,13 @@
 diff --git a/.gitignore b/.gitignore
-index cfe5e452..ddfc8a34 100644
+index cfe5e452..84b4a6ff 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -3,3 +3,4 @@
+@@ -3,3 +3,5 @@
  GPATH
  GRTAGS
  GTAGS
 +build
++*.patch
 \ No newline at end of file
 diff --git a/CMakeLists.txt b/CMakeLists.txt
 index 3845a58e..f4b25655 100755
@@ -2413,7 +2414,7 @@ index eab472ba..37429900 100644
  
  #endif
 diff --git a/src/plastimatch/register/bspline_regularize_analytic.cxx b/src/plastimatch/register/bspline_regularize_analytic.cxx
-index d51328b4..3608eb71 100644
+index d51328b4..45fc8d26 100644
 --- a/src/plastimatch/register/bspline_regularize_analytic.cxx
 +++ b/src/plastimatch/register/bspline_regularize_analytic.cxx
 @@ -18,116 +18,119 @@
@@ -3458,7 +3459,7 @@ index d51328b4..3608eb71 100644
      this->V[25] = this->V[24] + 4096;
      this->V[26] = this->V[25] + 4096;
      this->V[27] = this->V[26] + 4096;
-@@ -721,339 +722,375 @@ Bspline_regularize::analytic_init (
+@@ -721,339 +722,362 @@ Bspline_regularize::analytic_init (
      this->V[30] = this->V[29] + 4096;
      this->V[31] = this->V[30] + 4096;
  
@@ -3967,46 +3968,33 @@ index d51328b4..3608eb71 100644
 -#endif
  
 +double Bspline_regularize::compute_score_analytic_omp_regions(
-+    const std::vector<int> & regions,
++    const std::vector<int> &regions,
 +    const Regularization_parms *reg_parms,
 +    const Bspline_regularize *rst,
 +    const Bspline_xform *bxf) const
 +{
-+    plm_long i;
++    plm_long i, j;
 +    double S = 0.0;
++    static constexpr int smoothness_regions[20] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
 +
-+#pragma omp parallel for reduction(+ \
-+                                   : S)
++#pragma omp parallel for reduction(+ : S)
 +    for (i = 0; i < regions.size(); ++i)
 +    {
 +        plm_long knots[64];
 +        double sets[3 * 64];
 +        find_knots_3(knots, regions[i], bxf->cdims);
 +
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[0], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[1], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[2], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[3], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[4], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[5], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[6], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[7], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[8], knots);
-+        S += region_smoothness_elastic_omp(sets, reg_parms, bxf, rst->V[9],
-+                                           rst->V[10], rst->V[11], rst->V[12], rst->V[13],
-+                                           rst->V[14], rst->V[15], rst->V[16], rst->V[17],
-+                                           rst->V[18], rst->V[19], rst->V[20], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[21], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[22], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[23], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[24], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[25], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[26], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[27], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[28], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[29], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[30], knots);
-+        S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[31], knots);
++#pragma omp parallel for reduction(+ : S)
++        for (j = 0; j < 21; ++j)
++        {
++            if (j == 20)
++                S += region_smoothness_elastic_omp(sets, reg_parms, bxf, rst->V[9],
++                                                   rst->V[10], rst->V[11], rst->V[12], rst->V[13],
++                                                   rst->V[14], rst->V[15], rst->V[16], rst->V[17],
++                                                   rst->V[18], rst->V[19], rst->V[20], knots);
++            else
++                S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[smoothness_regions[j]], knots);
++        }
 +    }
 +
 +    return S;

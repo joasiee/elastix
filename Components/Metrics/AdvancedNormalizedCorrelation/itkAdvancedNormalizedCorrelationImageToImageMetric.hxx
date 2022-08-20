@@ -210,12 +210,8 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
   /** Get a handle to the sample container. */
-  ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();
-
-  /** Create iterator over the sample container. */
-  typename ImageSampleContainerType::ConstIterator fiter;
-  typename ImageSampleContainerType::ConstIterator fbegin = sampleContainer->Begin();
-  typename ImageSampleContainerType::ConstIterator fend = sampleContainer->End();
+  ImageSampleContainerType & sampleContainer = *(this->GetImageSampler()->GetOutput());
+  const unsigned long        sampleContainerSize = sampleContainer.Size();
 
   /** Create variables to store intermediate results. */
   AccumulateType sff = NumericTraits<AccumulateType>::Zero;
@@ -224,11 +220,12 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   AccumulateType sf = NumericTraits<AccumulateType>::Zero;
   AccumulateType sm = NumericTraits<AccumulateType>::Zero;
 
-  /** Loop over the fixed image samples to calculate the mean squares. */
-  for (fiter = fbegin; fiter != fend; ++fiter)
+/** Loop over the fixed image samples to calculate the mean squares. */
+#pragma omp parallel for reduction(+ : sff, smm, sfm, sf, sm)
+  for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = sampleContainer[i].m_ImageCoordinates;
     RealType                    movingImageValue;
 
     /** Transform point. */
@@ -249,7 +246,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
       this->m_NumberOfPixelsCounted++;
 
       /** Get the fixed image value. */
-      const RealType & fixedImageValue = static_cast<double>((*fiter).Value().m_ImageValue);
+      const RealType & fixedImageValue = static_cast<RealType>(sampleContainer[i].m_ImageValue);
 
       /** Update some sums needed to calculate NC. */
       sff += fixedImageValue * fixedImageValue;
@@ -266,10 +263,10 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   } // end for loop over the image sample container
 
   /** Check if enough samples were valid. */
-  this->CheckNumberOfSamples(sampleContainer->Size(), this->m_NumberOfPixelsCounted);
+  this->CheckNumberOfSamples(sampleContainer.Size(), this->m_NumberOfPixelsCounted);
 
-  const unsigned long numberOfPixelsMissed = sampleContainer->Size() - this->m_NumberOfPixelsCounted;
-  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainer->Size());
+  const unsigned long numberOfPixelsMissed = sampleContainer.Size() - this->m_NumberOfPixelsCounted;
+  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainer.Size());
   this->m_MissedPixelsMean(pctMissed * 100.0);
 
   /** If SubtractMean, then subtract things from sff, smm and sfm. */

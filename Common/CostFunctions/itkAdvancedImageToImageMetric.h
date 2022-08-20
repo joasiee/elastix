@@ -403,7 +403,6 @@ protected:
   std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegions;
-  std::vector<std::vector<int>>                      m_BSplinePointsRegionsNoMask;
   std::vector<int>                                   m_BSplinePointOffsetMap;
   double                                             m_SamplingPercentage{ 0.05 };
   FOS                                                m_FOS{ 0 };

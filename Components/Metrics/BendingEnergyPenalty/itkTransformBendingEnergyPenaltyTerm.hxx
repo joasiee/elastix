@@ -124,14 +124,16 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValuePartial(con
                                                                              int                    fosIndex) const
 {
   IntermediateResults result{ 2 };
-  
+
   if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
   {
     return result;
   }
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
-  const std::vector<int> & fosPoints = this->m_BSplinePointsRegionsNoMask[fosIndex + 1];
+  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
+  if (fosPoints.size() == 0)
+    return result;
 
   /** Create and initialize some variables. */
   SpatialHessianType           spatialHessian;
@@ -151,8 +153,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValuePartial(con
 
   const ThreadIdType maxThreads = Self::GetNumberOfWorkUnits();
   MeasureType        measure = NumericTraits<MeasureType>::Zero;
-  double      numberOfPixelsCounted = 0.0;
-
+  double             numberOfPixelsCounted = 0.0;
 
   // iterate over these subfunction samplers and calculate mean squared diffs
   for (int i = 0; i < fosPoints.size(); ++i)

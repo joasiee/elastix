@@ -32,7 +32,7 @@ template <class TFixedImage, class TScalarType>
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::TransformBendingEnergyPenaltyTermAnalytic()
 {
   this->m_RegularizationParameters.implementation = 'c';
-  this->m_RegularizationParameters.curvature_penalty = 0.1f;
+  this->m_RegularizationParameters.curvature_penalty = 0.05f;
 }
 
 template <class TFixedImage, class TScalarType>
@@ -70,6 +70,8 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Initialize(
   this->m_BsplineScore.set_num_coeff(this->m_BsplineXform.num_coeff);
 
   this->m_BSplineRegularize.initialize(&this->m_RegularizationParameters, &this->m_BsplineXform);
+
+  omp_set_max_active_levels(2);
 }
 
 template <class TFixedImage, class TScalarType>
@@ -89,7 +91,7 @@ typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Me
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(
   const IntermediateResults & evaluation) const
 {
-  return evaluation[0];
+  return evaluation[0] / static_cast<RealType>(m_BsplineXform.num_knots);
 }
 
 /**
@@ -102,13 +104,16 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValuePar
                                                                                      int fosIndex) const
 {
   IntermediateResults result{ 1 };
+  if (this->m_BSplinePointsRegions[fosIndex + 1].size() == 0)
+  {
+    return result;
+  }
+
   m_BsplineXform.coeff_ = parameters.data_block();
-  result[0] = m_BSplineRegularize.compute_score_analytic_omp_regions(this->m_BSplinePointsRegionsNoMask[fosIndex + 1],
+  result[0] = m_BSplineRegularize.compute_score_analytic_omp_regions(this->m_BSplinePointsRegions[fosIndex + 1],
                                                                      &m_RegularizationParameters,
                                                                      &m_BSplineRegularize,
                                                                      &m_BsplineXform);
-
-  result[0] /= static_cast<RealType>(m_BsplineXform.num_knots);
 
   return result;
 } // end GetValue()
