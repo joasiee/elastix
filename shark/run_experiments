@@ -12,6 +12,7 @@ module purge > /dev/null 2>&1
 module load system/gcc/11.2.0
 
 export OMP_NUM_THREADS=12
-export OPENBLAS_NUM_THREADS=1
+export OMP_THREAD_LIMIT=12
+export OMP_MAX_ACTIVE_LEVELS=12
 
 .venv/bin/python thesispy/experiments/run_queue.py
