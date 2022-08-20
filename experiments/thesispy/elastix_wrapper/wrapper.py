@@ -155,7 +155,7 @@ def execute_visualize(out_dir: Path):
     visualizers = ["vv", "mitk", "slicer"]
     visualizer = None
     for vis in visualizers:
-        if not subprocess.run(["command", "-v", vis]).returncode:
+        if not subprocess.run(["command", "-v", vis], shell=True).returncode:
             visualizer = vis
             break
     
@@ -168,11 +168,11 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=4, seed=1)
+        Parameters.from_base(mesh_size=12)
         .asgd()
-        .stopping_criteria(1000)
-        .debug()
-        .args({"ResampleInterpolator": "FinalLinearInterpolator"})
-        .instance(Collection.SYNTHETIC, 2)
+        .result_image()
+        .stopping_criteria(200)
+        .multi_metric(weight1=0.05)
+        .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)

@@ -146,6 +146,9 @@ class Parameters:
             }
         )
 
+    def result_image(self):
+        return self.args({"WriteResultImage": True})
+
     def sampler(self, sampler, pct: float = 0.05):
         return self.args({"ImageSampler": sampler, "SamplingPercentage": pct})
 
@@ -230,9 +233,11 @@ class Parameters:
 
     def set_paths(self):
         if not self["Collection"] or not self["Instance"]:
-            logger.info("Collection and/or instance not set yet, can't determine paths.")
+            logger.info(
+                "Collection and/or instance not set yet, can't determine paths."
+            )
             return self
-        
+
         collection = self["Collection"]
         instance = self["Instance"]
         extension = INSTANCES_CONFIG[collection]["extension"]
