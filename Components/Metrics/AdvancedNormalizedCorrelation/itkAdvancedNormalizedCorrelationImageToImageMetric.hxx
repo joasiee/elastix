@@ -191,8 +191,8 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   itkDebugMacro("GetValue( " << parameters << " ) ");
 
   /** Initialize some variables */
-  this->m_NumberOfPixelsCounted = 0;
-  MeasureType measure = NumericTraits<MeasureType>::Zero;
+  unsigned long numberOfPixelsCounted = 0;
+  MeasureType   measure = NumericTraits<MeasureType>::Zero;
 
   /** Call non-thread-safe stuff, such as:
    *   this->SetTransformParameters( parameters );
@@ -221,7 +221,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   AccumulateType sm = NumericTraits<AccumulateType>::Zero;
 
 /** Loop over the fixed image samples to calculate the mean squares. */
-#pragma omp parallel for reduction(+ : sff, smm, sfm, sf, sm)
+#pragma omp parallel for reduction(+ : sff, smm, sfm, sf, sm, numberOfPixelsCounted)
   for (unsigned int i = 0; i < sampleContainerSize; ++i)
   {
     /** Read fixed coordinates and initialize some variables. */
@@ -243,7 +243,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
 
     if (sampleOk)
     {
-      this->m_NumberOfPixelsCounted++;
+      ++numberOfPixelsCounted;
 
       /** Get the fixed image value. */
       const RealType & fixedImageValue = static_cast<RealType>(sampleContainer[i].m_ImageValue);
@@ -263,15 +263,15 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   } // end for loop over the image sample container
 
   /** Check if enough samples were valid. */
-  this->CheckNumberOfSamples(sampleContainer.Size(), this->m_NumberOfPixelsCounted);
+  this->CheckNumberOfSamples(sampleContainer.Size(), numberOfPixelsCounted);
 
-  const unsigned long numberOfPixelsMissed = sampleContainer.Size() - this->m_NumberOfPixelsCounted;
+  const unsigned long numberOfPixelsMissed = sampleContainer.Size() - numberOfPixelsCounted;
   const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainer.Size());
   this->m_MissedPixelsMean(pctMissed * 100.0);
 
   /** If SubtractMean, then subtract things from sff, smm and sfm. */
-  const RealType N = static_cast<RealType>(this->m_NumberOfPixelsCounted);
-  if (this->m_SubtractMean && this->m_NumberOfPixelsCounted > 0)
+  const RealType N = static_cast<RealType>(numberOfPixelsCounted);
+  if (this->m_SubtractMean && numberOfPixelsCounted > 0)
   {
     sff -= (sf * sf / N);
     smm -= (sm * sm / N);
@@ -282,13 +282,13 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   const RealType denom = -1.0 * std::sqrt(sff * smm);
 
   /** Calculate the measure value. */
-  if (this->m_NumberOfPixelsCounted > 0 && denom < -1e-14)
+  if (denom > -1e-14)
   {
-    measure = sfm / denom;
+    measure = NumericTraits<MeasureType>::Zero;
   }
   else
   {
-    measure = NumericTraits<MeasureType>::Zero;
+    measure = sfm / denom;
   }
 
   /** Return the NC measure value. */
@@ -318,13 +318,13 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   const RealType denom = -1.0 * std::sqrt(sff * smm);
 
   /** Calculate the measure value. */
-  if (evaluation[PIXELS] > 0 && denom < -1e-14)
+  if (denom > -1e-14)
   {
-    measure = sfm / denom;
+    measure = NumericTraits<MeasureType>::Zero;
   }
   else
   {
-    measure = NumericTraits<MeasureType>::Zero;
+    measure = sfm / denom;
   }
 
   return measure;
