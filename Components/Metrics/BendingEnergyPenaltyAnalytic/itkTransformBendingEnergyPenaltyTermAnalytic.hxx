@@ -106,6 +106,7 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValuePar
   IntermediateResults result{ 1 };
   if (this->m_BSplinePointsRegions[fosIndex + 1].size() == 0)
   {
+    result[0] = NumericTraits<MeasureType>::max();
     return result;
   }
 

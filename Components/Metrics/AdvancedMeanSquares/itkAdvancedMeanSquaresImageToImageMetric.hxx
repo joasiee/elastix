@@ -311,7 +311,7 @@ template <class TFixedImage, class TMovingImage>
 typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const IntermediateResults & evaluation) const
 {
-  return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : 0.0;
+  return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : NumericTraits<MeasureType>::max();
 }
 
 

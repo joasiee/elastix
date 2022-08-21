@@ -214,7 +214,7 @@ template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
 TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const IntermediateResults & evaluation) const
 {
-  return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : 0.0;
+  return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : NumericTraits<MeasureType>::max();
 }
 
 
