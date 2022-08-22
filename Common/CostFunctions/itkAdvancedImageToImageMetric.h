@@ -335,6 +335,16 @@ public:
   MeasureType
   GetValue(const TransformParametersType & parameters, int fosIndex, int individualIndex) const override;
 
+  virtual MeasureType
+  GetValue(const IntermediateResults & evaluation) const
+  {
+    (void)evaluation;
+    return NumericTraits<MeasureType>::Zero;
+  }
+
+  virtual IntermediateResults
+  GetValuePartial(const ParametersType & parameters, int fosIndex) const;
+
   void
   PreloadPartialEvaluation(const TransformParametersType & parameters, int fosIndex) const override;
 

@@ -1042,6 +1042,18 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
   return measure;
 } // end GetValue()
 
+
+template <class TFixedImage, class TMovingImage>
+IntermediateResults
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartial(const ParametersType & parameters, int fosIndex) const
+{
+  IntermediateResults result{1};
+  (void)fosIndex;
+  itkDebugMacro(<< Self::GetNameOfClass() << ": Missing partial evaluations implementation.");
+  result[0] = this->GetValue(parameters);
+  return result;
+}
+
 template <class TFixedImage, class TMovingImage>
 void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluation(

@@ -174,12 +174,7 @@ GOMEA<TElastix>::AfterEachResolution(void)
 
   /** Print the stopping condition */
   elxout << "Stopping condition: " << stopcondition << ".\n";
-}
 
-template <class TElastix>
-void
-GOMEA<TElastix>::AfterRegistration(void)
-{
   AdvancedMetricType * metricAsAdvanced = GetCostFunctionAsAdvanced();
   ParametersType parameters = this->GetCurrentPosition();
 
@@ -195,8 +190,13 @@ GOMEA<TElastix>::AfterRegistration(void)
     }
   }
 
-  // this->SetCurrentPosition(parameters);
+  this->SetCurrentPosition(parameters);
+}
 
+template <class TElastix>
+void
+GOMEA<TElastix>::AfterRegistration(void)
+{
   elxout << "\nFinal metric value = " << this->m_Value << "\n";
 }
 } // namespace elastix
