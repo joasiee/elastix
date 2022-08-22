@@ -133,8 +133,11 @@ def execute_elastix(
             ]
 
         output = subprocess.DEVNULL if suppress_stdout else None
+        env = os.environ.copy()
+        if params["Optimizer"] == "AdaptiveStochasticGradientDescent":
+            env["OMP_WAIT_POLICY"] = "PASSIVE"
 
-        subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE)
+        subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
 
 
 def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
@@ -168,11 +171,11 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=10)
+        Parameters.from_base(mesh_size=3, metric="AdvancedMeanSquares")
         .asgd()
-        .multi_resolution(3)
         .result_image()
-        .stopping_criteria(1000)
+        .regularize(0.001, False)
+        .stopping_criteria(200)
         .instance(Collection.SYNTHETIC, 2)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)

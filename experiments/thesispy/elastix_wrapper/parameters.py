@@ -66,26 +66,28 @@ class Parameters:
         self.set_paths()
         return self.calc_voxel_params()
 
-    def multi_metric(
+    def regularize(
         self,
-        metric0: str = "AdvancedNormalizedCorrelation",
-        metric1: str = "TransformBendingEnergyPenaltyAnalytic",
-        weight0: float = 1.0,
-        weight1: float = 0.01,
-        params: Dict[str, Any] = None,
+        weight: float,
+        analytic: bool = True,
     ) -> Parameters:
         self.n_param("FixedImagePyramid", 2)
         self.n_param("MovingImagePyramid", 2)
         self.n_param("Interpolator", 2)
         self.n_param("ImageSampler", 2)
+        regularize_metric = (
+            "TransformBendingEnergyPenaltyAnalytic"
+            if analytic
+            else "TransformBendingEnergyPenalty"
+        )
+
         return self.args(
             {
                 "Registration": "MultiMetricMultiResolutionRegistration",
-                "Metric": [metric0, metric1],
-                "Metric0Weight": weight0,
-                "Metric1Weight": weight1,
-            },
-            params,
+                "Metric": [self["Metric"], regularize_metric],
+                "Metric0Weight": 1.0,
+                "Metric1Weight": weight,
+            }
         )
 
     def multi_resolution(
@@ -186,8 +188,8 @@ class Parameters:
 
         if not self["ImagePyramidSchedule"]:
             self["ImagePyramidSchedule"] = [
-                2**n
-                for n in range(self["NumberOfResolutions"] - 1, -1, -1)
+                n
+                for n in range(self["NumberOfResolutions"], 0, -1)
                 for _ in range(len(voxel_dims))
             ]
 
