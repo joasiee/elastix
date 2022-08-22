@@ -10,7 +10,7 @@ constexpr char         SceneId[]{ "02" };
 constexpr unsigned int Dimension = 3;
 
 constexpr int Padding = 5;
-constexpr int CubeSizeMoving = 19;
+constexpr int CubeSizeMoving = 20;
 constexpr int CubeSizeFixed = 0.6f * CubeSizeMoving;
 constexpr int ImageSize = CubeSizeMoving + 2 * Padding;
 
@@ -34,8 +34,6 @@ static void
 CreateFixedImageMask(ImageType::Pointer image);
 static void
 CreateMovingImage(ImageType::Pointer image);
-static void
-WriteLandmarks();
 
 int
 main(int, char *[])
@@ -73,8 +71,6 @@ main(int, char *[])
   itk::WriteImage(fixedImage, fixedPath);
   itk::WriteImage(fixedImageMask, fixedMaskPath);
   itk::WriteImage(movingImage, movingPath);
-
-  WriteLandmarks();
 
   return EXIT_SUCCESS;
 }
@@ -114,7 +110,7 @@ CreateMovingImage(ImageType::Pointer image)
   sphere->SetRadiusInObjectSpace(sphereRadius);
 
   EllipseType::PointType sphereCenter;
-  sphereCenter.Fill(SphereCenter);
+  sphereCenter.Fill(SphereCenter - 0.5);
   sphere->SetCenterInObjectSpace(sphereCenter);
 
   // image intensities
@@ -157,7 +153,7 @@ CreateFixedImage(ImageType::Pointer image)
   sphere->SetRadiusInObjectSpace(sphereRadius);
 
   EllipseType::PointType sphereCenter;
-  sphereCenter.Fill(SphereCenter);
+  sphereCenter.Fill(SphereCenter - 0.5);
   sphere->SetCenterInObjectSpace(sphereCenter);
 
   // inner cube
@@ -213,7 +209,7 @@ CreateFixedImageMask(ImageType::Pointer image)
   sphere->SetRadiusInObjectSpace(sphereRadius);
 
   EllipseType::PointType sphereCenter;
-  sphereCenter.Fill(SphereCenter);
+  sphereCenter.Fill(SphereCenter - 0.5);
   sphere->SetCenterInObjectSpace(sphereCenter);
 
   // image intensities
@@ -228,103 +224,4 @@ CreateFixedImageMask(ImageType::Pointer image)
   imageFilter->SetInput(sphere);
   imageFilter->Update();
   image->Graft(imageFilter->GetOutput());
-}
-
-void
-WriteLandmarks()
-{
-  using PointType = SpatialObjectType::PointType;
-  int low, high;
-
-  // moving landmarks
-  std::ofstream lmsMoving;
-  {
-    std::ostringstream oss;
-    oss << elastix_BINARY_DIR << "/Scenes/" << SceneId << "_Moving.txt";
-    lmsMoving.open(oss.str().c_str());
-    lmsMoving << "index\n12\n";
-  }
-
-  //  cube
-  low = Padding;
-  high = low + CubeSizeMoving - 1;
-
-  for (int i = 0; i < 6; ++i)
-  {
-    PointType point{};
-    point.Fill(SphereCenter);
-    point[i % 3] = i < 3 ? low : high;
-
-    for (int d = 0; d < Dimension; ++d)
-    {
-      lmsMoving << point[d] << " ";
-    }
-    lmsMoving << "\n";
-  }
-
-
-  //  sphere
-  low = SphereCenter - SphereRadiusMoving + 1;
-  high = SphereCenter + SphereRadiusMoving - 1;
-
-  for (int i = 0; i < 6; ++i)
-  {
-    PointType point{};
-    point.Fill(SphereCenter);
-    point[i % 3] = i < 3 ? low : high;
-
-    for (int d = 0; d < Dimension; ++d)
-    {
-      lmsMoving << point[d] << " ";
-    }
-    lmsMoving << "\n";
-  }
-  
-  lmsMoving.close();
-
-
-  // fixed landmarks
-  std::ofstream lmsFixed;
-  {
-    std::ostringstream oss;
-    oss << elastix_BINARY_DIR << "/Scenes/" << SceneId << "_Fixed.txt";
-    lmsFixed.open(oss.str().c_str());
-    lmsFixed << "index\n12\n";
-  }
-
-  //  sphere
-  low = SphereCenter - SphereRadiusFixed + 1;
-  high = SphereCenter + SphereRadiusFixed - 1;
-
-  for (int i = 0; i < 6; ++i)
-  {
-    PointType point{};
-    point.Fill(SphereCenter);
-    point[i % 3] = i < 3 ? low : high;
-
-    for (int d = 0; d < Dimension; ++d)
-    {
-      lmsFixed << point[d] << " ";
-    }
-    lmsFixed << "\n";
-  }
-
-  //  cube
-  low = Padding + (CubeSizeMoving - CubeSizeFixed) / 2.0f;
-  high = low + CubeSizeFixed - 1;
-
-  for (int i = 0; i < 6; ++i)
-  {
-    PointType point{};
-    point.Fill(SphereCenter);
-    point[i % 3] = i < 3 ? low : high;
-
-    for (int d = 0; d < Dimension; ++d)
-    {
-      lmsFixed << point[d] << " ";
-    }
-    lmsFixed << "\n";
-  }
-
-  lmsFixed.close();
 }

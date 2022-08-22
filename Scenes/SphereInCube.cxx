@@ -11,7 +11,7 @@ constexpr char SceneId[]{ "01" };
 constexpr unsigned int Dimension = 3;
 
 constexpr int Padding = 5;
-constexpr int CubeSize = 19;
+constexpr int CubeSize = 20;
 constexpr int ImageSize = CubeSize + 2 * Padding;
 
 constexpr int SphereCenter = CubeSize / 2.0f + Padding;
@@ -113,7 +113,7 @@ CreateMovingImage(ImageType::Pointer image)
   sphere->SetRadiusInObjectSpace(sphereRadius);
 
   EllipseType::PointType sphereCenter;
-  sphereCenter.Fill(SphereCenter);
+  sphereCenter.Fill(SphereCenter - 0.5);
   sphere->SetCenterInObjectSpace(sphereCenter);
 
   // image intensities
@@ -170,7 +170,7 @@ CreateFixedImage(ImageType::Pointer image)
   sphere->SetRadiusInObjectSpace(sphereRadius);
 
   EllipseType::PointType sphereCenter;
-  sphereCenter.Fill(SphereCenter);
+  sphereCenter.Fill(SphereCenter - 0.5);
   sphere->SetCenterInObjectSpace(sphereCenter);
 
   // image intensities
