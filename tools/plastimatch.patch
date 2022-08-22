@@ -2414,7 +2414,7 @@ index eab472ba..37429900 100644
  
  #endif
 diff --git a/src/plastimatch/register/bspline_regularize_analytic.cxx b/src/plastimatch/register/bspline_regularize_analytic.cxx
-index d51328b4..45fc8d26 100644
+index d51328b4..bef5623e 100644
 --- a/src/plastimatch/register/bspline_regularize_analytic.cxx
 +++ b/src/plastimatch/register/bspline_regularize_analytic.cxx
 @@ -18,116 +18,119 @@
@@ -2934,7 +2934,7 @@ index d51328b4..45fc8d26 100644
  }
  
  /* Employs my "world famous" thread safe "condense" control-point
-@@ -360,63 +353,64 @@ scale_Vmatrix_omp(double* V, double lambda)
+@@ -360,63 +353,68 @@ scale_Vmatrix_omp(double* V, double lambda)
   * sum-reduction capabilities */
  #if (OPENMP_FOUND)
  double
@@ -2950,7 +2950,8 @@ index d51328b4..45fc8d26 100644
 +    const Regularization_parms *reg_parms,
 +    const Bspline_xform *bxf,
 +    double *V,
-+    plm_long *knots)
++    plm_long *knots,
++    bool use_sets = true)
  {
 -    double S = 0.0;         /* Region smoothness */
 +    double S = 0.0; /* Region smoothness */
@@ -2988,9 +2989,12 @@ index d51328b4..45fc8d26 100644
 -        sets[3*j+0] += 2 * X[j];
 -        sets[3*j+1] += 2 * Y[j];
 -        sets[3*j+2] += 2 * Z[j];
-+        sets[3 * j + 0] += 2 * X[j];
-+        sets[3 * j + 1] += 2 * Y[j];
-+        sets[3 * j + 2] += 2 * Z[j];
++        if (use_sets)
++        {
++            sets[3 * j + 0] += 2 * X[j];
++            sets[3 * j + 1] += 2 * Y[j];
++            sets[3 * j + 2] += 2 * Z[j];
++        }
      }
  
      return S;
@@ -3038,7 +3042,7 @@ index d51328b4..45fc8d26 100644
      double X1[64] = {0};
      double Y1[64] = {0};
      double X2[64] = {0};
-@@ -438,87 +432,89 @@ region_smoothness_elastic (
+@@ -438,87 +436,89 @@ region_smoothness_elastic (
      double X9[64] = {0};
      double Y9[64] = {0};
      double Z9[64] = {0};
@@ -3192,15 +3196,15 @@ index d51328b4..45fc8d26 100644
 +    double *V18,
 +    double *V19,
 +    double *V20,
-+
-+    plm_long *knots)
++    plm_long *knots,
++    bool use_sets = true)
  {
 -    double S = 0.0;         /* Region smoothness */
 +    double S = 0.0; /* Region smoothness */
      double X1[64] = {0};
      double Y1[64] = {0};
      double X2[64] = {0};
-@@ -540,127 +536,132 @@ region_smoothness_elastic_omp (
+@@ -540,127 +540,135 @@ region_smoothness_elastic_omp (
      double X9[64] = {0};
      double Y9[64] = {0};
      double Z9[64] = {0};
@@ -3303,12 +3307,15 @@ index d51328b4..45fc8d26 100644
 -		2 * Y9[j];
 -        sets[3*j+2] += X3[j] + X4[j] + Y5[j] + Y6[j] + 2 * Z9[j] + 2 * Z7[j] + 
 -		2 * Z8[j];
-+        sets[3 * j + 0] += Y1[j] + Y2[j] + Z3[j] + Z4[j] + 2 * X7[j] + 2 * X8[j] +
-+                           2 * X9[j];
-+        sets[3 * j + 1] += X1[j] + X2[j] + Z5[j] + Z6[j] + 2 * Y8[j] + 2 * Y7[j] +
-+                           2 * Y9[j];
-+        sets[3 * j + 2] += X3[j] + X4[j] + Y5[j] + Y6[j] + 2 * Z9[j] + 2 * Z7[j] +
-+                           2 * Z8[j];
++        if (use_sets)
++        {
++            sets[3 * j + 0] += Y1[j] + Y2[j] + Z3[j] + Z4[j] + 2 * X7[j] + 2 * X8[j] +
++                               2 * X9[j];
++            sets[3 * j + 1] += X1[j] + X2[j] + Z5[j] + Z6[j] + 2 * Y8[j] + 2 * Y7[j] +
++                               2 * Y9[j];
++            sets[3 * j + 2] += X3[j] + X4[j] + Y5[j] + Y6[j] + 2 * Z9[j] + 2 * Z7[j] +
++                               2 * Z8[j];
++        }
      }
      return S;
  }
@@ -3420,7 +3427,7 @@ index d51328b4..45fc8d26 100644
  
      /* 4x4 matrices */
      this->QX[0] = this->QX_mats;
-@@ -678,15 +679,15 @@ Bspline_regularize::analytic_init (
+@@ -678,15 +686,15 @@ Bspline_regularize::analytic_init (
      this->QZ[2] = this->QZ[1] + 16;
      this->QZ[3] = this->QZ[2] + 16;
  
@@ -3441,7 +3448,7 @@ index d51328b4..45fc8d26 100644
       * V[15] - V[20] -> Linear Elastic with complex weights (Diffusion)*/
      this->V[0] = this->V_mats;
      this->V[1] = this->V[0] + 4096;
-@@ -702,7 +703,7 @@ Bspline_regularize::analytic_init (
+@@ -702,7 +710,7 @@ Bspline_regularize::analytic_init (
      this->V[11] = this->V[10] + 4096;
      this->V[12] = this->V[11] + 4096;
      this->V[13] = this->V[12] + 4096;
@@ -3450,7 +3457,7 @@ index d51328b4..45fc8d26 100644
      this->V[15] = this->V[14] + 4096;
      this->V[16] = this->V[15] + 4096;
      this->V[17] = this->V[16] + 4096;
-@@ -712,7 +713,7 @@ Bspline_regularize::analytic_init (
+@@ -712,7 +720,7 @@ Bspline_regularize::analytic_init (
      this->V[21] = this->V[20] + 4096;
      this->V[22] = this->V[21] + 4096;
      this->V[23] = this->V[22] + 4096;
@@ -3459,7 +3466,7 @@ index d51328b4..45fc8d26 100644
      this->V[25] = this->V[24] + 4096;
      this->V[26] = this->V[25] + 4096;
      this->V[27] = this->V[26] + 4096;
-@@ -721,339 +722,362 @@ Bspline_regularize::analytic_init (
+@@ -721,339 +729,364 @@ Bspline_regularize::analytic_init (
      this->V[30] = this->V[29] + 4096;
      this->V[31] = this->V[30] + 4096;
  
@@ -3976,24 +3983,26 @@ index d51328b4..45fc8d26 100644
 +    plm_long i, j;
 +    double S = 0.0;
 +    static constexpr int smoothness_regions[20] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
++    static double* sets;
 +
-+#pragma omp parallel for reduction(+ : S)
++#pragma omp parallel for reduction(+ \
++                                   : S)
 +    for (i = 0; i < regions.size(); ++i)
 +    {
 +        plm_long knots[64];
-+        double sets[3 * 64];
 +        find_knots_3(knots, regions[i], bxf->cdims);
 +
-+#pragma omp parallel for reduction(+ : S)
++#pragma omp parallel for reduction(+ \
++                                   : S)
 +        for (j = 0; j < 21; ++j)
 +        {
 +            if (j == 20)
 +                S += region_smoothness_elastic_omp(sets, reg_parms, bxf, rst->V[9],
 +                                                   rst->V[10], rst->V[11], rst->V[12], rst->V[13],
 +                                                   rst->V[14], rst->V[15], rst->V[16], rst->V[17],
-+                                                   rst->V[18], rst->V[19], rst->V[20], knots);
++                                                   rst->V[18], rst->V[19], rst->V[20], knots, false);
 +            else
-+                S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[smoothness_regions[j]], knots);
++                S += region_smoothness_omp(sets, reg_parms, bxf, rst->V[smoothness_regions[j]], knots, false);
 +        }
 +    }
 +
@@ -4113,7 +4122,7 @@ index 54af7065..565c29b9 100644
      double grad_score;
      plm_long ri, rj, rk;
 diff --git a/src/plastimatch/register/bspline_score.cxx b/src/plastimatch/register/bspline_score.cxx
-index a70eff7c..059c6977 100644
+index a70eff7c..570a30da 100644
 --- a/src/plastimatch/register/bspline_score.cxx
 +++ b/src/plastimatch/register/bspline_score.cxx
 @@ -10,6 +10,7 @@ Bspline_score::Bspline_score ()
@@ -4145,24 +4154,25 @@ index a70eff7c..059c6977 100644
  }
  
  void
-@@ -49,14 +51,14 @@ void
+@@ -48,16 +50,8 @@ Bspline_score::reset_smetric_grad ()
+ void
  Bspline_score::reset_score ()
  {
-     this->total_score = 0;
+-    this->total_score = 0;
 -    memset (this->total_grad, 0, this->num_coeff * sizeof(float));
+-    this->lmetric = 0;
 +    memset (this->total_grad, 0, this->num_coeff * sizeof(double));
-     this->lmetric = 0;
      this->rmetric = 0;
-     
-     this->metric_record.clear();
-     this->curr_num_vox = 0;
-     this->curr_smetric = 0;
+-    
+-    this->metric_record.clear();
+-    this->curr_num_vox = 0;
+-    this->curr_smetric = 0;
 -    memset (this->curr_smetric_grad, 0, this->num_coeff * sizeof(float));
-+    memset (this->curr_smetric_grad, 0, this->num_coeff * sizeof(double));
-     this->time_rmetric = 0;
+-    this->time_rmetric = 0;
  }
  
-@@ -115,7 +117,7 @@ Bspline_score::update_total_grad_b (
+ void
+@@ -115,7 +109,7 @@ Bspline_score::update_total_grad_b (
  
  void
  Bspline_score::update_grad (
@@ -4171,7 +4181,7 @@ index a70eff7c..059c6977 100644
      const Bspline_xform* bxf, 
      const plm_long p[3],
      plm_long qidx,
-@@ -144,7 +146,7 @@ Bspline_score::update_grad (
+@@ -144,7 +138,7 @@ Bspline_score::update_grad (
  
  void
  Bspline_score::update_grad_b (

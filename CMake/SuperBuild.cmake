@@ -14,26 +14,40 @@ set (EXTRA_CMAKE_ARGS
     -DITK_DIR:STRING=${DEPENDENCIES_PREFIX}/src/itk-build
     -G ${CMAKE_GENERATOR}
 )
+set (TARGET_DEPENDENCIES)
 
-ExternalProject_Add(
-    eigen
-    URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
-    PREFIX ${DEPENDENCIES_PREFIX}
-    INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
-    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/eigen-build --config Release --target all
-)
+cmake_policy(SET CMP0074 NEW)
 
-ExternalProject_Add(
-    itk
-    GIT_REPOSITORY https://github.com/joasiee/ITK.git
-    GIT_TAG origin/gomea
-    PREFIX ${DEPENDENCIES_PREFIX}
-    INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
-    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/itk-build --config Release --target all
-    INSTALL_COMMAND ""
-)
+set(Eigen3_ROOT ${DEPENDENCIES_PREFIX}/install/share/eigen3)
+find_package( Eigen3 QUIET)
+
+if(NOT ${Eigen3_FOUND})
+    ExternalProject_Add(
+        eigen
+        URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
+        PREFIX ${DEPENDENCIES_PREFIX}
+        INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
+        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/eigen-build --config Release --target all
+    )
+    set(TARGET_DEPENDENCIES ${TARGET_DEPENDENCIES} eigen)
+endif()
+
+set(ITK_DIR ${DEPENDENCIES_PREFIX}/src/itk-build)
+find_package( ITK 5.3 QUIET)
+if(NOT {ITK_FOUND})
+    ExternalProject_Add(
+        itk
+        GIT_REPOSITORY https://github.com/joasiee/ITK.git
+        GIT_TAG origin/gomea
+        PREFIX ${DEPENDENCIES_PREFIX}
+        INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
+        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/itk-build --config Release --target all
+        INSTALL_COMMAND ""
+    )
+    set(TARGET_DEPENDENCIES ${TARGET_DEPENDENCIES} itk)
+endif()
 
 
 set(PLASTIMATCH_ARGS
@@ -44,6 +58,9 @@ set(PLASTIMATCH_ARGS
     -DCMAKE_PREFIX_PATH:STRING=${DEPENDENCIES_PREFIX}/install
 )
 
+set(Plastimatch_ROOT ${DEPENDENCIES_PREFIX}/install/lib/cmake/plastimatch)
+find_package( Plastimatch QUIET)
+if(NOT ${Plastimatch_FOUND})
 ExternalProject_Add(
     plastimatch
     DEPENDS itk
@@ -55,6 +72,8 @@ ExternalProject_Add(
     INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${PLASTIMATCH_ARGS} ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
 )
+set(TARGET_DEPENDENCIES ${TARGET_DEPENDENCIES} plastimatch)
+endif()
 
 set(ELASTIX_ARGS
     -DCMAKE_PREFIX_PATH:STRING=${DEPENDENCIES_PREFIX}/install
@@ -65,7 +84,7 @@ set(ELASTIX_ARGS
 
 ExternalProject_Add (
     elastix
-    DEPENDS eigen itk plastimatch
+    DEPENDS ${TARGET_DEPENDENCIES}
     SOURCE_DIR ${PROJECT_SOURCE_DIR}
     CMAKE_ARGS -DUSE_SUPERBUILD=OFF ${EXTRA_CMAKE_ARGS} ${ELASTIX_ARGS}
     BUILD_COMMAND ${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR} --config ${CMAKE_BUILD_TYPE} --target all
