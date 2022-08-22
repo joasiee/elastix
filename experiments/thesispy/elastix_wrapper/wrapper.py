@@ -168,11 +168,11 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=12)
+        Parameters.from_base(mesh_size=10)
         .asgd()
+        .multi_resolution(3)
         .result_image()
-        .stopping_criteria(200)
-        .multi_metric(weight1=0.05)
-        .instance(Collection.SYNTHETIC, 1)
+        .stopping_criteria(1000)
+        .instance(Collection.SYNTHETIC, 2)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)

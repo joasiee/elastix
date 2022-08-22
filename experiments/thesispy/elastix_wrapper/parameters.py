@@ -181,7 +181,7 @@ class Parameters:
 
         if not self["GridSpacingSchedule"]:
             self["GridSpacingSchedule"] = [
-                1 for _ in range(self["NumberOfResolutions"])
+                i for i in range(self["NumberOfResolutions"], 0, -1)
             ]
 
         if not self["ImagePyramidSchedule"]:
@@ -326,6 +326,7 @@ if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, seed=1)
         .asgd()
+        .multi_resolution()
         .stopping_criteria(500)
         .instance(Collection.SYNTHETIC, 1)
     )

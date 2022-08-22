@@ -20,5 +20,6 @@
     "UseMask": "true",
     "WriteTransformParametersEachResolution": "true",
     "ErodeMask": "false",
-    "FixedImageBSplineInterpolationOrder": 1
+    "FixedImageBSplineInterpolationOrder": 1,
+    "WriteResultImage": "false"
 }

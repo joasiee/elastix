@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from typing import List
 import redis
 from dotenv import load_dotenv
 import os
@@ -50,6 +51,12 @@ class ExperimentQueue:
     def push(self, experiment: Experiment) -> None:
         self.client.rpush(ExperimentQueue.queue_id, experiment.to_json())
 
+    def bulk_push(self, experiments: List[Experiment]) -> None:
+        pipe = self.client.pipeline()
+        for experiment in experiments:
+            pipe.rpush(ExperimentQueue.queue_id, experiment.to_json())
+        pipe.execute()
+
     def pop(self) -> Experiment:
         packed = self.client.lpop(ExperimentQueue.queue_id)
         if packed:
@@ -79,5 +86,5 @@ def run_experiment(experiment: Experiment):
 
 if __name__ == "__main__":
     expq = ExperimentQueue()
-    expq.clear()
+    # expq.clear()
     print(expq.size())

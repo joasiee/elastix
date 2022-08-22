@@ -131,23 +131,21 @@ def pareto_front():
 
 
 def pareto_front_test():
-    for _ in range(40):
-        weight1 = np.random.uniform(0.01, 1.0)
-        weight1= np.around(weight1, 2)
-        for _ in range(5):
-            for gomea in [False]:
-                params = Parameters.from_base(mesh_size=4).multi_metric(weight1=weight1)
-                if gomea:
-                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=250)
-                else:
-                    params.asgd().stopping_criteria(iterations=10000)
+    for _ in range(500):
+        weight1 = np.random.uniform(8.0, 50.0)
+        weight1= np.around(weight1, 3)
+        for gomea in [False]:
+            params = Parameters.from_base(mesh_size=5).multi_metric(weight1=weight1)
+            if gomea:
+                params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=250)
+            else:
+                params.asgd().stopping_criteria(iterations=2000)
 
-                yield params
+            yield params
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
     fn = pareto_front_test
 
-    for experiment in yield_experiments(Collection.SYNTHETIC, 2, fn.__name__, fn):
-        queue.push(experiment)
+    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 2, fn.__name__, fn)))
