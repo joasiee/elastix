@@ -26,6 +26,20 @@
 
 namespace itk
 {
+
+class ITKCommon_EXPORT InputRegionOutsideOfMaskError : public ExceptionObject
+{
+public:
+  // Inherit the constructors from its base class.
+  using ExceptionObject::ExceptionObject;
+
+  const char *
+  GetNameOfClass() const override
+  {
+    return "InputRegionOutsideOfMaskError";
+  }
+};
+
 /** \class ImageSamplerBase
  *
  * \brief This class is a base class for any image sampler.

@@ -869,8 +869,14 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::BeforeThreadedGetValueAnd
   {
     this->SetTransformParameters(parameters);
     if (this->m_UseImageSampler)
-    {
       this->GetImageSampler()->Update();
+    else
+    {
+      for (auto & subfunctionSampler : m_SubfunctionSamplers)
+      {
+        if (subfunctionSampler)
+          subfunctionSampler->Update();
+      }
     }
   }
 
@@ -1105,7 +1111,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
     {
       subfunctionSampler->Update();
     }
-    catch (const std::exception & e)
+    catch (const InputRegionOutsideOfMaskError & e)
     {}
 
     if (subfunctionSampler->GetOutput()->Size() == 0UL)
@@ -1123,6 +1129,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   this->SetPartialEvaluations(true);
 
   this->ComputeFOSMapping();
+  this->ComputeParametersOutsideOfMask();
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1220,6 +1227,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
 
   std::vector<bool> pointAdded(this->m_BSplineFOSRegions.size(), false);
   const int         num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
+  m_ParametersOutsideOfMask = std::vector<bool>(bsplinePtr->GetNumberOfParameters(), false);
 
   // add regions (that are within mask if set) to 0th list containing all regions of image combined.
   for (i = 0; i < this->m_BSplineFOSRegions.size(); ++i)
@@ -1281,44 +1289,18 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetTasksForThread(ThreadIdType threadId,
-                                                                         int &        start,
-                                                                         int &        end) const
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeParametersOutsideOfMask()
 {
-  const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[this->m_CurrentFOSSet];
-  const int                tasks = fosPoints.size();
-  const int                remainder = tasks % Self::GetNumberOfWorkUnits();
-  const int num_tasks_default = floor(static_cast<double>(tasks) / static_cast<double>(Self::GetNumberOfWorkUnits()));
-  const int num_tasks = threadId < remainder ? num_tasks_default + 1 : num_tasks_default;
-  const int threads_default = std::max(static_cast<int>(threadId) - remainder, 0);
-  const int threads_default_plus = threadId - threads_default;
-
-  start = threads_default * num_tasks_default + threads_default_plus * (num_tasks_default + 1);
-  end = start + num_tasks;
-}
-
-template <class TFixedImage, class TMovingImage>
-uint_least64_t
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetSeedForBSplineRegion(int region) const
-{
-  double                          sum{ 0 };
-  const TransformParametersType & params = this->m_Transform->GetParameters();
-
-  for (int set : this->m_BSplineRegionsToFosSets[region])
+  for (int i = 1; i <= m_BSplinePointsRegions.size(); ++i)
   {
-    for (int i = 0; i < this->m_FOS.set_length[set]; ++i)
-      sum += abs(params[this->m_FOS.sets[set][i]]);
+    if (m_BSplinePointsRegions[i].size() == 0)
+    {
+      for (int j = 0; j < m_FOS.set_length[i-1]; ++j)
+      {
+        m_ParametersOutsideOfMask[m_FOS.sets[i-1][j]] = true;
+      }
+    }
   }
-
-  return static_cast<uint_least64_t>(sum * 1e5) + this->m_IterationSeed;
-}
-
-template <class TFixedImage, class TMovingImage>
-void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::UpdateIterationSeed()
-{
-  using RandomGeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
-  this->m_IterationSeed = static_cast<uint_least64_t>(RandomGeneratorType::GetInstance()->GetIntegerVariate());
 }
 
 template <class TFixedImage, class TMovingImage>

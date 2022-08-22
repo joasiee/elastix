@@ -180,9 +180,24 @@ template <class TElastix>
 void
 GOMEA<TElastix>::AfterRegistration(void)
 {
-  /** Print the best metric value */
-  elxout << "\n"
-         << "Final metric value = " << this->m_Value << "\n";
+  AdvancedMetricType * metricAsAdvanced = GetCostFunctionAsAdvanced();
+  ParametersType parameters = this->GetCurrentPosition();
+
+  if (metricAsAdvanced)
+  {
+    const std::vector<bool> & paramsOutsideMask = metricAsAdvanced->GetParametersOutsideOfMask();
+    for (int paramIndex = 0; paramIndex < paramsOutsideMask.size(); ++paramIndex)
+    {
+      if (paramsOutsideMask[paramIndex])
+      {
+        parameters[paramIndex] = 0;
+      }
+    }
+  }
+
+  // this->SetCurrentPosition(parameters);
+
+  elxout << "\nFinal metric value = " << this->m_Value << "\n";
 }
 } // namespace elastix
 

@@ -384,7 +384,7 @@ ImageSamplerBase<TInputImage>::CropInputImageRegion()
    */
   if (!cropped)
   {
-    itkExceptionMacro(<< "ERROR: the bounding box of the mask lies entirely out of the InputImageRegion!");
+    itkSpecializedExceptionMacro(InputRegionOutsideOfMaskError);
   }
   // }
 
