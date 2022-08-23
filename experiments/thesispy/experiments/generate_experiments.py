@@ -77,21 +77,26 @@ def multi_resolution_settings():
 
 
 def fos_settings():
-    for setting in [GOMEAType.GOMEA_FULL]:
+    for setting in [
+        GOMEAType.GOMEA_CP,
+        GOMEAType.GOMEA_UNIVARIATE,
+        GOMEAType.GOMEA_FULL,
+    ]:
         for seed in range(10):
             params = (
-                Parameters.from_base(mesh_size=5, seed=seed)
-                .multi_resolution(1, [5, 5, 5])
-                .gomea(fos=setting, pop_size=1000)
+                Parameters.from_base(mesh_size=5, seed=seed, metric="AdvancedMeanSquares")
+                .multi_resolution(1, [5])
+                .gomea(setting)
                 .stopping_criteria(iterations=300)
             )
             yield params
 
+
 def pop_sizes_cp():
     pop_size_fn = lambda n, n_params: int(31.7 + n * log2(n_params))
     for meshsize in [2, 4, 6, 10, 16]:
-        nr_params = (meshsize + 3)**3 * 3
-        for n in [2**x for x in range(6+1)]:
+        nr_params = (meshsize + 3) ** 3 * 3
+        for n in [2**x for x in range(6 + 1)]:
             params = (
                 Parameters.from_base(mesh_size=meshsize, seed=1)
                 .multi_resolution(1, [4, 4, 4])
@@ -99,6 +104,7 @@ def pop_sizes_cp():
                 .stopping_criteria(iterations=100)
             )
             yield params
+
 
 def subsampling_percentage():
     for seed in range(10):
@@ -111,19 +117,26 @@ def subsampling_percentage():
                     .sampler(sampler, pct=pct)
                 )
                 if gomea:
-                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=300)
+                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(
+                        iterations=300
+                    )
                 else:
                     params.asgd().stopping_criteria(iterations=15000)
 
                 yield params
 
+
 def pareto_front():
     for seed in range(10):
         for weight1 in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 5.0, 10.0]:
             for gomea in [True, False]:
-                params = Parameters.from_base(mesh_size=4, seed=seed).multi_metric(weight1=weight1)
+                params = Parameters.from_base(mesh_size=4, seed=seed).multi_metric(
+                    weight1=weight1
+                )
                 if gomea:
-                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=250)
+                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(
+                        iterations=250
+                    )
                 else:
                     params.asgd().stopping_criteria(iterations=10000)
 
@@ -133,7 +146,7 @@ def pareto_front():
 def pareto_front_test():
     for _ in range(500):
         weight1 = np.random.uniform(8.0, 50.0)
-        weight1= np.around(weight1, 3)
+        weight1 = np.around(weight1, 3)
         for gomea in [False]:
             params = Parameters.from_base(mesh_size=5).multi_metric(weight1=weight1)
             if gomea:
@@ -143,9 +156,14 @@ def pareto_front_test():
 
             yield params
 
+def queue_test():
+    for _ in range(10):
+        params = Parameters.from_base(mesh_size=5).asgd().stopping_criteria(iterations=100)
+        yield params
+
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = pareto_front_test
+    fn = queue_test
 
-    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 2, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))

@@ -6,3 +6,4 @@ wandb
 .python-version
 .venv
 tinydb
+notebooks/img

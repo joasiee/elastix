@@ -51,6 +51,9 @@ def run(
         logger.info(f"Run ended prematurely by user.")
         params.compute_tre = False
 
+    if params["WriteResultImage"] == "true":
+        execute_visualize(out_dir)
+
     if save_strategy:
         if params.compute_tre:
             tre = compute_tre(
@@ -69,9 +72,6 @@ def run(
     time_end = time.perf_counter()
 
     logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
-
-    if params["WriteResultImage"]:
-        execute_visualize(out_dir)
 
 
 def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Path, collection: Collection):
@@ -171,11 +171,10 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=3, metric="AdvancedMeanSquares")
-        .asgd()
+        Parameters.from_base(mesh_size=8, metric="AdvancedMeanSquares", seed=1)
+        .gomea(GOMEAType.GOMEA_CP)
         .result_image()
-        .regularize(0.001, False)
-        .stopping_criteria(200)
-        .instance(Collection.SYNTHETIC, 2)
+        .stopping_criteria(50)
+        .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)

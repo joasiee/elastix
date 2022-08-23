@@ -64,7 +64,6 @@ class SaveStrategyWandb(SaveStrategy):
 
     def close(self) -> None:
         self._log_buffer()
-        print(self.run_dir)
         wandb.save(
             str((self.run_dir / "out"/ "*").resolve()), base_path=str(self.run_dir.parents[0].resolve())
         )
