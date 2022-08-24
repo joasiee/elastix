@@ -1,4 +1,6 @@
 include(ExternalProject)
+cmake_policy(SET CMP0074 NEW)
+
 find_package(Git REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
@@ -15,8 +17,6 @@ set (EXTRA_CMAKE_ARGS
     -G ${CMAKE_GENERATOR}
 )
 set (TARGET_DEPENDENCIES)
-
-cmake_policy(SET CMP0074 NEW)
 
 set(Eigen3_ROOT ${DEPENDENCIES_PREFIX}/install/share/eigen3)
 find_package( Eigen3 QUIET)
