@@ -175,22 +175,22 @@ GOMEA<TElastix>::AfterEachResolution(void)
   /** Print the stopping condition */
   elxout << "Stopping condition: " << stopcondition << ".\n";
 
-  AdvancedMetricType * metricAsAdvanced = GetCostFunctionAsAdvanced();
-  ParametersType parameters = this->GetCurrentPosition();
+  // AdvancedMetricType * metricAsAdvanced = GetCostFunctionAsAdvanced();
+  // ParametersType parameters = this->GetCurrentPosition();
 
-  if (metricAsAdvanced)
-  {
-    const std::vector<bool> & paramsOutsideMask = metricAsAdvanced->GetParametersOutsideOfMask();
-    for (int paramIndex = 0; paramIndex < paramsOutsideMask.size(); ++paramIndex)
-    {
-      if (paramsOutsideMask[paramIndex])
-      {
-        parameters[paramIndex] = 0;
-      }
-    }
-  }
+  // if (metricAsAdvanced)
+  // {
+  //   const std::vector<bool> & paramsOutsideMask = metricAsAdvanced->GetParametersOutsideOfMask();
+  //   for (int paramIndex = 0; paramIndex < paramsOutsideMask.size(); ++paramIndex)
+  //   {
+  //     if (paramsOutsideMask[paramIndex])
+  //     {
+  //       parameters[paramIndex] = 0;
+  //     }
+  //   }
+  // }
 
-  this->SetCurrentPosition(parameters);
+  // this->SetCurrentPosition(parameters);
 }
 
 template <class TElastix>
