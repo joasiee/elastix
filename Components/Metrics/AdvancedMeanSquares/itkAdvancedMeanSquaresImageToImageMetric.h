@@ -256,9 +256,6 @@ protected:
   inline void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
 
-  bool
-  CheckNumberOfSamples(unsigned long wanted, unsigned long found) const override;
-
   typedef accumulator_set<RealType, stats<tag::mean>> MeanAccumulator;
   mutable MeanAccumulator                             m_MissedPixelsMean;
 

@@ -159,19 +159,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
 
 } // end Initialize()
 
-/**
- * *********************** CheckNumberOfSamples ***********************
- */
-
-template <class TFixedImage, class TMovingImage>
-bool
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsigned long wanted,
-                                                                                       unsigned long found) const
-{
-  this->m_NumberOfPixelsCounted = found;
-  return found >= wanted * this->GetRequiredRatioOfValidSamples();
-} // end CheckNumberOfSamples()
-
 
 /**
  * ******************* PrintSelf *******************
@@ -231,11 +218,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize);
   this->m_MissedPixelsMean(pctMissed * 100.0);
 
-  measure += numberOfPixelsMissed * this->m_MissedPixelPenalty;
-  measure *= this->m_NormalizationFactor / static_cast<RealType>(sampleContainerSize);
-  const bool valid = this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
+  measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
+  this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
 
-  return valid ? measure : NumericTraits<MeasureType>::max();
+  return measure;
 } // end GetValue()
 
 template <class TFixedImage, class TMovingImage>
