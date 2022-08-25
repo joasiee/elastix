@@ -89,7 +89,7 @@ GOMEAOptimizer::initialize(void)
   if (m_BasePopulationSize == 0.0)
   {
     if (m_MaxNumberOfPopulations == 1)
-      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(10 + 5 * log2((double)m_NrOfParameters))
+      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(10 + 7.18 * log2((double)m_NrOfParameters))
                                                   : static_cast<int>(m_NrOfParameters * 10);
     else
       m_BasePopulationSize = 10;
@@ -466,7 +466,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     individual_NIS[population_index][j] = 0;
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
-      populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * 0.218 * random1DNormalUnit();
+      populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * 0.1 * random1DNormalUnit();
     }
 
     this->costFunctionEvaluation(populations[population_index][j], j, objective_values[population_index][j]);
