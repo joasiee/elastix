@@ -51,7 +51,7 @@ def run(
         logger.info(f"Run ended prematurely by user.")
         params.compute_tre = False
 
-    if params["WriteResultImage"] == "true":
+    if params["WriteResultImage"] in {"true", True}:
         execute_visualize(out_dir)
 
     if save_strategy:
@@ -171,10 +171,10 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=8, metric="AdvancedMeanSquares", seed=1)
-        .gomea(GOMEAType.GOMEA_CP)
+        Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=1)
+        .gomea(GOMEAType.GOMEA_FULL)
         .result_image()
-        .stopping_criteria(50)
+        .stopping_criteria(150)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)
