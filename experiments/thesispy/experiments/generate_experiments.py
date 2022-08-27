@@ -78,15 +78,14 @@ def multi_resolution_settings():
 
 def fos_settings():
     for setting in [
-        GOMEAType.GOMEA_CP,
-        GOMEAType.GOMEA_UNIVARIATE,
+        # GOMEAType.GOMEA_CP,
+        # GOMEAType.GOMEA_UNIVARIATE,
         GOMEAType.GOMEA_FULL,
     ]:
-        for seed in range(10):
+        for seed in range(5):
             params = (
-                Parameters.from_base(mesh_size=5, seed=seed, metric="AdvancedMeanSquares")
-                .multi_resolution(1, [5])
-                .gomea(setting)
+                Parameters.from_base(mesh_size=4, seed=seed, metric="AdvancedMeanSquares")
+                .gomea(setting, pop_size=1000)
                 .stopping_criteria(iterations=300)
             )
             yield params
@@ -164,6 +163,6 @@ def queue_test():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = queue_test
+    fn = fos_settings
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
