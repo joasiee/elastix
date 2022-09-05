@@ -124,36 +124,24 @@ def subsampling_percentage():
 
                 yield params
 
-
-def pareto_front():
-    for seed in range(10):
-        for weight1 in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 5.0, 10.0]:
-            for gomea in [True, False]:
-                params = Parameters.from_base(mesh_size=4, seed=seed).multi_metric(
-                    weight1=weight1
-                )
-                if gomea:
-                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(
-                        iterations=250
-                    )
-                else:
-                    params.asgd().stopping_criteria(iterations=10000)
-
-                yield params
-
-
 def pareto_front_test():
-    for _ in range(500):
-        weight1 = np.random.uniform(8.0, 50.0)
-        weight1 = np.around(weight1, 3)
-        for gomea in [False]:
-            params = Parameters.from_base(mesh_size=5).multi_metric(weight1=weight1)
-            if gomea:
-                params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=250)
-            else:
-                params.asgd().stopping_criteria(iterations=2000)
+    for _ in range(1):
+        weight1 = np.random.uniform(0.001, 20)
+        weight1 = np.around(weight1, 9)
+        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares").regularize(0.0001)
+        params.gomea(GOMEAType.GOMEA_CP).stopping_criteria(iterations=100)
 
-            yield params
+        yield params
+
+def nomask_test():
+    for _ in range(10):
+        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", use_mask=False)
+        params.gomea(GOMEAType.GOMEA_CP).stopping_criteria(100)
+        yield params
+
+        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", use_mask=False)
+        params.asgd().stopping_criteria(5000)
+        yield params
 
 def queue_test():
     for _ in range(10):
@@ -163,6 +151,6 @@ def queue_test():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = fos_settings
+    fn = nomask_test
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))

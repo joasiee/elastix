@@ -47,12 +47,13 @@ class Parameters:
         cls,
         metric: str = "AdvancedNormalizedCorrelation",
         mesh_size: List[int] | int = 12,
+        use_mask: bool = True,
         seed: int = None,
     ):
         with BASE_PARAMS_PATH.open() as f:
             params: Dict[str, Any] = json.loads(f.read())
         return cls(params).args(
-            {"Metric": metric, "MeshSize": mesh_size, "RandomSeed": seed}
+            {"Metric": metric, "MeshSize": mesh_size, "UseMask": use_mask, "RandomSeed": seed}
         )
 
     @classmethod
