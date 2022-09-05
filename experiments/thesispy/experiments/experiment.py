@@ -42,7 +42,7 @@ class ExperimentQueue:
     def ssh_forwarding_enable(self):
         self.sshserver = SSHTunnelForwarder(
             os.environ["REDIS_HOST"],
-            ssh_username="ubuntu",
+            ssh_username="bitnami",
             remote_bind_address=("127.0.0.1", 6379),
         )
         self.sshserver.start()
