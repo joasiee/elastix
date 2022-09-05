@@ -19,7 +19,7 @@ set (EXTRA_CMAKE_ARGS
 set (TARGET_DEPENDENCIES)
 
 set(Eigen3_ROOT ${DEPENDENCIES_PREFIX}/install/share/eigen3)
-find_package( Eigen3 QUIET)
+find_package( Eigen3 QUIET NO_DEFAULT_PATH)
 
 if(NOT ${Eigen3_FOUND})
     ExternalProject_Add(
@@ -34,7 +34,7 @@ if(NOT ${Eigen3_FOUND})
 endif()
 
 set(ITK_DIR ${DEPENDENCIES_PREFIX}/src/itk-build)
-find_package( ITK 5.3 QUIET)
+find_package( ITK 5.3 QUIET NO_DEFAULT_PATH)
 if(NOT {ITK_FOUND})
     ExternalProject_Add(
         itk
@@ -59,7 +59,7 @@ set(PLASTIMATCH_ARGS
 )
 
 set(Plastimatch_ROOT ${DEPENDENCIES_PREFIX}/install/lib/cmake/plastimatch)
-find_package( Plastimatch QUIET)
+find_package( Plastimatch QUIET NO_DEFAULT_PATH)
 if(NOT ${Plastimatch_FOUND})
 ExternalProject_Add(
     plastimatch
