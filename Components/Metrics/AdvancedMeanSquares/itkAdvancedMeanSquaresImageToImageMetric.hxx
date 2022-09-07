@@ -628,7 +628,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
     /** Reset this variable for the next iteration. */
     this->m_GetValueAndDerivativePerThreadVariables[i].st_Value = NumericTraits<MeasureType>::Zero;
   }
-  // value += this->m_NumberOfPixelsMissed * this->m_MissedPixelPenalty;
   value *= normal_sum;
 
   /** Accumulate derivatives. */

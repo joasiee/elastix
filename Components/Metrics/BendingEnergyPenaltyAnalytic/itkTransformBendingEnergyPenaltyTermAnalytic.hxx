@@ -32,7 +32,7 @@ template <class TFixedImage, class TScalarType>
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::TransformBendingEnergyPenaltyTermAnalytic()
 {
   this->m_RegularizationParameters.implementation = 'c';
-  this->m_RegularizationParameters.curvature_penalty = 0.05f;
+  this->m_RegularizationParameters.curvature_penalty = 1.0f;
 }
 
 template <class TFixedImage, class TScalarType>
@@ -146,7 +146,12 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValueAnd
   this->m_BsplineScore.reset_score();
   this->m_BSplineRegularize.compute_score(
     &this->m_BsplineScore, &this->m_RegularizationParameters, &this->m_BsplineXform);
+  
   value = static_cast<MeasureType>(this->m_BsplineScore.rmetric) / static_cast<RealType>(m_BsplineXform.num_knots);
+  for (unsigned int i = 0; i < derivative.Size(); ++i)
+  {
+    derivative[i] /= static_cast<RealType>(m_BsplineXform.num_knots);
+  }
 } // end GetValueAndDerivative()
 
 /**
