@@ -106,27 +106,29 @@ GOMEAOptimizer::initialize(void)
   bspline_custom_tree = 0;
   GOMEA::number_of_parameters = m_NrOfParameters;
   FOS_element_ub = m_NrOfParameters;
-  if (m_FosElementSize == -1)
+  
+  if (m_FosElementSize == Full)
     m_FosElementSize = m_NrOfParameters;
-  if (m_FosElementSize == -2)
+  if (m_FosElementSize == LinkageTree)
     learn_linkage_tree = 1;
-  if (m_FosElementSize == -3)
+  if (m_FosElementSize == StaticLinkageTree)
     static_linkage_tree = 1;
-  if (m_FosElementSize == -4)
+  if (m_FosElementSize == StaticBoundedLinkageTree)
   {
     static_linkage_tree = 1;
     FOS_element_ub = 100;
   }
-  if (m_FosElementSize == -5)
+  if (m_FosElementSize == StaticBoundedRandomLinkageTree)
   {
     random_linkage_tree = 1;
     static_linkage_tree = 1;
     FOS_element_ub = 100;
   }
-  if (m_FosElementSize == -6)
+  if (m_FosElementSize == MarginalControlPoints)
     bspline_custom_tree = 1;
-  if (m_FosElementSize == 1)
+  if (m_FosElementSize == Univariate)
     use_univariate_FOS = 1;
+  
   GOMEA::FOS_element_size = m_FosElementSize;
 
   // finish initialization
@@ -1222,8 +1224,8 @@ GOMEAOptimizer::costFunctionEvaluation(int population_index, int individual_inde
 
   obj_val = this->GetValue(populations[population_index][individual_index], fos_index, individual_index);
 
-  // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index], -1, individual_index);
-  // if (abs(obj_val_full - obj_val) > 1e-5)
+  // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index]);
+  // if (abs(obj_val_full - obj_val) > 1e-8)
   //   std::cout << "WTF\n";
 
   ++m_NumberOfEvaluations;
