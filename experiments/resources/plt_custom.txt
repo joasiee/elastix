@@ -1,5 +1,4 @@
 lines.linewidth: 1
-figure.dpi: 150
 axes.titlelocation: left
 axes.linewidth: 0.6
 axes.spines.right : False
