@@ -125,11 +125,11 @@ def subsampling_percentage():
                 yield params
 
 def pareto_front_test():
-    for _ in range(1):
-        weight1 = np.random.uniform(0.001, 20)
+    for _ in range(100):
+        weight1 = np.random.uniform(0.15, 1.0)
         weight1 = np.around(weight1, 9)
-        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares").regularize(0.0001)
-        params.gomea(GOMEAType.GOMEA_CP).stopping_criteria(iterations=100)
+        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares").regularize(weight1)
+        params.gomea(GOMEAType.GOMEA_CP).stopping_criteria(iterations=50)
 
         yield params
 
@@ -151,6 +151,6 @@ def queue_test():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = nomask_test
+    fn = pareto_front_test
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))

@@ -328,8 +328,8 @@ class Parameters:
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, seed=1)
-        .asgd()
-        .multi_resolution()
+        .gomea(GOMEAType.GOMEA_CP)
+        .regularize(0.01)
         .stopping_criteria(500)
         .instance(Collection.SYNTHETIC, 1)
     )

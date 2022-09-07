@@ -1,13 +1,9 @@
 import wandb
-import matplotlib.pyplot as plt
 import pandas as pd
 from thesispy.experiments.dataset import FinishedRun, Dataset
-from thesispy.definitions import ROOT_DIR, IMG_DIR
 
-plt.style.use(["science", "high-vis", ROOT_DIR / "resources/plt_custom.txt"])
 api = wandb.Api(timeout=30)
 entity = "joasiee"
-DEFAULT_WIDTH = 485
 
 
 def parse_run(run):
