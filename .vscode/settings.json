@@ -86,5 +86,6 @@
         "strstream": "cpp",
         "forward_list": "cpp",
         "cholesky": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

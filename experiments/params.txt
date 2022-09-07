@@ -39,4 +39,4 @@
 (GridSpacingSchedule 1)
 (ImagePyramidSchedule 1 1 1)
 (FinalGridSpacingInVoxels 6 6 6)
-(BasePopulationSize 200)
+(NumberOfSpatialSamples 0)

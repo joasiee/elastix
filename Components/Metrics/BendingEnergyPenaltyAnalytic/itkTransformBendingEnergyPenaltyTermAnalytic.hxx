@@ -104,14 +104,9 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValuePar
                                                                                      int fosIndex) const
 {
   IntermediateResults result{ 1 };
-  if (this->m_BSplinePointsRegions[fosIndex + 1].size() == 0)
-  {
-    result[0] = NumericTraits<MeasureType>::max();
-    return result;
-  }
 
   m_BsplineXform.coeff_ = parameters.data_block();
-  result[0] = m_BSplineRegularize.compute_score_analytic_omp_regions(this->m_BSplinePointsRegions[fosIndex + 1],
+  result[0] = m_BSplineRegularize.compute_score_analytic_omp_regions(this->m_BSplinePointsRegionsNoMask[fosIndex + 1],
                                                                      &m_RegularizationParameters,
                                                                      &m_BSplineRegularize,
                                                                      &m_BsplineXform);

@@ -285,6 +285,8 @@ private:
   ezilaitini(void);
   void
   UpdatePosition();
+  void
+  GetValueSanityCheck(const ParametersType & parameters) const;
 
   mutable std::ostringstream m_StopConditionDescription;
 

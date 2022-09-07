@@ -412,11 +412,12 @@ protected:
   std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegions;
-  std::vector<int>                                   m_BSplinePointOffsetMap;
-  double                                             m_SamplingPercentage{ 0.05 };
-  FOS                                                m_FOS{ 0 };
-  mutable IntermediateResults                        m_PartialEvaluationHelper;
-  std::vector<bool>                                  m_ParametersOutsideOfMask;
+  std::vector<std::vector<int>>                      m_BSplinePointsRegionsNoMask;
+  std::vector<int>            m_BSplinePointOffsetMap;
+  double                      m_SamplingPercentage{ 0.05 };
+  FOS                         m_FOS{ 0 };
+  mutable IntermediateResults m_PartialEvaluationHelper;
+  std::vector<bool>           m_ParametersOutsideOfMask;
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };

@@ -1045,9 +1045,10 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
 
 template <class TFixedImage, class TMovingImage>
 IntermediateResults
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartial(const ParametersType & parameters, int fosIndex) const
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartial(const ParametersType & parameters,
+                                                                       int                    fosIndex) const
 {
-  IntermediateResults result{1};
+  IntermediateResults result{ 1 };
   (void)fosIndex;
   itkDebugMacro(<< Self::GetNameOfClass() << ": Missing partial evaluations implementation.");
   result[0] = this->GetValue(parameters);
@@ -1191,11 +1192,14 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
 
   this->m_BSplineFOSRegions.clear();
   this->m_BSplinePointsRegions.clear();
+  this->m_BSplinePointsRegionsNoMask.clear();
   this->m_BSplineRegionsToFosSets.clear();
 
   this->m_BSplineFOSRegions.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplinePointsRegions.resize(length + 1);
+  this->m_BSplinePointsRegionsNoMask.resize(length + 1);
+
 
   // iterate over these control points and calculate fixed image pixel regions
   ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(wrappedImage, coeffRegionCropped);
@@ -1244,6 +1248,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
   // add regions (that are within mask if set) to 0th list containing all regions of image combined.
   for (i = 0; i < this->m_BSplineFOSRegions.size(); ++i)
   {
+    this->m_BSplinePointsRegionsNoMask[0].push_back(i);
     if (this->m_SubfunctionSamplers[i])
       this->m_BSplinePointsRegions[0].push_back(i);
   }
@@ -1286,6 +1291,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
         {
           pointAdded[offset] = true;
 
+          this->m_BSplinePointsRegionsNoMask[j + 1].push_back(offset);
           if (this->m_SubfunctionSamplers[offset])
           {
             this->m_BSplinePointsRegions[j + 1].push_back(offset);
@@ -1307,9 +1313,9 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeParametersOutsideO
   {
     if (m_BSplinePointsRegions[i].size() == 0)
     {
-      for (int j = 0; j < m_FOS.set_length[i-1]; ++j)
+      for (int j = 0; j < m_FOS.set_length[i - 1]; ++j)
       {
-        m_ParametersOutsideOfMask[m_FOS.sets[i-1][j]] = true;
+        m_ParametersOutsideOfMask[m_FOS.sets[i - 1][j]] = true;
       }
     }
   }

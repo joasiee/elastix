@@ -468,7 +468,9 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     {
       populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * 0.1 * random1DNormalUnit();
     }
-
+    
+    // this->GetValueSanityCheck(populations[population_index][j]);
+    
     this->costFunctionEvaluation(populations[population_index][j], j, objective_values[population_index][j]);
     this->SavePartialEvaluation(j);
   }
@@ -1225,6 +1227,26 @@ GOMEAOptimizer::costFunctionEvaluation(int population_index, int individual_inde
   //   std::cout << "WTF\n";
 
   ++m_NumberOfEvaluations;
+}
+
+void
+GOMEAOptimizer::GetValueSanityCheck(const ParametersType & parameters) const
+{
+  Array<double> derivative(m_NrOfParameters);
+  MeasureType obj_val3;
+
+  MeasureType obj_val = this->GetValue(parameters);
+  MeasureType obj_val2 = this->GetValue(parameters, -1, 0);
+  this->GetCostFunction()->GetValueAndDerivative(parameters, obj_val3, derivative);
+
+  if (abs(obj_val - obj_val2) > 1e-8)
+    std::cout << "WTF0\n";
+
+  if (abs(obj_val - obj_val3) > 1e-8)
+    std::cout << "WTF1\n";
+
+  if (abs(obj_val2 - obj_val3) > 1e-8)
+    std::cout << "WTF2\n";
 }
 
 /**
