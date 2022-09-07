@@ -75,6 +75,18 @@ public:
     Unknown
   } StopConditionType;
 
+  typedef enum
+  {
+    Univariate = 1,
+    MarginalControlPoints = -6,
+    MarginalRegions = -7,
+    Full = -1,
+    LinkageTree = -2,
+    StaticLinkageTree = -3,
+    StaticBoundedLinkageTree = -4,
+    StaticBoundedRandomLinkageTree = -5
+  } FOSType;
+
   void
   StartOptimization() override;
   void
