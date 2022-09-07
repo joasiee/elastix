@@ -24,7 +24,7 @@ class SaveStrategyPrint(SaveStrategy):
         print(f"R{resolution}: {headers} --- {row}")
 
 class SaveStrategyWandb(SaveStrategy):
-    def __init__(self, experiment, run_dir: Path, batch_size: int = 1) -> None:
+    def __init__(self, experiment, run_dir: Path, batch_size: int = 1, save_files: bool = False) -> None:
         wandb.init(project=experiment.project,
                      name=str(experiment.params), reinit=True)
         wandb.config.update(experiment.params.params)
@@ -34,6 +34,7 @@ class SaveStrategyWandb(SaveStrategy):
         self._sum_time = 0
         self._resolution = 0
         self._buffer = (None, None)
+        self._save_files = save_files
 
     def _reset_state(self):
         self._rowcount = 0
@@ -64,9 +65,10 @@ class SaveStrategyWandb(SaveStrategy):
 
     def close(self) -> None:
         self._log_buffer()
-        wandb.save(
-            str((self.run_dir / "out"/ "*").resolve()), base_path=str(self.run_dir.parents[0].resolve())
-        )
+        if self._save_files:
+            wandb.save(
+                str((self.run_dir / "out"/ "*").resolve()), base_path=str(self.run_dir.parents[0].resolve())
+            )
         wandb_dir = Path(wandb.run.dir)
         wandb.finish()
         shutil.rmtree(self.run_dir.absolute())
