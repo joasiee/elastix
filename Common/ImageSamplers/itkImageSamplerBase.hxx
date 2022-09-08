@@ -397,7 +397,7 @@ template <class TInputImage>
 bool
 ImageSamplerBase<TInputImage>::CropRegion(InputImageRegionType & region)
 {
-  if (!this->m_Mask.IsNull())
+  if (!this->m_Mask.IsNull() && this->m_UseMask)
   {
     /** Get a handle to the input image. */
     InputImageConstPointer inputImage = this->GetInput();
