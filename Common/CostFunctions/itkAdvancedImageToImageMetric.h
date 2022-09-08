@@ -240,6 +240,9 @@ public:
   itkSetMacro(RequiredRatioOfValidSamples, double);
   itkGetConstMacro(RequiredRatioOfValidSamples, double);
 
+  itkSetMacro(NumberOfFixedImageVoxels, unsigned long);
+  itkGetConstMacro(NumberOfFixedImageVoxels, unsigned long);
+
   /** Set/Get the Moving/Fixed limiter. Its thresholds and bounds are set by the metric.
    * Setting a limiter is only mandatory if GetUse{Fixed,Moving}Limiter() returns true. */
   itkSetObjectMacro(MovingImageLimiter, MovingImageLimiterType);
@@ -413,11 +416,11 @@ protected:
   std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegionsNoMask;
-  std::vector<int>            m_BSplinePointOffsetMap;
-  double                      m_SamplingPercentage{ 0.05 };
-  FOS                         m_FOS{ 0 };
-  mutable IntermediateResults m_PartialEvaluationHelper;
-  std::vector<bool>           m_ParametersOutsideOfMask;
+  std::vector<int>                                   m_BSplinePointOffsetMap;
+  double                                             m_SamplingPercentage{ 0.05 };
+  FOS                                                m_FOS{ 0 };
+  mutable IntermediateResults                        m_PartialEvaluationHelper;
+  std::vector<bool>                                  m_ParametersOutsideOfMask;
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };
@@ -691,6 +694,7 @@ private:
   bool           m_PartialEvaluations{ false };
   double         m_RequiredRatioOfValidSamples{ 0.25 };
   uint_least64_t m_IterationSeed;
+  unsigned long  m_NumberOfFixedImageVoxels{ 0UL };
 
 
   MovingImageDerivativeScalesType m_MovingImageDerivativeScales{ MovingImageDerivativeScalesType::Filled(1.0) };

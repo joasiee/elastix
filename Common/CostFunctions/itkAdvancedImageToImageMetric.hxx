@@ -122,6 +122,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     setNumberOfWorkUnitsIfNotNull(m_BSplineInterpolatorFloat);
   }
 
+  this->SetNumberOfFixedImageVoxels(this->GetFixedImageRegion().GetNumberOfPixels());
 } // end Initialize()
 
 

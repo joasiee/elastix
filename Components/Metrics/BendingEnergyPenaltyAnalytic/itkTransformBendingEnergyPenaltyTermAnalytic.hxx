@@ -83,7 +83,8 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(co
   this->m_BSplineRegularize.compute_score(
     &this->m_BsplineScore, &this->m_RegularizationParameters, &this->m_BsplineXform);
 
-  return static_cast<MeasureType>(this->m_BsplineScore.rmetric) / static_cast<RealType>(m_BsplineXform.num_knots);
+  return static_cast<MeasureType>(this->m_BsplineScore.rmetric) /
+         static_cast<MeasureType>(this->GetNumberOfFixedImageVoxels());
 }
 
 template <class TFixedImage, class TScalarType>
@@ -91,7 +92,7 @@ typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Me
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(
   const IntermediateResults & evaluation) const
 {
-  return evaluation[0] / static_cast<RealType>(m_BsplineXform.num_knots);
+  return evaluation[0] / static_cast<MeasureType>(this->GetNumberOfFixedImageVoxels());
 }
 
 /**
@@ -146,11 +147,12 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValueAnd
   this->m_BsplineScore.reset_score();
   this->m_BSplineRegularize.compute_score(
     &this->m_BsplineScore, &this->m_RegularizationParameters, &this->m_BsplineXform);
-  
-  value = static_cast<MeasureType>(this->m_BsplineScore.rmetric) / static_cast<RealType>(m_BsplineXform.num_knots);
+
+  value = static_cast<MeasureType>(this->m_BsplineScore.rmetric) /
+          static_cast<MeasureType>(this->GetNumberOfFixedImageVoxels());
   for (unsigned int i = 0; i < derivative.Size(); ++i)
   {
-    derivative[i] /= static_cast<RealType>(m_BsplineXform.num_knots);
+    derivative[i] /= static_cast<MeasureType>(this->GetNumberOfFixedImageVoxels());
   }
 } // end GetValueAndDerivative()
 
