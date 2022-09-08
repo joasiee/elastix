@@ -103,7 +103,7 @@ GOMEAOptimizer::initialize(void)
   learn_linkage_tree = 0;
   static_linkage_tree = 0;
   random_linkage_tree = 0;
-  bspline_custom_tree = 0;
+  bspline_marginal_cp = 0;
   GOMEA::number_of_parameters = m_NrOfParameters;
   FOS_element_ub = m_NrOfParameters;
   
@@ -125,7 +125,7 @@ GOMEAOptimizer::initialize(void)
     FOS_element_ub = 100;
   }
   if (m_FosElementSize == MarginalControlPoints)
-    bspline_custom_tree = 1;
+    bspline_marginal_cp = 1;
   if (m_FosElementSize == Univariate)
     use_univariate_FOS = 1;
   
@@ -405,7 +405,7 @@ GOMEAOptimizer::initializeFOS(int population_index)
     else
       new_FOS = copyFOS(linkage_model[0]);
   }
-  else if (bspline_custom_tree)
+  else if (bspline_marginal_cp)
   {
     new_FOS = (FOS *)Malloc(sizeof(FOS));
     new_FOS->length = m_NrOfParameters / m_ImageDimension;
@@ -469,10 +469,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
       populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * 0.1 * random1DNormalUnit();
-    }
-    
-    // this->GetValueSanityCheck(populations[population_index][j]);
-    
+    }    
     this->costFunctionEvaluation(populations[population_index][j], j, objective_values[population_index][j]);
     this->SavePartialEvaluation(j);
   }
@@ -555,6 +552,7 @@ GOMEAOptimizer::computeRanksForOnePopulation(int population_index)
 
     rank = 0;
     ranks[population_index][sorted[0]] = rank;
+    selections[population_index][rank] = populations[population_index][sorted[0]];
     for (i = 1; i < population_sizes[population_index]; i++)
     {
       if (objective_values[population_index][sorted[i]] != objective_values[population_index][sorted[i - 1]])
@@ -1224,9 +1222,7 @@ GOMEAOptimizer::costFunctionEvaluation(int population_index, int individual_inde
 
   obj_val = this->GetValue(populations[population_index][individual_index], fos_index, individual_index);
 
-  // MeasureType obj_val_full = this->GetValue(populations[population_index][individual_index]);
-  // if (abs(obj_val_full - obj_val) > 1e-8)
-  //   std::cout << "WTF\n";
+  // this->GetValueSanityCheck(populations[population_index][individual_index]);
 
   ++m_NumberOfEvaluations;
 }
