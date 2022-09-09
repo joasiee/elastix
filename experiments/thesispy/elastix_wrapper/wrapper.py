@@ -69,6 +69,9 @@ def run(
         wd.join()
         wd.sv_strategy.close()
 
+    # Generate Deformation Vector Field (DVF)
+    generate_transformed_points(out_dir / "TransformParameters.0.txt", params.fixed_path, None, out_dir)
+
     time_end = time.perf_counter()
 
     logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
@@ -84,7 +87,7 @@ def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Pat
         spacing = np.array(image.header.get_zooms())
 
     try:
-        execute_transformix(params_file, lms_fixed, out_dir)
+        generate_transformed_points(params_file, img_fixed, lms_fixed, out_dir)
     except subprocess.CalledProcessError as err:
         err_msg = err.stderr.decode("utf-8").strip("\n")
         logger.error(
@@ -140,13 +143,15 @@ def execute_elastix(
         subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
 
 
-def execute_transformix(params_file: Path, points_file: Path, out_dir: Path):
+def generate_transformed_points(params_file: Path, fixed_image: Path, points_file: Path, out_dir: Path):
     args = [
         TRANSFORMIX,
+        "-in",
+        str(fixed_image),
         "-tp",
         str(params_file),
         "-def",
-        str(points_file),
+        str(points_file) if points_file else "all",
         "-out",
         str(out_dir),
         "-threads",
@@ -172,9 +177,9 @@ def execute_visualize(out_dir: Path):
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=1)
-        .gomea(GOMEAType.GOMEA_FULL)
-        .result_image()
-        .stopping_criteria(150)
+        .asgd()
+        # .result_image()
+        .stopping_criteria(1000)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)
