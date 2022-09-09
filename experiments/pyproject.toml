@@ -29,6 +29,8 @@ seaborn = "^0.11.2"
 SciencePlots = "^1.0.9"
 ipywidgets = "^7.7.1"
 SimpleITK = "^2.1.1"
+numdifftools = "^0.9.40"
+joblib = "^1.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
