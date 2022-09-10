@@ -18,7 +18,7 @@ constexpr int SphereCenter = CubeSize / 2.0f + Padding;
 constexpr int SphereRadiusMoving = 0.8f * CubeSize / 2.0f;
 constexpr int SphereRadiusFixed = 0.5f * CubeSize / 2.0f;
 
-constexpr int CubeIntensity = 200;
+constexpr int CubeIntensity = 50;
 constexpr int SphereIntensity = 100;
 constexpr int OutsideIntensity = 0;
 

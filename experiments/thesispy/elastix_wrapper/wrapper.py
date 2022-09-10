@@ -70,7 +70,7 @@ def run(
         wd.sv_strategy.close()
 
     # Generate Deformation Vector Field (DVF)
-    generate_transformed_points(out_dir / "TransformParameters.0.txt", params.fixed_path, None, out_dir)
+    generate_transformed_points(out_dir / "TransformParameters.0.txt", params.moving_path, None, out_dir)
 
     time_end = time.perf_counter()
 
@@ -137,8 +137,7 @@ def execute_elastix(
 
         output = subprocess.DEVNULL if suppress_stdout else None
         env = os.environ.copy()
-        if params["Optimizer"] == "AdaptiveStochasticGradientDescent":
-            env["OMP_WAIT_POLICY"] = "PASSIVE"
+        env["OMP_WAIT_POLICY"] = "PASSIVE"
 
         subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
 
@@ -176,9 +175,10 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=1)
+        Parameters.from_base(mesh_size=9, metric="AdvancedMeanSquares", seed=1)
         .asgd()
-        # .result_image()
+        .result_image()
+        .regularize(1e-9, True)
         .stopping_criteria(1000)
         .instance(Collection.SYNTHETIC, 1)
     )

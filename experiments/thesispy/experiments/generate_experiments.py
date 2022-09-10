@@ -125,22 +125,20 @@ def subsampling_percentage():
                 yield params
 
 def pareto_front_test():
-    for _ in range(100):
-        weight1 = np.random.uniform(0.15, 1.0)
-        weight1 = np.around(weight1, 9)
-        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares").regularize(weight1)
-        params.gomea(GOMEAType.GOMEA_CP).stopping_criteria(iterations=50)
+    for weight in [0.001 * 1.25**i for i in range(40)]:
+        weight = np.around(weight, 3)
+        params = Parameters.from_base(mesh_size=12, metric="AdvancedMeanSquares").regularize(weight)
+        params.asgd().stopping_criteria(iterations=10000)
 
         yield params
 
-def nomask_test():
-    for _ in range(10):
-        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", use_mask=False)
-        params.gomea(GOMEAType.GOMEA_CP).stopping_criteria(100)
-        yield params
 
-        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", use_mask=False)
-        params.asgd().stopping_criteria(5000)
+def pareto_front():
+    for weight in [0.00001 * 2**i for i in range(20)]:
+        weight = np.around(weight, 5)
+        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares").regularize(weight)
+        params.asgd().stopping_criteria(iterations=5000)
+
         yield params
 
 def queue_test():
@@ -153,4 +151,4 @@ if __name__ == "__main__":
     queue = ExperimentQueue()
     fn = pareto_front_test
 
-    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__ + "_asgd", fn)))

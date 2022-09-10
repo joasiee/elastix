@@ -13,5 +13,6 @@ module load system/gcc/11.2.0
 
 export OMP_NUM_THREADS=12
 export OMP_THREAD_LIMIT=12
+export OMP_WAIT_POLICY=PASSIVE
 
 .venv/bin/python thesispy/experiments/run_queue.py
