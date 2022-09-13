@@ -70,7 +70,7 @@ def run(
         wd.sv_strategy.close()
 
     # Generate Deformation Vector Field (DVF)
-    generate_transformed_points(out_dir / "TransformParameters.0.txt", params.moving_path, None, out_dir)
+    generate_transformed_points(out_dir / "TransformParameters.0.txt", None, out_dir)
 
     time_end = time.perf_counter()
 
@@ -87,7 +87,7 @@ def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Pat
         spacing = np.array(image.header.get_zooms())
 
     try:
-        generate_transformed_points(params_file, img_fixed, lms_fixed, out_dir)
+        generate_transformed_points(params_file, lms_fixed, out_dir)
     except subprocess.CalledProcessError as err:
         err_msg = err.stderr.decode("utf-8").strip("\n")
         logger.error(
@@ -142,11 +142,9 @@ def execute_elastix(
         subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
 
 
-def generate_transformed_points(params_file: Path, fixed_image: Path, points_file: Path, out_dir: Path):
+def generate_transformed_points(params_file: Path, points_file: Path, out_dir: Path):
     args = [
         TRANSFORMIX,
-        "-in",
-        str(fixed_image),
         "-tp",
         str(params_file),
         "-def",
@@ -175,11 +173,11 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=9, metric="AdvancedMeanSquares", seed=1)
+        Parameters.from_base(mesh_size=8, metric="AdvancedMeanSquares", seed=1, use_mask=False)
         .asgd()
         .result_image()
-        .regularize(1e-9, True)
-        .stopping_criteria(1000)
+        # .regularize(1e-9, True)
+        .stopping_criteria(5)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False)
