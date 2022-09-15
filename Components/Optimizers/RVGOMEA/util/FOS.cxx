@@ -43,7 +43,7 @@
 namespace GOMEA
 {
 int *mpm_number_of_indices, number_of_parameters, FOS_element_ub, use_univariate_FOS, learn_linkage_tree,
-  static_linkage_tree, random_linkage_tree, bspline_custom_tree, FOS_element_size;
+  static_linkage_tree, random_linkage_tree, bspline_marginal_cp, FOS_element_size;
 double ***MI_matrices, **S_matrix, *S_vector;
 void
 printFOS(FOS * fos)
