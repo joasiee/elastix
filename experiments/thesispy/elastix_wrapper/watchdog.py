@@ -3,6 +3,7 @@ import re
 import shutil
 import threading
 import time
+from typing import Any, Dict
 import wandb
 import os
 import pandas as pd
@@ -60,14 +61,14 @@ class SaveStrategyWandb(SaveStrategy):
         if self._rowcount == self.batch_size:
             self._log_buffer()
 
-    def save_custom(self, metric: str, value) -> None:
-        wandb.log({metric: value}, commit=False)
+    def save_custom(self, vals: Dict[str, Any]) -> None:
+        wandb.log(vals, commit=False)
 
     def close(self) -> None:
         self._log_buffer()
         if self._save_files:
             wandb.save(
-                str((self.run_dir / "out"/ "*").resolve()), base_path=str(self.run_dir.parents[0].resolve())
+                str((self.run_dir / "out"/ "TransformParameters.0.txt").resolve()), base_path=str(self.run_dir.parents[0].resolve())
             )
         wandb_dir = Path(wandb.run.dir)
         wandb.finish()

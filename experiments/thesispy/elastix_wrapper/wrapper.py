@@ -10,8 +10,10 @@ import numpy as np
 import nibabel as nib
 
 from thesispy.elastix_wrapper import TimeoutException, time_limit
-from thesispy.elastix_wrapper.parameters import Collection, GOMEAType, Parameters
-from thesispy.elastix_wrapper.watchdog import SaveStrategy, SaveStrategyPrint, Watchdog
+from thesispy.elastix_wrapper.parameters import Collection, Parameters
+from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
+from thesispy.experiments.instance import get_np_array, read_deformed_lms, get_instance
+from thesispy.experiments.validation import calc_validation
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 TRANSFORMIX = os.environ.get("TRANSFORMIX_EXECUTABLE")
@@ -23,6 +25,7 @@ def run(
     run_dir: Path,
     save_strategy: SaveStrategy = None,
     suppress_stdout: bool = True,
+    visualize: bool = False,
 ) -> Dict[str, Any]:
     time_start = time.perf_counter()
 
@@ -46,66 +49,40 @@ def run(
         )
     except TimeoutException:
         logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
-        params.compute_tre = False
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
-        params.compute_tre = False
 
-    if params["WriteResultImage"] in {"true", True}:
-        execute_visualize(out_dir)
+    val_metrics = validation(params, run_dir)
+    val_metrics = {"Validation/" + str(key): val for key, val in val_metrics.items()}
 
     if save_strategy:
-        if params.compute_tre:
-            tre = compute_tre(
-                out_dir,
-                params.lms_fixed_path,
-                params.lms_moving_path,
-                params.fixed_path,
-                params["Collection"]
-            )
-            logger.info(f"TRE: {tre}")
-            wd.sv_strategy.save_custom("TRE", tre)
+        wd.sv_strategy.save_custom(val_metrics)
         wd.stop()
         wd.join()
         wd.sv_strategy.close()
 
-    # Generate Deformation Vector Field (DVF)
-    generate_transformed_points(out_dir / "TransformParameters.0.txt", None, out_dir)
-
     time_end = time.perf_counter()
-
     logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
 
+    if visualize and not save_strategy:
+        execute_visualize(out_dir)
 
-def compute_tre(out_dir: Path, lms_fixed: Path, lms_moving: Path, img_fixed: Path, collection: Collection):
-    params_file = out_dir / "TransformParameters.0.txt"
-    lms_moving = np.loadtxt(lms_moving, skiprows=2)
+def validation(params: Parameters, run_dir: Path):
+    out_dir = run_dir.joinpath(Path("out"))
+    transform_params = out_dir / "TransformParameters.0.txt"
+    instance = get_instance(Collection(params['Collection']), int(params['Instance']))
+    deformed, dvf, deformed_lms = None, None, None
 
-    spacing = np.ones(3)
-    if collection == Collection.LEARN:
-        image = nib.load(img_fixed)
-        spacing = np.array(image.header.get_zooms())
+    if instance.lms_fixed:
+        generate_transformed_points(transform_params, params.lms_fixed_path, out_dir)
+        deformed_lms = read_deformed_lms(out_dir / "outputpoints.txt")
+    
+    generate_transformed_points(transform_params, None, out_dir)
+    dvf = get_np_array(out_dir / "deformationField.mhd")
 
-    try:
-        generate_transformed_points(params_file, lms_fixed, out_dir)
-    except subprocess.CalledProcessError as err:
-        err_msg = err.stderr.decode("utf-8").strip("\n")
-        logger.error(
-            f"Something went wrong while running transformix at: {str(out_dir)}, {err_msg}"
-        )
-        return
+    deformed = get_np_array(out_dir / "result.0.mhd")
 
-    warped_points = out_dir / "outputpoints.txt"
-    lms_fixed_warped = np.zeros(lms_moving.shape)
-    with open(warped_points) as file:
-        lines = file.readlines()
-        for i, line in enumerate(lines):
-            s = line.split(";")[3]
-            s = s[s.find("[") + 1 : s.find("]")].split(" ")
-            index = np.array([float(s[1]), float(s[2]), float(s[3])])
-            lms_fixed_warped[i] = index
-
-    return np.linalg.norm((lms_fixed_warped - lms_moving) * spacing, axis=1).mean()
+    return calc_validation(instance, deformed, dvf, deformed_lms)
 
 
 def execute_elastix(
@@ -127,13 +104,6 @@ def execute_elastix(
         ]
         if params.fixedmask_path and params["UseMask"]:
             args += ["-fMask", str(params.fixedmask_path)]
-        if params.compute_tre:
-            args += [
-                "-fp",
-                str(params.lms_fixed_path.resolve()),
-                "-mp",
-                str(params.lms_moving_path.resolve()),
-            ]
 
         output = subprocess.DEVNULL if suppress_stdout else None
         env = os.environ.copy()
@@ -180,4 +150,4 @@ if __name__ == "__main__":
         .stopping_criteria(5)
         .instance(Collection.SYNTHETIC, 1)
     )
-    run(params, Path("output/" + str(params)), SaveStrategy(), False)
+    run(params, Path("output/" + str(params)), SaveStrategy(), False, True)

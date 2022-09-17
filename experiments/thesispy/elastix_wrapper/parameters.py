@@ -4,38 +4,14 @@ from datetime import datetime
 import json
 import logging
 from math import ceil
-import os
 import time
 from PIL import Image
 import nibabel as nib
-from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List
-from thesispy.definitions import ROOT_DIR
-
-BASE_PARAMS_PATH = ROOT_DIR / Path("resources", "base_params.json")
-INSTANCE_CONFIG_PATH = ROOT_DIR / Path("resources", "instances.json")
-INSTANCES_CONFIG: Dict[str, str] = {}
-INSTANCES_SRC = Path(os.environ.get("INSTANCES_SRC"))
-
-with INSTANCE_CONFIG_PATH.open() as f:
-    INSTANCES_CONFIG = json.loads(f.read())
+from thesispy.definitions import *
 
 logger = logging.getLogger("Parameters")
-
-
-class Collection(str, Enum):
-    EMPIRE = "EMPIRE"
-    LEARN = "LEARN"
-    EXAMPLES = "EXAMPLES"
-    SYNTHETIC = "SYNTHETIC"
-
-
-class GOMEAType(Enum):
-    GOMEA_FULL = -1
-    GOMEA_UNIVARIATE = 1
-    GOMEA_CP = -6
-
 
 class Parameters:
     def __init__(self, params) -> None:
@@ -144,13 +120,9 @@ class Parameters:
             {
                 "WritePyramidImagesAfterEachResolution": True,
                 "WriteSamplesEveryIteration": True,
-                "WriteMeanPointsEveryIteration": True,
-                "WriteResultImage": True,
+                "WriteMeanPointsEveryIteration": True
             }
         )
-
-    def result_image(self):
-        return self.args({"WriteResultImage": True})
 
     def sampler(self, sampler, pct: float = 0.05):
         return self.args({"ImageSampler": sampler, "SamplingPercentage": pct})
@@ -255,15 +227,9 @@ class Parameters:
         if INSTANCES_CONFIG[collection]["masks"]:
             self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
         if INSTANCES_CONFIG[collection]["landmarks"]:
-            self.compute_tre = True
             self.lms_fixed_path = (
                 INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
             )
-            self.lms_moving_path = (
-                INSTANCES_SRC / folder / "landmarks" / f"{moving.split('.')[0]}.txt"
-            )
-        else:
-            self.compute_tre = False
 
         return self
 

@@ -3,24 +3,29 @@
         "folder": "empire",
         "extension": "mhd",
         "masks": true,
-        "landmarks": false
+        "landmarks": false,
+        "dvf": false
     },
     "LEARN": {
         "folder": "learn",
         "extension": "nii.gz",
         "masks": true,
-        "landmarks": true
+        "landmarks": true,
+        "dvf": false
     },
     "EXAMPLES": {
         "folder": "examples",
         "extension": "png",
         "masks": false,
-        "landmarks": false
+        "landmarks": false,
+        "dvf": false
     },
     "SYNTHETIC": {
         "folder": "synthetic",
         "extension": "mhd",
         "masks": true,
-        "landmarks": true
+        "landmarks": true,
+        "dvf": true,
+        "dvf_indices": [true, false]
     }
 }

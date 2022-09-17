@@ -1,9 +1,7 @@
 import logging
-from dotenv import load_dotenv
 import signal
 from contextlib import contextmanager
 
-load_dotenv()
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
