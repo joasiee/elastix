@@ -14,7 +14,7 @@ class SaveStrategy:
     def save(self, headers, row, resolution) -> None:
         pass
 
-    def save_custom(self, metric, value) -> None:
+    def save_custom(self, values) -> None:
         pass
 
     def close(self) -> None:

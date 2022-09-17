@@ -21,7 +21,7 @@ def get_np_array(img_path: Path):
         data = np.swapaxes(data, 0, 2)
     else:
         data = np.swapaxes(data, 0, 1)
-    return data
+    return data.astype(np.float64)
 
 def load_imgs(collection: Collection, instance: int):
     config = INSTANCES_CONFIG[collection.value]

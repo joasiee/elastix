@@ -4,6 +4,7 @@ from scipy.spatial import distance
 from skimage.filters import threshold_multiotsu
 import numpy as np
 from thesispy.experiments.instance import Instance
+from thesispy.definitions import N_CORES
 
 class ProgressParallel(Parallel):
     def __init__(self, use_tqdm=True, total=None, *args, **kwargs):
@@ -58,7 +59,7 @@ def bending_energy_point(dvf, p):
   return sum
 
 def bending_energy(dvf):
-  results = ProgressParallel(n_jobs=16, total=np.prod(dvf.shape[:-1]))(delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1]))
+  results = ProgressParallel(n_jobs=N_CORES, backend='multiprocessing', total=np.prod(dvf.shape[:-1]))(delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1]))
 
   return np.sum(results) / np.prod(dvf.shape[:-1])
 

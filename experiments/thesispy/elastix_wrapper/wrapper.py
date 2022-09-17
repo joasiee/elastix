@@ -73,7 +73,7 @@ def validation(params: Parameters, run_dir: Path):
     instance = get_instance(Collection(params['Collection']), int(params['Instance']))
     deformed, dvf, deformed_lms = None, None, None
 
-    if instance.lms_fixed:
+    if instance.lms_fixed is not None:
         generate_transformed_points(transform_params, params.lms_fixed_path, out_dir)
         deformed_lms = read_deformed_lms(out_dir / "outputpoints.txt")
     
@@ -143,11 +143,9 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=8, metric="AdvancedMeanSquares", seed=1, use_mask=False)
+        Parameters.from_base(mesh_size=7, metric="AdvancedMeanSquares", seed=1)
         .asgd()
-        .result_image()
-        # .regularize(1e-9, True)
-        .stopping_criteria(5)
+        .stopping_criteria(0)
         .instance(Collection.SYNTHETIC, 1)
     )
-    run(params, Path("output/" + str(params)), SaveStrategy(), False, True)
+    run(params, Path("output/" + str(params)), SaveStrategy(), False, False)
