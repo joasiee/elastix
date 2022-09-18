@@ -3,7 +3,6 @@ import re
 import shutil
 import threading
 import time
-from typing import Any, Dict
 import wandb
 import os
 import pandas as pd
@@ -14,7 +13,7 @@ class SaveStrategy:
     def save(self, headers, row, resolution) -> None:
         pass
 
-    def save_custom(self, values) -> None:
+    def save_custom(self, obj) -> None:
         pass
 
     def close(self) -> None:
@@ -61,8 +60,8 @@ class SaveStrategyWandb(SaveStrategy):
         if self._rowcount == self.batch_size:
             self._log_buffer()
 
-    def save_custom(self, vals: Dict[str, Any]) -> None:
-        wandb.log(vals, commit=False)
+    def save_custom(self, obj) -> None:
+        wandb.log(obj, commit=False)
 
     def close(self) -> None:
         self._log_buffer()

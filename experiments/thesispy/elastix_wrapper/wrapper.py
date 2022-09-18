@@ -6,9 +6,6 @@ import logging
 
 from typing import Any, Dict
 
-import numpy as np
-import nibabel as nib
-
 from thesispy.elastix_wrapper import TimeoutException, time_limit
 from thesispy.elastix_wrapper.parameters import Collection, Parameters
 from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
@@ -52,11 +49,11 @@ def run(
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
 
-    val_metrics = validation(params, run_dir)
-    val_metrics = {"Validation/" + str(key): val for key, val in val_metrics.items()}
+    val_metrics = validation(params, run_dir)        
 
     if save_strategy:
-        wd.sv_strategy.save_custom(val_metrics)
+        for metric in val_metrics:
+            wd.sv_strategy.save_custom(metric)
         wd.stop()
         wd.join()
         wd.sv_strategy.close()
@@ -64,7 +61,7 @@ def run(
     time_end = time.perf_counter()
     logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
 
-    if visualize and not save_strategy:
+    if visualize:
         execute_visualize(out_dir)
 
 def validation(params: Parameters, run_dir: Path):
@@ -127,10 +124,10 @@ def generate_transformed_points(params_file: Path, points_file: Path, out_dir: P
     subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
 def execute_visualize(out_dir: Path):
-    visualizers = ["vv", "mitk", "slicer"]
+    visualizers = ["vv", "mitk", "Slicer"]
     visualizer = None
     for vis in visualizers:
-        if not subprocess.run(["command", "-v", vis], shell=True).returncode:
+        if not subprocess.run(f"command -v {vis}", shell=True).returncode:
             visualizer = vis
             break
     
@@ -143,9 +140,9 @@ def execute_visualize(out_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=7, metric="AdvancedMeanSquares", seed=1)
+        Parameters.from_base(mesh_size=12, metric="AdvancedMeanSquares", seed=1, use_mask=False)
         .asgd()
-        .stopping_criteria(0)
+        .stopping_criteria(1000)
         .instance(Collection.SYNTHETIC, 1)
     )
-    run(params, Path("output/" + str(params)), SaveStrategy(), False, False)
+    run(params, Path("output/" + str(params)), SaveStrategy(), False, True)
