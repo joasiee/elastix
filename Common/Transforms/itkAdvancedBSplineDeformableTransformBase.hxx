@@ -613,10 +613,15 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::WriteParameter
       displacedIndex[i] = index[i] + m_CoefficientImages[i]->GetPixel(index);
     }
 
+    for (unsigned int i = 0; i < SpaceDimension; ++i)
+    {
+      outfile << index[i] << " ";
+    }
+
     const InputPointType point = this->TransformContinuousGridIndexToPoint(displacedIndex);
     for (unsigned int i = 0; i < SpaceDimension; ++i)
     {
-      outfile << point[i] << " ";
+      outfile << point[i] + 0.5 << " ";
     }
     outfile << "\n";
 

@@ -211,6 +211,9 @@ public:
   void
   BeforeRegistration() override;
 
+  void
+  AfterRegistration() override;
+
   /** Execute stuff before each new pyramid resolution:
    * \li In the first resolution call InitializeTransform().
    * \li In next resolutions upsample the B-spline grid if necessary (so, call IncreaseScale())
@@ -278,15 +281,15 @@ private:
   unsigned int m_SplineOrder;
   bool         m_Cyclic;
 
-  bool        m_WriteMeanPoints{ false };
-  std::string m_MeanPointsDir;
+  bool        m_WriteControlPoints{ false };
+  std::string m_ControlPointsDir;
 
   /** Initialize the right B-spline transform based on the spline order and periodicity. */
   unsigned int
   InitializeBSplineTransform();
 
   void
-  WriteMeanPointsOfIteration() const;
+  WriteControlPoints(std::string && filepath) const;
 };
 
 } // end namespace elastix

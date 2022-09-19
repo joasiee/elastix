@@ -145,30 +145,48 @@ RecursiveBSplineTransform<TElastix>::BeforeEachResolution()
     passiveEdgeWidth, "PassiveEdgeWidth", this->GetComponentLabel(), level, 0, false);
   this->SetOptimizerScales(passiveEdgeWidth);
 
-  /** Set WriteMeanPoints*/
+  /** Set WriteControlPoints*/
   this->m_Configuration->ReadParameter(
-    this->m_WriteMeanPoints, "WriteMeanPointsEveryIteration", this->GetComponentLabel(), level, 0);
+    this->m_WriteControlPoints, "WriteControlPointsEveryIteration", this->GetComponentLabel(), level, 0);
 
-  if (this->m_WriteMeanPoints)
+  if (this->m_WriteControlPoints)
   {
-    std::ostringstream meanpointsDir("");
-    meanpointsDir << this->m_Configuration->GetCommandLineArgument("-out") << "meanpoints.R" << level << "/";
-    this->m_MeanPointsDir = meanpointsDir.str();
-    std::filesystem::create_directory(this->m_MeanPointsDir);
+    std::ostringstream controlpointsDir("");
+    controlpointsDir << this->m_Configuration->GetCommandLineArgument("-out") << "controlpoints.R" << level << "/";
+    this->m_ControlPointsDir = controlpointsDir.str();
+    std::filesystem::create_directory(this->m_ControlPointsDir);
   }
 
 } // end BeforeEachResolution()
 
 /**
- * ******************* BeforeRegistration ***********************
+ * ******************* AfterEachIteration ***********************
  */
 
 template <class TElastix>
 void
 RecursiveBSplineTransform<TElastix>::AfterEachIteration()
 {
-  if (this->m_WriteMeanPoints)
-    this->WriteMeanPointsOfIteration();
+  if (this->m_WriteControlPoints)
+  {
+    const unsigned int itNr = this->m_Elastix->GetIterationCounter();
+    std::ostringstream makeFileName("");
+    makeFileName << this->m_ControlPointsDir << itNr << ".dat";
+    this->WriteControlPoints(makeFileName.str());
+  }
+}
+
+/**
+ * ******************* AfterRegistration ***********************
+ */
+
+template <class TElastix>
+void
+RecursiveBSplineTransform<TElastix>::AfterRegistration()
+{
+  std::ostringstream filepath("");
+  filepath << this->m_Configuration->GetCommandLineArgument("-out") << "controlpoints.dat";
+  this->WriteControlPoints(filepath.str());
 }
 
 
@@ -598,24 +616,18 @@ RecursiveBSplineTransform<TElastix>::SetOptimizerScales(const unsigned int edgeW
 } // end SetOptimizerScales()
 
 /**
- * ******************* WriteMeanPointsOfIteration ******************
+ * ******************* WriteControlPoints ******************
  */
 
 template <class TElastix>
 void
-RecursiveBSplineTransform<TElastix>::WriteMeanPointsOfIteration() const
-{
-  const unsigned int itNr = this->m_Elastix->GetIterationCounter();
+RecursiveBSplineTransform<TElastix>::WriteControlPoints(std::string && filepath) const
+{  
   std::ofstream      outFile;
-  std::ostringstream makeFileName("");
-  makeFileName << this->m_MeanPointsDir << itNr << ".dat";
-  std::string fileName = makeFileName.str();
-  outFile.open(fileName.c_str());
-
+  outFile.open(filepath.c_str());
   this->m_BSplineTransform->WriteParametersAsPoints(outFile);
-
   outFile.close();
-} // end WriteMeanPointsOfIteration()
+} // end WriteControlPoints()
 
 
 } // end namespace elastix

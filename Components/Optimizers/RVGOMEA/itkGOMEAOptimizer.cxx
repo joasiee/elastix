@@ -1742,7 +1742,6 @@ GOMEAOptimizer::UpdatePosition()
   PROFILE_FUNCTION();
   this->SetCurrentPosition(selections[number_of_populations - 1][0]);
   this->costFunctionEvaluation(this->GetCurrentPosition(), 0, this->m_Value);
-  // this->SetTransformParameters(this->mean_vectors[number_of_populations - 1]); // TODO ?
 
   m_CurrentIteration++;
   this->InvokeEvent(IterationEvent());
