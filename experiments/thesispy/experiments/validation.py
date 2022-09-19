@@ -1,26 +1,28 @@
+from typing import Collection
 from joblib import Parallel, delayed
 from tqdm import tqdm
 from scipy.spatial import distance
 from skimage.filters import threshold_multiotsu
 import numpy as np
 import SimpleITK as sitk
-from thesispy.experiments.instance import Instance
-from thesispy.definitions import N_CORES
+from thesispy.experiments.instance import RunResult
+from thesispy.definitions import N_CORES, Collection
 import wandb
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.colors import Normalize
 
-
 class ProgressParallel(Parallel):
-    def __init__(self, use_tqdm=True, total=None, *args, **kwargs):
+    def __init__(self, use_tqdm=True, total=None, desc=None, *args, **kwargs):
         self._use_tqdm = use_tqdm
         self._total = total
+        self._desc = desc
         super().__init__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
         with tqdm(disable=not self._use_tqdm, total=self._total) as self._pbar:
+            self._pbar.set_description(self._desc)
             return Parallel.__call__(self, *args, **kwargs)
 
     def print_progress(self):
@@ -69,7 +71,7 @@ def bending_energy_point(dvf, p):
 
 
 def bending_energy(dvf):
-    results = ProgressParallel(n_jobs=N_CORES, backend="multiprocessing", total=np.prod(dvf.shape[:-1]))(
+    results = ProgressParallel(n_jobs=N_CORES, desc="computing bending energy", backend="multiprocessing", total=np.prod(dvf.shape[:-1]))(
         delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1])
     )
 
@@ -187,20 +189,21 @@ def plot_dvf(data, scale=1.0, invert=False, slice=None):
     return wandb.Image(ax.get_figure())
 
 
-def calc_validation(instance: Instance, deformed, dvf, deformed_lms):
+def calc_validation(result: RunResult):
     metrics = []
-    if dvf is not None:
-        metrics.append({"validation/bending_energy": bending_energy(dvf)})
-        metrics.append({"visualization/jacobian_determinant_slice": jacobian_determinant(dvf)})
-        metrics.append({"visualization/inverted_dvf_slice": plot_dvf(dvf, invert=True)})
-        if instance.dvf is not None:
-            metrics.append({"validation/dvf_rmse": dvf_rmse(dvf, instance.dvf)})
-    if deformed is not None:
-        metrics.append({"validation/dice_similarity": dice_similarity(deformed, instance.fixed, 3)})
-        metrics.append({"visualization/deformed_image_slice": plot_voxels(deformed)})
-    if deformed_lms is not None:
-        metrics.append({"validation/hausdorff_distance": hausdorff_distance(deformed_lms, instance.lms_moving)})
-        metrics.append({"validation/mean_surface_distance": mean_surface_distance(deformed_lms, instance.lms_moving)})
-        metrics.append({"validation/tre": tre(deformed_lms, instance.lms_moving)})
+    if result.dvf is not None:
+        if result.instance.collection == Collection.SYNTHETIC:
+            metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
+        metrics.append({"visualization/jacobian_determinant_slice": jacobian_determinant(result.dvf)})
+        metrics.append({"visualization/dvf_slice": plot_dvf(result.dvf)})
+        if result.instance.dvf is not None:
+            metrics.append({"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf)})
+    if result.deformed is not None:
+        metrics.append({"validation/dice_similarity": dice_similarity(result.deformed, result.instance.fixed, 3)})
+        metrics.append({"visualization/deformed_image_slice": plot_voxels(result.deformed)})
+    if result.deformed_lms is not None:
+        metrics.append({"validation/hausdorff_distance": hausdorff_distance(result.deformed_lms, result.instance.lms_moving)})
+        metrics.append({"validation/mean_surface_distance": mean_surface_distance(result.deformed_lms, result.instance.lms_moving)})
+        metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
 
     return metrics

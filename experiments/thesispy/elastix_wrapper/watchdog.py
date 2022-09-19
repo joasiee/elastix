@@ -19,22 +19,22 @@ class SaveStrategy:
     def close(self) -> None:
         pass
 
+
 class SaveStrategyPrint(SaveStrategy):
     def save(self, headers, row, resolution) -> None:
         print(f"R{resolution}: {headers} --- {row}")
 
+
 class SaveStrategyWandb(SaveStrategy):
-    def __init__(self, experiment, run_dir: Path, batch_size: int = 1, save_files: bool = False) -> None:
-        wandb.init(project=experiment.project,
-                     name=str(experiment.params), reinit=True)
+    def __init__(self, experiment, run_dir: Path, batch_size: int = 1) -> None:
+        wandb.init(project=experiment.project, name=str(experiment.params), reinit=True)
         wandb.config.update(experiment.params.params)
         self.run_dir = run_dir
         self.batch_size = batch_size
-        self._rowcount = 0
+        self._rowcount = -1
         self._sum_time = 0
         self._resolution = 0
         self._buffer = (None, None)
-        self._save_files = save_files
 
     def _reset_state(self):
         self._rowcount = 0
@@ -56,8 +56,8 @@ class SaveStrategyWandb(SaveStrategy):
         self._sum_time += row[-1]
         self._buffer = (headers, row)
         self._resolution = resolution
-        
-        if self._rowcount == self.batch_size:
+
+        if self._rowcount % self.batch_size == 0:
             self._log_buffer()
 
     def save_custom(self, obj) -> None:
@@ -65,14 +65,13 @@ class SaveStrategyWandb(SaveStrategy):
 
     def close(self) -> None:
         self._log_buffer()
-        if self._save_files:
-            wandb.save(
-                str((self.run_dir / "out"/ "TransformParameters.0.txt").resolve()), base_path=str(self.run_dir.parents[0].resolve())
-            )
+        wandb.save(str((self.run_dir / "out" / "TransformParameters.0.txt").resolve()))
+        wandb.save(str((self.run_dir / "out" / "controlpoints.dat").resolve()))
         wandb_dir = Path(wandb.run.dir)
         wandb.finish()
         shutil.rmtree(self.run_dir.absolute())
         shutil.rmtree(wandb_dir.parent.absolute())
+
 
 class Watchdog(threading.Thread):
     def __init__(
@@ -95,10 +94,7 @@ class Watchdog(threading.Thread):
 
     def run(self):
         line_counts = [0 for _ in range(self.n_resolutions)]
-        file_names = [
-            self.out_dir / f"IterationInfo.0.R{r}.txt"
-            for r in range(self.n_resolutions)
-        ]
+        file_names = [self.out_dir / f"IterationInfo.0.R{r}.txt" for r in range(self.n_resolutions)]
         r = 0
 
         while True:

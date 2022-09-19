@@ -9,8 +9,8 @@ from typing import Any, Dict
 from thesispy.elastix_wrapper import TimeoutException, time_limit
 from thesispy.elastix_wrapper.parameters import Collection, Parameters
 from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
-from thesispy.experiments.instance import get_np_array, read_deformed_lms, get_instance
 from thesispy.experiments.validation import calc_validation
+from thesispy.experiments.instance import get_instance, get_np_array, read_deformed_lms, RunResult, read_controlpoints
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 TRANSFORMIX = os.environ.get("TRANSFORMIX_EXECUTABLE")
@@ -29,8 +29,6 @@ def run(
     run_dir.mkdir(parents=True)
     params_file = params.write(run_dir)
     out_dir = run_dir.joinpath(Path("out"))
-    os.mkdir(out_dir)
-
     if save_strategy:
         wd = Watchdog(out_dir, params["NumberOfResolutions"])
         wd.set_strategy(save_strategy)
@@ -64,23 +62,6 @@ def run(
     if visualize:
         execute_visualize(out_dir)
 
-def validation(params: Parameters, run_dir: Path):
-    out_dir = run_dir.joinpath(Path("out"))
-    transform_params = out_dir / "TransformParameters.0.txt"
-    instance = get_instance(Collection(params['Collection']), int(params['Instance']))
-    deformed, dvf, deformed_lms = None, None, None
-
-    if instance.lms_fixed is not None:
-        generate_transformed_points(transform_params, params.lms_fixed_path, out_dir)
-        deformed_lms = read_deformed_lms(out_dir / "outputpoints.txt")
-    
-    generate_transformed_points(transform_params, None, out_dir)
-    dvf = get_np_array(out_dir / "deformationField.mhd")
-
-    deformed = get_np_array(out_dir / "result.0.mhd")
-
-    return calc_validation(instance, deformed, dvf, deformed_lms)
-
 
 def execute_elastix(
     params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True
@@ -109,7 +90,7 @@ def execute_elastix(
         subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
 
 
-def generate_transformed_points(params_file: Path, points_file: Path, out_dir: Path):
+def generate_transformed_points(params_file: Path, out_dir: Path, points_file: Path = None, moving_img_path: Path = None):
     args = [
         TRANSFORMIX,
         "-tp",
@@ -121,6 +102,8 @@ def generate_transformed_points(params_file: Path, points_file: Path, out_dir: P
         "-threads",
         os.environ["OMP_NUM_THREADS"],
     ]
+    if moving_img_path is not None:
+        args += ["-in", str(moving_img_path.resolve())]
     subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
 def execute_visualize(out_dir: Path):
@@ -137,10 +120,32 @@ def execute_visualize(out_dir: Path):
             cwd=str(out_dir.resolve())
         )
 
+def get_run_result(collection: Collection, instance_id: int, transform_params: Path):
+    out_dir = transform_params.parent.resolve()
+    instance = get_instance(collection, instance_id)
+    run_result = RunResult(instance)
+    if instance.lms_fixed is not None:
+        generate_transformed_points(transform_params, out_dir, instance.lms_fixed_path)
+        run_result.deformed_lms = read_deformed_lms(out_dir / "outputpoints.txt")
+    
+    generate_transformed_points(transform_params, out_dir, moving_img_path=instance.moving_path)
+    run_result.dvf = get_np_array(out_dir / "deformationField.mhd")
+    run_result.deformed = get_np_array(out_dir / "result.mhd")
+    run_result.controlpoints = read_controlpoints(out_dir / "controlpoints.dat")
+
+    return run_result
+
+def validation(params: Parameters, run_dir: Path):
+    out_dir = run_dir.joinpath(Path("out"))
+    transform_params = out_dir / "TransformParameters.0.txt"
+    run_result = get_run_result(Collection(params['Collection']), int(params['Instance']), transform_params)
+
+    return calc_validation(run_result)
+
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=12, metric="AdvancedMeanSquares", seed=1, use_mask=False)
+        Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=1, use_mask=True)
         .asgd()
         .stopping_criteria(1000)
         .instance(Collection.SYNTHETIC, 1)

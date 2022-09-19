@@ -80,8 +80,7 @@ def run_experiment(experiment: Experiment):
         if experiment.params["Optimizer"] == "AdaptiveStochasticGradientDescent"
         else 1
     )
-    save_files = experiment.params["Optimizer"] == "GOMEA"
-    sv_strat = SaveStrategyWandb(experiment, run_dir, batch_size, save_files)
+    sv_strat = SaveStrategyWandb(experiment, run_dir, batch_size)
     wrapper.run(experiment.params, run_dir, sv_strat)
 
 

@@ -9,7 +9,7 @@ from thesispy.experiments.experiment import Experiment, run_experiment
 
 params = (
     Parameters.from_base(
-        mesh_size=12, metric="AdvancedMeanSquares", seed=1, use_mask=False
+        mesh_size=7, metric="AdvancedMeanSquares", seed=1, use_mask=False
     )
     .asgd()
     .stopping_criteria(1000)
