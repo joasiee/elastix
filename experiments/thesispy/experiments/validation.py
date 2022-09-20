@@ -17,6 +17,7 @@ import time
 
 logger = logging.getLogger("Validation")
 
+
 class ProgressParallel(Parallel):
     def __init__(self, use_tqdm=True, total=None, desc=None, *args, **kwargs):
         self._use_tqdm = use_tqdm
@@ -75,9 +76,9 @@ def bending_energy_point(dvf, p):
 
 
 def bending_energy(dvf):
-    results = ProgressParallel(n_jobs=N_CORES, desc="computing bending energy", backend="multiprocessing", total=np.prod(dvf.shape[:-1]))(
-        delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1])
-    )
+    results = ProgressParallel(
+        n_jobs=N_CORES, desc="computing bending energy", backend="multiprocessing", total=np.prod(dvf.shape[:-1])
+    )(delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1]))
 
     return np.sum(results) / np.prod(dvf.shape[:-1])
 
@@ -126,6 +127,7 @@ def jacobian_determinant(dvf):
         slice = jac_det.shape[-1] // 2
         jac_det = jac_det[..., slice]
     ax = sns.heatmap(jac_det, cmap="jet")
+    ax.invert_yaxis()
     return wandb.Image(ax.get_figure())
 
 
@@ -145,10 +147,10 @@ def plot_voxels(
 ):
     logger.info("Generating voxel plot")
     if len(data.shape) == 2:
-        _, ax = plt.subplots(figsize =(7, 7))
+        _, ax = plt.subplots(figsize=(7, 7))
         ax.imshow(data, cmap=cmap_name, alpha=alpha)
         return wandb.Image(ax.get_figure())
-    
+
     if y_slice_depth is None:
         y_slice_depth = data.shape[1] // 2
     ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
@@ -175,13 +177,14 @@ def plot_voxels(
 
     return wandb.Image(ax.get_figure())
 
-def plot_dvf(data, scale=1.0, invert=False, slice=None):
+
+def plot_dvf(data, scale=None, invert=False, slice=None):
     logger.info("Generating DVF plot")
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[0] // 2
-        data = data[:,:,slice,:]
-    
+        data = data[:, :, slice, :]
+
     X, Y = np.meshgrid(np.arange(data.shape[0]), np.arange(data.shape[1]))
     if invert:
         X = X + data[..., 1]
@@ -191,21 +194,19 @@ def plot_dvf(data, scale=1.0, invert=False, slice=None):
     X = X + 0.5
     Y = Y + 0.5
 
-    u = data[:,:,0]
-    v = data[:,:,1]
+    u = data[:, :, 0]
+    v = data[:, :, 1]
     c = np.sqrt(u**2 + v**2)
-    
-    fig, ax = plt.subplots(figsize =(7, 7))
-    qq = ax.quiver(X, Y, v, u, c, scale=scale, units='xy', angles='xy', scale_units='xy', cmap=plt.cm.jet)
 
-    ax.set_xticks([i for i in range(data.shape[0])][::2])
-    ax.set_yticks([i for i in range(data.shape[1])][::2])
+    fig, ax = plt.subplots(figsize=(7, 7))
+    qq = ax.quiver(X, Y, v, u, c, scale=scale, units="xy", angles="xy", scale_units="xy", cmap=plt.cm.jet)
+
     ax.set_xlim(0, data.shape[0])
     ax.set_ylim(0, data.shape[1])
-    ax.grid(True)
-    ax.set_aspect('equal')
-    fig.colorbar(qq,fraction=0.045, pad=0.02, label='Displacement magnitude')
+    ax.set_aspect("equal")
+    fig.colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude")
     return wandb.Image(ax.get_figure())
+
 
 def plot_cpoints(points, grid_spacing, grid_origin, slice=None):
     logger.info("Generating control point plot")
@@ -219,17 +220,22 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None):
     grid_origin = np.array(grid_origin)
 
     grid_origin = grid_origin + 0.5
-    X, Y = np.meshgrid(*[np.arange(grid_origin[i], grid_origin[i] + grid_spacing[i] * points_slice.shape[i], grid_spacing[i]) for i in range(len(points_slice.shape[:-1]))])
+    X, Y = np.meshgrid(
+        *[
+            np.arange(grid_origin[i], grid_origin[i] + grid_spacing[i] * points_slice.shape[i], grid_spacing[i])
+            for i in range(len(points_slice.shape[:-1]))
+        ]
+    )
     colors = np.zeros(points_slice.shape[:-1])
     color = 0
     for p in np.ndindex(points_slice.shape[:-1]):
         colors[p] = color
         color += 1
 
-    _, ax = plt.subplots(figsize =(7, 7))    
+    _, ax = plt.subplots(figsize=(7, 7))
     cmap = plt.cm.coolwarm
-    ax.scatter(X, Y, marker='+', c=colors, cmap=cmap, alpha=0.5, s=20)
-    ax.scatter(points_slice[..., 0], points_slice[..., 1], marker='s', s=15, c=colors, cmap=cmap)
+    ax.scatter(X, Y, marker="+", c=colors, cmap=cmap, alpha=0.5, s=20)
+    ax.scatter(points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap)
     return wandb.Image(ax.get_figure())
 
 
@@ -250,11 +256,21 @@ def calc_validation(result: RunResult):
         if result.instance.collection == Collection.SYNTHETIC:
             metrics.append({"visualization/deformed_image_slice": plot_voxels(result.deformed)})
     if result.deformed_lms is not None:
-        metrics.append({"validation/hausdorff_distance": hausdorff_distance(result.deformed_lms, result.instance.lms_moving)})
-        metrics.append({"validation/mean_surface_distance": mean_surface_distance(result.deformed_lms, result.instance.lms_moving)})
+        metrics.append(
+            {"validation/hausdorff_distance": hausdorff_distance(result.deformed_lms, result.instance.lms_moving)}
+        )
+        metrics.append(
+            {"validation/mean_surface_distance": mean_surface_distance(result.deformed_lms, result.instance.lms_moving)}
+        )
         metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
     if result.control_points is not None:
-        metrics.append({"visualization/cpoints_slice": plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin)})
+        metrics.append(
+            {
+                "visualization/cpoints_slice": plot_cpoints(
+                    result.control_points, result.grid_spacing, result.grid_origin
+                )
+            }
+        )
 
     end = time.perf_counter()
     logger.info(f"Validation metrics calculated in {end - start:.2f}s")

@@ -110,19 +110,14 @@ def subsampling_percentage():
         for pct in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0]:
             for gomea in [True, False]:
                 sampler = "Full" if pct == 1.0 else "RandomCoordinate"
-                params = (
-                    Parameters.from_base(mesh_size=5, seed=seed)
-                    .multi_resolution(1, [4])
-                    .sampler(sampler, pct=pct)
-                )
+                params = Parameters.from_base(mesh_size=5, seed=seed).multi_resolution(1, [4]).sampler(sampler, pct=pct)
                 if gomea:
-                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(
-                        iterations=300
-                    )
+                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=300)
                 else:
                     params.asgd().stopping_criteria(iterations=15000)
 
                 yield params
+
 
 def pareto_front_test():
     for weight in [0.001 * 1.25**i for i in range(40)]:
@@ -140,6 +135,7 @@ def pareto_front():
         params.asgd().stopping_criteria(iterations=5000)
 
         yield params
+
 
 def queue_test():
     for _ in range(10):

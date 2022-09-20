@@ -16,11 +16,13 @@ INSTANCES_CONFIG: Dict[str, str] = {}
 with INSTANCE_CONFIG_PATH.open() as f:
     INSTANCES_CONFIG = json.loads(f.read())
 
+
 class Collection(str, Enum):
     EMPIRE = "EMPIRE"
     LEARN = "LEARN"
     EXAMPLES = "EXAMPLES"
     SYNTHETIC = "SYNTHETIC"
+
 
 class GOMEAType(Enum):
     GOMEA_FULL = -1

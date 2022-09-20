@@ -9,6 +9,7 @@ DOWNLOAD_FOLDER = ROOT_DIR / "output" / "download"
 entity = "joasiee"
 api = wandb.Api()
 
+
 def download_file(out_dir: Path, filename: str, run):
     out_file = out_dir / filename
     file = run.file(filename)
@@ -25,6 +26,6 @@ def get_run_result(project: str, run_id: str):
     instance = int(run.config["Instance"])
     return wrapper.get_run_result(collection, instance, out_dir / "TransformParameters.0.txt")
 
+
 def get_runs(project: str, filters: dict = None):
     return api.runs(f"{entity}/{project}")
-

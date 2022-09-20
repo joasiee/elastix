@@ -13,6 +13,7 @@ from thesispy.definitions import *
 
 logger = logging.getLogger("Parameters")
 
+
 class Parameters:
     def __init__(self, params) -> None:
         self.params = params
@@ -28,9 +29,7 @@ class Parameters:
     ):
         with BASE_PARAMS_PATH.open() as f:
             params: Dict[str, Any] = json.loads(f.read())
-        return cls(params).args(
-            {"Metric": metric, "MeshSize": mesh_size, "UseMask": use_mask, "RandomSeed": seed}
-        )
+        return cls(params).args({"Metric": metric, "MeshSize": mesh_size, "UseMask": use_mask, "RandomSeed": seed})
 
     @classmethod
     def from_json(cls, jsondump):
@@ -52,11 +51,7 @@ class Parameters:
         self.n_param("MovingImagePyramid", 2)
         self.n_param("Interpolator", 2)
         self.n_param("ImageSampler", 2)
-        regularize_metric = (
-            "TransformBendingEnergyPenaltyAnalytic"
-            if analytic
-            else "TransformBendingEnergyPenalty"
-        )
+        regularize_metric = "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
 
         return self.args(
             {
@@ -67,9 +62,7 @@ class Parameters:
             }
         )
 
-    def multi_resolution(
-        self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None
-    ) -> Parameters:
+    def multi_resolution(self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None) -> Parameters:
         return self.args(
             {
                 "NumberOfResolutions": n,
@@ -120,16 +113,14 @@ class Parameters:
             {
                 "WritePyramidImagesAfterEachResolution": True,
                 "WriteSamplesEveryIteration": True,
-                "WriteControlPointsEveryIteration": True
+                "WriteControlPointsEveryIteration": True,
             }
         )
 
     def sampler(self, sampler, pct: float = 0.05):
         return self.args({"ImageSampler": sampler, "SamplingPercentage": pct})
 
-    def args(
-        self, params: Dict[str, Any], extra_params: Dict[str, Any] = None
-    ) -> Parameters:
+    def args(self, params: Dict[str, Any], extra_params: Dict[str, Any] = None) -> Parameters:
         for key, value in params.items():
             self[key] = value
         if extra_params is not None:
@@ -155,15 +146,11 @@ class Parameters:
             self["MeshSize"] = [self["MeshSize"] for _ in range(len(voxel_dims))]
 
         if not self["GridSpacingSchedule"]:
-            self["GridSpacingSchedule"] = [
-                i for i in range(self["NumberOfResolutions"], 0, -1)
-            ]
+            self["GridSpacingSchedule"] = [i for i in range(self["NumberOfResolutions"], 0, -1)]
 
         if not self["ImagePyramidSchedule"]:
             self["ImagePyramidSchedule"] = [
-                n
-                for n in range(self["NumberOfResolutions"], 0, -1)
-                for _ in range(len(voxel_dims))
+                n for n in range(self["NumberOfResolutions"], 0, -1) for _ in range(len(voxel_dims))
             ]
 
         elif len(self["ImagePyramidSchedule"]) == self["NumberOfResolutions"]:
@@ -178,17 +165,14 @@ class Parameters:
         for i, voxel_dim in enumerate(voxel_dims):
             voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             for n in range(len(total_samples)):
-                total_samples[n] *= int(
-                    voxel_dim / self["ImagePyramidSchedule"][n * len(voxel_dims) + i]
-                )
+                total_samples[n] *= int(voxel_dim / self["ImagePyramidSchedule"][n * len(voxel_dims) + i])
 
         self["FinalGridSpacingInVoxels"] = voxel_spacings
 
         self["NumberOfSpatialSamples"] = total_samples
         if self["ImageSampler"] != "Full":
             self["NumberOfSpatialSamples"] = [
-                int(x * self["SamplingPercentage"])
-                for x in self["NumberOfSpatialSamples"]
+                int(x * self["SamplingPercentage"]) for x in self["NumberOfSpatialSamples"]
             ]
 
         return self
@@ -208,9 +192,7 @@ class Parameters:
 
     def set_paths(self):
         if not self["Collection"] or not self["Instance"]:
-            logger.info(
-                "Collection and/or instance not set yet, can't determine paths."
-            )
+            logger.info("Collection and/or instance not set yet, can't determine paths.")
             return self
 
         collection = self["Collection"]
@@ -227,9 +209,7 @@ class Parameters:
         if INSTANCES_CONFIG[collection]["masks"]:
             self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
         if INSTANCES_CONFIG[collection]["landmarks"]:
-            self.lms_fixed_path = (
-                INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
-            )
+            self.lms_fixed_path = INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
 
         return self
 

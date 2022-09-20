@@ -10,7 +10,14 @@ from thesispy.elastix_wrapper import TimeoutException, time_limit
 from thesispy.elastix_wrapper.parameters import Collection, Parameters
 from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
 from thesispy.experiments.validation import calc_validation
-from thesispy.experiments.instance import get_instance, get_np_array, read_deformed_lms, RunResult, read_controlpoints, read_transform_params
+from thesispy.experiments.instance import (
+    get_instance,
+    get_np_array,
+    read_deformed_lms,
+    RunResult,
+    read_controlpoints,
+    read_transform_params,
+)
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 TRANSFORMIX = os.environ.get("TRANSFORMIX_EXECUTABLE")
@@ -39,15 +46,13 @@ def run(
         execute_elastix(params_file, out_dir, params, suppress_stdout)
     except subprocess.CalledProcessError as err:
         err_msg = err.stderr.decode("utf-8").strip("\n")
-        logger.error(
-            f"Something went wrong while running elastix at: {str(run_dir)}: {err_msg}"
-        )
+        logger.error(f"Something went wrong while running elastix at: {str(run_dir)}: {err_msg}")
     except TimeoutException:
         logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
 
-    val_metrics = validation(params, run_dir)        
+    val_metrics = validation(params, run_dir)
 
     if save_strategy:
         for metric in val_metrics:
@@ -63,9 +68,7 @@ def run(
         execute_visualize(out_dir)
 
 
-def execute_elastix(
-    params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True
-):
+def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True):
     with time_limit(params["MaxTimeSeconds"]):
         args = [
             ELASTIX,
@@ -90,7 +93,9 @@ def execute_elastix(
         subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
 
 
-def generate_transformed_points(params_file: Path, out_dir: Path, points_file: Path = None, moving_img_path: Path = None):
+def generate_transformed_points(
+    params_file: Path, out_dir: Path, points_file: Path = None, moving_img_path: Path = None
+):
     args = [
         TRANSFORMIX,
         "-tp",
@@ -106,6 +111,7 @@ def generate_transformed_points(params_file: Path, out_dir: Path, points_file: P
         args += ["-in", str(moving_img_path.resolve())]
     subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
+
 def execute_visualize(out_dir: Path):
     visualizers = ["vv", "mitk", "Slicer"]
     visualizer = None
@@ -113,12 +119,10 @@ def execute_visualize(out_dir: Path):
         if not subprocess.run(f"command -v {vis}", shell=True).returncode:
             visualizer = vis
             break
-    
+
     if visualizer:
-        subprocess.run(
-            [visualizer, str((out_dir / "result.0.mhd").resolve())],
-            cwd=str(out_dir.resolve())
-        )
+        subprocess.run([visualizer, str((out_dir / "result.0.mhd").resolve())], cwd=str(out_dir.resolve()))
+
 
 def get_run_result(collection: Collection, instance_id: int, transform_params: Path):
     out_dir = transform_params.parent.resolve()
@@ -127,7 +131,7 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
     if instance.lms_fixed is not None:
         generate_transformed_points(transform_params, out_dir, instance.lms_fixed_path)
         run_result.deformed_lms = read_deformed_lms(out_dir / "outputpoints.txt")
-    
+
     generate_transformed_points(transform_params, out_dir, moving_img_path=instance.moving_path)
     run_result.dvf = get_np_array(out_dir / "deformationField.mhd")
     run_result.deformed = get_np_array(out_dir / "result.mhd")
@@ -138,10 +142,11 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
 
     return run_result
 
+
 def validation(params: Parameters, run_dir: Path):
     out_dir = run_dir.joinpath(Path("out"))
     transform_params = out_dir / "TransformParameters.0.txt"
-    run_result = get_run_result(Collection(params['Collection']), int(params['Instance']), transform_params)
+    run_result = get_run_result(Collection(params["Collection"]), int(params["Instance"]), transform_params)
 
     return calc_validation(run_result)
 
