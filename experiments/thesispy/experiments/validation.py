@@ -12,6 +12,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.colors import Normalize
+import logging
+import time
+
+logger = logging.getLogger("Validation")
 
 class ProgressParallel(Parallel):
     def __init__(self, use_tqdm=True, total=None, desc=None, *args, **kwargs):
@@ -79,6 +83,7 @@ def bending_energy(dvf):
 
 
 def dice_similarity(moving_deformed, fixed, levels):
+    logger.info("Computing Dice Similarity")
     thresholds_moving = threshold_multiotsu(moving_deformed, classes=levels)
     thresholds_fixed = threshold_multiotsu(fixed, classes=levels)
     regions_moving_deformed = np.digitize(moving_deformed, bins=thresholds_moving)
@@ -90,30 +95,37 @@ def dice_similarity(moving_deformed, fixed, levels):
 
 
 def hausdorff_distance(lms1, lms2, spacing=1):
+    logger.info("Computing Hausdorff Distance")
     return np.max(distance.cdist(lms1, lms2).min(axis=1))
 
 
 def dvf_rmse(dvf1, dvf2, spacing=1):
+    logger.info("Computing DVF RMSE")
     return np.linalg.norm((dvf1 - dvf2) * spacing, axis=3).mean()
 
 
 def mean_surface_distance(lms1, lms2, spacing=1):
+    logger.info("Computing Mean Surface Distance")
     return np.mean(distance.cdist(lms1, lms2).min(axis=1) * spacing)
 
 
 def tre(lms1, lms2, spacing=1):
+    logger.info("Computing TRE")
     return np.linalg.norm((lms1 - lms2) * spacing, axis=1).mean()
 
 
 def jacobian_determinant(dvf):
+    logger.info("Computing Jacobian Determinant")
     axis_swap = 2 if len(dvf.shape) == 4 else 1
     dvf = np.swapaxes(dvf, 0, axis_swap)
-    dvf_img = sitk.GetImageFromArray(dvf)
+    dvf_img = sitk.GetImageFromArray(dvf, isVector=True)
     jac_det_contracting_field = sitk.DisplacementFieldJacobianDeterminant(dvf_img)
     jac_det = sitk.GetArrayFromImage(jac_det_contracting_field)
     jac_det = np.swapaxes(jac_det, 0, axis_swap)
-    slice = jac_det.shape[-1] // 2
-    ax = sns.heatmap(jac_det[..., slice], cmap="jet")
+    if len(jac_det.shape) == 3:
+        slice = jac_det.shape[-1] // 2
+        jac_det = jac_det[..., slice]
+    ax = sns.heatmap(jac_det, cmap="jet")
     return wandb.Image(ax.get_figure())
 
 
@@ -131,6 +143,12 @@ def plot_voxels(
     cmap_name="Greys",
     alpha=1.0,
 ):
+    logger.info("Generating voxel plot")
+    if len(data.shape) == 2:
+        _, ax = plt.subplots(figsize =(7, 7))
+        ax.imshow(data, cmap=cmap_name, alpha=alpha)
+        return wandb.Image(ax.get_figure())
+    
     if y_slice_depth is None:
         y_slice_depth = data.shape[1] // 2
     ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
@@ -158,6 +176,7 @@ def plot_voxels(
     return wandb.Image(ax.get_figure())
 
 def plot_dvf(data, scale=1.0, invert=False, slice=None):
+    logger.info("Generating DVF plot")
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[0] // 2
@@ -188,9 +207,37 @@ def plot_dvf(data, scale=1.0, invert=False, slice=None):
     fig.colorbar(qq,fraction=0.045, pad=0.02, label='Displacement magnitude')
     return wandb.Image(ax.get_figure())
 
+def plot_cpoints(points, grid_spacing, grid_origin, slice=None):
+    logger.info("Generating control point plot")
+    points_slice = points
+    if len(points.shape) == 4:
+        if slice is None:
+            slice = points.shape[2] // 2
+        points_slice = points[:, :, slice, :]
+
+    grid_spacing = np.array(grid_spacing)
+    grid_origin = np.array(grid_origin)
+
+    grid_origin = grid_origin + 0.5
+    X, Y = np.meshgrid(*[np.arange(grid_origin[i], grid_origin[i] + grid_spacing[i] * points_slice.shape[i], grid_spacing[i]) for i in range(len(points_slice.shape[:-1]))])
+    colors = np.zeros(points_slice.shape[:-1])
+    color = 0
+    for p in np.ndindex(points_slice.shape[:-1]):
+        colors[p] = color
+        color += 1
+
+    _, ax = plt.subplots(figsize =(7, 7))    
+    cmap = plt.cm.coolwarm
+    ax.scatter(X, Y, marker='+', c=colors, cmap=cmap, alpha=0.5, s=20)
+    ax.scatter(points_slice[..., 0], points_slice[..., 1], marker='s', s=15, c=colors, cmap=cmap)
+    return wandb.Image(ax.get_figure())
+
 
 def calc_validation(result: RunResult):
+    logger.info("Calculating validation metrics:")
+    start = time.perf_counter()
     metrics = []
+    levels = 2 if result.instance.collection == Collection.EXAMPLES else 3
     if result.dvf is not None:
         if result.instance.collection == Collection.SYNTHETIC:
             metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
@@ -199,11 +246,17 @@ def calc_validation(result: RunResult):
         if result.instance.dvf is not None:
             metrics.append({"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf)})
     if result.deformed is not None:
-        metrics.append({"validation/dice_similarity": dice_similarity(result.deformed, result.instance.fixed, 3)})
-        metrics.append({"visualization/deformed_image_slice": plot_voxels(result.deformed)})
+        metrics.append({"validation/dice_similarity": dice_similarity(result.deformed, result.instance.fixed, levels)})
+        if result.instance.collection == Collection.SYNTHETIC:
+            metrics.append({"visualization/deformed_image_slice": plot_voxels(result.deformed)})
     if result.deformed_lms is not None:
         metrics.append({"validation/hausdorff_distance": hausdorff_distance(result.deformed_lms, result.instance.lms_moving)})
         metrics.append({"validation/mean_surface_distance": mean_surface_distance(result.deformed_lms, result.instance.lms_moving)})
         metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
+    if result.control_points is not None:
+        metrics.append({"visualization/cpoints_slice": plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin)})
+
+    end = time.perf_counter()
+    logger.info(f"Validation metrics calculated in {end - start:.2f}s")
 
     return metrics

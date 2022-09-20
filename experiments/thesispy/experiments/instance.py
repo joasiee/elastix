@@ -18,6 +18,7 @@ class Instance:
     lms_fixed_path: Path = None
     dvf: np.ndarray = None
 
+
 @dataclass
 class RunResult:
     instance: Instance
@@ -25,6 +26,8 @@ class RunResult:
     deformed_lms: np.ndarray = None
     dvf: np.ndarray = None
     control_points: np.ndarray = None
+    grid_spacing: np.ndarray = None
+    grid_origin: np.ndarray = None
 
 
 def get_np_array(img_path: Path):
@@ -62,6 +65,7 @@ def get_instance(collection: Collection, instance_id: int):
         instance.dvf = np.load(path_dvf)
     return instance
 
+
 def read_deformed_lms(path: Path):
     deformed_lms = []
     with open(path) as file:
@@ -73,15 +77,36 @@ def read_deformed_lms(path: Path):
             deformed_lms.append(index)
     return np.array(deformed_lms)
 
+
 def read_controlpoints(path: Path):
     with open(path) as file:
         lines = file.readlines()
         dim = len(lines[0].split()) // 2
         grid_size = lines[-1].split()[:dim]
-        grid = np.zeros((int(grid_size[0]) + 1, int(grid_size[1]) + 1, int(grid_size[2]) + 1, dim))
+        grid = np.zeros(tuple([int(grid_size[i]) + 1 for i in range(dim)] + [dim]))
         for line in lines:
             s = line.split()
             index = np.array(s[:dim], dtype=int)
             point = np.array(s[dim:], dtype=float)
-            grid[index[0], index[1], index[2]] = point
+            grid[tuple(index)] = point
         return grid
+
+
+def read_transform_params(transform_params_file: Path):
+    with open(transform_params_file) as file:
+        dim, grid_spacing, grid_origin = None, None, None
+        for line in file.readlines():
+            split = line.split()
+            if len(split) >= 2:
+                if split[0][1:] == "FixedImageDimension":
+                    dim = int(split[1][:-1])
+                if split[0][1:] == "GridOrigin":
+                    grid_origin = split[1:]
+                    grid_origin[-1] = grid_origin[-1][:-1]
+                    grid_origin = np.array(grid_origin, dtype=float)
+                if split[0][1:] == "GridSpacing":
+                    grid_spacing = split[1:]
+                    grid_spacing[-1] = grid_spacing[-1][:-1]
+                    grid_spacing = np.array(grid_spacing, dtype=float)
+
+        return dim, grid_spacing, grid_origin

@@ -10,7 +10,7 @@ from thesispy.elastix_wrapper import TimeoutException, time_limit
 from thesispy.elastix_wrapper.parameters import Collection, Parameters
 from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
 from thesispy.experiments.validation import calc_validation
-from thesispy.experiments.instance import get_instance, get_np_array, read_deformed_lms, RunResult, read_controlpoints
+from thesispy.experiments.instance import get_instance, get_np_array, read_deformed_lms, RunResult, read_controlpoints, read_transform_params
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 TRANSFORMIX = os.environ.get("TRANSFORMIX_EXECUTABLE")
@@ -131,7 +131,10 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
     generate_transformed_points(transform_params, out_dir, moving_img_path=instance.moving_path)
     run_result.dvf = get_np_array(out_dir / "deformationField.mhd")
     run_result.deformed = get_np_array(out_dir / "result.mhd")
-    run_result.controlpoints = read_controlpoints(out_dir / "controlpoints.dat")
+    run_result.control_points = read_controlpoints(out_dir / "controlpoints.dat")
+    _, spacing, origin = read_transform_params(transform_params)
+    run_result.grid_spacing = spacing
+    run_result.grid_origin = origin
 
     return run_result
 
