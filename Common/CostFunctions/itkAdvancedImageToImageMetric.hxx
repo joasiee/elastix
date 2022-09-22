@@ -1082,7 +1082,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CopyPartialEvaluation(int
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers()
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers(int pop_size)
 {
   int i;
   using ImageFullSamplerType = ImageFullSampler<FixedImageType>;
@@ -1137,7 +1137,20 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers()
   this->SetUseImageSampler(false);
   this->SetPartialEvaluations(true);
 
-  // this->ComputeParametersOutsideOfMask();
+  this->m_BSplinePointsRegions.clear();
+  this->m_BSplinePointsRegionsNoMask.clear();
+
+  this->m_SolutionEvaluations.resize(pop_size);
+  this->m_BSplinePointsRegions.resize(1);
+  this->m_BSplinePointsRegionsNoMask.resize(1);
+
+  // add regions (that are within mask if set) to 0th list containing all regions of image combined.
+  for (i = 0; i < this->m_BSplineFOSRegions.size(); ++i)
+  {
+    this->m_BSplinePointsRegionsNoMask[0].push_back(i);
+    if (this->m_SubfunctionSamplers[i])
+      this->m_BSplinePointsRegions[0].push_back(i);
+  }
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1218,20 +1231,13 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
 // assign fixed image regions to control points which affect them and vice versa.
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** sets,
-                                                                      int *  set_length,
-                                                                      int    length,
-                                                                      int    pop_size)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** sets, int * set_length, int length)
 {
   unsigned int i, j, d;
 
   this->m_FOS.length = length;
   this->m_FOS.sets = sets;
   this->m_FOS.set_length = set_length;
-
-  this->m_SolutionEvaluations.resize(pop_size);
-  this->m_BSplinePointsRegions.clear();
-  this->m_BSplinePointsRegionsNoMask.clear();
 
   this->m_BSplinePointsRegions.resize(length + 1);
   this->m_BSplinePointsRegionsNoMask.resize(length + 1);
@@ -1244,15 +1250,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
 
   std::vector<bool> pointAdded(this->m_BSplineFOSRegions.size(), false);
   const int         num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
-  m_ParametersOutsideOfMask = std::vector<bool>(bsplinePtr->GetNumberOfParameters(), false);
-
-  // add regions (that are within mask if set) to 0th list containing all regions of image combined.
-  for (i = 0; i < this->m_BSplineFOSRegions.size(); ++i)
-  {
-    this->m_BSplinePointsRegionsNoMask[0].push_back(i);
-    if (this->m_SubfunctionSamplers[i])
-      this->m_BSplinePointsRegions[0].push_back(i);
-  }
 
   // now compute mappings between control points and fos sets, and vice versa.
   // for each fos set j:

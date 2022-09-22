@@ -89,7 +89,7 @@ GOMEAOptimizer::initialize(void)
   if (m_BasePopulationSize == 0.0)
   {
     if (m_MaxNumberOfPopulations == 1)
-      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(10 + 7.18 * log2((double)m_NrOfParameters))
+      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(10 + 12.18 * log2((double)m_NrOfParameters))
                                                   : static_cast<int>(m_NrOfParameters * 10);
     else
       m_BasePopulationSize = 10;
@@ -358,7 +358,7 @@ GOMEAOptimizer::initializeNewPopulation()
   this->initializeNewPopulationMemory(number_of_populations);
 
   if (m_PartialEvaluations)
-    this->GetCostFunctionAsAdvanced()->InitSubfunctionSamplers();
+    this->GetCostFunction()->InitSubfunctionSamplers(population_sizes[0]);
 
   this->initializePopulationAndFitnessValues(number_of_populations);
 
@@ -983,10 +983,9 @@ GOMEAOptimizer::estimateParameters(int population_index)
 
     if (m_PartialEvaluations)
     {
-      this->GetCostFunctionAsAdvanced()->InitFOSMapping(linkage_model[number_of_populations]->sets,
-                                                 linkage_model[number_of_populations]->set_length,
-                                                 linkage_model[number_of_populations]->length,
-                                                 population_sizes[0]);
+      this->GetCostFunction()->InitFOSMapping(linkage_model[population_index]->sets,
+                                              linkage_model[population_index]->set_length,
+                                              linkage_model[population_index]->length);
     }
 
     this->estimateParametersML(population_index);

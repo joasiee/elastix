@@ -416,7 +416,10 @@ public:
   Initialize() override;
 
   void
-  InitPartialEvaluations(int ** sets, int * set_length, int length, int pop_size) override;
+  InitSubfunctionSamplers(int pop_size) override;
+
+  void
+  InitFOSMapping(int ** sets, int * set_length, int length) override;
 
   /**
    * Combine all sub metrics by adding them.

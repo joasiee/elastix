@@ -606,15 +606,12 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
 } // end Initialize()
 
 /**
- * ********************* InitPartialEvaluations ****************************
+ * ********************* InitSubfunctionSamplers ****************************
  */
 
 template <class TFixedImage, class TMovingImage>
 void
-CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets,
-                                                                                 int *  set_length,
-                                                                                 int    length,
-                                                                                 int    pop_size)
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers(int pop_size)
 {
   /** Check if at least one (image)metric is provided */
   if (this->GetNumberOfMetrics() == 0)
@@ -626,9 +623,31 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations
   for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
   {
     SingleValuedCostFunctionType * costfunc = this->GetMetric(i);
-    costfunc->InitPartialEvaluations(sets, set_length, length, pop_size);
+    costfunc->InitSubfunctionSamplers(pop_size);
   }
-} // end InitPartialEvaluations()
+} // end InitSubfunctionSamplers()
+
+/**
+ * ********************* InitFOSMapping ****************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** sets, int * set_length, int length)
+{
+  /** Check if at least one (image)metric is provided */
+  if (this->GetNumberOfMetrics() == 0)
+  {
+    itkExceptionMacro(<< "At least one metric should be set!");
+  }
+
+  /** Call Initialize for all metrics. */
+  for (unsigned int i = 0; i < this->GetNumberOfMetrics(); ++i)
+  {
+    SingleValuedCostFunctionType * costfunc = this->GetMetric(i);
+    costfunc->InitFOSMapping(sets, set_length, length);
+  }
+} // end InitFOSMapping()
 
 /**
  * ******************** SetImageSampler ************************
