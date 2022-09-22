@@ -79,12 +79,12 @@ def bending_energy(dvf):
     results = ProgressParallel(
         n_jobs=N_CORES, desc="computing bending energy", backend="multiprocessing", total=np.prod(dvf.shape[:-1])
     )(delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1]))
-
-    return np.sum(results) / np.prod(dvf.shape[:-1])
+    be = np.sum(results) / np.prod(dvf.shape[:-1])
+    logger.info(f"Bending Energy: {be}")
+    return be
 
 
 def dice_similarity(moving_deformed, fixed, levels):
-    logger.info("Computing Dice Similarity")
     thresholds_moving = threshold_multiotsu(moving_deformed, classes=levels)
     thresholds_fixed = threshold_multiotsu(fixed, classes=levels)
     regions_moving_deformed = np.digitize(moving_deformed, bins=thresholds_moving)
@@ -92,31 +92,36 @@ def dice_similarity(moving_deformed, fixed, levels):
 
     intersection = np.sum((regions_moving_deformed == regions_fixed) & (regions_fixed > 0))
     union = np.sum(regions_moving_deformed > 0) + np.sum(regions_fixed > 0)
-    return 2.0 * intersection / union
+    similarity = 2.0 * intersection / union
+    logger.info(f"Dice Similarity: {similarity}")
+    return similarity
 
 
 def hausdorff_distance(lms1, lms2, spacing=1):
-    logger.info("Computing Hausdorff Distance")
-    return np.max(distance.cdist(lms1, lms2).min(axis=1))
+    hdist = np.max(distance.cdist(lms1, lms2).min(axis=1))
+    logger.info(f"Hausdorff Distance: {hdist}")
+    return hdist
 
 
 def dvf_rmse(dvf1, dvf2, spacing=1):
-    logger.info("Computing DVF RMSE")
-    return np.linalg.norm((dvf1 - dvf2) * spacing, axis=3).mean()
+    rmse = np.linalg.norm((dvf1 - dvf2) * spacing, axis=3).mean()
+    logger.info(f"DVF RMSE: {rmse}")
+    return rmse
 
 
 def mean_surface_distance(lms1, lms2, spacing=1):
-    logger.info("Computing Mean Surface Distance")
-    return np.mean(distance.cdist(lms1, lms2).min(axis=1) * spacing)
+    msd = np.mean(distance.cdist(lms1, lms2).min(axis=1) * spacing)
+    logger.info(f"Mean Surface Distance: {msd}")
+    return msd
 
 
 def tre(lms1, lms2, spacing=1):
-    logger.info("Computing TRE")
-    return np.linalg.norm((lms1 - lms2) * spacing, axis=1).mean()
+    tre = np.linalg.norm((lms1 - lms2) * spacing, axis=1).mean()
+    logger.info(f"TRE: {tre}")
+    return tre
 
 
 def jacobian_determinant(dvf):
-    logger.info("Computing Jacobian Determinant")
     axis_swap = 2 if len(dvf.shape) == 4 else 1
     dvf = np.swapaxes(dvf, 0, axis_swap)
     dvf_img = sitk.GetImageFromArray(dvf, isVector=True)
@@ -128,6 +133,7 @@ def jacobian_determinant(dvf):
         jac_det = jac_det[..., slice]
     ax = sns.heatmap(jac_det, cmap="jet")
     ax.invert_yaxis()
+    logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
     return wandb.Image(ax.get_figure())
 
 
@@ -145,7 +151,6 @@ def plot_voxels(
     cmap_name="Greys",
     alpha=1.0,
 ):
-    logger.info("Generating voxel plot")
     if len(data.shape) == 2:
         _, ax = plt.subplots(figsize=(7, 7))
         ax.imshow(data, cmap=cmap_name, alpha=alpha)
@@ -179,7 +184,6 @@ def plot_voxels(
 
 
 def plot_dvf(data, scale=None, invert=False, slice=None):
-    logger.info("Generating DVF plot")
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[0] // 2
@@ -209,7 +213,6 @@ def plot_dvf(data, scale=None, invert=False, slice=None):
 
 
 def plot_cpoints(points, grid_spacing, grid_origin, slice=None):
-    logger.info("Generating control point plot")
     points_slice = points
     if len(points.shape) == 4:
         if slice is None:
