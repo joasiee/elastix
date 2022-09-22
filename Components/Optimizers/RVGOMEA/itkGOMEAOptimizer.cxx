@@ -983,9 +983,12 @@ GOMEAOptimizer::estimateParameters(int population_index)
 
     if (m_PartialEvaluations)
     {
-      this->GetCostFunction()->InitFOSMapping(linkage_model[population_index]->sets,
-                                              linkage_model[population_index]->set_length,
-                                              linkage_model[population_index]->length);
+      if (learn_linkage_tree || number_of_generations[population_index] == 0)
+      {
+        this->GetCostFunction()->InitFOSMapping(linkage_model[population_index]->sets,
+                                                linkage_model[population_index]->set_length,
+                                                linkage_model[population_index]->length);
+      }
     }
 
     this->estimateParametersML(population_index);

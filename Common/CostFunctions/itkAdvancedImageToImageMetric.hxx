@@ -1185,9 +1185,9 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
   IndexType              coeffRegionCroppedIndex;
 
   this->m_BSplinePointOffsetMap.clear();
-  this->m_BSplineRegionsToFosSets.clear();
+  // this->m_BSplineRegionsToFosSets.clear();
 
-  this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
+  // this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplinePointOffsetMap.reserve(coeffRegionCropped.GetNumberOfPixels());
 
   // crop control points grid to only contain those at lower left corners of fixed image pixel areas.
@@ -1256,6 +1256,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
   for (j = 0; j < (unsigned)this->m_FOS.length; ++j)
   {
     std::fill(pointAdded.begin(), pointAdded.end(), false);
+    this->m_BSplinePointsRegions[j + 1].clear();
+    this->m_BSplinePointsRegionsNoMask[j + 1].clear();
 
     // for each index i in fos set:
     for (i = 0; i < (unsigned)this->m_FOS.set_length[j]; ++i)
@@ -1293,7 +1295,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
           if (this->m_SubfunctionSamplers[offset])
           {
             this->m_BSplinePointsRegions[j + 1].push_back(offset);
-            this->m_BSplineRegionsToFosSets[offset].push_back(j);
+            // this->m_BSplineRegionsToFosSets[offset].push_back(j);
           }
         }
 

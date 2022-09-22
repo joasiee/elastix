@@ -415,7 +415,7 @@ protected:
   mutable ImageSamplerPointer                        m_ImageSampler{ nullptr };
   std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
   std::vector<IntermediateResults>                   m_SolutionEvaluations;
-  std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
+  // std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
   std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegions;
   std::vector<std::vector<int>>                      m_BSplinePointsRegionsNoMask;
