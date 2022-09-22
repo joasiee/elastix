@@ -151,9 +151,6 @@ public:
                         MeasureType &          value,
                         DerivativeType &       derivative) const override;
 
-  void
-  InitPartialEvaluations(int ** sets, int * set_length, int length, int pop_size) override;
-
 protected:
   /** Typedefs for indices and points. */
   using typename Superclass::FixedImageIndexType;

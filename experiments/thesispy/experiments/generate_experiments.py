@@ -1,6 +1,6 @@
 from math import log2
 import numpy as np
-from thesispy.elastix_wrapper.parameters import GOMEAType, Parameters, Collection
+from thesispy.elastix_wrapper.parameters import LinkageType, Parameters, Collection
 from thesispy.experiments.experiment import Experiment, ExperimentQueue
 
 
@@ -78,9 +78,7 @@ def multi_resolution_settings():
 
 def fos_settings():
     for setting in [
-        # GOMEAType.GOMEA_CP,
-        # GOMEAType.GOMEA_UNIVARIATE,
-        GOMEAType.GOMEA_FULL,
+        LinkageType.FULL,
     ]:
         for seed in range(5):
             params = (
@@ -99,7 +97,7 @@ def pop_sizes_cp():
             params = (
                 Parameters.from_base(mesh_size=meshsize, seed=1)
                 .multi_resolution(1, [4, 4, 4])
-                .gomea(fos=GOMEAType.GOMEA_CP, pop_size=pop_size_fn(n, nr_params))
+                .gomea(fos=LinkageType.CP_MARGINAL, pop_size=pop_size_fn(n, nr_params))
                 .stopping_criteria(iterations=100)
             )
             yield params
@@ -112,7 +110,7 @@ def subsampling_percentage():
                 sampler = "Full" if pct == 1.0 else "RandomCoordinate"
                 params = Parameters.from_base(mesh_size=5, seed=seed).multi_resolution(1, [4]).sampler(sampler, pct=pct)
                 if gomea:
-                    params.gomea(fos=GOMEAType.GOMEA_CP).stopping_criteria(iterations=300)
+                    params.gomea(fos=LinkageType.CP_MARGINAL).stopping_criteria(iterations=300)
                 else:
                     params.asgd().stopping_criteria(iterations=15000)
 

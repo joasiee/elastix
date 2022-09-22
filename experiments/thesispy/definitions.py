@@ -24,7 +24,8 @@ class Collection(str, Enum):
     SYNTHETIC = "SYNTHETIC"
 
 
-class GOMEAType(Enum):
-    GOMEA_FULL = -1
-    GOMEA_UNIVARIATE = 1
-    GOMEA_CP = -6
+class LinkageType(Enum):
+    FULL = -1
+    UNIVARIATE = 1
+    CP_MARGINAL = -6
+    UPGMA = -2

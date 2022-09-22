@@ -162,6 +162,14 @@ protected:
     GOMEA::random_seed = static_cast<int64_t>(seed);
   }
 
+  using AdvancedMetricType = itk::AdvancedImageToImageMetric<FixedImageType, MovingImageType>;
+
+  AdvancedMetricType *
+  GetCostFunctionAsAdvanced()
+  {
+    return dynamic_cast<AdvancedMetricType *>(this->GetCostFunction());
+  }
+
   unsigned long     m_NumberOfEvaluations{ 0L };
   unsigned long     m_CurrentIteration{ 0L };
   StopConditionType m_StopCondition{ Unknown };

@@ -106,7 +106,7 @@ GOMEAOptimizer::initialize(void)
   bspline_marginal_cp = 0;
   GOMEA::number_of_parameters = m_NrOfParameters;
   FOS_element_ub = m_NrOfParameters;
-  
+
   if (m_FosElementSize == Full)
     m_FosElementSize = m_NrOfParameters;
   if (m_FosElementSize == LinkageTree)
@@ -128,7 +128,7 @@ GOMEAOptimizer::initialize(void)
     bspline_marginal_cp = 1;
   if (m_FosElementSize == Univariate)
     use_univariate_FOS = 1;
-  
+
   GOMEA::FOS_element_size = m_FosElementSize;
 
   // finish initialization
@@ -357,13 +357,8 @@ GOMEAOptimizer::initializeNewPopulation()
   PROFILE_FUNCTION();
   this->initializeNewPopulationMemory(number_of_populations);
 
-  if (this->m_PartialEvaluations)
-  {
-    this->m_CostFunction->InitPartialEvaluations(linkage_model[number_of_populations]->sets,
-                                                 linkage_model[number_of_populations]->set_length,
-                                                 linkage_model[number_of_populations]->length,
-                                                 population_sizes[0]);
-  }
+  if (m_PartialEvaluations)
+    this->GetCostFunctionAsAdvanced()->InitSubfunctionSamplers();
 
   this->initializePopulationAndFitnessValues(number_of_populations);
 
@@ -469,7 +464,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
       populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * 0.1 * random1DNormalUnit();
-    }    
+    }
     this->costFunctionEvaluation(populations[population_index][j], j, objective_values[population_index][j]);
     this->SavePartialEvaluation(j);
   }
@@ -986,6 +981,14 @@ GOMEAOptimizer::estimateParameters(int population_index)
         this->initializeDistributionMultipliers(population_index);
     }
 
+    if (m_PartialEvaluations)
+    {
+      this->GetCostFunctionAsAdvanced()->InitFOSMapping(linkage_model[number_of_populations]->sets,
+                                                 linkage_model[number_of_populations]->set_length,
+                                                 linkage_model[number_of_populations]->length,
+                                                 population_sizes[0]);
+    }
+
     this->estimateParametersML(population_index);
   }
 }
@@ -1231,7 +1234,7 @@ void
 GOMEAOptimizer::GetValueSanityCheck(const ParametersType & parameters) const
 {
   Array<double> derivative(m_NrOfParameters);
-  MeasureType obj_val3;
+  MeasureType   obj_val3;
 
   MeasureType obj_val = this->GetValue(parameters);
   MeasureType obj_val2 = this->GetValue(parameters, -1, 0);

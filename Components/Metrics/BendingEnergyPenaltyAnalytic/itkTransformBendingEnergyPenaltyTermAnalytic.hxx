@@ -156,21 +156,6 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValueAnd
   }
 } // end GetValueAndDerivative()
 
-/**
- * ******************* InitPartialEvaluations *******************
- */
-
-template <class TFixedImage, class TScalarType>
-void
-TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::InitPartialEvaluations(int ** sets,
-                                                                                            int *  set_length,
-                                                                                            int    length,
-                                                                                            int    pop_size)
-{
-  this->Superclass::InitPartialEvaluations(sets, set_length, length, pop_size);
-  this->m_SubfunctionSamplers.clear();
-}
-
 
 } // end namespace itk
 

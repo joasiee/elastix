@@ -64,13 +64,6 @@ private:
 
   using FixedImageType = typename RegistrationType::FixedImageType;
   using MovingImageType = typename RegistrationType::MovingImageType;
-  using AdvancedMetricType = itk::AdvancedImageToImageMetric<FixedImageType, MovingImageType>;
-
-  AdvancedMetricType *
-  GetCostFunctionAsAdvanced()
-  {
-    return dynamic_cast<AdvancedMetricType *>(this->GetCostFunction());
-  }
 
   GOMEA(const Self &) = delete;
   void

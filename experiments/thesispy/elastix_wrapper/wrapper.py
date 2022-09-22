@@ -7,7 +7,7 @@ import logging
 from typing import Any, Dict
 
 from thesispy.elastix_wrapper import TimeoutException, time_limit
-from thesispy.elastix_wrapper.parameters import Collection, Parameters
+from thesispy.elastix_wrapper.parameters import Parameters
 from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
 from thesispy.experiments.validation import calc_validation
 from thesispy.experiments.instance import (
@@ -18,6 +18,7 @@ from thesispy.experiments.instance import (
     read_controlpoints,
     read_transform_params,
 )
+from thesispy.definitions import Collection, LinkageType
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 TRANSFORMIX = os.environ.get("TRANSFORMIX_EXECUTABLE")
@@ -154,8 +155,8 @@ def validation(params: Parameters, run_dir: Path):
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=1, use_mask=True)
-        .asgd()
-        .stopping_criteria(1000)
+        .gomea(LinkageType.UPGMA)
+        .stopping_criteria(10)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False, True)

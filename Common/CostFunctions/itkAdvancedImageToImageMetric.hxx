@@ -1082,20 +1082,15 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CopyPartialEvaluation(int
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(int ** sets,
-                                                                              int *  set_length,
-                                                                              int    length,
-                                                                              int    pop_size)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers()
 {
   int i;
   using ImageFullSamplerType = ImageFullSampler<FixedImageType>;
 
-  this->GetRegionsForFOS(sets, set_length, length);
+  this->GetRegionsForFOS();
 
   int           n_regions = this->m_BSplineFOSRegions.size();
   unsigned long totalSamples = 0L;
-
-  this->m_SolutionEvaluations.resize(pop_size);
 
   this->m_SubfunctionSamplers.clear();
   this->m_SubfunctionSamplers.reserve(n_regions);
@@ -1142,8 +1137,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitPartialEvaluations(in
   this->SetUseImageSampler(false);
   this->SetPartialEvaluations(true);
 
-  this->ComputeFOSMapping();
-  this->ComputeParametersOutsideOfMask();
+  // this->ComputeParametersOutsideOfMask();
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1162,13 +1156,9 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::SelectNewSamplesSubfuncti
 
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** sets, int * set_length, int length)
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
 {
   unsigned int i, j, d;
-
-  this->m_FOS.length = length;
-  this->m_FOS.sets = sets;
-  this->m_FOS.set_length = set_length;
 
   CombinationTransformType * comboPtr =
     dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
@@ -1180,7 +1170,11 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   const int              num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
   RegionType             coeffRegionCropped = wrappedImage->GetLargestPossibleRegion();
   IndexType              coeffRegionCroppedIndex;
+
   this->m_BSplinePointOffsetMap.clear();
+  this->m_BSplineRegionsToFosSets.clear();
+
+  this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
   this->m_BSplinePointOffsetMap.reserve(coeffRegionCropped.GetNumberOfPixels());
 
   // crop control points grid to only contain those at lower left corners of fixed image pixel areas.
@@ -1192,15 +1186,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
   coeffRegionCropped.SetIndex(coeffRegionCroppedIndex);
 
   this->m_BSplineFOSRegions.clear();
-  this->m_BSplinePointsRegions.clear();
-  this->m_BSplinePointsRegionsNoMask.clear();
-  this->m_BSplineRegionsToFosSets.clear();
-
   this->m_BSplineFOSRegions.resize(coeffRegionCropped.GetNumberOfPixels());
-  this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
-  this->m_BSplinePointsRegions.resize(length + 1);
-  this->m_BSplinePointsRegionsNoMask.resize(length + 1);
-
 
   // iterate over these control points and calculate fixed image pixel regions
   ImageRegionConstIteratorWithIndex<ImageType> coeffImageIterator(wrappedImage, coeffRegionCropped);
@@ -1232,9 +1218,23 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS(int ** s
 // assign fixed image regions to control points which affect them and vice versa.
 template <class TFixedImage, class TMovingImage>
 void
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::ComputeFOSMapping()
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** sets,
+                                                                      int *  set_length,
+                                                                      int    length,
+                                                                      int    pop_size)
 {
   unsigned int i, j, d;
+
+  this->m_FOS.length = length;
+  this->m_FOS.sets = sets;
+  this->m_FOS.set_length = set_length;
+
+  this->m_SolutionEvaluations.resize(pop_size);
+  this->m_BSplinePointsRegions.clear();
+  this->m_BSplinePointsRegionsNoMask.clear();
+
+  this->m_BSplinePointsRegions.resize(length + 1);
+  this->m_BSplinePointsRegionsNoMask.resize(length + 1);
 
   CombinationTransformType * comboPtr =
     dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());

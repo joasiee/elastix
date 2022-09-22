@@ -89,11 +89,11 @@ class Parameters:
 
     def gomea(
         self,
-        fos: GOMEAType = GOMEAType.GOMEA_FULL,
+        fos: LinkageType = LinkageType.CP_MARGINAL,
         pop_size: List[int] | int = None,
         shrinkage: bool = False,
     ) -> Parameters:
-        pevals = False if fos == GOMEAType.GOMEA_FULL else True
+        pevals = False if fos == LinkageType.FULL else True
         return self.args(
             {
                 "Optimizer": "GOMEA",
@@ -274,7 +274,7 @@ class Parameters:
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, seed=1)
-        .gomea(GOMEAType.GOMEA_CP)
+        .gomea(LinkageType.CP_MARGINAL)
         .regularize(0.01)
         .stopping_criteria(500)
         .instance(Collection.SYNTHETIC, 1)

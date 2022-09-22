@@ -331,7 +331,7 @@ public:
   BeforeThreadedGetValueAndDerivative(const TransformParametersType & parameters) const;
 
   void
-  InitPartialEvaluations(int ** sets, int * set_length, int length, int pop_size) override;
+  InitSubfunctionSamplers();
 
   using Superclass::GetValue;
 
@@ -677,10 +677,10 @@ private:
                                                             const TOptionalThreadId... optionalThreadId) const;
 
   void
-  GetRegionsForFOS(int ** sets, int * set_length, int length);
+  GetRegionsForFOS();
 
   void
-  ComputeFOSMapping();
+  InitFOSMapping(int ** sets, int * set_length, int length, int pop_size);
 
   void
   ComputeParametersOutsideOfMask();
