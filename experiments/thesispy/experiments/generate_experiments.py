@@ -9,19 +9,6 @@ def yield_experiments(collection: Collection, instance: int, project: str, exp_f
         params.instance(collection, instance)
         yield Experiment(params, project)
 
-
-def pd_pop_experiment():
-    for pop_size in [2**x for x in range(4, 11)]:
-        for seed in [1, 2, 3, 4, 5]:
-            params = (
-                Parameters.from_base(mesh_size=2, sampling_p=0.05, seed=seed)
-                .multi_resolution(1, p_sched=[5, 5, 5])
-                .gomea(pop_size=pop_size)
-                .stopping_criteria(iterations=100)
-            )
-            yield params
-
-
 def gridsizes():
     for gridsize in [12]:
         for seed in range(5):
@@ -34,22 +21,6 @@ def gridsizes():
             yield params
 
 
-def tre_divergence():
-    for gridsize in [2, 5, 7]:
-        params = (
-            Parameters.from_base(mesh_size=gridsize, sampler="Full", seed=1)
-            .multi_resolution(1, [4, 4, 4])
-            .multi_metric(
-                metric0="AdvancedNormalizedCorrelation",
-                metric1="CorrespondingPointsEuclideanDistanceMetric",
-                weight1=0.0,
-            )
-            .asgd()
-            .stopping_criteria(iterations=25000)
-        )
-        yield params
-
-
 def regularization_weight():
     for weight in np.arange(200, 10200, 200):
         weight = int(weight)
@@ -57,21 +28,9 @@ def regularization_weight():
         params = (
             Parameters.from_base(mesh_size=5, seed=1)
             .multi_resolution(1, [4, 4, 4])
-            .multi_metric(metric1="TransformBendingEnergyPenalty", weight1=weight)
+            .regularize(weight)
             .asgd()
             .stopping_criteria(iterations=10000)
-        )
-        yield params
-
-
-def multi_resolution_settings():
-    for its in [100, 1000, 10000, 25000, 50000]:
-        params = (
-            Parameters.from_base(mesh_size=5, seed=1)
-            .multi_resolution(3)
-            .multi_metric(metric1="TransformBendingEnergyPenalty", weight1=0.005)
-            .asgd()
-            .stopping_criteria(iterations=its)
         )
         yield params
 
@@ -89,20 +48,6 @@ def fos_settings():
             yield params
 
 
-def pop_sizes_cp():
-    pop_size_fn = lambda n, n_params: int(31.7 + n * log2(n_params))
-    for meshsize in [2, 4, 6, 10, 16]:
-        nr_params = (meshsize + 3) ** 3 * 3
-        for n in [2**x for x in range(6 + 1)]:
-            params = (
-                Parameters.from_base(mesh_size=meshsize, seed=1)
-                .multi_resolution(1, [4, 4, 4])
-                .gomea(fos=LinkageType.CP_MARGINAL, pop_size=pop_size_fn(n, nr_params))
-                .stopping_criteria(iterations=100)
-            )
-            yield params
-
-
 def subsampling_percentage():
     for seed in range(10):
         for pct in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0]:
@@ -116,33 +61,17 @@ def subsampling_percentage():
 
                 yield params
 
-
-def pareto_front_test():
-    for weight in [0.001 * 1.25**i for i in range(40)]:
-        weight = np.around(weight, 3)
-        params = Parameters.from_base(mesh_size=12, metric="AdvancedMeanSquares").regularize(weight)
-        params.asgd().stopping_criteria(iterations=10000)
-
-        yield params
-
-
-def pareto_front():
-    for weight in [0.00001 * 2**i for i in range(20)]:
-        weight = np.around(weight, 5)
-        params = Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares").regularize(weight)
-        params.asgd().stopping_criteria(iterations=5000)
-
-        yield params
-
-
-def queue_test():
-    for _ in range(10):
-        params = Parameters.from_base(mesh_size=5).asgd().stopping_criteria(iterations=100)
-        yield params
+def syn1_experiments():
+    for use_mask in [True, False]:
+        for gridsize in range(2, 11):
+            for seed in range(1):
+                params = Parameters.from_base(mesh_size=gridsize, metric="AdvancedMeanSquares", seed=seed, use_mask=use_mask)
+                params.gomea(LinkageType.CP_MARGINAL).stopping_criteria(iterations=200)
+                yield params
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = pareto_front_test
+    fn = syn1_experiments
 
-    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__ + "_asgd", fn)))
+    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))

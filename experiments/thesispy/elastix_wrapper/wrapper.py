@@ -154,9 +154,9 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=1, use_mask=True)
-        .gomea(LinkageType.UPGMA)
-        .stopping_criteria(10)
+        Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=1, use_mask=True)
+        .asgd()
+        .stopping_criteria(1000)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False, True)
