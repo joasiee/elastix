@@ -1,3 +1,4 @@
+from typing import List
 from thesispy.definitions import *
 import SimpleITK as sitk
 import numpy as np
@@ -16,6 +17,8 @@ class Instance:
     lms_moving: np.ndarray = None
     lms_fixed: np.ndarray = None
     lms_fixed_path: Path = None
+    surface_points: List[np.ndarray] = None
+    surface_points_paths: List[Path] = None
     dvf: np.ndarray = None
 
 
@@ -24,6 +27,7 @@ class RunResult:
     instance: Instance
     deformed: np.ndarray = None
     deformed_lms: np.ndarray = None
+    deformed_surface_points: List[np.ndarray] = None
     dvf: np.ndarray = None
     control_points: np.ndarray = None
     grid_spacing: np.ndarray = None
@@ -60,6 +64,14 @@ def get_instance(collection: Collection, instance_id: int):
         instance.lms_moving = np.loadtxt(path_lms_moving, skiprows=2)
         instance.lms_fixed = np.loadtxt(path_lms_fixed, skiprows=2)
         instance.lms_fixed_path = path_lms_fixed
+    if config["surface_points"]:
+        instance.surface_points, instance.surface_points_paths = [], []
+        path_surface_points = INSTANCES_SRC / config["folder"] / "landmarks" / "surfaces"
+        for file in sorted(path_surface_points.iterdir()):
+            if file.name.startswith(f"{instance_id:02}_Moving"):
+                instance.surface_points.append(np.loadtxt(file, skiprows=2))
+            elif file.name.startswith(f"{instance_id:02}_Fixed"):
+                instance.surface_points_paths.append(file)
     if config["dvf"] and config["dvf_indices"][instance_id - 1]:
         path_dvf = INSTANCES_SRC / config["folder"] / "dvf" / f"{instance_id:02}.npy"
         instance.dvf = np.load(path_dvf)

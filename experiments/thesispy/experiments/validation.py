@@ -109,8 +109,11 @@ def dvf_rmse(dvf1, dvf2, spacing=1):
     return rmse
 
 
-def mean_surface_distance(lms1, lms2, spacing=1):
-    msd = np.mean(distance.cdist(lms1, lms2).min(axis=1) * spacing)
+def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
+    distances = []
+    for i in range(len(surface_points)):
+        distances.append(np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1) * spacing))
+    msd = np.mean(distances)
     logger.info(f"Mean Surface Distance: {msd}")
     return msd
 
@@ -248,8 +251,8 @@ def calc_validation(result: RunResult):
     metrics = []
     levels = 2 if result.instance.collection == Collection.EXAMPLES else 3
     if result.dvf is not None:
-        if result.instance.collection == Collection.SYNTHETIC:
-            metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
+        # if result.instance.collection == Collection.SYNTHETIC:
+        #     metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
         metrics.append({"visualization/jacobian_determinant_slice": jacobian_determinant(result.dvf)})
         metrics.append({"visualization/dvf_slice": plot_dvf(result.dvf)})
         if result.instance.dvf is not None:
@@ -263,7 +266,7 @@ def calc_validation(result: RunResult):
             {"validation/hausdorff_distance": hausdorff_distance(result.deformed_lms, result.instance.lms_moving)}
         )
         metrics.append(
-            {"validation/mean_surface_distance": mean_surface_distance(result.deformed_lms, result.instance.lms_moving)}
+            {"validation/mean_surface_distance": mean_surface_distance(result.instance.surface_points, result.deformed_surface_points)}
         )
         metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
     if result.control_points is not None:

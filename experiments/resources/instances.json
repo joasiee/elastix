@@ -4,6 +4,7 @@
         "extension": "mhd",
         "masks": true,
         "landmarks": false,
+        "surface_points": false,
         "dvf": false
     },
     "LEARN": {
@@ -11,6 +12,7 @@
         "extension": "nii.gz",
         "masks": true,
         "landmarks": true,
+        "surface_points": false,
         "dvf": false
     },
     "EXAMPLES": {
@@ -18,6 +20,7 @@
         "extension": "png",
         "masks": false,
         "landmarks": false,
+        "surface_points": false,
         "dvf": false
     },
     "SYNTHETIC": {
@@ -25,6 +28,7 @@
         "extension": "mhd",
         "masks": true,
         "landmarks": true,
+        "surface_points": true,
         "dvf": true,
         "dvf_indices": [true, false]
     }

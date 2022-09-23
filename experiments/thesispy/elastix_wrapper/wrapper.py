@@ -133,6 +133,12 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
         generate_transformed_points(transform_params, out_dir, instance.lms_fixed_path)
         run_result.deformed_lms = read_deformed_lms(out_dir / "outputpoints.txt")
 
+    if instance.surface_points_paths is not None:
+        run_result.deformed_surface_points = []
+        for surface_points_path in instance.surface_points_paths:
+            generate_transformed_points(transform_params, out_dir, surface_points_path)
+            run_result.deformed_surface_points.append(read_deformed_lms(out_dir / "outputpoints.txt"))
+
     generate_transformed_points(transform_params, out_dir, moving_img_path=instance.moving_path)
     run_result.dvf = get_np_array(out_dir / "deformationField.mhd")
     run_result.deformed = get_np_array(out_dir / "result.mhd")
@@ -154,9 +160,9 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=1, use_mask=True)
+        Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=1, use_mask=False)
         .asgd()
-        .stopping_criteria(1000)
+        .stopping_criteria(5000)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False, True)
