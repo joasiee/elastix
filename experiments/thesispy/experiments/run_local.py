@@ -10,7 +10,7 @@ from thesispy.experiments.experiment import Experiment, run_experiment
 params = (
     Parameters.from_base(mesh_size=7, metric="AdvancedMeanSquares", seed=1, use_mask=True)
     .asgd()
-    .stopping_criteria(500)
+    .stopping_criteria(100)
     .instance(Collection.SYNTHETIC, 1)
 )
 

@@ -11,7 +11,7 @@ import wandb
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-from matplotlib.colors import Normalize
+from matplotlib.colors import Normalize, LinearSegmentedColormap
 import logging
 import time
 
@@ -232,16 +232,21 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None):
             for i in range(len(points_slice.shape[:-1]))
         ]
     )
+
     colors = np.zeros(points_slice.shape[:-1])
-    color = 0
-    for p in np.ndindex(points_slice.shape[:-1]):
-        colors[p] = color
-        color += 1
+    x_slice = colors.shape[0] // 2
+    y_slice = colors.shape[1] // 2
+    colors[:x_slice, :y_slice] = 0.25
+    colors[x_slice:, :y_slice] = 0.5
+    colors[:x_slice, y_slice:] = 0.75
+    colors[x_slice:, y_slice:] = 1.0
+            
+    colormap_colors = ['#ffcc00', 'red', 'green', 'blue']
+    cmap = LinearSegmentedColormap.from_list('quadrants', colormap_colors)
 
     _, ax = plt.subplots(figsize=(7, 7))
-    cmap = plt.cm.coolwarm
-    ax.scatter(X, Y, marker="+", c=colors, cmap=cmap, alpha=0.5, s=20)
-    ax.scatter(points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap)
+    ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=0.3, s=20)
+    ax.scatter(points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap, alpha=0.8)
     return wandb.Image(ax.get_figure())
 
 

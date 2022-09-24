@@ -162,7 +162,7 @@ if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=1, use_mask=False)
         .asgd()
-        .stopping_criteria(5000)
+        .stopping_criteria(0)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params, Path("output/" + str(params)), SaveStrategy(), False, True)
