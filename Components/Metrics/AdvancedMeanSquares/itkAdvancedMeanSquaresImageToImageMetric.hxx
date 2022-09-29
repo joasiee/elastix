@@ -45,7 +45,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSq
 
   this->m_UseNormalization = false;
   this->m_NormalizationFactor = 1.0;
-  this->m_MissedPixelPenalty = MissedPixelPenalty;
+  this->m_MaxPixelDifference = MissedPixelPenalty;
 
   /** SelfHessian related variables, experimental feature. */
   this->m_SelfHessianSmoothingSigma = 1.0;
@@ -140,6 +140,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     const double diff1 = this->m_FixedImageTrueMax - this->m_MovingImageTrueMin;
     const double diff2 = this->m_MovingImageTrueMax - this->m_FixedImageTrueMin;
     const double maxdiff = std::max(diff1, diff2);
+    this->m_MaxPixelDifference = maxdiff;
 
     /** We guess that maxdiff/10 is the maximum average difference that will
      * be observed.
@@ -149,7 +150,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     if (maxdiff > 1e-10)
     {
       this->m_NormalizationFactor = 100.0 / maxdiff / maxdiff;
-      this->m_MissedPixelPenalty = maxdiff * maxdiff * 2;
     }
   }
   else
@@ -208,6 +208,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
     if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
     {
+      if (fixedImageValue == 0.0 && movingImageValue != 0.0)
+      {
+        movingImageValue = this->m_MaxPixelDifference;
+      }
       const RealType diff = movingImageValue - fixedImageValue;
       measure += diff * diff;
       ++numberOfPixelsCounted;
@@ -269,6 +273,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
 
       if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
       {
+        if (fixedImageValue == 0.0 && movingImageValue != 0.0)
+        {
+          movingImageValue = this->m_MaxPixelDifference;
+        }
         const RealType diff = movingImageValue - fixedImageValue;
         measure += diff * diff;
         ++numberOfPixelsCounted;
@@ -282,7 +290,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
   }
 
   const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
-  const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
+  const double        pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
   this->m_MissedPixelsMean(pctMissed * 100.0);
 
   result[0] = measure * m_NormalizationFactor;
@@ -551,6 +559,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
 
       /** Get the fixed image value. */
       const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
+
+      if (fixedImageValue == 0.0 && movingImageValue != 0.0)
+      {
+        movingImageValue = this->m_MaxPixelDifference;
+      }
 
 #if 0
       /** Get the TransformJacobian dT/dmu. */

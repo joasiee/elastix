@@ -229,7 +229,7 @@ protected:
   using SelfHessianSamplerType = ImageGridSampler<FixedImageType>;
 
   double m_NormalizationFactor;
-  double m_MissedPixelPenalty;
+  double m_MaxPixelDifference;
 
   /** Compute a pixel's contribution to the measure and derivatives;
    * Called by GetValueAndDerivative(). */
