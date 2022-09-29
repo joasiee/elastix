@@ -8,9 +8,9 @@ from thesispy.elastix_wrapper.parameters import Parameters, Collection
 from thesispy.experiments.experiment import Experiment, run_experiment
 
 params = (
-    Parameters.from_base(mesh_size=7, metric="AdvancedMeanSquares", seed=1, use_mask=True)
+    Parameters.from_base(mesh_size=7, metric="AdvancedMeanSquares", seed=1, use_mask=False)
     .asgd()
-    .stopping_criteria(100)
+    .stopping_criteria(1000)
     .instance(Collection.SYNTHETIC, 1)
 )
 

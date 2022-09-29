@@ -5,7 +5,7 @@
     "FixedImagePyramid": "FixedRecursiveImagePyramid",
     "MovingImagePyramid": "MovingRecursiveImagePyramid",
     "Interpolator": "LinearInterpolator",
-    "ResampleInterpolator": "FinalBSplineInterpolator",
+    "ResampleInterpolator": "FinalLinearInterpolator",
     "Resampler": "DefaultResampler",
     "Transform": "RecursiveBSplineTransform",
     "ImageSampler": "Full",

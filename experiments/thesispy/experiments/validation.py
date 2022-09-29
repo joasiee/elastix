@@ -97,9 +97,12 @@ def dice_similarity(moving_deformed, fixed, levels):
     return similarity
 
 
-def hausdorff_distance(lms1, lms2, spacing=1):
-    hdist = np.max(distance.cdist(lms1, lms2).min(axis=1))
-    logger.info(f"Hausdorff Distance: {hdist}")
+def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
+    distances = []
+    for i in range(len(surface_points)):
+        distances.append(np.max(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing)
+    hdist = np.mean(distances)
+    logger.info(f"Weighted Hausdorff Distance: {hdist}")
     return hdist
 
 
@@ -114,7 +117,7 @@ def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
     for i in range(len(surface_points)):
         distances.append(np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1) * spacing))
     msd = np.mean(distances)
-    logger.info(f"Mean Surface Distance: {msd}")
+    logger.info(f"Weighted Mean Surface Distance: {msd}")
     return msd
 
 
@@ -164,6 +167,7 @@ def plot_voxels(
     ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
     sliced_data = np.copy(data)
     sliced_data[:, :y_slice_depth, :] = 0
+    # sliced_data[sliced_data < 10] = 0
 
     cmap = cm.get_cmap(cmap_name)
     norm = Normalize(vmin=np.min(sliced_data), vmax=1.5 * np.max(sliced_data))
@@ -268,7 +272,7 @@ def calc_validation(result: RunResult):
             metrics.append({"visualization/deformed_image_slice": plot_voxels(result.deformed)})
     if result.deformed_lms is not None:
         metrics.append(
-            {"validation/hausdorff_distance": hausdorff_distance(result.deformed_lms, result.instance.lms_moving)}
+            {"validation/hausdorff_distance": hausdorff_distance(result.instance.surface_points, result.deformed_surface_points)}
         )
         metrics.append(
             {"validation/mean_surface_distance": mean_surface_distance(result.instance.surface_points, result.deformed_surface_points)}
