@@ -20,11 +20,6 @@
 
 #include "itkAdvancedImageToImageMetric.h"
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-using namespace boost::accumulators;
-
 namespace itk
 {
 /** \class AdvancedNormalizedCorrelationImageToImageMetric
@@ -244,9 +239,6 @@ protected:
   /** AccumulateDerivatives threader callback function */
   static ITK_THREAD_RETURN_FUNCTION_CALL_CONVENTION
   AccumulateDerivativesThreaderCallback(void * arg);
-
-  typedef accumulator_set<RealType, stats<tag::mean>> MeanAccumulator;
-  mutable MeanAccumulator                             m_MissedPixelsMean;
 
 private:
   AdvancedNormalizedCorrelationImageToImageMetric(const Self &) = delete;

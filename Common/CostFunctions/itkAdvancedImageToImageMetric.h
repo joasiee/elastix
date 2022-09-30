@@ -23,6 +23,12 @@
 #include <vnl/vnl_sparse_matrix.h>
 #include <memory> // For unique_ptr.
 
+// for missed pixel mean pct
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+using namespace boost::accumulators;
+
 #include "itkImageToImageMetric.h"
 #include "itkImageSamplerBase.h"
 #include "itkGradientImageFilter.h"
@@ -666,6 +672,9 @@ protected:
 
   double m_FixedLimitRangeRatio{ 0.01 };
   double m_MovingLimitRangeRatio{ 0.01 };
+
+  typedef accumulator_set<RealType, stats<tag::mean>> MeanAccumulator;
+  mutable MeanAccumulator                             m_MissedPixelsMean;
 
 private:
   AdvancedImageToImageMetric(const Self &) = delete;

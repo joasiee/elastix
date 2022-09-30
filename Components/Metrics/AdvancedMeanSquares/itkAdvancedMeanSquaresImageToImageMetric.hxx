@@ -208,10 +208,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
     if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
     {
-      if (fixedImageValue == 0.0 && movingImageValue != 0.0)
-      {
-        movingImageValue = this->m_MaxPixelDifference;
-      }
       const RealType diff = movingImageValue - fixedImageValue;
       measure += diff * diff;
       ++numberOfPixelsCounted;
@@ -273,10 +269,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
 
       if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
       {
-        if (fixedImageValue == 0.0 && movingImageValue != 0.0)
-        {
-          movingImageValue = this->m_MaxPixelDifference;
-        }
         const RealType diff = movingImageValue - fixedImageValue;
         measure += diff * diff;
         ++numberOfPixelsCounted;
@@ -559,11 +551,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
 
       /** Get the fixed image value. */
       const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
-
-      if (fixedImageValue == 0.0 && movingImageValue != 0.0)
-      {
-        movingImageValue = this->m_MaxPixelDifference;
-      }
 
 #if 0
       /** Get the TransformJacobian dT/dmu. */
