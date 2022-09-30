@@ -65,13 +65,13 @@ def syn1_regularized():
     weights = [0.1, 0.5, 1.0, 10.0, 100.0]
     mesh_sizes = [2, 4, 7, 10]
     for seed in range(5):
-        for mesh_size in mesh_sizes:
-            for weight in weights:
+        for weight in weights:
+            for mesh_size in mesh_sizes:
                 params = (
-                    Parameters.from_base(mesh_size=mesh_size, seed=seed)
+                    Parameters.from_base(mesh_size=mesh_size, seed=seed, use_mask=False)
                     .regularize(weight)
                     .asgd()
-                    .stopping_criteria(iterations=10000)
+                    .stopping_criteria(iterations=5000)
                 )
                 yield params
     
