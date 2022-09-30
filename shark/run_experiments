@@ -5,7 +5,7 @@
 #SBATCH --mem=6G
 #SBATCH --time=10-00:00:00
 #SBATCH -D /home/jmulder6/projects/elastix/experiments
-#SBATCH -o "output/slurm/pareto_front-%j.out"
+#SBATCH -o "output/slurm/run-%j.out"
 
 
 module purge > /dev/null 2>&1
