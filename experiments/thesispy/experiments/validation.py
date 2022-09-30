@@ -167,7 +167,6 @@ def plot_voxels(
     ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
     sliced_data = np.copy(data)
     sliced_data[:, :y_slice_depth, :] = 0
-    # sliced_data[sliced_data < 10] = 0
 
     cmap = cm.get_cmap(cmap_name)
     norm = Normalize(vmin=np.min(sliced_data), vmax=1.5 * np.max(sliced_data))
@@ -260,8 +259,8 @@ def calc_validation(result: RunResult):
     metrics = []
     levels = 2 if result.instance.collection == Collection.EXAMPLES else 3
     if result.dvf is not None:
-        # if result.instance.collection == Collection.SYNTHETIC:
-        #     metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
+        if result.instance.collection == Collection.SYNTHETIC:
+            metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
         metrics.append({"visualization/jacobian_determinant_slice": jacobian_determinant(result.dvf)})
         metrics.append({"visualization/dvf_slice": plot_dvf(result.dvf)})
         if result.instance.dvf is not None:
