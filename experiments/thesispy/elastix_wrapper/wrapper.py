@@ -160,11 +160,8 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=7, metric="AdvancedMeanSquares", seed=1, use_mask=False)
+        Parameters.from_base(mesh_size=12, metric="AdvancedMeanSquares", seed=1, use_mask=False)
         .asgd()
-        .args({
-            "ResampleInterpolator": "FinalLinearInterpolator",
-        })
         .stopping_criteria(1000)
         .instance(Collection.SYNTHETIC, 1)
     )
