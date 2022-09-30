@@ -160,8 +160,9 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=12, metric="AdvancedMeanSquares", seed=1, use_mask=False)
+        Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=1, use_mask=False)
         .asgd()
+        .regularize(10.0)
         .stopping_criteria(1000)
         .instance(Collection.SYNTHETIC, 1)
     )

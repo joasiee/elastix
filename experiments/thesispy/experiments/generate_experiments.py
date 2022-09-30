@@ -61,16 +61,24 @@ def subsampling_percentage():
 
                 yield params
 
-def syn1_experiments_penalty():
-    for gridsize in range(2, 8):
-        for seed in range(5):
-            params = Parameters.from_base(mesh_size=gridsize, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
-            params.gomea(LinkageType.CP_MARGINAL).stopping_criteria(iterations=200)
-            yield params
+def syn1_regularized():
+    weights = [0.1, 0.5, 1.0, 10.0, 100.0]
+    mesh_sizes = [2, 4, 7, 10]
+    for seed in range(5):
+        for mesh_size in mesh_sizes:
+            for weight in weights:
+                params = (
+                    Parameters.from_base(mesh_size=mesh_size, seed=seed)
+                    .regularize(weight)
+                    .asgd()
+                    .stopping_criteria(iterations=10000)
+                )
+                yield params
+    
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = syn1_experiments_penalty
+    fn = syn1_regularized
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))

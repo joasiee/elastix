@@ -43,7 +43,7 @@ class SaveStrategyWandb(SaveStrategy):
         self._buffer = (None, None)
 
     def _log_buffer(self):
-        if self._rowcount > 0:
+        if self._buffer[0] is not None:
             headers, row = self._buffer
             row[-1] = self._sum_time
             headers = [f"R{self._resolution}/{header}" for header in headers]

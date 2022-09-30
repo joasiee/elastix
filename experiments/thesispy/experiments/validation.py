@@ -167,6 +167,7 @@ def plot_voxels(
     ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
     sliced_data = np.copy(data)
     sliced_data[:, :y_slice_depth, :] = 0
+    sliced_data[sliced_data < 5] = 0
 
     cmap = cm.get_cmap(cmap_name)
     norm = Normalize(vmin=np.min(sliced_data), vmax=1.5 * np.max(sliced_data))
