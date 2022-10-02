@@ -79,6 +79,9 @@ mergeSortInt(int * array, int array_size);
 void
 mergeSortMergeInt(int * array, int * sorted, int * tosort, int p, int r, int q);
 
+void
+writeMatrixToFile(MatrixXd & matrix, const char * filename);
+
 int *
 getRanks(double * array, int array_size);
 int *

@@ -73,7 +73,7 @@ void
 shrunkCovariance(MatrixXd & emp_cov, const double shrinkage)
 {
   PROFILE_FUNCTION();
-  const int n = emp_cov.rows();
+  const int    n = emp_cov.rows();
   const double mu = emp_cov.trace() / n;
   emp_cov = (1.0 - shrinkage) * emp_cov;
   emp_cov.diagonal().array() += shrinkage * mu;
@@ -83,12 +83,12 @@ void
 shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size)
 {
   PROFILE_FUNCTION();
-  const int n = emp_cov.rows();
+  const int    n = emp_cov.rows();
   const double mu = emp_cov.trace() / n;
-  
+
   const double alpha = (emp_cov * emp_cov).mean();
   const double num = alpha * (mu * mu);
-  const double den = (1.0 + double(pop_size)) * (alpha - (mu*mu) / n);
+  const double den = (1.0 + double(pop_size)) * (alpha - (mu * mu) / n);
 
   const double shrinkage = den == 0.0 ? 1.0 : std::min(num / den, 1.0);
   emp_cov = (1.0 - shrinkage) * emp_cov;
@@ -108,7 +108,7 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
   int        info;
 
   result.triangularView<Eigen::Lower>() = matrix;
-  
+
   LAPACK_dpotrf(&uplo, &n, result.data(), &n, &info);
   if (info != 0) /* Matrix is not positive definite */
   {
@@ -544,6 +544,21 @@ distanceEuclidean(double * x, double * y, int number_of_dimensions)
   result = sqrt(result);
 
   return (result);
+}
+
+void
+writeMatrixToFile(MatrixXd & matrix, const char * filename)
+{
+  std::ofstream file(filename);
+  if (file.is_open())
+  {
+    file << matrix << "\n";
+    file.close();
+  }
+  else
+  {
+    std::cout << "Error opening file " << filename << " for writing matrix." << std::endl;
+  }
 }
 
 /**

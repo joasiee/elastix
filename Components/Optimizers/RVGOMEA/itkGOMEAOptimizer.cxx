@@ -135,6 +135,7 @@ GOMEAOptimizer::initialize(void)
   this->checkOptions();
   initializeRandomNumberGenerator();
   this->initializeMemory();
+  computeDistanceMatrixBSplineGrid(m_NrOfParameters, m_GridRegionDimensions);
   this->Modified();
 }
 

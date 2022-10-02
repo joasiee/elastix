@@ -38,6 +38,18 @@ public:
   using typename Superclass2::RegistrationType;
   typedef typename Superclass2::ITKBaseType ITKBaseType;
 
+  /** Other typedef's. */
+  using FixedImageType = typename ElastixType::FixedImageType;
+  using FixedPointType = typename FixedImageType::PointType;
+  using FixedPointValueType = typename FixedPointType::ValueType;
+  using MovingImageType = typename ElastixType::MovingImageType;
+  using MovingPointType = typename MovingImageType::PointType;
+  using MovingPointValueType = typename MovingPointType::ValueType;
+
+  using AdvancedMetricType = itk::AdvancedImageToImageMetric<FixedImageType, MovingImageType>;
+  using CombinationTransformType = itk::AdvancedCombinationTransform<double, FixedImageType::ImageDimension>;
+  using BSplineBaseType = itk::AdvancedBSplineDeformableTransformBase<double, FixedImageType::ImageDimension>;
+
   /** Methods to set parameters and print output at different stages
    * in the registration process.*/
   void
@@ -61,9 +73,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  using FixedImageType = typename RegistrationType::FixedImageType;
-  using MovingImageType = typename RegistrationType::MovingImageType;
 
   GOMEA(const Self &) = delete;
   void

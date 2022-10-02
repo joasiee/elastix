@@ -135,6 +135,15 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
   std::string fileName = makeFileName.str();
   this->m_DistMultOutFile.open(fileName.c_str());
+
+  // Get the transform pointer casted as bspline transform.
+  auto transformPtr = this->GetElastix()->GetElxTransformBase()->GetAsITKBaseType();
+  auto comboPtr = dynamic_cast<const CombinationTransformType *>(transformPtr);
+  auto bsplinePtr = dynamic_cast<const BSplineBaseType *>(comboPtr->GetCurrentTransform());
+  
+  // Get the bspline grid size dimensions
+  auto gridRegionSize = bsplinePtr->GetGridRegion().GetSize();
+  m_GridRegionDimensions = std::vector<int>(gridRegionSize.begin(), gridRegionSize.end());
 }
 
 template <class TElastix>

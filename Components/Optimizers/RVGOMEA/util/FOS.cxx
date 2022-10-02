@@ -463,6 +463,56 @@ computeMIMatrix(MatrixXd & covariance_matrix, int n)
   return (MI_matrix);
 }
 
+MatrixXd
+computeDistanceMatrixBSplineGrid(int n, const std::vector<int> & gridDimensions)
+{
+  MatrixXd distances{ n, n };
+
+  std::vector<int> divisions(gridDimensions.size(), 1);
+  for (int i = 1; i < gridDimensions.size(); ++i)
+    divisions[i] = divisions[i - 1] * gridDimensions[i - 1];
+
+  int nGridPoints = n / gridDimensions.size();
+  for (int i = 0; i < nGridPoints; ++i)
+  {
+    int      gridPointIndex_i = i % nGridPoints;
+    VectorXd gridPoint_i = computeGridPosition(gridPointIndex_i, divisions);
+
+    // sets distance of control point parameters of different control points to their euclidean distance
+    for (int j = i + 1; j < nGridPoints; ++j)
+    {
+      int      gridPointIndex_j = j % nGridPoints;
+      VectorXd gridPoint_j = computeGridPosition(gridPointIndex_j, divisions);
+      VectorXd u_v = gridPoint_i - gridPoint_j;
+      double   distance = sqrt(u_v.dot(u_v));
+
+      for (int dim = 0; dim < gridDimensions.size(); ++dim)
+      {
+        for (int dim2 = 0; dim2 < gridDimensions.size(); ++dim2)
+        {
+          distances(dim * nGridPoints + i, dim2 * nGridPoints + j) = distance;
+          distances(dim2 * nGridPoints + j, dim * nGridPoints + i) = distance;
+          distances(dim2 * nGridPoints + i, dim * nGridPoints + j) = distance;
+          distances(dim * nGridPoints + j, dim2 * nGridPoints + i) = distance;
+        }
+      }
+    }
+  }
+  return distances;
+}
+
+VectorXd
+computeGridPosition(int index, const std::vector<int> & divisions)
+{
+  VectorXd position(divisions.size());
+  for (int i = divisions.size() - 1; i >= 0; --i)
+  {
+    position(i) = (int)index / divisions[i];
+    index = index % divisions[i];
+  }
+  return position;
+}
+
 int *
 matchFOSElements(FOS * new_FOS, FOS * prev_FOS)
 {

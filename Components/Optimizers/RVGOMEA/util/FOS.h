@@ -43,6 +43,7 @@
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
 namespace GOMEA
 {
@@ -68,6 +69,10 @@ double
 getSimilarity(int a, int b);
 double **
 computeMIMatrix(MatrixXd & covariance_matrix, int n);
+MatrixXd
+computeDistanceMatrixBSplineGrid(int n, const std::vector<int> & gridDimensions);
+VectorXd
+computeGridPosition(int index, const std::vector<int> & divisions);
 int *
 matchFOSElements(FOS * new_FOS, FOS * prev_FOS);
 int *

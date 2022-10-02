@@ -172,6 +172,8 @@ protected:
   typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
   mutable MeanAccumulator                          m_PdPctMean;
 
+  std::vector<int> m_GridRegionDimensions;
+
   std::string m_outFolderProfiling;
 
 private:
