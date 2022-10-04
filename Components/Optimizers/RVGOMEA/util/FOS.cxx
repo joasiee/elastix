@@ -44,7 +44,10 @@ namespace GOMEA
 {
 int *mpm_number_of_indices, number_of_parameters, FOS_element_ub, use_univariate_FOS, learn_linkage_tree,
   static_linkage_tree, random_linkage_tree, bspline_marginal_cp, FOS_element_size;
-double ***MI_matrices, **S_matrix, *S_vector;
+BSplineStaticLinkageType static_linkage_type;
+double ***               MI_matrices, **S_matrix, *S_vector;
+std::vector<int>         grid_region_dimensions;
+
 void
 printFOS(FOS * fos)
 {
@@ -159,6 +162,7 @@ copyFOS(FOS * f)
 FOS *
 learnLinkageTree(MatrixXd & covariance_matrix)
 {
+  PROFILE_FUNCTION();
   char done;
   int  i, j, r0, r1, rswap, *indices, *order, *sorted, FOS_index, **mpm, mpm_length, **mpm_new,
     *mpm_new_number_of_indices, mpm_new_length, *NN_chain, NN_chain_length;
@@ -218,6 +222,14 @@ learnLinkageTree(MatrixXd & covariance_matrix)
     for (i = 0; i < number_of_parameters; i++)
       free(MI_matrix[i]);
     free(MI_matrix);
+  }
+  else if (static_linkage_tree)
+  {
+    MatrixXd similarities = getStaticSimilarityMatrix(number_of_parameters);
+    // writeMatrixToFile(similarities, "similarities.txt");
+    for (i = 0; i < mpm_length; i++)
+      for (j = 0; j < mpm_length; j++)
+        S_matrix[i][j] = similarities(mpm[i][0], mpm[j][0]);
   }
   else if (random_linkage_tree)
   {
@@ -442,6 +454,7 @@ determineNearestNeighbour(int index, int mpm_length)
 double **
 computeMIMatrix(MatrixXd & covariance_matrix, int n)
 {
+  PROFILE_FUNCTION();
   int    i, j;
   double si, sj, r, **MI_matrix;
 
@@ -464,15 +477,16 @@ computeMIMatrix(MatrixXd & covariance_matrix, int n)
 }
 
 MatrixXd
-computeDistanceMatrixBSplineGrid(int n, const std::vector<int> & gridDimensions)
+computeDistanceMatrixBSplineGrid(int n)
 {
+  PROFILE_FUNCTION();
   MatrixXd distances{ n, n };
 
-  std::vector<int> divisions(gridDimensions.size(), 1);
-  for (int i = 1; i < gridDimensions.size(); ++i)
-    divisions[i] = divisions[i - 1] * gridDimensions[i - 1];
+  std::vector<int> divisions(grid_region_dimensions.size(), 1);
+  for (int i = 1; i < grid_region_dimensions.size(); ++i)
+    divisions[i] = divisions[i - 1] * grid_region_dimensions[i - 1];
 
-  int nGridPoints = n / gridDimensions.size();
+  int nGridPoints = n / grid_region_dimensions.size();
   for (int i = 0; i < nGridPoints; ++i)
   {
     int      gridPointIndex_i = i % nGridPoints;
@@ -486,9 +500,9 @@ computeDistanceMatrixBSplineGrid(int n, const std::vector<int> & gridDimensions)
       VectorXd u_v = gridPoint_i - gridPoint_j;
       double   distance = sqrt(u_v.dot(u_v));
 
-      for (int dim = 0; dim < gridDimensions.size(); ++dim)
+      for (int dim = 0; dim < grid_region_dimensions.size(); ++dim)
       {
-        for (int dim2 = 0; dim2 < gridDimensions.size(); ++dim2)
+        for (int dim2 = 0; dim2 < grid_region_dimensions.size(); ++dim2)
         {
           distances(dim * nGridPoints + i, dim2 * nGridPoints + j) = distance;
           distances(dim2 * nGridPoints + j, dim * nGridPoints + i) = distance;
@@ -511,6 +525,22 @@ computeGridPosition(int index, const std::vector<int> & divisions)
     index = index % divisions[i];
   }
   return position;
+}
+
+MatrixXd
+getStaticSimilarityMatrix(int n)
+{
+  PROFILE_FUNCTION();
+  switch (static_linkage_type)
+  {
+    case BSplineStaticLinkageType::EuclideanSimilarity:
+      return 1 / (computeDistanceMatrixBSplineGrid(n).array() + 1);
+    case BSplineStaticLinkageType::None:
+      return MatrixXd(n, n);
+  }
+  std::cout << "No valid static linkage type set, defaulting to None."
+            << "\n";
+  return MatrixXd(n, n);
 }
 
 int *
@@ -577,6 +607,7 @@ matchFOSElements(FOS * new_FOS, FOS * prev_FOS)
 int *
 hungarianAlgorithm(int ** similarity_matrix, int dim)
 {
+  PROFILE_FUNCTION();
   int    i, j, x, y, root, *q, wr, rd, cx, cy, ty, max_match, *lx, *ly, *xy, *yx, *slack, *slackx, *prev, delta;
   short *S, *T, terminated;
 
