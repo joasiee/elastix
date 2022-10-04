@@ -43,6 +43,11 @@ if(NOT DEFINED ITK_DIR AND DEFINED ENV{ITK_HOME})
   set(ITK_DIR $ENV{ITK_HOME}/build/${CMAKE_BUILD_TYPE} CACHE STRING "")
 endif()
 
+find_package(Git REQUIRED)
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+find_package(Boost REQUIRED)
+
 # Find ITK.
 find_package( ITK 5.3 REQUIRED COMPONENTS
     ITKCommon

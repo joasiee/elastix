@@ -1,11 +1,6 @@
 include(ExternalProject)
 cmake_policy(SET CMP0074 NEW)
 
-find_package(Git REQUIRED)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
-find_package(Boost REQUIRED)
-
 set (DEPENDENCIES_PREFIX ${PROJECT_SOURCE_DIR}/build/external)
 set (PLASTIMATCH_PATCH ${PROJECT_SOURCE_DIR}/tools/plastimatch.patch)
 set (EXTRA_CMAKE_ARGS
@@ -18,10 +13,11 @@ set (EXTRA_CMAKE_ARGS
 )
 set (TARGET_DEPENDENCIES)
 
-set(Eigen3_ROOT ${DEPENDENCIES_PREFIX}/install/share/eigen3)
+set(Eigen3_DIR ${DEPENDENCIES_PREFIX}/install/share/eigen3/cmake)
 find_package( Eigen3 QUIET NO_DEFAULT_PATH)
 
 if(NOT ${Eigen3_FOUND})
+    message(STATUS "Eigen3 not found, downloading and building")
     ExternalProject_Add(
         eigen
         URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
@@ -35,7 +31,8 @@ endif()
 
 set(ITK_DIR ${DEPENDENCIES_PREFIX}/src/itk-build)
 find_package( ITK 5.3 QUIET NO_DEFAULT_PATH)
-if(NOT {ITK_FOUND})
+if(NOT ${ITK_FOUND})
+    message(STATUS "ITK not found, downloading and building")
     ExternalProject_Add(
         itk
         GIT_REPOSITORY https://github.com/joasiee/ITK.git
@@ -58,19 +55,20 @@ set(PLASTIMATCH_ARGS
     -DCMAKE_PREFIX_PATH:STRING=${DEPENDENCIES_PREFIX}/install
 )
 
-set(Plastimatch_ROOT ${DEPENDENCIES_PREFIX}/install/lib/cmake/plastimatch)
+set(Plastimatch_DIR ${DEPENDENCIES_PREFIX}/install/lib/cmake/plastimatch)
 find_package( Plastimatch QUIET NO_DEFAULT_PATH)
 if(NOT ${Plastimatch_FOUND})
-ExternalProject_Add(
-    plastimatch
-    DEPENDS itk
-    GIT_REPOSITORY https://gitlab.com/plastimatch/plastimatch.git
-    GIT_TAG 3734adbfdb0b4cdce733ef1275b4e76093ffc6d5
-    PATCH_COMMAND ${GIT_EXECUTABLE} apply ${PLASTIMATCH_PATCH} || echo "patch already applied"
-    BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/plastimatch-build --config Release --target plmregister
-    PREFIX ${DEPENDENCIES_PREFIX}
-    INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${PLASTIMATCH_ARGS} ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
+    message(STATUS "Plastimatch not found, downloading and building")
+    ExternalProject_Add(
+        plastimatch
+        DEPENDS ${TARGET_DEPENDENCIES}
+        GIT_REPOSITORY https://gitlab.com/plastimatch/plastimatch.git
+        GIT_TAG 3734adbfdb0b4cdce733ef1275b4e76093ffc6d5
+        PATCH_COMMAND ${GIT_EXECUTABLE} apply ${PLASTIMATCH_PATCH} || echo "patch already applied"
+        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/plastimatch-build --config Release --target plmregister
+        PREFIX ${DEPENDENCIES_PREFIX}
+        INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${PLASTIMATCH_ARGS} ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
 )
 set(TARGET_DEPENDENCIES ${TARGET_DEPENDENCIES} plastimatch)
 endif()
