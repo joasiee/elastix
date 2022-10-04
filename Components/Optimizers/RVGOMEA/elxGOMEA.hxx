@@ -82,6 +82,11 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(fosElementSize, "FosElementSize", this->GetComponentLabel(), level, 0);
   this->SetFosElementSize(fosElementSize);
 
+  /** Set StaticLinkageType.*/
+  int staticLinkageType = 0;
+  this->m_Configuration->ReadParameter(staticLinkageType, "StaticLinkageType", this->GetComponentLabel(), level, 0);
+  this->SetStaticLinkageType(staticLinkageType);
+
   /** Set MaxImprovementNoStretch.*/
   int maxNoImprovementNoStretch = 0;
   this->m_Configuration->ReadParameter(
@@ -143,7 +148,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   
   // Get the bspline grid size dimensions
   auto gridRegionSize = bsplinePtr->GetGridRegion().GetSize();
-  m_GridRegionDimensions = std::vector<int>(gridRegionSize.begin(), gridRegionSize.end());
+  m_BSplineGridRegionDimensions = std::vector<int>(gridRegionSize.begin(), gridRegionSize.end());
 }
 
 template <class TElastix>

@@ -54,6 +54,12 @@ typedef struct FOS
   int *  set_length;
 } FOS;
 
+typedef enum
+{
+  None,
+  EuclideanSimilarity
+} BSplineStaticLinkageType;
+
 /*-=-=-=-=-=-=-=-=-=-=-=-= Section Header Functions -=-=-=-=-=-=-=-=-=-=-=-=*/
 void
 printFOS(FOS * fos);
@@ -73,6 +79,8 @@ MatrixXd
 computeDistanceMatrixBSplineGrid(int n, const std::vector<int> & gridDimensions);
 VectorXd
 computeGridPosition(int index, const std::vector<int> & divisions);
+MatrixXd
+getStaticSimilarityMatrix(int n);
 int *
 matchFOSElements(FOS * new_FOS, FOS * prev_FOS);
 int *
@@ -105,7 +113,9 @@ extern int number_of_parameters,
   predefined_FOS_length, /* The length of the predefined FOS. */
   FOS_element_size;    /* If positive, the size of blocks of consecutive variables in the FOS. If negative, determines
                           specific kind of linkage tree FOS. */
+extern BSplineStaticLinkageType static_linkage_type;
 extern double ***MI_matrices, **S_matrix, *S_vector; /* Avoids quadratic memory requirements when a linkage tree is
                                                         learned based on a random distance measure. */
+extern std::vector<int> grid_region_dimensions;
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 } // namespace GOMEA

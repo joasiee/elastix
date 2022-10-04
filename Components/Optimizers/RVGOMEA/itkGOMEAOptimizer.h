@@ -131,6 +131,9 @@ public:
   itkGetConstMacro(FosElementSize, int);
   itkSetMacro(FosElementSize, int);
 
+  itkGetConstMacro(StaticLinkageType, int);
+  itkSetMacro(StaticLinkageType, int);
+
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
 
@@ -172,7 +175,7 @@ protected:
   typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
   mutable MeanAccumulator                          m_PdPctMean;
 
-  std::vector<int> m_GridRegionDimensions;
+  std::vector<int> m_BSplineGridRegionDimensions;
 
   std::string m_outFolderProfiling;
 
@@ -304,6 +307,9 @@ private:
 
   mutable std::ostringstream m_StopConditionDescription;
 
+  unsigned long m_MaximumNumberOfIterations{ 100L };
+  unsigned long m_MaxNumberOfEvaluations{ 0L };
+
   double m_Tau{ 0.35 };
   double m_DistributionMultiplierDecrease{ 0.9 };
   double m_StDevThreshold{ 1.0 };
@@ -312,14 +318,13 @@ private:
   double eta_ams{ 1.0 };
   double eta_cov{ 1.0 };
 
-  int           m_MaxNumberOfPopulations{ 1 };
-  int           m_BasePopulationSize{ 0 };
-  unsigned long m_MaximumNumberOfIterations{ 100L };
-  unsigned long m_MaxNumberOfEvaluations{ 0L };
-  int           m_MaxNoImprovementStretch{ 0 };
-  int           m_FosElementSize{ -1 };
-  int           number_of_subgenerations_per_population_factor{ 8 };
-  int           number_of_populations{ 0 };
+  int m_MaxNumberOfPopulations{ 1 };
+  int m_BasePopulationSize{ 0 };
+  int m_MaxNoImprovementStretch{ 0 };
+  int m_FosElementSize{ -1 };
+  int m_StaticLinkageType{0};
+  int number_of_subgenerations_per_population_factor{ 8 };
+  int number_of_populations{ 0 };
 
   bool m_PartialEvaluations{ false };
   bool m_OASShrinkage{ false };

@@ -130,12 +130,13 @@ GOMEAOptimizer::initialize(void)
     use_univariate_FOS = 1;
 
   GOMEA::FOS_element_size = m_FosElementSize;
+  GOMEA::grid_region_dimensions =  std::move(m_BSplineGridRegionDimensions);
+  GOMEA::static_linkage_type = static_cast<BSplineStaticLinkageType>(m_StaticLinkageType);
 
   // finish initialization
   this->checkOptions();
   initializeRandomNumberGenerator();
   this->initializeMemory();
-  computeDistanceMatrixBSplineGrid(m_NrOfParameters, m_GridRegionDimensions);
   this->Modified();
 }
 
