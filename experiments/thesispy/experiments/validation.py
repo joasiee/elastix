@@ -190,7 +190,7 @@ def plot_voxels(
     return wandb.Image(ax.get_figure())
 
 
-def plot_dvf(data, scale=None, invert=False, slice=None):
+def plot_dvf(data, scale=1, invert=False, slice=None):
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[0] // 2
