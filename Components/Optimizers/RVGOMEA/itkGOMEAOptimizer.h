@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <numeric>
+#include <random>
 #include <fstream>
 #include <math.h>
 #include <stdio.h>

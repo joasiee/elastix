@@ -130,7 +130,7 @@ GOMEAOptimizer::initialize(void)
     use_univariate_FOS = 1;
 
   GOMEA::FOS_element_size = m_FosElementSize;
-  GOMEA::grid_region_dimensions =  std::move(m_BSplineGridRegionDimensions);
+  GOMEA::grid_region_dimensions = std::move(m_BSplineGridRegionDimensions);
   GOMEA::static_linkage_type = static_cast<BSplineStaticLinkageType>(m_StaticLinkageType);
 
   // finish initialization
@@ -1416,10 +1416,13 @@ GOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index, i
   num_indices = linkage_model[population_index]->set_length[FOS_index];
   indices = linkage_model[population_index]->sets[FOS_index];
 
-  z = VectorXd(num_indices);
+  // TODO: move to tools
+  std::mt19937                     gen(random_seed);
+  std::normal_distribution<double> dist(0.0, 1.0);
 
-  for (i = 0; i < num_indices; i++)
-    z[i] = random1DNormalUnit();
+  // TODO: EigenRand?
+  VectorXd rz = VectorXd(num_indices).unaryExpr([&](float dummy) { return dist(gen); });
+  z = rz;
 
   if (use_univariate_FOS)
   {
@@ -1430,6 +1433,7 @@ GOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index, i
   else
   {
     result = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>() * z;
+    // TODO: mean vectors as eigen vector -> add using eigen operator.
     for (i = 0; i < num_indices; i++)
       result[i] += mean_vectors[population_index][indices[i]];
   }
