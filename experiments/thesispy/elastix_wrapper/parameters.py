@@ -94,6 +94,9 @@ class Parameters:
         shrinkage: bool = False,
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
+        static_linkage_type = 0
+        if fos in STATIC_LINKAGE_MAPPING:
+            static_linkage_type = STATIC_LINKAGE_MAPPING[fos]
         return self.args(
             {
                 "Optimizer": "GOMEA",
@@ -102,6 +105,7 @@ class Parameters:
                 "BasePopulationSize": pop_size,
                 "PartialEvaluations": pevals,
                 "UseShrinkage": shrinkage,
+                "StaticLinkageType": static_linkage_type,
             }
         )
 

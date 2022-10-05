@@ -28,4 +28,8 @@ class LinkageType(Enum):
     FULL = -1
     UNIVARIATE = 1
     CP_MARGINAL = -6
-    UPGMA = -2
+    STATIC_EUCLIDEAN = -2
+
+STATIC_LINKAGE_MAPPING = {
+    LinkageType.STATIC_EUCLIDEAN: 1
+}
