@@ -84,18 +84,24 @@ def bending_energy(dvf):
     return be
 
 
-def dice_similarity(moving_deformed, fixed, levels):
+def set_similarity(moving_deformed, fixed, levels, type="dice"):
     thresholds_moving = threshold_multiotsu(moving_deformed, classes=levels)
     thresholds_fixed = threshold_multiotsu(fixed, classes=levels)
     regions_moving_deformed = np.digitize(moving_deformed, bins=thresholds_moving)
     regions_fixed = np.digitize(fixed, bins=thresholds_fixed)
 
-    intersection = np.sum((regions_moving_deformed == regions_fixed) & (regions_fixed > 0))
-    union = np.sum(regions_moving_deformed > 0) + np.sum(regions_fixed > 0)
-    similarity = 2.0 * intersection / union
-    logger.info(f"Dice Similarity: {similarity}")
+    similarities = []
+    for region_value in np.unique(regions_fixed):
+        intersection = np.sum((regions_moving_deformed == regions_fixed) & (regions_fixed == region_value))
+        sum_pixels = np.sum(regions_fixed == region_value) * 2
+        if type == "dice":
+            similarities.append(2.0 * intersection / sum_pixels)
+        elif type == "jaccard":
+            similarities.append(intersection / (sum_pixels - intersection))
+    
+    similarity = np.mean(similarities)
+    logger.info(f"{type.capitalize()} Similarity: {similarity}")
     return similarity
-
 
 def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
     distances = []
@@ -127,7 +133,7 @@ def tre(lms1, lms2, spacing=1):
     return tre
 
 
-def jacobian_determinant(dvf):
+def jacobian_determinant(dvf, fig=None):
     axis_swap = 2 if len(dvf.shape) == 4 else 1
     dvf = np.swapaxes(dvf, 0, axis_swap)
     dvf_img = sitk.GetImageFromArray(dvf, isVector=True)
@@ -137,10 +143,14 @@ def jacobian_determinant(dvf):
     if len(jac_det.shape) == 3:
         slice = jac_det.shape[-1] // 2
         jac_det = jac_det[..., slice]
-    ax = sns.heatmap(jac_det, cmap="jet")
+
+    if fig is not None:
+        ax = fig.add_subplot(2, 2, 4)
+        sns.heatmap(jac_det, cmap="jet", ax=ax, square=True, cbar_kws={"fraction": 0.045, "pad": 0.02})
+    else:
+        sns.heatmap(jac_det, cmap="jet", square=True)
     ax.invert_yaxis()
     logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
-    return wandb.Image(ax.get_figure())
 
 
 def get_cmap_color(cmap, f, a):
@@ -156,15 +166,23 @@ def plot_voxels(
     orientation=(0, -70),
     cmap_name="Greys",
     alpha=1.0,
+    fig=None,
 ):
     if len(data.shape) == 2:
-        _, ax = plt.subplots(figsize=(7, 7))
+        if fig is None:
+            _, ax = plt.subplots(figsize=(7, 7))
+        else:
+            ax = fig.add_subplot(2, 2, 1)
         ax.imshow(data, cmap=cmap_name, alpha=alpha)
-        return wandb.Image(ax.get_figure())
 
     if y_slice_depth is None:
         y_slice_depth = data.shape[1] // 2
-    ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
+    
+    if fig is None:
+        ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
+    else:
+        ax = fig.add_subplot(2, 2, 1, projection="3d")
+
     sliced_data = np.copy(data)
     sliced_data[:, :y_slice_depth, :] = 0
     sliced_data[sliced_data < 5] = 0
@@ -173,13 +191,13 @@ def plot_voxels(
     norm = Normalize(vmin=np.min(sliced_data), vmax=1.5 * np.max(sliced_data))
 
     colors = np.array(list(map(lambda x: get_cmap_color(cmap, norm(x), alpha), sliced_data)))
-
+    
     ax.voxels(sliced_data, facecolors=colors, edgecolor=(0, 0, 0, 0.2))
     ax.set_xlim3d(1, 29)
     ax.set_ylim3d(5, 29)
     ax.set_zlim3d(1, 29)
     ax.set_box_aspect((np.ptp(ax.get_xlim()), np.ptp(ax.get_ylim()), np.ptp(ax.get_zlim())))
-    plt.locator_params(axis="y", nbins=3)
+    ax.locator_params(axis="y", nbins=3)
     ax.view_init(*orientation)
 
     if lms is not None:
@@ -187,10 +205,8 @@ def plot_voxels(
             if abs(lm[1] - y_slice_depth) <= 0.25:
                 ax.scatter(lm[0], lm[1], lm[2], s=50, c="r")
 
-    return wandb.Image(ax.get_figure())
 
-
-def plot_dvf(data, scale=1, invert=False, slice=None):
+def plot_dvf(data, scale=1, invert=False, slice=None, fig=None):
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[0] // 2
@@ -209,17 +225,20 @@ def plot_dvf(data, scale=1, invert=False, slice=None):
     v = data[:, :, 1]
     c = np.sqrt(u**2 + v**2)
 
-    fig, ax = plt.subplots(figsize=(7, 7))
+    if fig is None:
+        fig, ax = plt.subplots(figsize=(7, 7))
+    else:
+        ax = fig.add_subplot(2, 2, 3)
+
     qq = ax.quiver(X, Y, v, u, c, scale=scale, units="xy", angles="xy", scale_units="xy", cmap=plt.cm.jet)
 
     ax.set_xlim(0, data.shape[0])
     ax.set_ylim(0, data.shape[1])
     ax.set_aspect("equal")
-    fig.colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude")
-    return wandb.Image(ax.get_figure())
+    fig.colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
 
 
-def plot_cpoints(points, grid_spacing, grid_origin, slice=None):
+def plot_cpoints(points, grid_spacing, grid_origin, slice=None, fig=None):
     points_slice = points
     if len(points.shape) == 4:
         if slice is None:
@@ -248,44 +267,41 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None):
     colormap_colors = ['#ffcc00', 'red', 'green', 'blue']
     cmap = LinearSegmentedColormap.from_list('quadrants', colormap_colors)
 
-    _, ax = plt.subplots(figsize=(7, 7))
+    if fig is None:
+        _, ax = plt.subplots(figsize=(7, 7))
+    else:
+        ax = fig.add_subplot(2, 2, 2)
+
     ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=0.3, s=20)
     ax.scatter(points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap, alpha=0.8)
-    return wandb.Image(ax.get_figure())
-
 
 def calc_validation(result: RunResult):
     logger.info("Calculating validation metrics:")
     start = time.perf_counter()
     metrics = []
+    fig = plt.figure(figsize=(8, 8))
     levels = 2 if result.instance.collection == Collection.EXAMPLES else 3
     if result.dvf is not None:
         if result.instance.collection == Collection.SYNTHETIC:
             metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
-        metrics.append({"visualization/jacobian_determinant_slice": jacobian_determinant(result.dvf)})
-        metrics.append({"visualization/dvf_slice": plot_dvf(result.dvf)})
+        jacobian_determinant(result.dvf, fig=fig)
+        plot_dvf(result.dvf, fig=fig)
         if result.instance.dvf is not None:
             metrics.append({"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf)})
     if result.deformed is not None:
-        metrics.append({"validation/dice_similarity": dice_similarity(result.deformed, result.instance.fixed, levels)})
+        metrics.append({"validation/dice_similarity": set_similarity(result.deformed, result.instance.fixed, levels)})
+        metrics.append({"validation/jaccard_similarity": set_similarity(result.deformed, result.instance.fixed, levels, "jaccard")})
         if result.instance.collection == Collection.SYNTHETIC:
-            metrics.append({"visualization/deformed_image_slice": plot_voxels(result.deformed)})
+            plot_voxels(result.deformed, fig=fig)
     if result.deformed_lms is not None:
-        metrics.append(
-            {"validation/hausdorff_distance": hausdorff_distance(result.instance.surface_points, result.deformed_surface_points)}
-        )
-        metrics.append(
-            {"validation/mean_surface_distance": mean_surface_distance(result.instance.surface_points, result.deformed_surface_points)}
-        )
+        metrics.append({"validation/hausdorff_distance": hausdorff_distance(result.instance.surface_points, result.deformed_surface_points)})
+        metrics.append({"validation/mean_surface_distance": mean_surface_distance(result.instance.surface_points, result.deformed_surface_points)})
         metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
     if result.control_points is not None:
-        metrics.append(
-            {
-                "visualization/cpoints_slice": plot_cpoints(
-                    result.control_points, result.grid_spacing, result.grid_origin
-                )
-            }
-        )
+        plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, fig=fig)
+
+    plt.tight_layout()
+    metrics.append({"visualization/slices": wandb.Image(fig)})
 
     end = time.perf_counter()
     logger.info(f"Validation metrics calculated in {end - start:.2f}s")
