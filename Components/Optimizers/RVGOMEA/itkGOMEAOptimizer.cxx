@@ -465,7 +465,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     individual_NIS[population_index][j] = 0;
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
-      populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * 0.1 * random1DNormalUnit();
+      populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * random1DNormalUnit();
     }
     this->costFunctionEvaluation(populations[population_index][j], j, objective_values[population_index][j]);
     this->SavePartialEvaluation(j);
@@ -1417,12 +1417,16 @@ GOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index, i
   indices = linkage_model[population_index]->sets[FOS_index];
 
   // TODO: move to tools
-  std::mt19937                     gen(random_seed);
-  std::normal_distribution<double> dist(0.0, 1.0);
+  // std::mt19937                     gen(random_seed);
+  // std::normal_distribution<double> dist(0.0, 1.0);
 
-  // TODO: EigenRand?
-  VectorXd rz = VectorXd(num_indices).unaryExpr([&](float dummy) { return dist(gen); });
-  z = rz;
+  // // TODO: EigenRand?
+  // VectorXd rz = VectorXd(num_indices).unaryExpr([&](float dummy) { return dist(gen); });
+  // z = rz;
+
+  z = VectorXd(num_indices);
+  for (i = 0; i < num_indices; i++)
+    z(i) = random1DNormalUnit();
 
   if (use_univariate_FOS)
   {

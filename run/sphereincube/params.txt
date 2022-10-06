@@ -26,7 +26,7 @@
 (RandomSeed 1)
 (Optimizer "GOMEA")
 (OptimizerName "UPGMA")
-(FosElementSize -2)
+(FosElementSize -1)
 (PartialEvaluations "true")
 (UseShrinkage "false")
 (MaximumNumberOfIterations 10)

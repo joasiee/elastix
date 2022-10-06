@@ -47,9 +47,12 @@ def run(
         execute_elastix(params_file, out_dir, params, suppress_stdout)
     except subprocess.CalledProcessError as err:
         err_msg = err.stderr.decode("utf-8").strip("\n")
-        logger.error(f"Something went wrong while running elastix at: {str(run_dir)}: {err_msg}")
+        logger.error(
+            f"Something went wrong while running elastix at: {str(run_dir)}: {err_msg}"
+        )
     except TimeoutException:
-        logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
+        logger.info(
+            f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
 
@@ -63,13 +66,18 @@ def run(
         wd.sv_strategy.close()
 
     time_end = time.perf_counter()
-    logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
+    logger.info(
+        f"Run ended successfully. It took {time_end - time_start:0.4f} seconds"
+    )
 
     if visualize:
         execute_visualize(out_dir)
 
 
-def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True):
+def execute_elastix(params_file: Path,
+                    out_dir: Path,
+                    params: Parameters,
+                    suppress_stdout: bool = True):
     with time_limit(params["MaxTimeSeconds"]):
         args = [
             ELASTIX,
@@ -91,12 +99,17 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppre
         env = os.environ.copy()
         env["OMP_WAIT_POLICY"] = "PASSIVE"
 
-        subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
+        subprocess.run(args,
+                       check=True,
+                       stdout=output,
+                       stderr=subprocess.PIPE,
+                       env=env)
 
 
-def generate_transformed_points(
-    params_file: Path, out_dir: Path, points_file: Path = None, moving_img_path: Path = None
-):
+def generate_transformed_points(params_file: Path,
+                                out_dir: Path,
+                                points_file: Path = None,
+                                moving_img_path: Path = None):
     args = [
         TRANSFORMIX,
         "-tp",
@@ -110,7 +123,10 @@ def generate_transformed_points(
     ]
     if moving_img_path is not None:
         args += ["-in", str(moving_img_path.resolve())]
-    subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    subprocess.run(args,
+                   check=True,
+                   stdout=subprocess.DEVNULL,
+                   stderr=subprocess.PIPE)
 
 
 def execute_visualize(out_dir: Path):
@@ -122,27 +138,37 @@ def execute_visualize(out_dir: Path):
             break
 
     if visualizer:
-        subprocess.run([visualizer, str((out_dir / "result.0.mhd").resolve())], cwd=str(out_dir.resolve()))
+        subprocess.run(
+            [visualizer, str((out_dir / "result.0.mhd").resolve())],
+            cwd=str(out_dir.resolve()))
 
 
-def get_run_result(collection: Collection, instance_id: int, transform_params: Path):
+def get_run_result(collection: Collection, instance_id: int,
+                   transform_params: Path):
     out_dir = transform_params.parent.resolve()
     instance = get_instance(collection, instance_id)
     run_result = RunResult(instance)
     if instance.lms_fixed is not None:
-        generate_transformed_points(transform_params, out_dir, instance.lms_fixed_path)
-        run_result.deformed_lms = read_deformed_lms(out_dir / "outputpoints.txt")
+        generate_transformed_points(transform_params, out_dir,
+                                    instance.lms_fixed_path)
+        run_result.deformed_lms = read_deformed_lms(out_dir /
+                                                    "outputpoints.txt")
 
     if instance.surface_points_paths is not None:
         run_result.deformed_surface_points = []
         for surface_points_path in instance.surface_points_paths:
-            generate_transformed_points(transform_params, out_dir, surface_points_path)
-            run_result.deformed_surface_points.append(read_deformed_lms(out_dir / "outputpoints.txt"))
+            generate_transformed_points(transform_params, out_dir,
+                                        surface_points_path)
+            run_result.deformed_surface_points.append(
+                read_deformed_lms(out_dir / "outputpoints.txt"))
 
-    generate_transformed_points(transform_params, out_dir, moving_img_path=instance.moving_path)
+    generate_transformed_points(transform_params,
+                                out_dir,
+                                moving_img_path=instance.moving_path)
     run_result.dvf = get_np_array(out_dir / "deformationField.mhd")
     run_result.deformed = get_np_array(out_dir / "result.mhd")
-    run_result.control_points = read_controlpoints(out_dir / "controlpoints.dat")
+    run_result.control_points = read_controlpoints(out_dir /
+                                                   "controlpoints.dat")
     _, spacing, origin = read_transform_params(transform_params)
     run_result.grid_spacing = spacing
     run_result.grid_origin = origin
@@ -153,17 +179,19 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
 def validation(params: Parameters, run_dir: Path):
     out_dir = run_dir.joinpath(Path("out"))
     transform_params = out_dir / "TransformParameters.0.txt"
-    run_result = get_run_result(Collection(params["Collection"]), int(params["Instance"]), transform_params)
+    run_result = get_run_result(Collection(params["Collection"]),
+                                int(params["Instance"]), transform_params)
 
     return calc_validation(run_result)
 
 
 if __name__ == "__main__":
-    params = (
-        Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=1, use_mask=False)
-        .asgd()
-        .regularize(10.0)
-        .stopping_criteria(1000)
-        .instance(Collection.SYNTHETIC, 1)
-    )
-    run(params, Path("output/" + str(params)), SaveStrategy(), False, True)
+    params_main = (Parameters.from_base(
+        mesh_size=2, metric="AdvancedMeanSquares", seed=0,
+        use_mask=False).gomea(
+            LinkageType.CP_MARGINAL).stopping_criteria(20).instance(
+                Collection.SYNTHETIC, 1))
+    run(params_main,
+        Path("output/" + str(params_main)),
+        suppress_stdout=False,
+        visualize=True)
