@@ -98,10 +98,11 @@ def set_similarity(moving_deformed, fixed, levels, type="dice"):
             similarities.append(2.0 * intersection / sum_pixels)
         elif type == "jaccard":
             similarities.append(intersection / (sum_pixels - intersection))
-    
+
     similarity = np.mean(similarities)
     logger.info(f"{type.capitalize()} Similarity: {similarity}")
     return similarity
+
 
 def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
     distances = []
@@ -177,7 +178,7 @@ def plot_voxels(
 
     if y_slice_depth is None:
         y_slice_depth = data.shape[1] // 2
-    
+
     if fig is None:
         ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
     else:
@@ -191,7 +192,7 @@ def plot_voxels(
     norm = Normalize(vmin=np.min(sliced_data), vmax=1.5 * np.max(sliced_data))
 
     colors = np.array(list(map(lambda x: get_cmap_color(cmap, norm(x), alpha), sliced_data)))
-    
+
     ax.voxels(sliced_data, facecolors=colors, edgecolor=(0, 0, 0, 0.2))
     ax.set_xlim3d(1, 29)
     ax.set_ylim3d(5, 29)
@@ -263,9 +264,9 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None, fig=None):
     colors[x_slice:, :y_slice] = 0.5
     colors[:x_slice, y_slice:] = 0.75
     colors[x_slice:, y_slice:] = 1.0
-            
-    colormap_colors = ['#ffcc00', 'red', 'green', 'blue']
-    cmap = LinearSegmentedColormap.from_list('quadrants', colormap_colors)
+
+    colormap_colors = ["#ffcc00", "red", "green", "blue"]
+    cmap = LinearSegmentedColormap.from_list("quadrants", colormap_colors)
 
     if fig is None:
         _, ax = plt.subplots(figsize=(7, 7))
@@ -274,6 +275,7 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None, fig=None):
 
     ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=0.3, s=20)
     ax.scatter(points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap, alpha=0.8)
+
 
 def calc_validation(result: RunResult):
     logger.info("Calculating validation metrics:")
@@ -290,12 +292,26 @@ def calc_validation(result: RunResult):
             metrics.append({"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf)})
     if result.deformed is not None:
         metrics.append({"validation/dice_similarity": set_similarity(result.deformed, result.instance.fixed, levels)})
-        metrics.append({"validation/jaccard_similarity": set_similarity(result.deformed, result.instance.fixed, levels, "jaccard")})
+        metrics.append(
+            {"validation/jaccard_similarity": set_similarity(result.deformed, result.instance.fixed, levels, "jaccard")}
+        )
         if result.instance.collection == Collection.SYNTHETIC:
             plot_voxels(result.deformed, fig=fig)
     if result.deformed_lms is not None:
-        metrics.append({"validation/hausdorff_distance": hausdorff_distance(result.instance.surface_points, result.deformed_surface_points)})
-        metrics.append({"validation/mean_surface_distance": mean_surface_distance(result.instance.surface_points, result.deformed_surface_points)})
+        metrics.append(
+            {
+                "validation/hausdorff_distance": hausdorff_distance(
+                    result.instance.surface_points, result.deformed_surface_points
+                )
+            }
+        )
+        metrics.append(
+            {
+                "validation/mean_surface_distance": mean_surface_distance(
+                    result.instance.surface_points, result.deformed_surface_points
+                )
+            }
+        )
         metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
     if result.control_points is not None:
         plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, fig=fig)

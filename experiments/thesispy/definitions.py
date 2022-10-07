@@ -30,6 +30,5 @@ class LinkageType(Enum):
     CP_MARGINAL = -6
     STATIC_EUCLIDEAN = -2
 
-STATIC_LINKAGE_MAPPING = {
-    LinkageType.STATIC_EUCLIDEAN: 1
-}
+
+STATIC_LINKAGE_MAPPING = {LinkageType.STATIC_EUCLIDEAN: 1}
