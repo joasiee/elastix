@@ -53,7 +53,7 @@ def run(
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
 
-    val_metrics = validation(params, run_dir)
+    val_metrics, run_result = validation(params, run_dir)
 
     if save_strategy:
         for metric in val_metrics:
@@ -67,6 +67,8 @@ def run(
 
     if visualize:
         execute_visualize(out_dir)
+
+    return run_result
 
 
 def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True):
@@ -155,14 +157,14 @@ def validation(params: Parameters, run_dir: Path):
     transform_params = out_dir / "TransformParameters.0.txt"
     run_result = get_run_result(Collection(params["Collection"]), int(params["Instance"]), transform_params)
 
-    return calc_validation(run_result)
+    return calc_validation(run_result), run_result
 
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=2, metric="AdvancedMeanSquares", seed=1, use_mask=False)
-        .gomea(LinkageType.CP_MARGINAL)
-        .stopping_criteria(3)
+        Parameters.from_base(mesh_size=10, metric="AdvancedMeanSquares", seed=2, use_mask=False)
+        .asgd()
+        .stopping_criteria(5000)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True)

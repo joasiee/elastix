@@ -607,18 +607,17 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::WriteParameter
   while (!coeffImageIterator.IsAtEnd())
   {
     IndexType index = coeffImageIterator.GetIndex();
-    ContinuousIndexType displacedIndex;
-    for (unsigned int i = 0; i < SpaceDimension; ++i)
-    {
-      displacedIndex[i] = index[i] + m_CoefficientImages[i]->GetPixel(index);
-    }
-
     for (unsigned int i = 0; i < SpaceDimension; ++i)
     {
       outfile << index[i] << " ";
     }
+    InputPointType point = this->TransformContinuousGridIndexToPoint(index);
 
-    const InputPointType point = this->TransformContinuousGridIndexToPoint(displacedIndex);
+    for (unsigned int i = 0; i < SpaceDimension; ++i)
+    {
+      point[i] = point[i] + m_CoefficientImages[i]->GetPixel(index);
+    }
+
     for (unsigned int i = 0; i < SpaceDimension; ++i)
     {
       outfile << point[i] + 0.5 << " ";

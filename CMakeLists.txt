@@ -139,7 +139,7 @@ mark_as_advanced( ELASTIX_USE_OPENMP )
 option( ELASTIX_USE_OPENMP "Use OpenMP to speed up certain computations." ON )
 
 if( ELASTIX_USE_OPENMP )
-  find_package( OpenMP QUIET )
+  find_package( OpenMP REQUIRED )
   if( OPENMP_FOUND )
     set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}" )
     add_definitions( -DELASTIX_USE_OPENMP )
