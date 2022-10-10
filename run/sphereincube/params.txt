@@ -24,7 +24,7 @@
 (Metric "AdvancedMeanSquares")
 (MeshSize 5 5 5)
 (RandomSeed 1)
-(Optimizer "GOMEA")
+(Optimizer "AdaptiveStochasticGradientDescent")
 (OptimizerName "UPGMA")
 (FosElementSize -1)
 (PartialEvaluations "true")
