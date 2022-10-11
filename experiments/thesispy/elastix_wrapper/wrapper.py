@@ -90,8 +90,10 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppre
             args += ["-fMask", str(params.fixedmask_path)]
 
         output = subprocess.DEVNULL if suppress_stdout else None
-        env = os.environ.copy()
-        env["OMP_WAIT_POLICY"] = "PASSIVE"
+        env = None
+        if params["Optimizer"] == "AdaptiveStochasticGradientDescent":
+            env = os.environ.copy()
+            env["OMP_WAIT_POLICY"] = "PASSIVE"
 
         subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
 
@@ -159,12 +161,12 @@ def validation(params: Parameters, run_dir: Path):
 
     return calc_validation(run_result), run_result
 
-
+asgd
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=10, metric="AdvancedMeanSquares", seed=2, use_mask=False)
-        .asgd()
-        .stopping_criteria(5000)
+        Parameters.from_base(mesh_size=2, metric="AdvancedMeanSquares", seed=2, use_mask=False)
+        .gomea(LinkageType.CP_MARGINAL)
+        .stopping_criteria(3)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True)
