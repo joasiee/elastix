@@ -149,6 +149,7 @@ add_executable( elastix_exe
 )
 set_target_properties( elastix_exe PROPERTIES OUTPUT_NAME elastix )
 target_compile_definitions( elastix_exe PRIVATE ELX_CMAKE_VERSION="${CMAKE_VERSION}" )
+target_compile_options(elastix_exe PRIVATE -march=native)
 target_link_libraries( elastix_exe ${ELASTIX_TARGET_LINK_LIBRARIES} )
 
 # The library type (STATIC or SHARED) is determined by the parameter
