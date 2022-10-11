@@ -98,21 +98,22 @@ hungarianAlgorithmAddToTree(int     x,
                             int     dim);
 void
 ezilaitiniFOS(FOS * lm);
+void
+filterFOS(FOS * input_FOS, int lb, int ub);
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 /*-=-=-=-=-=-=-=-=-=-=-=- Section Global Variables -=-=-=-=-=-=-=-=-=-=-=-=-*/
-extern int* mpm_number_of_indices;
-extern int number_of_parameters,
-  FOS_element_ub,      /* Cut-off value for bounded fixed linkage tree (BFLT). */
-  use_univariate_FOS,  /* Whether a univariate FOS is used. */
-  learn_linkage_tree,  /* Whether the FOS is learned at the start of each generation. */
-  static_linkage_tree, /* Whether the FOS is fixed throughout optimization. */
-  random_linkage_tree, /* Whether the fixed linkage tree is learned based on a random distance measure. */
-  bspline_marginal_cp, /* Whether the marginal FOS with just the control points is used. */
-  predefined_FOS, /* Whether a FOS is predefined as starting point for learning the linkage tree. */
+extern int * mpm_number_of_indices;
+extern int   number_of_parameters, FOS_element_ub, /* Cut-off value for bounded fixed linkage tree (BFLT). */
+  use_univariate_FOS,                              /* Whether a univariate FOS is used. */
+  learn_linkage_tree,                              /* Whether the FOS is learned at the start of each generation. */
+  static_linkage_tree,                             /* Whether the FOS is fixed throughout optimization. */
+  random_linkage_tree,   /* Whether the fixed linkage tree is learned based on a random distance measure. */
+  bspline_marginal_cp,   /* Whether the marginal FOS with just the control points is used. */
+  predefined_FOS,        /* Whether a FOS is predefined as starting point for learning the linkage tree. */
   predefined_FOS_length, /* The length of the predefined FOS. */
-  FOS_element_size;    /* If positive, the size of blocks of consecutive variables in the FOS. If negative, determines
-                          specific kind of linkage tree FOS. */
+  FOS_element_size;      /* If positive, the size of blocks of consecutive variables in the FOS. If negative, determines
+                            specific kind of linkage tree FOS. */
 extern BSplineStaticLinkageType static_linkage_type;
 extern double ***MI_matrices, **S_matrix, *S_vector; /* Avoids quadratic memory requirements when a linkage tree is
                                                         learned based on a random distance measure. */

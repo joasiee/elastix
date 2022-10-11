@@ -226,7 +226,6 @@ learnLinkageTree(MatrixXd & covariance_matrix)
   else if (static_linkage_tree)
   {
     MatrixXd similarities = getStaticSimilarityMatrix(number_of_parameters);
-    // writeMatrixToFile(similarities, "similarities.txt");
     for (i = 0; i < mpm_length; i++)
       for (j = 0; j < mpm_length; j++)
         S_matrix[i][j] = similarities(mpm[i][0], mpm[j][0]);
@@ -419,6 +418,34 @@ learnLinkageTree(MatrixXd & covariance_matrix)
   }
 
   return (new_FOS);
+}
+
+void
+filterFOS(FOS * input_FOS, int lb, int ub)
+{
+  int ** new_sets = (int **)Malloc(input_FOS->length * sizeof(int *));
+  int *  new_set_lengths = (int *)Malloc(input_FOS->length * sizeof(int));
+
+  int FOS_index = 0;
+  for (int i = 0; i < input_FOS->length; i++)
+  {
+    if (input_FOS->set_length[i] >= lb && input_FOS->set_length[i] <= ub)
+    {
+      new_sets[FOS_index] = input_FOS->sets[i];
+      new_set_lengths[FOS_index] = input_FOS->set_length[i];
+      FOS_index++;
+    }
+    else
+    {
+      free(input_FOS->sets[i]);
+    }
+  }
+
+  free(input_FOS->set_length);
+  free(input_FOS->sets);
+  input_FOS->sets = new_sets;
+  input_FOS->set_length = new_set_lengths;
+  input_FOS->length = FOS_index;
 }
 
 double
