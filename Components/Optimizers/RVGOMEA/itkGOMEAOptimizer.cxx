@@ -400,7 +400,7 @@ GOMEAOptimizer::initializeFOS(int population_index)
     if (population_index == 0){
       new_FOS = this->learnLinkageTreeRVGOMEA(population_index);
       if (static_linkage_type == BSplineStaticLinkageType::EuclideanSimilarity)
-        filterFOS(new_FOS, 3, 120);
+        filterFOS(new_FOS, 3, 48);
     }
     else
       new_FOS = copyFOS(linkage_model[0]);
