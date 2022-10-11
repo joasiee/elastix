@@ -1,6 +1,8 @@
 include(ExternalProject)
 cmake_policy(SET CMP0074 NEW)
 
+add_compile_options("-march=native;-flto")
+
 set (DEPENDENCIES_PREFIX ${PROJECT_SOURCE_DIR}/build/external)
 set (PLASTIMATCH_PATCH ${PROJECT_SOURCE_DIR}/tools/plastimatch.patch)
 set (EXTRA_CMAKE_ARGS

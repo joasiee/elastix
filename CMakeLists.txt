@@ -11,6 +11,7 @@ endif()
 
 include(CMakeDefaultCache.txt)
 set(CMAKE_CXX_STANDARD 17)
+add_compile_options("-march=native;-flto")
 
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/include")
 list(APPEND CMAKE_PREFIX_PATH ${Plastimatch_INCLUDE_DIR})
