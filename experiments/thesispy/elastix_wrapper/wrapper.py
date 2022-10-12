@@ -31,6 +31,7 @@ def run(
     save_strategy: SaveStrategy = None,
     suppress_stdout: bool = True,
     visualize: bool = False,
+    validate: bool = True,
 ) -> Dict[str, Any]:
     time_start = time.perf_counter()
 
@@ -53,11 +54,14 @@ def run(
     except KeyboardInterrupt:
         logger.info(f"Run ended prematurely by user.")
 
-    val_metrics, run_result = validation(params, run_dir)
+    run_result = None
+    if validate:
+        val_metrics, run_result = validation(params, run_dir)
 
     if save_strategy:
-        for metric in val_metrics:
-            wd.sv_strategy.save_custom(metric)
+        if validate:
+            for metric in val_metrics:
+                wd.sv_strategy.save_custom(metric)
         wd.stop()
         wd.join()
         wd.sv_strategy.close()
@@ -168,4 +172,4 @@ if __name__ == "__main__":
         .stopping_criteria(500000)
         .instance(Collection.SYNTHETIC, 1)
     )
-    run(params_main, Path("output/" + str(params_main)), suppress_stdout=True, visualize=True)
+    run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True)

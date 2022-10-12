@@ -98,7 +98,7 @@ class Watchdog(threading.Thread):
         r = 0
 
         while True:
-            time.sleep(1)
+            time.sleep(0.1)
 
             if not os.path.exists(file_names[r]):
                 continue

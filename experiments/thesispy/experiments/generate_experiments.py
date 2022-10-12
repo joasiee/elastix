@@ -64,15 +64,15 @@ def subsampling_percentage():
                 yield params
 
 
-def nomask_msd(mesh_sizes=[2, 4, 6, 10], repetitions=5):
+def nomask_msd():
     mesh_sizes = [2, 4, 6, 10]
-    for seed in range(repetitions):
+    for seed in range(3):
         seed += 1
         for mesh_size in mesh_sizes:
             params = (
                 Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
                 .gomea(LinkageType.CP_MARGINAL)
-                .stopping_criteria(iterations=200)
+                .stopping_criteria(iterations=500)
             )
             yield params
 
