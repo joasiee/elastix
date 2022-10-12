@@ -161,12 +161,11 @@ def validation(params: Parameters, run_dir: Path):
 
     return calc_validation(run_result), run_result
 
-asgd
 if __name__ == "__main__":
     params_main = (
         Parameters.from_base(mesh_size=2, metric="AdvancedMeanSquares", seed=2, use_mask=False)
-        .gomea(LinkageType.CP_MARGINAL)
-        .stopping_criteria(3)
+        .asgd()
+        .stopping_criteria(500000)
         .instance(Collection.SYNTHETIC, 1)
     )
-    run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True)
+    run(params_main, Path("output/" + str(params_main)), suppress_stdout=True, visualize=True)

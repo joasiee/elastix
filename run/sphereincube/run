@@ -1,1 +1,1 @@
-../../build/Release/bin/elastix -f ./01_Fixed.mhd -m ./01_Moving.mhd -p params.txt -out out -threads 16
+../../build/RelWithDebInfo/bin/elastix -f ./01_Fixed.mhd -m ./01_Moving.mhd -p params.txt -out out -threads 16

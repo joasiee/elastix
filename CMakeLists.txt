@@ -3,6 +3,8 @@
 cmake_minimum_required( VERSION 3.10.2 )
 project( elastix )
 
+add_compile_options("-march=native;-mtune=native;-flto")
+
 option (USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
 if(USE_SUPERBUILD)
   include("CMake/SuperBuild.cmake")
@@ -11,7 +13,6 @@ endif()
 
 include(CMakeDefaultCache.txt)
 set(CMAKE_CXX_STANDARD 17)
-add_compile_options("-march=native;-flto")
 
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/include")
 list(APPEND CMAKE_PREFIX_PATH ${Plastimatch_INCLUDE_DIR})
