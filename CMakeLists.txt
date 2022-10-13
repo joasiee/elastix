@@ -3,7 +3,7 @@
 cmake_minimum_required( VERSION 3.10.2 )
 project( elastix )
 
-add_compile_options("-march=native;-mtune=native;-flto")
+add_compile_options("-flto")
 
 option (USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
 if(USE_SUPERBUILD)
