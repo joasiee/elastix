@@ -3,11 +3,12 @@
 cmake_minimum_required( VERSION 3.10.2 )
 project( elastix )
 
-add_compile_options("-flto")
+list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake )
+add_compile_options("-flto;-mavx2")
 
 option (USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
 if(USE_SUPERBUILD)
-  include("CMake/SuperBuild.cmake")
+  include(SuperBuild)
   return()
 endif()
 
@@ -89,7 +90,6 @@ include( ${ITK_USE_FILE} )
 #---------------------------------------------------------------------
 # Add the CMake dir as an additional module path,
 # so that CMake is able to find the FindPackage modules.
-list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake )
 
 #---------------------------------------------------------------------
 # Get version information.
