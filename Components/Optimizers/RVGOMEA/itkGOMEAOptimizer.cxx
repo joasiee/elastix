@@ -89,8 +89,20 @@ GOMEAOptimizer::initialize(void)
   if (m_BasePopulationSize == 0.0)
   {
     if (m_MaxNumberOfPopulations == 1)
-      m_BasePopulationSize = m_PartialEvaluations ? static_cast<int>(10 + 12.18 * log2((double)m_NrOfParameters))
-                                                  : static_cast<int>(m_NrOfParameters * 10);
+    {
+      switch (m_FosElementSize)
+      {
+        case FOSType::Full:
+          m_BasePopulationSize = m_NrOfParameters * 10;
+          break;
+        case FOSType::StaticLinkageTree:
+          m_BasePopulationSize = static_cast<int>(10 + 15.02 * log2((double)pow(m_StaticLinkageMaxSetSize, 2)));
+          break;
+        default:
+          m_BasePopulationSize = static_cast<int>(10 + 12.18 * log2((double)m_NrOfParameters));
+          break;
+      }
+    }
     else
       m_BasePopulationSize = 10;
   }
@@ -1113,7 +1125,7 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
           decomposed_covariance_matrices[population_index][i](j, k);
       }
     }
-    if (this->m_OASShrinkage)
+    if (this->m_OASShrinkage && linkage_model[population_index]->set_length[i] * 10 > m_BasePopulationSize)
       shrunkCovarianceOAS(decomposed_covariance_matrices[population_index][i], this->m_BasePopulationSize);
   }
 }
