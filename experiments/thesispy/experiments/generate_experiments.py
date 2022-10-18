@@ -1,7 +1,7 @@
-from math import log2
 import numpy as np
 from thesispy.elastix_wrapper.parameters import LinkageType, Parameters, Collection
 from thesispy.experiments.experiment import Experiment, ExperimentQueue
+from thesispy.definitions import *
 
 
 def yield_experiments(collection: Collection, instance: int, project: str, exp_fn):
@@ -37,15 +37,19 @@ def regularization_weight():
         yield params
 
 
-def fos_settings():
-    for setting in [
-        LinkageType.FULL,
-    ]:
-        for seed in range(5):
+def fos_settings_wmask_offset():
+    for seed in range(1):
+        seed += 1
+        for setting in [
+            LinkageType.UNIVARIATE,
+            LinkageType.CP_MARGINAL,
+            LinkageType.STATIC_EUCLIDEAN,
+            LinkageType.FULL,
+        ]:
             params = (
-                Parameters.from_base(mesh_size=4, seed=seed, metric="AdvancedMeanSquares")
-                .gomea(setting, pop_size=1000)
-                .stopping_criteria(iterations=300)
+                Parameters.from_base(mesh_size=4, seed=seed, metric="AdvancedMeanSquares", use_mask=True)
+                .gomea(setting)
+                .stopping_criteria(iterations=500)
             )
             yield params
 
@@ -79,6 +83,6 @@ def nomask_msd():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = nomask_msd
+    fn = fos_settings
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
