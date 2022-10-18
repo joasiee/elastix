@@ -85,10 +85,11 @@ shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size)
   PROFILE_FUNCTION();
   const int    n = emp_cov.rows();
   const double mu = emp_cov.trace() / n;
+  const double mu2 = mu * mu;
 
-  const double alpha = (emp_cov * emp_cov).mean();
-  const double num = alpha * (mu * mu);
-  const double den = (1.0 + double(pop_size)) * (alpha - (mu * mu) / n);
+  const double alpha = (emp_cov.array().pow(2)).mean();
+  const double num = alpha + mu2;
+  const double den = (1.0 + double(pop_size)) * (alpha - mu2 / n);
 
   const double shrinkage = den == 0.0 ? 1.0 : std::min(num / den, 1.0);
   emp_cov = (1.0 - shrinkage) * emp_cov;
