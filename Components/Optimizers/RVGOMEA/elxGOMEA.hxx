@@ -87,6 +87,11 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(staticLinkageType, "StaticLinkageType", this->GetComponentLabel(), level, 0);
   this->SetStaticLinkageType(staticLinkageType);
 
+  /** Set StaticLinkageMaxSetSize.*/
+  int staticLinkageMaxSetSize = 0;
+  this->m_Configuration->ReadParameter(staticLinkageMaxSetSize, "StaticLinkageMaxSetSize", this->GetComponentLabel(), level, 0);
+  this->SetStaticLinkageMaxSetSize(staticLinkageMaxSetSize);
+
   /** Set MaxImprovementNoStretch.*/
   int maxNoImprovementNoStretch = 0;
   this->m_Configuration->ReadParameter(

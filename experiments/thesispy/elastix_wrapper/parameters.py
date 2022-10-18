@@ -92,6 +92,7 @@ class Parameters:
         fos: LinkageType = LinkageType.CP_MARGINAL,
         pop_size: List[int] | int = None,
         shrinkage: bool = False,
+        max_set_size: int = 96
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
         static_linkage_type = 0
@@ -106,6 +107,7 @@ class Parameters:
                 "PartialEvaluations": pevals,
                 "UseShrinkage": shrinkage,
                 "StaticLinkageType": static_linkage_type,
+                "StaticLinkageMaxSetSize": max_set_size
             }
         )
 
