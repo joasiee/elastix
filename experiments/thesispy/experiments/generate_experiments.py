@@ -100,7 +100,7 @@ def nomask_msd():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    # queue.clear()
+    queue.clear()
     fn = static_linkage_shrinkage_test
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
