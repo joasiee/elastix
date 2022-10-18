@@ -4,7 +4,13 @@ cmake_minimum_required( VERSION 3.10.2 )
 project( elastix )
 
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake )
-add_compile_options("-flto;-mavx2")
+
+add_compile_options(-march=native;-mtune=native)
+if(DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
+  add_compile_options("-flto=$ENV{CMAKE_BUILD_PARALLEL_LEVEL}")
+else()
+  add_compile_options(-flto)
+endif()
 
 option (USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
 if(USE_SUPERBUILD)
