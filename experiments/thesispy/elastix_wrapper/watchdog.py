@@ -73,6 +73,7 @@ class SaveStrategyWandb(SaveStrategy):
         shutil.rmtree(wandb_dir.parent.absolute())
 
 
+# Pretty bad performance-wise, but at the time was easiest way to get live data output from c++ -> python -> wandb
 class Watchdog(threading.Thread):
     def __init__(
         self,
@@ -83,6 +84,7 @@ class Watchdog(threading.Thread):
     ):
         super(Watchdog, self).__init__(*args, **kwargs)
         self._stop_event = threading.Event()
+        self._break_loop = False
         self.set_input(out_dir, n_resolutions)
 
     def set_strategy(self, strategy: SaveStrategy):
@@ -98,8 +100,12 @@ class Watchdog(threading.Thread):
         r = 0
 
         while True:
-            time.sleep(0.1)
+            time.sleep(0.2)
 
+            if self._break_loop:
+                break
+            if self._stop_event.is_set():
+                self._break_loop = True
             if not os.path.exists(file_names[r]):
                 continue
             try:
@@ -123,8 +129,6 @@ class Watchdog(threading.Thread):
                     self.sv_strategy.save(headers, row, r)
             elif r < self.n_resolutions - 1 and os.path.exists(file_names[r + 1]):
                 r += 1
-            elif self._stop_event.is_set():
-                break
 
     def stop(self):
         self._stop_event.set()

@@ -77,7 +77,7 @@ def run_experiment(experiment: Experiment):
     run_dir = Path("output") / experiment.project / str(experiment.params)
     batch_size = 25 if experiment.params["Optimizer"] == "AdaptiveStochasticGradientDescent" else 1
     sv_strat = SaveStrategyWandb(experiment, run_dir, batch_size)
-    wrapper.run(experiment.params, run_dir, sv_strat)
+    return wrapper.run(experiment.params, run_dir, sv_strat) is not None
 
 
 if __name__ == "__main__":

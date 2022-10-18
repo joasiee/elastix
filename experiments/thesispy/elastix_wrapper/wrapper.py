@@ -43,23 +43,25 @@ def run(
         wd.set_strategy(save_strategy)
         wd.start()
 
+    finished = False
+    run_result = None
     logger.info(f"Running elastix in: {str(run_dir)}")
     try:
         execute_elastix(params_file, out_dir, params, suppress_stdout)
+        finished = True
     except subprocess.CalledProcessError as err:
         err_msg = err.stderr.decode("utf-8").strip("\n")
         logger.error(f"Something went wrong while running elastix at: {str(run_dir)}: {err_msg}")
     except TimeoutException:
-        logger.info(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
+        logger.warning(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
     except KeyboardInterrupt:
-        logger.info(f"Run ended prematurely by user.")
+        logger.warning(f"Run ended prematurely by user.")
 
-    run_result = None
-    if validate:
+    if finished and validate:
         val_metrics, run_result = validation(params, run_dir)
 
     if save_strategy:
-        if validate:
+        if finished and validate:
             for metric in val_metrics:
                 wd.sv_strategy.save_custom(metric)
         wd.stop()
@@ -67,9 +69,9 @@ def run(
         wd.sv_strategy.close()
 
     time_end = time.perf_counter()
-    logger.info(f"Run ended successfully. It took {time_end - time_start:0.4f} seconds")
+    logger.info(f"Run ended. It took {time_end - time_start:0.4f} seconds")
 
-    if visualize:
+    if finished and visualize:
         execute_visualize(out_dir)
 
     return run_result
@@ -168,8 +170,8 @@ def validation(params: Parameters, run_dir: Path):
 if __name__ == "__main__":
     params_main = (
         Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=2, use_mask=True)
-        .gomea(LinkageType.STATIC_EUCLIDEAN, max_set_size=3)
-        .stopping_criteria(10)
+        .gomea(LinkageType.STATIC_EUCLIDEAN, shrinkage=True)
+        .stopping_criteria(50)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True)
