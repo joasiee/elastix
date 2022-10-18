@@ -53,6 +53,23 @@ def fos_settings_wmask_offset():
             )
             yield params
 
+def static_linkage_shrinkage_test():
+    for seed in range(1):
+        seed += 1
+        for shrinkage in [True, False]:
+            params = (
+                Parameters.from_base(mesh_size=4, seed=seed, metric="AdvancedMeanSquares", use_mask=True)
+                .gomea(LinkageType.STATIC_EUCLIDEAN, shrinkage=shrinkage)
+                .stopping_criteria(iterations=500)
+            )
+            yield params
+        for max_set_size, pop_size in zip([12, 48, 96, 192], [150, 500, 1000, 2000]):
+            params = (
+                Parameters.from_base(mesh_size=4, seed=seed, metric="AdvancedMeanSquares", use_mask=True)
+                .gomea(LinkageType.STATIC_EUCLIDEAN, max_set_size=max_set_size, pop_size=pop_size)
+                .stopping_criteria(iterations=500)
+            )
+            yield params
 
 def subsampling_percentage():
     for seed in range(10):
@@ -83,6 +100,8 @@ def nomask_msd():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    fn = fos_settings
+    # queue.clear()
+    fn = static_linkage_shrinkage_test
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
+    print(f"Queue size: {queue.size()}")
