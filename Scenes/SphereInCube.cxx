@@ -211,11 +211,11 @@ CreateFixedImageMask(ImageType::Pointer image)
   BoxType::Pointer cube = BoxType::New();
 
   BoxType::SizeType boxSize;
-  boxSize.Fill(CubeSize - 1);
+  boxSize.Fill(CubeSize + 1);
   cube->SetSizeInObjectSpace(boxSize);
 
   BoxType::PointType boxPosition;
-  boxPosition.Fill(Padding);
+  boxPosition.Fill(Padding - 1);
   cube->SetPositionInObjectSpace(boxPosition);
 
   // image intensities
