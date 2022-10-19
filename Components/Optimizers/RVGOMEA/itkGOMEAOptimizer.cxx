@@ -84,7 +84,6 @@ void
 GOMEAOptimizer::initialize(void)
 {
   PROFILE_FUNCTION();
-  GOMEA::haveNextNextGaussian = 0;
 
   if (m_BasePopulationSize == 0.0)
   {
@@ -409,7 +408,8 @@ GOMEAOptimizer::initializeFOS(int population_index)
   }
   else if (static_linkage_tree)
   {
-    if (population_index == 0){
+    if (population_index == 0)
+    {
       new_FOS = this->learnLinkageTreeRVGOMEA(population_index);
       if (static_linkage_type == BSplineStaticLinkageType::EuclideanSimilarity)
         filterFOS(new_FOS, 3, m_StaticLinkageMaxSetSize);
@@ -1097,6 +1097,8 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
   // for each fos set:
   for (i = 0; i < linkage_model[population_index]->length; ++i)
   {
+    MatrixXd X(selection_sizes[population_index], linkage_model[population_index]->set_length[i]);
+
     // for each parameter index in fos set:
     for (j = 0; j < linkage_model[population_index]->set_length[i]; ++j)
     {
@@ -1114,8 +1116,12 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
         {
           cov = 0.0;
           for (m = 0; m < selection_sizes[population_index]; ++m)
+          {
             cov += (selections[population_index][m][vara] - mean_vectors[population_index][vara]) *
                    (selections[population_index][m][varb] - mean_vectors[population_index][varb]);
+            
+            X(m, j) = selections[population_index][m][vara];
+          }
 
           cov /= static_cast<double>(selection_sizes[population_index]);
         }
@@ -1125,8 +1131,14 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
           decomposed_covariance_matrices[population_index][i](j, k);
       }
     }
-    if (this->m_OASShrinkage && linkage_model[population_index]->set_length[i] * 10 > m_BasePopulationSize)
-      shrunkCovarianceOAS(decomposed_covariance_matrices[population_index][i], this->m_BasePopulationSize);
+    if (m_UseShrinkage && linkage_model[population_index]->set_length[i] * 10 > m_BasePopulationSize)
+    {
+      X = X.rowwise() - X.colwise().mean();
+      const double shrinkage = getShrinkageLW(X);
+      shrunkCovariance(decomposed_covariance_matrices[population_index][i], shrinkage);
+    }
+    // if (this->m_OASShrinkage && linkage_model[population_index]->set_length[i] * 10 > m_BasePopulationSize)
+    //   shrunkCovarianceOAS(decomposed_covariance_matrices[population_index][i], this->m_BasePopulationSize);
   }
 }
 
@@ -1430,10 +1442,6 @@ GOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index, i
 
   num_indices = linkage_model[population_index]->set_length[FOS_index];
   indices = linkage_model[population_index]->sets[FOS_index];
-
-  // TODO: move to tools
-  // std::mt19937                     gen(random_seed);
-  // std::normal_distribution<double> dist(0.0, 1.0);
 
   // // TODO: EigenRand?
   // VectorXd rz = VectorXd(num_indices).unaryExpr([&](float dummy) { return dist(gen); });

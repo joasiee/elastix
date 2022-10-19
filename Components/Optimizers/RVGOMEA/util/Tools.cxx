@@ -41,8 +41,9 @@
 
 namespace GOMEA
 {
-int64_t random_seed{ 0 }, random_seed_changing;
-double  haveNextNextGaussian, nextNextGaussian;
+uint64_t     random_seed{ 0 };
+std::mt19937 mersenne_generator;
+
 
 /*-=-=-=-=-=-=-=-=-=-=-= Section Elementary Operations -=-=-=-=-=-=-=-=-=-=-*/
 /**
@@ -70,17 +71,18 @@ Malloc(long size)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-= Section Matrix -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 void
-shrunkCovariance(MatrixXd & emp_cov, const double shrinkage)
+shrunkCovariance(MatrixXd & emp_cov, double shrinkage)
 {
   PROFILE_FUNCTION();
   const int    n = emp_cov.rows();
   const double mu = emp_cov.trace() / n;
+  shrinkage = std::max(0.0, shrinkage);
   emp_cov = (1.0 - shrinkage) * emp_cov;
   emp_cov.diagonal().array() += shrinkage * mu;
 }
 
 void
-shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size)
+shrunkCovarianceOAS(MatrixXd & emp_cov, int pop_size)
 {
   PROFILE_FUNCTION();
   const int    n = emp_cov.rows();
@@ -96,6 +98,26 @@ shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size)
   emp_cov.diagonal().array() += shrinkage * mu;
 }
 
+double
+getShrinkageLW(MatrixXd & X)
+{
+  PROFILE_FUNCTION();
+  const int    n_samples = X.rows();
+  const int    n_features = X.cols();
+  MatrixXd     X_2 = X.array().pow(2);
+  VectorXd     emp_cov_trace = X.colwise().sum() / n_samples;
+  const double mu = emp_cov_trace.sum() / n_features;
+  double       delta_ = (X.transpose() * X).array().pow(2).sum() / pow(n_samples, 2);
+  double       beta_ = (X_2.transpose() * X_2).sum();
+
+  double       beta = 1.0 / (n_features * n_samples) * (beta_ / n_samples - delta_);
+  const double delta = (delta_ - 2.0 * mu * emp_cov_trace.sum() + n_features * pow(mu, 2)) / n_features;
+  beta = std::min(beta, delta);
+  const double shrinkage = beta == 0.0 ? 0.0 : beta / delta;
+
+  return shrinkage;
+}
+
 /**
  * Computes the lower-triangle Cholesky Decomposition
  * of a square, symmetric and positive-definite matrix.
@@ -108,12 +130,12 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
   const char uplo{ 'L' };
   int        info;
 
-  result.triangularView<Eigen::Lower>() = matrix;
+  result = matrix.triangularView<Eigen::Lower>();
 
-  LAPACK_dpotrf(&uplo, &n, result.data(), &n, &info);
+  info = LAPACKE_dpotrf(LAPACK_COL_MAJOR, uplo, n, result.data(), n);
   if (info != 0) /* Matrix is not positive definite */
   {
-    result.triangularView<Eigen::Lower>().fill(0.0);
+    result.fill(0.0);
     result.diagonal() = matrix.diagonal().array().sqrt();
     return static_cast<float>(info) / static_cast<float>(n) * 100.0f;
   }
@@ -121,13 +143,12 @@ choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n)
 }
 
 void
-lowerTriangularMatrixInverse(MatrixXd & A, const int n)
+lowerTriangularMatrixInverse(MatrixXd & A, int n)
 {
   PROFILE_FUNCTION();
   const char uplo{ 'L' };
   const char diag{ 'N' };
-  int        info;
-  LAPACK_dtrtri(&uplo, &diag, &n, A.data(), &n, &info);
+  LAPACKE_dtrtri(LAPACK_COL_MAJOR, uplo, diag, n, A.data(), n);
 }
 
 
@@ -324,17 +345,8 @@ getRanksFromSorted(int * sorted, int array_size)
 double
 randomRealUniform01(void)
 {
-  PROFILE_FUNCTION();
-  int64_t n26, n27;
-  double  result;
-
-  random_seed_changing = (random_seed_changing * 0x5DEECE66DLLU + 0xBLLU) & ((1LLU << 48) - 1);
-  n26 = (int64_t)(random_seed_changing >> (48 - 26));
-  random_seed_changing = (random_seed_changing * 0x5DEECE66DLLU + 0xBLLU) & ((1LLU << 48) - 1);
-  n27 = (int64_t)(random_seed_changing >> (48 - 27));
-  result = (((int64_t)n26 << 27) + n27) / ((double)(1LLU << 53));
-
-  return (result);
+  static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+  return distribution(mersenne_generator);
 }
 
 /**
@@ -343,11 +355,8 @@ randomRealUniform01(void)
 int
 randomInt(int maximum)
 {
-  int result;
-
-  result = (int)(((double)maximum) * randomRealUniform01());
-
-  return (result);
+  std::uniform_int_distribution<int> distribution(0, maximum);
+  return distribution(mersenne_generator);
 }
 
 /**
@@ -356,31 +365,8 @@ randomInt(int maximum)
 double
 random1DNormalUnit(void)
 {
-  PROFILE_FUNCTION();
-  double v1, v2, s, multiplier, value;
-
-  if (haveNextNextGaussian)
-  {
-    haveNextNextGaussian = 0;
-
-    return (nextNextGaussian);
-  }
-  else
-  {
-    do
-    {
-      v1 = 2 * (randomRealUniform01()) - 1;
-      v2 = 2 * (randomRealUniform01()) - 1;
-      s = v1 * v1 + v2 * v2;
-    } while (s >= 1);
-
-    value = -2 * log(s) / s;
-    multiplier = value <= 0.0 ? 0.0 : sqrt(value);
-    nextNextGaussian = v2 * multiplier;
-    haveNextNextGaussian = 1;
-
-    return (v1 * multiplier);
-  }
+  static std::normal_distribution<double> distribution(0.0, 1.0);
+  return distribution(mersenne_generator);
 }
 
 /**
@@ -389,11 +375,8 @@ random1DNormalUnit(void)
 double
 random1DNormalParameterized(double mean, double variance)
 {
-  double result;
-
-  result = mean + sqrt(variance) * random1DNormalUnit();
-
-  return (result);
+  std::normal_distribution<double> distribution(mean, sqrt(variance));
+  return distribution(mersenne_generator);
 }
 
 /**
@@ -402,24 +385,12 @@ random1DNormalParameterized(double mean, double variance)
 void
 initializeRandomNumberGenerator(void)
 {
-  PROFILE_FUNCTION();
-  if (random_seed != 0)
+  if (random_seed == 0)
   {
-    random_seed_changing = random_seed;
+    mersenne_generator = std::mt19937(std::random_device()());
     return;
   }
-
-  struct timeval tv;
-
-  while (random_seed_changing == 0)
-  {
-    gettimeofday(&tv, NULL);
-    random_seed_changing = (int64_t)tv.tv_usec;
-    random_seed_changing = (random_seed_changing / ((int)(9.99 * randomRealUniform01()) + 1)) *
-                           (((int)(randomRealUniform01() * 1000000.0)) % 10);
-  }
-
-  random_seed = random_seed_changing;
+  mersenne_generator = std::mt19937{ random_seed };
 }
 
 /**
@@ -508,22 +479,6 @@ allPermutationsSubroutine(int from, int length, int * numberOfPermutations)
   return (result);
 }
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
-
-double
-min(double x, double y)
-{
-  if (x <= y)
-    return x;
-  return y;
-}
-
-double
-max(double x, double y)
-{
-  if (x >= y)
-    return x;
-  return y;
-}
 
 /**
  * Computes the distance between two solutions a and b as

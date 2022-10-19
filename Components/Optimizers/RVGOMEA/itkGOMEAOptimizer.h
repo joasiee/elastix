@@ -141,8 +141,8 @@ public:
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
 
-  itkGetConstMacro(OASShrinkage, bool);
-  itkSetMacro(OASShrinkage, bool);
+  itkGetConstMacro(UseShrinkage, bool);
+  itkSetMacro(UseShrinkage, bool);
 
   const std::string
   GetStopConditionDescription() const override;
@@ -164,9 +164,9 @@ protected:
   ~GOMEAOptimizer() override = default;
 
   void
-  SetRandomSeed(int seed)
+  SetRandomSeed(long unsigned int seed)
   {
-    GOMEA::random_seed = static_cast<int64_t>(seed);
+    GOMEA::random_seed = seed;
   }
 
   unsigned long     m_NumberOfEvaluations{ 0L };
@@ -332,7 +332,7 @@ private:
   int number_of_populations{ 0 };
 
   bool m_PartialEvaluations{ false };
-  bool m_OASShrinkage{ false };
+  bool m_UseShrinkage{ false };
 
   template <typename T>
   using Vector1D = std::vector<T>;

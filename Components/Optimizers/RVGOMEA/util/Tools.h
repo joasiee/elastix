@@ -44,10 +44,12 @@
 #include <sys/time.h>
 #include <eigen3/Eigen/Dense>
 #include <cblas.h>
-#include <lapack.h>
+#include <lapacke.h>
+#include <random>
 #include "Instrumentor.hpp"
 
 using Eigen::MatrixXd;
+using Eigen::VectorXd;
 
 #define PI 3.14159265358979323846264338327950288419716939937510582097494459230781640628620899862803482534211706798
 #define FALSE 0
@@ -55,16 +57,22 @@ using Eigen::MatrixXd;
 
 namespace GOMEA
 {
+extern uint64_t           random_seed;
+extern std::random_device random_device;
+extern std::mt19937       mersenne_generator;
+
 void *
 Malloc(long size);
 void
-shrunkCovariance(MatrixXd & emp_cov, const double alpha);
+shrunkCovariance(MatrixXd & emp_cov, double alpha);
 void
-shrunkCovarianceOAS(MatrixXd & emp_cov, const int pop_size);
+shrunkCovarianceOAS(MatrixXd & emp_cov, int pop_size);
+double
+getShrinkageLW(MatrixXd & X);
 float
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n);
 void
-lowerTriangularMatrixInverse(MatrixXd & A, const int n);
+lowerTriangularMatrixInverse(MatrixXd & A, int n);
 int *
 mergeSort(double * array, int array_size);
 void
@@ -105,24 +113,7 @@ int **
 allPermutationsSubroutine(int from, int length, int * numberOfPermutations);
 
 double
-max(double x, double y);
-double
-min(double x, double y);
-double
 distanceEuclidean(double * solution_a, double * solution_b, int n);
 double
 distanceEuclidean2D(double x1, double y1, double x2, double y2);
-
-double *
-matrixVectorPartialMultiplication(double ** matrix,
-                                  double *  vector,
-                                  int       n0,
-                                  int       number_of_elements,
-                                  int *     element_indices);
-
-extern int64_t random_seed, /* The seed used for the random-number generator. */
-  random_seed_changing;     /* Internally used variable for randomly setting a random seed. */
-
-extern double haveNextNextGaussian, /* Internally used variable for sampling the normal distribution. */
-  nextNextGaussian;
-}
+} // namespace GOMEA

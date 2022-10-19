@@ -10,7 +10,7 @@ template <class TElastix>
 void
 GOMEA<TElastix>::BeforeRegistration(void)
 {
-  unsigned int randomSeed = 0;
+  long unsigned int randomSeed = 0;
   if (this->GetConfiguration()->ReadParameter(randomSeed, "RandomSeed", 0, false))
     this->SetRandomSeed(randomSeed);
 
@@ -136,10 +136,10 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
   this->SetPartialEvaluations(partialEvaluations);
 
-  /** Set OASShrinkage*/
-  bool oasShrinkage = false;
-  this->m_Configuration->ReadParameter(oasShrinkage, "UseShrinkage", this->GetComponentLabel(), level, 0);
-  this->SetOASShrinkage(oasShrinkage);
+  /** Set UseShrinkage*/
+  bool useShrinkage = false;
+  this->m_Configuration->ReadParameter(useShrinkage, "UseShrinkage", this->GetComponentLabel(), level, 0);
+  this->SetUseShrinkage(useShrinkage);
 
   std::ostringstream makeFileName("");
   makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
