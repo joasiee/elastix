@@ -66,7 +66,7 @@ def run(
                 wd.sv_strategy.save_custom(metric)
         wd.stop()
         wd.join()
-        wd.sv_strategy.close()
+        wd.sv_strategy.close(finished)
 
     time_end = time.perf_counter()
     logger.info(f"Run ended. It took {time_end - time_start:0.4f} seconds")

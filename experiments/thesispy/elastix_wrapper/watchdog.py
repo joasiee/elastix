@@ -16,7 +16,7 @@ class SaveStrategy:
     def save_custom(self, obj) -> None:
         pass
 
-    def close(self) -> None:
+    def close(self, finished: bool) -> None:
         pass
 
 
@@ -63,14 +63,15 @@ class SaveStrategyWandb(SaveStrategy):
     def save_custom(self, obj) -> None:
         wandb.log(obj, commit=False)
 
-    def close(self) -> None:
+    def close(self, finished: bool) -> None:
         self._log_buffer()
         wandb.save(str((self.run_dir / "out" / "TransformParameters.0.txt").resolve()))
         wandb.save(str((self.run_dir / "out" / "controlpoints.dat").resolve()))
         wandb_dir = Path(wandb.run.dir)
         wandb.finish()
-        shutil.rmtree(self.run_dir.absolute())
-        shutil.rmtree(wandb_dir.parent.absolute())
+        if finished:
+            shutil.rmtree(self.run_dir.absolute())
+            shutil.rmtree(wandb_dir.parent.absolute())
 
 
 # Pretty bad performance-wise, but at the time was easiest way to get live data output from c++ -> python -> wandb
