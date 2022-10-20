@@ -13,5 +13,5 @@ exp_queue = ExperimentQueue()
 while exp_queue.peek():
     experiment = exp_queue.pop()
     if not run_experiment(experiment):
-        logger.warning(f"Experiment from {experiment.project} failed. Re-queueing.")
-        exp_queue.push(experiment)
+        logger.warning(f"Experiment from {experiment.project} failed.")
+        logger.warning(f"Experiment details: {experiment}")
