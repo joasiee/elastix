@@ -1094,6 +1094,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers(i
 
   this->m_SubfunctionSamplers.clear();
   this->m_SubfunctionSamplers.reserve(n_regions);
+  const bool useMask = this->GetImageSampler()->GetUseMask();
 
   for (i = 0; i < n_regions; ++i)
   {
@@ -1103,6 +1104,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers(i
                                                : this->m_ImageSampler->Clone();
 
     subfunctionSampler->SetInput(this->GetFixedImage());
+    subfunctionSampler->SetUseMask(useMask);
     subfunctionSampler->SetInputImageRegion(region);
     subfunctionSampler->SetNumberOfSamples(static_cast<int>(region.GetNumberOfPixels() * this->m_SamplingPercentage));
 

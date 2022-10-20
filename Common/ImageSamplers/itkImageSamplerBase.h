@@ -197,7 +197,9 @@ public:
 
   /** \todo: Temporary, should think about interface. */
   itkSetMacro(UseMultiThread, bool);
+
   itkSetMacro(UseMask, bool);
+  itkGetConstMacro(UseMask, bool);
 
   void
   WriteSamplesToFile(std::ofstream & outFile);
