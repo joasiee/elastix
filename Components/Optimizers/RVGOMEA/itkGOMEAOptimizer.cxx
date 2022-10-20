@@ -85,7 +85,7 @@ GOMEAOptimizer::initialize(void)
 {
   PROFILE_FUNCTION();
 
-  if (m_BasePopulationSize == 0.0)
+  if (m_BasePopulationSize == 0)
   {
     if (m_MaxNumberOfPopulations == 1)
     {
@@ -1131,14 +1131,8 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
           decomposed_covariance_matrices[population_index][i](j, k);
       }
     }
-    if (m_UseShrinkage && linkage_model[population_index]->set_length[i] * 10 > m_BasePopulationSize)
-    {
-      X = X.rowwise() - X.colwise().mean();
-      const double shrinkage = getShrinkageLW(X);
-      shrunkCovariance(decomposed_covariance_matrices[population_index][i], shrinkage);
-    }
-    // if (this->m_OASShrinkage && linkage_model[population_index]->set_length[i] * 10 > m_BasePopulationSize)
-    //   shrunkCovarianceOAS(decomposed_covariance_matrices[population_index][i], this->m_BasePopulationSize);
+    if (this->m_OASShrinkage && linkage_model[population_index]->set_length[i] * 10 > selection_sizes[population_index])
+      shrunkCovarianceOAS(decomposed_covariance_matrices[population_index][i], selection_sizes[population_index]);
   }
 }
 

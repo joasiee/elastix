@@ -94,12 +94,11 @@ shrunkCovarianceOAS(MatrixXd & emp_cov, int pop_size)
   const double den = (1.0 + double(pop_size)) * (alpha - mu2 / n);
 
   const double shrinkage = den == 0.0 ? 1.0 : std::min(num / den, 1.0);
-  emp_cov = (1.0 - shrinkage) * emp_cov;
-  emp_cov.diagonal().array() += shrinkage * mu;
+  shrunkCovariance(emp_cov, shrinkage);
 }
 
 double
-getShrinkageLW(MatrixXd & X)
+getShrinkageLW(MatrixXd & X, MatrixXd & emp_cov)
 {
   PROFILE_FUNCTION();
   const int    n_samples = X.rows();
@@ -115,7 +114,7 @@ getShrinkageLW(MatrixXd & X)
   beta = std::min(beta, delta);
   const double shrinkage = beta == 0.0 ? 0.0 : beta / delta;
 
-  return shrinkage;
+  shrunkCovariance(emp_cov, shrinkage);
 }
 
 /**
