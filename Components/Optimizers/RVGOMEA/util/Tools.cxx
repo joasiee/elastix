@@ -97,7 +97,7 @@ shrunkCovarianceOAS(MatrixXd & emp_cov, int pop_size)
   shrunkCovariance(emp_cov, shrinkage);
 }
 
-double
+void
 getShrinkageLW(MatrixXd & X, MatrixXd & emp_cov)
 {
   PROFILE_FUNCTION();

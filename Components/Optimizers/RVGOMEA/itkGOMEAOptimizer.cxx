@@ -1131,7 +1131,7 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
           decomposed_covariance_matrices[population_index][i](j, k);
       }
     }
-    if (this->m_OASShrinkage && linkage_model[population_index]->set_length[i] * 10 > selection_sizes[population_index])
+    if (this->m_UseShrinkage && linkage_model[population_index]->set_length[i] * 10 > selection_sizes[population_index])
       shrunkCovarianceOAS(decomposed_covariance_matrices[population_index][i], selection_sizes[population_index]);
   }
 }

@@ -67,7 +67,7 @@ void
 shrunkCovariance(MatrixXd & emp_cov, double alpha);
 void
 shrunkCovarianceOAS(MatrixXd & emp_cov, int pop_size);
-double
+void
 getShrinkageLW(MatrixXd & X);
 float
 choleskyDecomposition(MatrixXd & result, MatrixXd & matrix, int n);
