@@ -95,7 +95,7 @@ GOMEAOptimizer::initialize(void)
           m_BasePopulationSize = m_NrOfParameters * 10;
           break;
         case FOSType::StaticLinkageTree:
-          m_BasePopulationSize = static_cast<int>(10 + 15.02 * log2((double)pow(m_StaticLinkageMaxSetSize, 2)));
+          m_BasePopulationSize = m_StaticLinkageMaxSetSize * 10;
           break;
         default:
           m_BasePopulationSize = static_cast<int>(10 + 12.18 * log2((double)m_NrOfParameters));
