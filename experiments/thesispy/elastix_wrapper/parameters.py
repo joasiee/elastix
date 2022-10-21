@@ -92,7 +92,7 @@ class Parameters:
         fos: LinkageType = LinkageType.CP_MARGINAL,
         pop_size: List[int] | int = None,
         shrinkage: bool = False,
-        max_set_size: int = 96
+        max_set_size: int = 27
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
         static_linkage_type = 0
@@ -279,10 +279,10 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, seed=1)
+        Parameters.from_base(mesh_size=4, seed=1, metric="AdvancedMeanSquares")
         .gomea(LinkageType.CP_MARGINAL)
         .regularize(0.01)
-        .stopping_criteria(500)
+        .stopping_criteria(3)
         .instance(Collection.SYNTHETIC, 1)
     )
     params.write(Path())

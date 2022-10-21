@@ -1,7 +1,7 @@
 import numpy as np
-from thesispy.elastix_wrapper.parameters import LinkageType, Parameters, Collection
+from thesispy.elastix_wrapper.parameters import Parameters
 from thesispy.experiments.experiment import Experiment, ExperimentQueue
-from thesispy.definitions import *
+from thesispy.definitions import LinkageType, Collection
 
 
 def yield_experiments(collection: Collection, instance: int, project: str, exp_fn):
@@ -75,18 +75,6 @@ def nomask_msd():
             params = (
                 Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
                 .gomea(LinkageType.CP_MARGINAL)
-                .stopping_criteria(iterations=500)
-            )
-            yield params
-
-
-def shrinkage_test():
-    for seed in range(1):
-        seed += 1
-        for mesh_size in [2, 3, 4, 5]:
-            params = (
-                Parameters.from_base(mesh_size=mesh_size, seed=seed, use_mask=True, metric="AdvancedMeanSquares")
-                .gomea(LinkageType.STATIC_EUCLIDEAN, shrinkage=True, pop_size=150)
                 .stopping_criteria(iterations=500)
             )
             yield params
