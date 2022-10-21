@@ -33,6 +33,7 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::TransformBe
 {
   this->m_RegularizationParameters.implementation = 'c';
   this->m_RegularizationParameters.curvature_penalty = 100.0f;
+  this->SetUseImageSampler(true); // needed to copy over values
 }
 
 template <class TFixedImage, class TScalarType>
@@ -70,8 +71,6 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::Initialize(
   this->m_BsplineScore.set_num_coeff(this->m_BsplineXform.num_coeff);
 
   this->m_BSplineRegularize.initialize(&this->m_RegularizationParameters, &this->m_BsplineXform);
-
-  omp_set_max_active_levels(2);
 }
 
 template <class TFixedImage, class TScalarType>

@@ -317,7 +317,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeImageSampler()
     this->m_ImageSampler->SetInput(this->m_FixedImage);
     this->m_ImageSampler->SetMask(this->m_FixedImageMask);
     this->m_ImageSampler->SetInputImageRegion(this->GetFixedImageRegion());
-    this->m_ImageSampler->Update();
+    if (!m_PartialEvaluations)
+      this->m_ImageSampler->Update();
     this->SetNumberOfFixedImageSamples(this->m_ImageSampler->GetOutput()->Size());
   }
 
@@ -1137,7 +1138,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers(i
 
   this->SetNumberOfFixedImageSamples(totalSamples);
   this->SetUseImageSampler(false);
-  this->SetPartialEvaluations(true);
 
   this->m_BSplinePointsRegions.clear();
   this->m_BSplinePointsRegionsNoMask.clear();
