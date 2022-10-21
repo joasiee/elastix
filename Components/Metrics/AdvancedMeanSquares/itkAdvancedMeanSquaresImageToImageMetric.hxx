@@ -206,12 +206,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
     const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
     const RealType &            fixedImageValue = static_cast<RealType>(sampleContainer[i].m_ImageValue);
 
-    if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
-    {
-      const RealType diff = movingImageValue - fixedImageValue;
-      measure += diff * diff;
-      ++numberOfPixelsCounted;
-    }
+    int            mapped = this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0);
+    const RealType diff = movingImageValue - fixedImageValue;
+    measure += mapped * diff * diff;
+    numberOfPixelsCounted += mapped;
   }
 
   const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
@@ -260,12 +258,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
       const MovingImagePointType  mappedPoint = this->TransformPoint(fixedPoint);
       const RealType &            fixedImageValue = static_cast<RealType>(sampleContainer[i].m_ImageValue);
 
-      if (this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0))
-      {
-        const RealType diff = movingImageValue - fixedImageValue;
-        measure += diff * diff;
-        ++numberOfPixelsCounted;
-      }
+      int mapped = this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, movingImageValue, nullptr, 0);
+      const RealType diff = movingImageValue - fixedImageValue;
+      measure += mapped * diff * diff;
+      numberOfPixelsCounted += mapped;
     }
   }
 
