@@ -5,40 +5,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "empire-16",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/bin/elastix",
-            "args": [
-                "-f",
-                "scans/16_Fixed.mhd",
-                "-fMask",
-                "masks/16_Fixed.mhd",
-                "-m",
-                "scans/16_Moving.mhd",
-                "-p",
-                "${workspaceFolder}/run/empire/params.txt",
-                "-out",
-                "${workspaceFolder}/run/empire/out",
-                "-threads",
-                "$OMP_NUM_THREADS"
-            ],
-            "stopAtEntry": false,
-            "cwd": "/home/joasiee/instances/empire",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
-        },
-        {
             "name": "learn-1",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
@@ -59,22 +27,11 @@
                 "-threads",
                 "$OMP_NUM_THREADS",
             ],
-            "stopAtEntry": false,
             "cwd": "/home/joasiee/instances/learn",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
         },
         {
             "name": "medium",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
@@ -89,22 +46,11 @@
                 "-threads",
                 "$OMP_NUM_THREADS"
             ],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/medium",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
         },
         {
             "name": "trivial",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
@@ -119,27 +65,11 @@
                 "-threads",
                 "$OMP_NUM_THREADS"
             ],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/trivial",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Enable all-exceptions",
-                    "text": "catch throw",
-                    "ignoreFailures": true
-                }
-            ]
         },
         {
             "name": "trivial-mm",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
@@ -154,27 +84,11 @@
                 "-threads",
                 "$OMP_NUM_THREADS"
             ],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/trivial-mm",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Enable all-exceptions",
-                    "text": "catch throw",
-                    "ignoreFailures": true
-                }
-            ]
         },
         {
             "name": "sphereincube",
-            "type": "cppdbg",
+            "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
@@ -191,23 +105,7 @@
                 "-threads",
                 "$OMP_NUM_THREADS"
             ],
-            "stopAtEntry": false,
             "cwd": "${workspaceFolder}/run/sphereincube",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                },
-                {
-                    "description": "Enable all-exceptions",
-                    "text": "catch throw",
-                    "ignoreFailures": true
-                }
-            ]
         }
     ]
 }
