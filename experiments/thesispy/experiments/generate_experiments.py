@@ -79,11 +79,33 @@ def nomask_msd():
             )
             yield params
 
+def fair_comparison():
+    for seed in range(5):
+        seed += 1
+        for mesh_size in [2, 4, 6]:
+            for metric in ["AdvancedMeanSquares", "AdvancedNormalizedCorrelation"]:
+                for optimizer in ["ASGD", "GOMEA"]:
+                    if optimizer == "ASGD":
+                        params = (
+                            Parameters.from_base(mesh_size=mesh_size, metric=metric, seed=seed, use_mask=False)
+                            .asgd()
+                            .stopping_criteria(iterations=50000)
+                        )
+                    else:
+                        params = (
+                            Parameters.from_base(mesh_size=mesh_size, metric=metric, seed=seed, use_mask=False)
+                            .gomea(LinkageType.CP_MARGINAL)
+                            .stopping_criteria(iterations=500)
+                        )
+                    yield params
+        
+    
+
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    # queue.clear()
-    fn = shrinkage_test
+    queue.clear()
+    fn = fair_comparison
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")
