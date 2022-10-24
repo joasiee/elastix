@@ -10,7 +10,7 @@ constexpr char SceneId[]{ "01" };
 
 constexpr unsigned int Dimension = 3;
 
-constexpr int Padding = 5;
+constexpr int Padding = 2;
 constexpr int CubeSize = 20;
 constexpr int ImageSize = CubeSize + 2 * Padding;
 
@@ -211,11 +211,11 @@ CreateFixedImageMask(ImageType::Pointer image)
   BoxType::Pointer cube = BoxType::New();
 
   BoxType::SizeType boxSize;
-  boxSize.Fill(CubeSize + 1);
+  boxSize.Fill(CubeSize - 1);
   cube->SetSizeInObjectSpace(boxSize);
 
   BoxType::PointType boxPosition;
-  boxPosition.Fill(Padding - 1);
+  boxPosition.Fill(Padding);
   cube->SetPositionInObjectSpace(boxPosition);
 
   // image intensities
