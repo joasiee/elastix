@@ -17,14 +17,8 @@ index 3845a58e..893dc86a 100755
  set (PLM_VERSION_MINOR "9")
  set (PLM_VERSION_PATCH "3")
  
-+if (CMAKE_BUILD_TYPE STREQUAL "Release")
-+  message(STATUS "Adding native compiler flags.")
-+  add_compile_options(-march=native;-mtune=native)
-+  if(DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
-+    add_compile_options("-flto=$ENV{CMAKE_BUILD_PARALLEL_LEVEL}")
-+  else()
-+    add_compile_options(-flto)
-+  endif()
++if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
++  add_compile_options(-mavx2)
 +endif()
 +
  ##-----------------------------------------------------------------------------

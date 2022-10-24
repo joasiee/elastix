@@ -5,14 +5,8 @@ project( elastix )
 
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Release")
-  message(STATUS "Adding native compiler flags.")
-  add_compile_options(-march=native;-mtune=native)
-  if(DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
-    add_compile_options("-flto=$ENV{CMAKE_BUILD_PARALLEL_LEVEL}")
-  else()
-    add_compile_options(-flto)
-  endif()
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_compile_options(-mavx2)
 endif()
 
 option (USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
