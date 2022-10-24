@@ -10,21 +10,10 @@ index cfe5e452..84b4a6ff 100644
 +*.patch
 \ No newline at end of file
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3845a58e..893dc86a 100755
+index 3845a58e..f4b25655 100755
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -10,6 +10,16 @@ set (PLM_VERSION_MAJOR "1")
- set (PLM_VERSION_MINOR "9")
- set (PLM_VERSION_PATCH "3")
- 
-+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-+  add_compile_options(-mavx2)
-+endif()
-+
- ##-----------------------------------------------------------------------------
- ##  Set up CMake defaults
- ##-----------------------------------------------------------------------------
-@@ -64,7 +74,7 @@ include (SuperbuildOptions)
+@@ -64,7 +64,7 @@ include (SuperbuildOptions)
  ##-----------------------------------------------------------------------------
  ##  Set C++ compiler standard
  ##-----------------------------------------------------------------------------
