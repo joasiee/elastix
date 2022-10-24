@@ -84,20 +84,17 @@ def bending_energy(dvf):
     return be
 
 
-def set_similarity(moving_deformed, fixed, levels, type="dice"):
+def dice_similarity(moving_deformed, fixed, levels):
     thresholds_moving = threshold_multiotsu(moving_deformed, classes=levels)
     thresholds_fixed = threshold_multiotsu(fixed, classes=levels)
     regions_moving_deformed = np.digitize(moving_deformed, bins=thresholds_moving)
     regions_fixed = np.digitize(fixed, bins=thresholds_fixed)
 
     similarities = []
-    for region_value in np.unique(regions_fixed):
+    for region_value in np.unique(regions_fixed)[1:]:
         intersection = np.sum((regions_moving_deformed == regions_fixed) & (regions_fixed == region_value))
-        sum_pixels = np.sum(regions_fixed == region_value) * 2
-        if type == "dice":
-            similarities.append(2.0 * intersection / sum_pixels)
-        elif type == "jaccard":
-            similarities.append(intersection / (sum_pixels - intersection))
+        sum_pixels = np.sum(regions_fixed == region_value) + np.sum(regions_moving_deformed == region_value)
+        similarities.append(2.0 * intersection / sum_pixels)
 
     similarity = np.mean(similarities)
     logger.info(f"{type.capitalize()} Similarity: {similarity}")
@@ -107,7 +104,9 @@ def set_similarity(moving_deformed, fixed, levels, type="dice"):
 def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
     distances = []
     for i in range(len(surface_points)):
-        distances.append(np.max(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing)
+        max_distance1 = np.max(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing
+        max_distance2 = np.max(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1)) * spacing
+        distances.append(max(max_distance1, max_distance2))
     hdist = np.mean(distances)
     logger.info(f"Weighted Hausdorff Distance: {hdist}")
     return hdist
@@ -122,7 +121,9 @@ def dvf_rmse(dvf1, dvf2, spacing=1):
 def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
     distances = []
     for i in range(len(surface_points)):
-        distances.append(np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1) * spacing))
+        mean_distance1 = np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing
+        mean_distance2 = np.mean(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1)) * spacing
+        distances.append((mean_distance1 + mean_distance2) / 2)
     msd = np.mean(distances)
     logger.info(f"Weighted Mean Surface Distance: {msd}")
     return msd
@@ -194,9 +195,8 @@ def plot_voxels(
     colors = np.array(list(map(lambda x: get_cmap_color(cmap, norm(x), alpha), sliced_data)))
 
     ax.voxels(sliced_data, facecolors=colors, edgecolor=(0, 0, 0, 0.2))
-    ax.set_xlim3d(1, 29)
-    ax.set_ylim3d(5, 29)
-    ax.set_zlim3d(1, 29)
+    ax.set_xlim3d(0, data.shape[0] + 2)
+    ax.set_ylim3d(5, data.shape[1])
     ax.set_box_aspect((np.ptp(ax.get_xlim()), np.ptp(ax.get_ylim()), np.ptp(ax.get_zlim())))
     ax.locator_params(axis="y", nbins=3)
     ax.view_init(*orientation)
@@ -291,10 +291,7 @@ def calc_validation(result: RunResult):
         if result.instance.dvf is not None:
             metrics.append({"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf)})
     if result.deformed is not None:
-        metrics.append({"validation/dice_similarity": set_similarity(result.deformed, result.instance.fixed, levels)})
-        metrics.append(
-            {"validation/jaccard_similarity": set_similarity(result.deformed, result.instance.fixed, levels, "jaccard")}
-        )
+        metrics.append({"validation/dice_similarity": dice_similarity(result.deformed, result.instance.fixed, levels)})
         if result.instance.collection == Collection.SYNTHETIC:
             plot_voxels(result.deformed, fig=fig)
     if result.deformed_lms is not None:
