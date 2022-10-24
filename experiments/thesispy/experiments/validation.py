@@ -84,16 +84,16 @@ def bending_energy(dvf):
     return be
 
 
-def set_similarity(moving_deformed, fixed, levels, type="dice"):
+def dice_similarity(moving_deformed, fixed, levels):
     thresholds_moving = threshold_multiotsu(moving_deformed, classes=levels)
     thresholds_fixed = threshold_multiotsu(fixed, classes=levels)
     regions_moving_deformed = np.digitize(moving_deformed, bins=thresholds_moving)
     regions_fixed = np.digitize(fixed, bins=thresholds_fixed)
 
     similarities = []
-    for region_value in np.unique(regions_fixed):
+    for region_value in np.unique(regions_fixed)[1:]:
         intersection = np.sum((regions_moving_deformed == regions_fixed) & (regions_fixed == region_value))
-        sum_pixels = np.sum(regions_fixed == region_value) * 2
+        sum_pixels = np.sum(regions_fixed == region_value) + np.sum(regions_moving_deformed == region_value)
         similarities.append(2.0 * intersection / sum_pixels)
 
     similarity = np.mean(similarities)
@@ -195,9 +195,8 @@ def plot_voxels(
     colors = np.array(list(map(lambda x: get_cmap_color(cmap, norm(x), alpha), sliced_data)))
 
     ax.voxels(sliced_data, facecolors=colors, edgecolor=(0, 0, 0, 0.2))
-    ax.set_xlim3d(1, 29)
-    ax.set_ylim3d(5, 29)
-    ax.set_zlim3d(1, 29)
+    ax.set_xlim3d(0, data.shape[0] + 2)
+    ax.set_ylim3d(5, data.shape[1])
     ax.set_box_aspect((np.ptp(ax.get_xlim()), np.ptp(ax.get_ylim()), np.ptp(ax.get_zlim())))
     ax.locator_params(axis="y", nbins=3)
     ax.view_init(*orientation)
@@ -292,7 +291,7 @@ def calc_validation(result: RunResult):
         if result.instance.dvf is not None:
             metrics.append({"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf)})
     if result.deformed is not None:
-        metrics.append({"validation/dice_similarity": set_similarity(result.deformed, result.instance.fixed, levels)})
+        metrics.append({"validation/dice_similarity": dice_similarity(result.deformed, result.instance.fixed, levels)})
         if result.instance.collection == Collection.SYNTHETIC:
             plot_voxels(result.deformed, fig=fig)
     if result.deformed_lms is not None:
