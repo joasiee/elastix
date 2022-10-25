@@ -279,10 +279,10 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=4, seed=1, metric="AdvancedMeanSquares")
+        Parameters.from_base(mesh_size=2, seed=1, metric="AdvancedMeanSquares")
         .gomea(LinkageType.CP_MARGINAL)
-        .regularize(0.01, False)
-        .stopping_criteria(50)
+        .regularize(0.01, True)
+        .stopping_criteria(2)
         .instance(Collection.SYNTHETIC, 1)
     )
     params.write(Path())

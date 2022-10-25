@@ -40,5 +40,5 @@
 (Instance 1)
 (GridSpacingSchedule 1)
 (ImagePyramidSchedule 1 1 1)
-(FinalGridSpacingInVoxels 8 8 8)
+(FinalGridSpacingInVoxels 12 12 12)
 (NumberOfSpatialSamples 0)
