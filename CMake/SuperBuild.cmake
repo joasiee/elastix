@@ -1,6 +1,6 @@
 include(ExternalProject)
 cmake_policy(SET CMP0074 NEW)
-if(${CMAKE_VERSION} VERSION_GREATER "3.20.0") 
+if(${CMAKE_VERSION} VERSION_GREATER "3.24") 
     cmake_policy(SET CMP0135 NEW)
 endif()
 
