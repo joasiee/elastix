@@ -1,6 +1,8 @@
 include(ExternalProject)
 cmake_policy(SET CMP0074 NEW)
-cmake_policy(SET CMP0135 NEW)
+if(${CMAKE_VERSION} VERSION_GREATER "3.20.0") 
+    cmake_policy(SET CMP0135 NEW)
+endif()
 
 set (DEPENDENCIES_PREFIX ${PROJECT_SOURCE_DIR}/build/external)
 set (PLASTIMATCH_PATCH ${PROJECT_SOURCE_DIR}/tools/plastimatch.patch)
