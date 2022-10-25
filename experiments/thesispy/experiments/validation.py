@@ -97,7 +97,7 @@ def dice_similarity(moving_deformed, fixed, levels):
         similarities.append(2.0 * intersection / sum_pixels)
 
     similarity = np.mean(similarities)
-    logger.info(f"{type.capitalize()} Similarity: {similarity}")
+    logger.info(f"Dice Similarity: {similarity}")
     return similarity
 
 

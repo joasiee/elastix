@@ -10,10 +10,27 @@ index cfe5e452..84b4a6ff 100644
 +*.patch
 \ No newline at end of file
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 3845a58e..f4b25655 100755
+index 3845a58e..893dc86a 100755
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -64,7 +64,7 @@ include (SuperbuildOptions)
+@@ -10,6 +10,16 @@ set (PLM_VERSION_MAJOR "1")
+ set (PLM_VERSION_MINOR "9")
+ set (PLM_VERSION_PATCH "3")
+ 
++if (CMAKE_BUILD_TYPE STREQUAL "Release")
++  message(STATUS "Adding native compiler flags.")
++  add_compile_options(-march=native;-mtune=native)
++  if(DEFINED ENV{CMAKE_BUILD_PARALLEL_LEVEL})
++    add_compile_options("-flto=$ENV{CMAKE_BUILD_PARALLEL_LEVEL}")
++  else()
++    add_compile_options(-flto)
++  endif()
++endif()
++
+ ##-----------------------------------------------------------------------------
+ ##  Set up CMake defaults
+ ##-----------------------------------------------------------------------------
+@@ -64,7 +74,7 @@ include (SuperbuildOptions)
  ##-----------------------------------------------------------------------------
  ##  Set C++ compiler standard
  ##-----------------------------------------------------------------------------
@@ -2414,7 +2431,7 @@ index eab472ba..37429900 100644
  
  #endif
 diff --git a/src/plastimatch/register/bspline_regularize_analytic.cxx b/src/plastimatch/register/bspline_regularize_analytic.cxx
-index d51328b4..368a3fe5 100644
+index d51328b4..dbfc54c1 100644
 --- a/src/plastimatch/register/bspline_regularize_analytic.cxx
 +++ b/src/plastimatch/register/bspline_regularize_analytic.cxx
 @@ -18,116 +18,119 @@
@@ -2978,10 +2995,11 @@ index d51328b4..368a3fe5 100644
 +            Y[j] += bxf->coeff_[n_knots + knots[i]] * V[64 * j + i];
 +            Z[j] += bxf->coeff_[2 * n_knots + knots[i]] * V[64 * j + i];
          }
- 
+-
 -        S += X[j] * bxf->coeff[3*knots[j]+0];
 -        S += Y[j] * bxf->coeff[3*knots[j]+1];
 -        S += Z[j] * bxf->coeff[3*knots[j]+2];
++        
 +        S += X[j] * bxf->coeff_[knots[j]];
 +        S += Y[j] * bxf->coeff_[n_knots + knots[j]];
 +        S += Z[j] * bxf->coeff_[2 * n_knots + knots[j]];
