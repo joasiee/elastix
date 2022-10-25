@@ -159,7 +159,10 @@ public:
   GetValue(const TransformParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const IntermediateResults & evaluation) const override;
+  GetValue(const TransformParametersType & parameters, MeasureType & constraintValue) const override;
+
+  MeasureType
+  GetValue(IntermediateResults & evaluation) const override;
 
   IntermediateResults
   GetValuePartial(const TransformParametersType & parameters, int fosIndex) const override;
@@ -245,7 +248,8 @@ private:
   void
   operator=(const Self &) = delete;
 
-  mutable bool m_SubtractMean;
+  mutable double m_PctPixelsMissed;
+  mutable bool   m_SubtractMean;
 
   using AccumulateType = typename NumericTraits<MeasureType>::AccumulateType;
 
@@ -284,8 +288,14 @@ private:
   mutable AlignedCorrelationGetValueAndDerivativePerThreadStruct * m_CorrelationGetValueAndDerivativePerThreadVariables;
   mutable ThreadIdType m_CorrelationGetValueAndDerivativePerThreadVariablesSize;
 
-  enum IntermediateResultNames {
-    SFF, SMM, SFM, SF, SM, PIXELS
+  enum IntermediateResultNames
+  {
+    SFF,
+    SMM,
+    SFM,
+    SF,
+    SM,
+    PIXELS
   };
 };
 

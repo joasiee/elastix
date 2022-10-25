@@ -210,7 +210,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValuePartial(con
 
 template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::MeasureType
-TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const IntermediateResults & evaluation) const
+TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(IntermediateResults & evaluation) const
 {
   return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : NumericTraits<MeasureType>::max();
 }

@@ -317,8 +317,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitializeImageSampler()
     this->m_ImageSampler->SetInput(this->m_FixedImage);
     this->m_ImageSampler->SetMask(this->m_FixedImageMask);
     this->m_ImageSampler->SetInputImageRegion(this->GetFixedImageRegion());
-    if (!m_PartialEvaluations)
-      this->m_ImageSampler->Update();
+    // if (!m_PartialEvaluations)
+    this->m_ImageSampler->Update();
     this->SetNumberOfFixedImageSamples(this->m_ImageSampler->GetOutput()->Size());
   }
 
@@ -1031,7 +1031,8 @@ template <class TFixedImage, class TMovingImage>
 typename AdvancedImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
                                                                 int                             fosIndex,
-                                                                int                             individualIndex) const
+                                                                int                             individualIndex,
+                                                                MeasureType & constraintValue) const
 {
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
@@ -1039,6 +1040,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
                                               : m_SolutionEvaluations[individualIndex] - m_PartialEvaluationHelper +
                                                   this->GetValuePartial(parameters, fosIndex);
   measure = this->GetValue(result);
+  constraintValue = result.GetConstraintValue();
+  
   m_PartialEvaluationHelper = std::move(result);
 
   return measure;

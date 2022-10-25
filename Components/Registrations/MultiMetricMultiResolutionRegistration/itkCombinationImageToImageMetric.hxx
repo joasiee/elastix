@@ -778,6 +778,43 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   return measure;
 } // end GetValue()
 
+
+/**
+ * ********************* GetValue ****************************
+ */
+
+template <class TFixedImage, class TMovingImage>
+auto
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const ParametersType & parameters, MeasureType & constraintValue) const
+  -> MeasureType
+{
+  /** Initialise. */
+  MeasureType measure = NumericTraits<MeasureType>::Zero;
+
+  this->BeforeThreadedInit(parameters);
+
+  /** Compute, store and combine all metric values. */
+  for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
+  {
+    /** Time the computation per metric. */
+    itk::TimeProbe timer;
+    timer.Start();
+
+    /** Compute ... */
+    MeasureType tempConstraintValue{ 0.0 };
+    this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, tempConstraintValue);
+    timer.Stop();
+    this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
+
+    /** and combine. */
+    measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
+    constraintValue += tempConstraintValue;
+  }
+
+  /** Return a value. */
+  return measure;
+} // end GetValue()
+
 /**
  * ********************* GetValuePartial ****************************
  */
@@ -786,7 +823,8 @@ template <class TFixedImage, class TMovingImage>
 typename CombinationImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const ParametersType & parameters,
                                                                    int                    fosIndex,
-                                                                   int                    individualIndex) const
+                                                                   int                    individualIndex,
+                                                                   MeasureType &          constraintValue) const
 {
   /** Initialise. */
   MeasureType measure = NumericTraits<MeasureType>::Zero;
@@ -800,12 +838,14 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
     timer.Start();
 
     /** Compute ... */
-    this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex, individualIndex);
+    MeasureType tempConstraintValue{ 0.0 };
+    this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex, individualIndex, tempConstraintValue);
     timer.Stop();
     this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
 
     /** and combine. */
     measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
+    constraintValue += tempConstraintValue;
   }
 
   /** Return a value. */
@@ -818,7 +858,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluati
                                                                                    int fosIndex) const
 {
   this->BeforeThreadedInit(parameters);
-  
+
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
     this->m_Metrics[i]->PreloadPartialEvaluation(parameters, fosIndex);

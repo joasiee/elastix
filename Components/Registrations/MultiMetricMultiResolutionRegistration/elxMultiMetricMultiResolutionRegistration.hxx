@@ -87,7 +87,7 @@ MultiMetricMultiResolutionRegistration<TElastix>::BeforeRegistration()
   for (unsigned int i = 0; i < nrOfMetrics; ++i)
   {
     std::ostringstream makestring1;
-    makestring1 << "2:Metric" << std::setfill('0') << std::setw(width) << i;
+    makestring1 << "2c:Metric" << std::setfill('0') << std::setw(width) << i;
     this->AddTargetCellToIterationInfo(makestring1.str().c_str());
     this->GetIterationInfoAt(makestring1.str().c_str()) << std::showpoint << std::fixed <<std::setprecision(8);
 
@@ -137,7 +137,7 @@ MultiMetricMultiResolutionRegistration<TElastix>::AfterEachIteration()
   for (unsigned int i = 0; i < nrOfMetrics; ++i)
   {
     std::ostringstream makestring1;
-    makestring1 << "2:Metric" << std::setfill('0') << std::setw(width) << i;
+    makestring1 << "2c:Metric" << std::setfill('0') << std::setw(width) << i;
     this->GetIterationInfoAt(makestring1.str().c_str()) << this->GetCombinationMetric()->GetMetricValue(i);
 
     std::ostringstream makestring2;

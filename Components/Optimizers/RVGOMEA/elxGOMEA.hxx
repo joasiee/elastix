@@ -16,11 +16,13 @@ GOMEA<TElastix>::BeforeRegistration(void)
 
   this->SetImageDimension(this->GetElastix()->GetFixedImage()->GetImageDimension());
 
-  this->AddTargetCellToIterationInfo("2:Metric");
+  this->AddTargetCellToIterationInfo("2a:Metric");
+  this->AddTargetCellToIterationInfo("2b:Constraints");
   this->AddTargetCellToIterationInfo("3a:PdPct");
   this->AddTargetCellToIterationInfo("3b:DistMult");
 
-  this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("2a:Metric") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("2b:Constraints") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3a:PdPct") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3b:DistMult") << std::showpoint << std::fixed;
 
@@ -43,7 +45,8 @@ GOMEA<TElastix>::AfterEachIteration(void)
   pdpct_mean = isnan(pdpct_mean) ? 100.0f : pdpct_mean;
 
   /** Print some information. */
-  this->GetIterationInfoAt("2:Metric") << this->m_Value;
+  this->GetIterationInfoAt("2a:Metric") << this->m_Value;
+  this->GetIterationInfoAt("2b:Constraints") << this->m_ConstraintValue;
   this->GetIterationInfoAt("3a:PdPct") << pdpct_mean;
   this->GetIterationInfoAt("3b:DistMult") << this->GetAverageDistributionMultiplier();
   this->m_PdPctMean = {};

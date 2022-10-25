@@ -176,6 +176,8 @@ protected:
   unsigned int      m_ImageDimension;
   bool              m_SubSampling{ false };
 
+  MeasureType m_ConstraintValue{ 0.0 };
+
   typedef accumulator_set<float, stats<tag::mean>> MeanAccumulator;
   mutable MeanAccumulator                          m_PdPctMean;
 
@@ -187,11 +189,11 @@ private:
   void
   run(void);
   int *
-  mergeSortFitness(double * objectives, int number_of_solutions);
+  mergeSortFitness(double * objectives, double * constraints, int number_of_solutions);
   void
-  mergeSortFitnessWithinBounds(double * objectives, int * sorted, int * tosort, int p, int q);
+  mergeSortFitnessWithinBounds(double * objectives, double * constraints, int * sorted, int * tosort, int p, int q);
   void
-  mergeSortFitnessMerge(double * objectives, int * sorted, int * tosort, int p, int r, int q);
+  mergeSortFitnessMerge(double * objectives, double * constraints, int * sorted, int * tosort, int p, int r, int q);
   void
   checkOptions(void);
   void
@@ -265,9 +267,16 @@ private:
   void
   evaluatePopulation(int population);
   void
-  costFunctionEvaluation(const ParametersType & parameters, int individual_index, MeasureType & obj_val);
+  costFunctionEvaluation(const ParametersType & parameters,
+                         int                    individual_index,
+                         MeasureType &          obj_val,
+                         MeasureType &          constraint_val);
   void
-  costFunctionEvaluation(int population_index, int individual_index, int fos_index, MeasureType & obj_val);
+  costFunctionEvaluation(int           population_index,
+                         int           individual_index,
+                         int           fos_index,
+                         MeasureType & obj_val,
+                         MeasureType & constraint_val);
   void
   applyDistributionMultipliersToAllPopulations(void);
   void
@@ -326,8 +335,8 @@ private:
   int m_BasePopulationSize{ 0 };
   int m_MaxNoImprovementStretch{ 0 };
   int m_FosElementSize{ -1 };
-  int m_StaticLinkageType{0};
-  int m_StaticLinkageMaxSetSize{48}; // 16 neighbouring points
+  int m_StaticLinkageType{ 0 };
+  int m_StaticLinkageMaxSetSize{ 48 }; // 16 neighbouring points
   int number_of_subgenerations_per_population_factor{ 8 };
   int number_of_populations{ 0 };
 
@@ -344,20 +353,22 @@ private:
   Vector2D<ParametersType> populations;
   Vector2D<ParametersType> selections;
 
-  Array<short>         populations_terminated;
-  Array<int>           selection_sizes;
-  Array<int>           no_improvement_stretch;
-  Array<int>           number_of_generations;
-  Array<int>           population_sizes;
-  Vector1D<Array<int>> individual_NIS;
+  Array<short>  populations_terminated;
+  Array<int>    selection_sizes;
+  Array<int>    no_improvement_stretch;
+  Array<int>    number_of_generations;
+  Array<int>    population_sizes;
+  Vector2D<int> individual_NIS;
 
-  Vector1D<Array<MeasureType>> objective_values;
-  Vector1D<Array<MeasureType>> objective_values_selections;
-  Vector1D<Array<double>>      ranks;
-  Vector1D<Array<double>>      distribution_multipliers;
-  Vector1D<MatrixXd>           full_covariance_matrix;
-  Vector2D<MatrixXd>           decomposed_covariance_matrices;
-  Vector2D<MatrixXd>           decomposed_cholesky_factors_lower_triangle;
+  Vector2D<MeasureType> objective_values;
+  Vector2D<MeasureType> objective_values_selections;
+  Vector2D<MeasureType> constraint_values;
+  Vector2D<MeasureType> constraint_values_selections;
+  Vector2D<double>      ranks;
+  Vector2D<double>      distribution_multipliers;
+  Vector1D<MatrixXd>    full_covariance_matrix;
+  Vector2D<MatrixXd>    decomposed_covariance_matrices;
+  Vector2D<MatrixXd>    decomposed_cholesky_factors_lower_triangle;
 
   GOMEA::FOS ** linkage_model;
 };

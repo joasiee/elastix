@@ -136,7 +136,10 @@ public:
   GetValue(const TransformParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const IntermediateResults & evaluation) const override;
+  GetValue(const TransformParametersType & parameters, MeasureType & constraintValue) const override;
+
+  MeasureType
+  GetValue(IntermediateResults & evaluation) const override;
 
   IntermediateResults
   GetValuePartial(const TransformParametersType & parameters, int fosIndex) const override;
@@ -257,10 +260,11 @@ private:
   void
   operator=(const Self &) = delete;
 
-  bool         m_UseNormalization;
-  double       m_SelfHessianSmoothingSigma;
-  double       m_SelfHessianNoiseRange;
-  unsigned int m_NumberOfSamplesForSelfHessian;
+  bool           m_UseNormalization;
+  double         m_SelfHessianSmoothingSigma;
+  double         m_SelfHessianNoiseRange;
+  mutable double m_PctMissedPixels;
+  unsigned int   m_NumberOfSamplesForSelfHessian;
 };
 
 } // end namespace itk

@@ -214,13 +214,29 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
   const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
   const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize);
-  this->m_MissedPixelsMean(pctMissed * 100.0);
+  m_PctMissedPixels = pctMissed * 100.0;
+  this->m_MissedPixelsMean(m_PctMissedPixels);
 
   measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
   this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
 
   return measure;
 } // end GetValue()
+
+/**
+ * ******************* GetValue with contraints *******************
+ */
+
+template <class TFixedImage, class TMovingImage>
+auto
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
+                                                                           MeasureType & constraintValue) const
+  -> MeasureType
+{
+  MeasureType measure = this->GetValue(parameters);
+  constraintValue = (m_PctMissedPixels >= Superclass::MissedPixelConstraintThreshold) * m_PctMissedPixels;
+  return measure;
+} // end GetValue() with contraints
 
 template <class TFixedImage, class TMovingImage>
 IntermediateResults
@@ -276,15 +292,19 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
 
   result[0] = measure * m_NormalizationFactor;
   result[1] = numberOfPixelsCounted;
+  result.SetConstraintValue((double)numberOfPixelsMissed / (double)this->GetNumberOfFixedImageSamples() * 100.0);
 
   return result;
 }
 
 template <class TFixedImage, class TMovingImage>
 typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const IntermediateResults & evaluation) const
+AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(IntermediateResults & evaluation) const
 {
-  return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : NumericTraits<MeasureType>::max();
+  MeasureType measure = evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : NumericTraits<MeasureType>::max();
+  evaluation.SetConstraintValue((evaluation.GetConstraintValue() >= Superclass::MissedPixelConstraintThreshold) *
+                                evaluation.GetConstraintValue());
+  return measure;
 }
 
 

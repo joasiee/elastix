@@ -24,7 +24,7 @@ class Parameters:
         cls,
         metric: str = "AdvancedNormalizedCorrelation",
         mesh_size: List[int] | int = 12,
-        use_mask: bool = True,
+        use_mask: bool = False,
         seed: int = None,
     ):
         with BASE_PARAMS_PATH.open() as f:
@@ -281,8 +281,8 @@ if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=4, seed=1, metric="AdvancedMeanSquares")
         .gomea(LinkageType.CP_MARGINAL)
-        .regularize(0.01)
-        .stopping_criteria(3)
+        .regularize(0.01, False)
+        .stopping_criteria(50)
         .instance(Collection.SYNTHETIC, 1)
     )
     params.write(Path())

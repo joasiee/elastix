@@ -8,6 +8,6 @@ Offset = 0 0 0
 CenterOfRotation = 0 0 0
 AnatomicalOrientation = RAI
 ElementSpacing = 1 1 1
-DimSize = 30 30 30
+DimSize = 24 24 24
 ElementType = MET_UCHAR
 ElementDataFile = 01_Moving.raw

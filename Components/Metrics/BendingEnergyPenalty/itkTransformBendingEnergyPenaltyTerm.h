@@ -131,7 +131,7 @@ public:
   GetValue(const ParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const IntermediateResults & evaluation) const override;
+  GetValue(IntermediateResults & evaluation) const override;
 
   IntermediateResults
   GetValuePartial(const ParametersType & parameters, int fosIndex) const override;

@@ -430,7 +430,10 @@ public:
   GetValue(const ParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const ParametersType & parameters, int fosIndex, int individualIndex) const override;
+  GetValue(const ParametersType & parameters, MeasureType & constraintValue) const override;
+
+  MeasureType
+  GetValue(const ParametersType & parameters, int fosIndex, int individualIndex, MeasureType & constraintValue) const override;
 
   void
   PreloadPartialEvaluation(const ParametersType & parameters, int fosIndex) const override;

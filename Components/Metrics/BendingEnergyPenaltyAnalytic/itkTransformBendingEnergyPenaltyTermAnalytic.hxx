@@ -89,7 +89,7 @@ TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(co
 template <class TFixedImage, class TScalarType>
 typename TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::MeasureType
 TransformBendingEnergyPenaltyTermAnalytic<TFixedImage, TScalarType>::GetValue(
-  const IntermediateResults & evaluation) const
+  IntermediateResults & evaluation) const
 {
   return evaluation[0] / static_cast<MeasureType>(this->GetNumberOfFixedImageVoxels());
 }

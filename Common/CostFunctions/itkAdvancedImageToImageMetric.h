@@ -108,6 +108,7 @@ public:
   /** Constants for the image dimensions. */
   itkStaticConstMacro(MovingImageDimension, unsigned int, TMovingImage::ImageDimension);
   itkStaticConstMacro(FixedImageDimension, unsigned int, TFixedImage::ImageDimension);
+  itkStaticConstMacro(MissedPixelConstraintThreshold, double, 2.0);
 
   /** Typedefs from the superclass. */
   using typename Superclass::CoordinateRepresentationType;
@@ -345,10 +346,10 @@ public:
   using Superclass::GetValue;
 
   MeasureType
-  GetValue(const TransformParametersType & parameters, int fosIndex, int individualIndex) const override;
+  GetValue(const TransformParametersType & parameters, int fosIndex, int individualIndex, MeasureType & constraintValue) const override;
 
   virtual MeasureType
-  GetValue(const IntermediateResults & evaluation) const
+  GetValue(IntermediateResults & evaluation) const
   {
     (void)evaluation;
     return NumericTraits<MeasureType>::Zero;

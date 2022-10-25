@@ -94,8 +94,6 @@
             "args": [
                 "-f",
                 "01_Fixed.mhd",
-                "-fMask",
-                "01_FixedMask.mhd",
                 "-m",
                 "01_Moving.mhd",
                 "-p",

@@ -267,7 +267,8 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
 
   const unsigned long numberOfPixelsMissed = sampleContainer.Size() - numberOfPixelsCounted;
   const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainer.Size());
-  this->m_MissedPixelsMean(pctMissed * 100.0);
+  m_PctPixelsMissed = 100.0 * pctMissed;
+  this->m_MissedPixelsMean(m_PctPixelsMissed);
 
   /** If SubtractMean, then subtract things from sff, smm and sfm. */
   const RealType N = static_cast<RealType>(numberOfPixelsCounted);
@@ -299,7 +300,18 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
 template <class TFixedImage, class TMovingImage>
 auto
 AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const IntermediateResults & evaluation) const -> MeasureType
+  const TransformParametersType & parameters,
+  MeasureType &                   constraintValue) const -> MeasureType
+{
+  MeasureType measure = this->GetValue(parameters);
+  constraintValue = (m_PctPixelsMissed >= Superclass::MissedPixelConstraintThreshold) * m_PctPixelsMissed;
+  return measure;
+}
+
+template <class TFixedImage, class TMovingImage>
+auto
+AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
+  IntermediateResults & evaluation) const -> MeasureType
 {
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
@@ -326,6 +338,9 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   {
     measure = sfm / denom;
   }
+
+  evaluation.SetConstraintValue((evaluation.GetConstraintValue() >= Superclass::MissedPixelConstraintThreshold) *
+                                evaluation.GetConstraintValue());
 
   return measure;
 }
@@ -395,6 +410,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   const unsigned long numberOfPixelsMissed = sumNrPixels - pixels;
   const double        pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
   this->m_MissedPixelsMean(pctMissed * 100.0);
+  result.SetConstraintValue((double)numberOfPixelsMissed / (double)this->GetNumberOfFixedImageSamples() * 100.0);
 
   return result;
 }
