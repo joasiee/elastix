@@ -6,7 +6,7 @@ project( elastix )
 list( APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  add_compile_options(-mavx2)
+  add_compile_options(-flto)
 endif()
 
 option (USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)

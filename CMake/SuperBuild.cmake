@@ -33,9 +33,9 @@ if(NOT ${Eigen3_FOUND})
         URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2
         PREFIX ${DEPENDENCIES_PREFIX}
         INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=MinSizeRel
         CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
-        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/eigen-build --config Release --target all
+        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/eigen-build --config MinSizeRel --target all
     )
     set(TARGET_DEPENDENCIES ${TARGET_DEPENDENCIES} eigen)
 endif()
@@ -50,9 +50,9 @@ if(NOT ${ITK_FOUND})
         GIT_TAG origin/gomea
         PREFIX ${DEPENDENCIES_PREFIX}
         INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=MinSizeRel
         CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
-        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/itk-build --config Release --target all
+        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/itk-build --config MinSizeRel --target all
         INSTALL_COMMAND ""
     )
     set(TARGET_DEPENDENCIES ${TARGET_DEPENDENCIES} itk)
@@ -77,10 +77,10 @@ if(NOT ${Plastimatch_FOUND})
         GIT_REPOSITORY https://gitlab.com/plastimatch/plastimatch.git
         GIT_TAG 3734adbfdb0b4cdce733ef1275b4e76093ffc6d5
         PATCH_COMMAND ${GIT_EXECUTABLE} apply ${PLASTIMATCH_PATCH} || echo "patch already applied"
-        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/plastimatch-build --config Release --target plmregister
+        BUILD_COMMAND ${CMAKE_COMMAND} --build ${DEPENDENCIES_PREFIX}/src/plastimatch-build --config MinSizeRel --target plmregister
         PREFIX ${DEPENDENCIES_PREFIX}
         INSTALL_DIR ${DEPENDENCIES_PREFIX}/install
-        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${PLASTIMATCH_ARGS} ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=Release
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:STRING=${DEPENDENCIES_PREFIX}/install ${PLASTIMATCH_ARGS} ${EXTRA_CMAKE_ARGS} -DCMAKE_BUILD_TYPE:STRING=MinSizeRel
         CMAKE_CACHE_ARGS ${CMAKE_CACHE_ARGS}
 )
 set(TARGET_DEPENDENCIES ${TARGET_DEPENDENCIES} plastimatch)
