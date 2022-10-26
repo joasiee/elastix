@@ -83,17 +83,16 @@ def fair_comparison():
     for seed in range(5):
         seed += 1
         for mesh_size in [2, 4, 6]:
-            for metric in ["AdvancedMeanSquares", "AdvancedNormalizedCorrelation"]:
                 for optimizer in ["ASGD", "GOMEA"]:
                     if optimizer == "ASGD":
                         params = (
-                            Parameters.from_base(mesh_size=mesh_size, metric=metric, seed=seed, use_mask=False)
+                            Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
                             .asgd()
                             .stopping_criteria(iterations=50000)
                         )
                     else:
                         params = (
-                            Parameters.from_base(mesh_size=mesh_size, metric=metric, seed=seed, use_mask=False)
+                            Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
                             .gomea(LinkageType.CP_MARGINAL)
                             .stopping_criteria(iterations=500)
                         )
