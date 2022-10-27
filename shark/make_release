@@ -21,7 +21,6 @@ export CMAKE_BUILD_PARALLEL_LEVEL=16
 cmake --no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=$CMAKE_BUILD_TYPE -S$PWD -B$PWD/build/$CMAKE_BUILD_TYPE
 cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target all
 
-rm -rf $PWD/build/external/src/itk
 rm -rf $PWD/build/external/src/plastimatch*
 rm -rf $PWD/build/external/src/eigen*
 rm $PWD/build/$CMAKE_BUILD_TYPE/bin/*.a
