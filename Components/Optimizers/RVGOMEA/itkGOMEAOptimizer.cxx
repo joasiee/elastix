@@ -952,9 +952,10 @@ GOMEAOptimizer::makeSelectionsForOnePopulationUsingDiversityOnRank0(int populati
 
     for (i = 0; i < number_of_rank0_solutions; i++)
     {
-      value = distanceEuclidean(populations[population_index][preselection_indices[i]].data_block(),
-                                populations[population_index][selection_indices[number_selected_so_far - 1]].data_block(),
-                                m_NrOfParameters);
+      value =
+        distanceEuclidean(populations[population_index][preselection_indices[i]].data_block(),
+                          populations[population_index][selection_indices[number_selected_so_far - 1]].data_block(),
+                          m_NrOfParameters);
       if (value < nn_distances[i])
         nn_distances[i] = value;
     }
@@ -1158,7 +1159,8 @@ GOMEAOptimizer::estimateCovarianceMatricesML(int population_index)
           decomposed_covariance_matrices[population_index][i](j, k);
       }
     }
-    // if (this->m_UseShrinkage && linkage_model[population_index]->set_length[i] * 10 > selection_sizes[population_index])
+    // if (this->m_UseShrinkage && linkage_model[population_index]->set_length[i] * 10 >
+    // selection_sizes[population_index])
     //   shrunkCovarianceOAS(decomposed_covariance_matrices[population_index][i], selection_sizes[population_index]);
   }
 }
@@ -1275,6 +1277,8 @@ GOMEAOptimizer::costFunctionEvaluation(const ParametersType & parameters,
   PROFILE_FUNCTION();
   obj_val = this->m_PartialEvaluations ? this->GetValue(parameters, -1, individual_index, constraint_val)
                                        : this->GetValue(parameters, constraint_val);
+  constraint_val *= m_UseConstraints;
+
   ++m_NumberOfEvaluations;
 }
 
@@ -1295,6 +1299,7 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
 
   obj_val =
     this->GetValue(populations[population_index][individual_index], fos_index, individual_index, constraint_val);
+  constraint_val *= m_UseConstraints;
 
   // this->GetValueSanityCheck(populations[population_index][individual_index]);
 

@@ -144,6 +144,9 @@ public:
   itkGetConstMacro(UseShrinkage, bool);
   itkSetMacro(UseShrinkage, bool);
 
+  itkGetConstMacro(UseConstraints, bool);
+  itkSetMacro(UseConstraints, bool);
+
   const std::string
   GetStopConditionDescription() const override;
 
@@ -342,6 +345,7 @@ private:
 
   bool m_PartialEvaluations{ false };
   bool m_UseShrinkage{ false };
+  bool m_UseConstraints { true };
 
   template <typename T>
   using Vector1D = std::vector<T>;

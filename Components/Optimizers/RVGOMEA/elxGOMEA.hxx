@@ -144,6 +144,11 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(useShrinkage, "UseShrinkage", this->GetComponentLabel(), level, 0);
   this->SetUseShrinkage(useShrinkage);
 
+  /** Set UseConstraints*/
+  bool useConstraints = true;
+  this->m_Configuration->ReadParameter(useConstraints, "UseConstraints", this->GetComponentLabel(), level, 0);
+  this->SetUseConstraints(useConstraints);
+
   std::ostringstream makeFileName("");
   makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
   std::string fileName = makeFileName.str();
