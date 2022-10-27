@@ -15,7 +15,7 @@ module load library/boost/1.72.0/gcc-8.3.1
 module load library/blas/0.3.13/gcc-8.3.1
 module load library/lapack/3.9.0/gcc-8.3.1
 
-CMAKE_BUILD_TYPE=MinSizeRel
+CMAKE_BUILD_TYPE=Release
 
 export CMAKE_BUILD_PARALLEL_LEVEL=16
 
@@ -25,3 +25,4 @@ cmake --build $PWD/build/$CMAKE_BUILD_TYPE --config $CMAKE_BUILD_TYPE --target a
 rm -rf $PWD/build/external/src/itk
 rm -rf $PWD/build/external/src/plastimatch*
 rm -rf $PWD/build/external/src/eigen*
+rm $PWD/build/$CMAKE_BUILD_TYPE/bin/*.a

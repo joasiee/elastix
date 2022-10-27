@@ -33,7 +33,7 @@
 (StaticLinkageMaxSetSize 27)
 (Metric0Weight 1.0)
 (Metric1Weight 0.01)
-(MaximumNumberOfIterations 2)
+(MaximumNumberOfIterations 3)
 (MaxTimeSeconds 0)
 (FitnessVarianceTolerance 1e-09)
 (Collection "SYNTHETIC")
