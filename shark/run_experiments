@@ -8,6 +8,7 @@
 #SBATCH -o "output/slurm/run-%j.out"
 
 module purge > /dev/null 2>&1
+module load system/gcc/11.2.0
 
 export OMP_NUM_THREADS=8
 export OMP_THREAD_LIMIT=8
