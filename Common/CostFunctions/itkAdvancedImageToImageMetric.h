@@ -346,13 +346,23 @@ public:
   using Superclass::GetValue;
 
   MeasureType
-  GetValue(const TransformParametersType & parameters, int fosIndex, int individualIndex, MeasureType & constraintValue) const override;
+  GetValue(const TransformParametersType & parameters,
+           int                             fosIndex,
+           int                             individualIndex,
+           MeasureType &                   constraintValue) const override;
 
   virtual MeasureType
   GetValue(IntermediateResults & evaluation) const
   {
     (void)evaluation;
     return NumericTraits<MeasureType>::Zero;
+  }
+
+  MeasureType
+  GetConstraintValue(IntermediateResults & evaluation) const
+  {
+    MeasureType constraintValue = evaluation.GetConstraintValue();
+    return (constraintValue >= MissedPixelConstraintThreshold) * constraintValue;
   }
 
   virtual IntermediateResults
@@ -423,14 +433,14 @@ protected:
   std::vector<ImageSamplerPointer>                   m_SubfunctionSamplers;
   std::vector<IntermediateResults>                   m_SolutionEvaluations;
   // std::vector<std::vector<int>>                      m_BSplineRegionsToFosSets;
-  std::vector<FixedImageRegionType>                  m_BSplineFOSRegions;
-  std::vector<std::vector<int>>                      m_BSplinePointsRegions;
-  std::vector<std::vector<int>>                      m_BSplinePointsRegionsNoMask;
-  std::vector<int>                                   m_BSplinePointOffsetMap;
-  double                                             m_SamplingPercentage{ 0.05 };
-  FOS                                                m_FOS{ 0 };
-  mutable IntermediateResults                        m_PartialEvaluationHelper;
-  std::vector<bool>                                  m_ParametersOutsideOfMask;
+  std::vector<FixedImageRegionType> m_BSplineFOSRegions;
+  std::vector<std::vector<int>>     m_BSplinePointsRegions;
+  std::vector<std::vector<int>>     m_BSplinePointsRegionsNoMask;
+  std::vector<int>                  m_BSplinePointOffsetMap;
+  double                            m_SamplingPercentage{ 0.05 };
+  FOS                               m_FOS{ 0 };
+  mutable IntermediateResults       m_PartialEvaluationHelper;
+  std::vector<bool>                 m_ParametersOutsideOfMask;
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };

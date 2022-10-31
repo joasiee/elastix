@@ -1603,10 +1603,11 @@ GOMEAOptimizer::applyAMS(int population_index, int individual_index)
   }
 
   this->costFunctionEvaluation(solution_AMS, individual_index, obj_val, cons_val);
-  if (randomRealUniform01() < 0.05 || betterFitness(obj_val,
-                                                    cons_val,
-                                                    objective_values[population_index][individual_index],
-                                                    constraint_values[population_index][individual_index]))
+  improvement = betterFitness(obj_val,
+                              cons_val,
+                              objective_values[population_index][individual_index],
+                              constraint_values[population_index][individual_index]);
+  if (improvement || randomRealUniform01() < 0.05)
   {
     objective_values[population_index][individual_index] = obj_val;
     constraint_values[population_index][individual_index] = cons_val;
@@ -1841,7 +1842,7 @@ void
 GOMEAOptimizer::UpdatePosition()
 {
   PROFILE_FUNCTION();
-  this->SetCurrentPosition(selections[number_of_populations - 1][0]);
+  this->SetCurrentPosition(selections[0][0]);
   this->costFunctionEvaluation(this->GetCurrentPosition(), 0, this->m_Value, this->m_ConstraintValue);
 
   m_CurrentIteration++;

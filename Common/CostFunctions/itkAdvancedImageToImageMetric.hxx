@@ -1040,7 +1040,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
                                               : m_SolutionEvaluations[individualIndex] - m_PartialEvaluationHelper +
                                                   this->GetValuePartial(parameters, fosIndex);
   measure = this->GetValue(result);
-  constraintValue = result.GetConstraintValue();
+  constraintValue = this->GetConstraintValue(result);
   
   m_PartialEvaluationHelper = std::move(result);
 

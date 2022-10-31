@@ -302,11 +302,8 @@ typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Measu
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(IntermediateResults & evaluation) const
 {
   MeasureType measure = evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : NumericTraits<MeasureType>::max();
-  evaluation.SetConstraintValue((evaluation.GetConstraintValue() >= Superclass::MissedPixelConstraintThreshold) *
-                                evaluation.GetConstraintValue());
   return measure;
 }
-
 
 /**
  * ******************* GetDerivative *******************

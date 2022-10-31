@@ -339,9 +339,6 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
     measure = sfm / denom;
   }
 
-  evaluation.SetConstraintValue((evaluation.GetConstraintValue() >= Superclass::MissedPixelConstraintThreshold) *
-                                evaluation.GetConstraintValue());
-
   return measure;
 }
 
