@@ -16,15 +16,16 @@ GOMEA<TElastix>::BeforeRegistration(void)
 
   this->SetImageDimension(this->GetElastix()->GetFixedImage()->GetImageDimension());
 
-  this->AddTargetCellToIterationInfo("2a:Metric");
-  this->AddTargetCellToIterationInfo("2b:Constraints");
+  this->AddTargetCellToIterationInfo("2:Metric");
   this->AddTargetCellToIterationInfo("3a:PdPct");
   this->AddTargetCellToIterationInfo("3b:DistMult");
+  this->AddTargetCellToIterationInfo("3c:Constraints");
 
-  this->GetIterationInfoAt("2a:Metric") << std::showpoint << std::fixed;
-  this->GetIterationInfoAt("2b:Constraints") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3a:PdPct") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3b:DistMult") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("3c:Constraints") << std::showpoint << std::fixed;
+
 
   std::string sampler;
   this->m_Configuration->ReadParameter(sampler, "ImageSampler", 0, true);
@@ -45,10 +46,10 @@ GOMEA<TElastix>::AfterEachIteration(void)
   pdpct_mean = isnan(pdpct_mean) ? 100.0f : pdpct_mean;
 
   /** Print some information. */
-  this->GetIterationInfoAt("2a:Metric") << this->m_Value;
-  this->GetIterationInfoAt("2b:Constraints") << this->m_ConstraintValue;
+  this->GetIterationInfoAt("2:Metric") << this->m_Value;
   this->GetIterationInfoAt("3a:PdPct") << pdpct_mean;
   this->GetIterationInfoAt("3b:DistMult") << this->GetAverageDistributionMultiplier();
+  this->GetIterationInfoAt("3c:Constraints") << this->m_ConstraintValue;
   this->m_PdPctMean = {};
 
   this->WriteDistributionMultipliers(this->m_DistMultOutFile);
@@ -92,7 +93,8 @@ GOMEA<TElastix>::BeforeEachResolution(void)
 
   /** Set StaticLinkageMaxSetSize.*/
   int staticLinkageMaxSetSize = 0;
-  this->m_Configuration->ReadParameter(staticLinkageMaxSetSize, "StaticLinkageMaxSetSize", this->GetComponentLabel(), level, 0);
+  this->m_Configuration->ReadParameter(
+    staticLinkageMaxSetSize, "StaticLinkageMaxSetSize", this->GetComponentLabel(), level, 0);
   this->SetStaticLinkageMaxSetSize(staticLinkageMaxSetSize);
 
   /** Set MaxImprovementNoStretch.*/
@@ -158,7 +160,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   auto transformPtr = this->GetElastix()->GetElxTransformBase()->GetAsITKBaseType();
   auto comboPtr = dynamic_cast<const CombinationTransformType *>(transformPtr);
   auto bsplinePtr = dynamic_cast<const BSplineBaseType *>(comboPtr->GetCurrentTransform());
-  
+
   // Get the bspline grid size dimensions
   auto gridRegionSize = bsplinePtr->GetGridRegion().GetSize();
   m_BSplineGridRegionDimensions = std::vector<int>(gridRegionSize.begin(), gridRegionSize.end());
