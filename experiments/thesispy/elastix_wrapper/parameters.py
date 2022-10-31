@@ -23,7 +23,7 @@ class Parameters:
     def from_base(
         cls,
         metric: str = "AdvancedNormalizedCorrelation",
-        mesh_size: List[int] | int = 12,
+        mesh_size: List[int] | int = 4,
         use_mask: bool = False,
         seed: int = None,
     ):
@@ -175,7 +175,8 @@ class Parameters:
             for n in range(len(total_samples)):
                 total_samples[n] *= int(voxel_dim / self["ImagePyramidSchedule"][n * len(voxel_dims) + i])
 
-        self["FinalGridSpacingInVoxels"] = voxel_spacings
+        if "FinalGridSpacingInVoxels" not in self.params:
+            self["FinalGridSpacingInVoxels"] = voxel_spacings
 
         self["NumberOfSpatialSamples"] = total_samples
         if self["ImageSampler"] != "Full":

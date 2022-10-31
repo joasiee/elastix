@@ -150,10 +150,10 @@ def jacobian_determinant(dvf, fig=None):
         ax = fig.add_subplot(2, 2, 4)
         sns.heatmap(jac_det, cmap="jet", ax=ax, square=True, cbar_kws={"fraction": 0.045, "pad": 0.02})
     else:
-        sns.heatmap(jac_det, cmap="jet", square=True)
+        ax = sns.heatmap(jac_det, cmap="jet", square=True)
     ax.invert_yaxis()
     logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
-
+    return jac_det
 
 def get_cmap_color(cmap, f, a):
     c = cmap(f)

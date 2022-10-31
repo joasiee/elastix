@@ -169,9 +169,9 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=2, use_mask=True)
-        .gomea(LinkageType.STATIC_EUCLIDEAN, shrinkage=True)
-        .stopping_criteria(50)
+        Parameters.from_base(mesh_size=2, metric="AdvancedMeanSquares", seed=3)
+        .asgd()
+        .stopping_criteria(5)
         .instance(Collection.SYNTHETIC, 1)
     )
-    run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True)
+    run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True, validate=False)

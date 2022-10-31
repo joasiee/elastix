@@ -80,9 +80,9 @@ def nomask_msd():
             yield params
 
 def fair_comparison():
-    for seed in range(5):
+    for seed in range(10):
         seed += 1
-        for mesh_size in [2, 4, 6]:
+        for mesh_size in [2, 3, 4]:
                 for optimizer in ["ASGD", "GOMEA"]:
                     if optimizer == "ASGD":
                         params = (
@@ -93,8 +93,8 @@ def fair_comparison():
                     else:
                         params = (
                             Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
-                            .gomea(LinkageType.CP_MARGINAL)
-                            .stopping_criteria(iterations=500)
+                            .gomea(LinkageType.CP_MARGINAL, constraints=False)
+                            .stopping_criteria(iterations=2000)
                         )
                     yield params
         

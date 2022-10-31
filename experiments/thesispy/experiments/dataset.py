@@ -18,17 +18,20 @@ class FinishedRun:
         self.name = name
         self.config = config
         self.resolutions_train = []
-        self.resolutions_val = []
+        self.resolutions_final = []
+        self.validation = None
 
         nr_resolutions = int(self.config["NumberOfResolutions"])
         for r in range(0, nr_resolutions):
-            condition = ~np.isnan(metrics[f"R{r}/metric"]) if nr_resolutions > 1 else metrics.index
+            condition = ~np.isnan(metrics[f"R{r}/time[ms]"])
             indices = metrics.index[condition]
             columns = ["_step", "_runtime", "_timestamp"] + [c for c in metrics.columns if f"R{r}/" in c]
             metrics_r = metrics[columns]
             metrics_r.columns = [c.replace(f"R{r}/", "") for c in metrics_r.columns]
             self.resolutions_train.append(metrics_r.loc[indices].iloc[:-1])
-            self.resolutions_val.append(metrics_r.loc[indices].iloc[-1])
+            self.resolutions_final.append(metrics_r.loc[indices].iloc[-1])
+            
+        self.validation = metrics.loc[metrics.index[-1]]
 
     def query(self, query: str):
         return dq.match(self.config, query)

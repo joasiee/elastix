@@ -118,7 +118,7 @@ class Watchdog(threading.Thread):
                 continue
 
             headers = resolution_results.columns.values
-            headers = [re.sub(r"\d:", "", header).lower() for header in headers]
+            headers = [re.sub(r"\d.?:", "", header).lower() for header in headers]
             values = resolution_results.values
 
             len_values = values.shape[0]

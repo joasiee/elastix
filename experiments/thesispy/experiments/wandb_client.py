@@ -3,6 +3,8 @@ import wandb
 import os
 from thesispy.definitions import ROOT_DIR, Collection
 import thesispy.elastix_wrapper.wrapper as wrapper
+from thesispy.experiments.dataset import Dataset, FinishedRun
+import pandas as pd
 
 DOWNLOAD_FOLDER = ROOT_DIR / "output" / "download"
 
@@ -29,3 +31,18 @@ def get_run_result(project: str, run_id: str):
 
 def get_runs(project: str, filters: dict = None):
     return api.runs(f"{entity}/{project}")
+
+
+def parse_run(run):
+    return FinishedRun(run.name, run.config, pd.DataFrame.from_dict(run.scan_history()))
+
+
+def get_runs_as_dataset(project, filters={}):
+    local_ds = Dataset.load(project)
+    if local_ds:
+        return local_ds
+
+    runs = []
+    for run in api.runs(entity + "/" + project, filters=filters):
+        runs.append(parse_run(run))
+    return Dataset(project, runs)
