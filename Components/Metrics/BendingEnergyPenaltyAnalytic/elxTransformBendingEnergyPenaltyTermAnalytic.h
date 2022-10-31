@@ -45,7 +45,7 @@ namespace elastix
  */
 
 template <class TElastix>
-class ITK_TEMPLATE_EXPORT TransformBendingEnergyPenaltyAnalytic
+class ITK_TEMPLATE_EXPORT TransformBendingEnergyPenaltyAnalytic final
   : public itk::TransformBendingEnergyPenaltyTermAnalytic<typename MetricBase<TElastix>::FixedImageType, double>
   , public MetricBase<TElastix>
 {

@@ -8,7 +8,7 @@
 namespace elastix
 {
 template <class TElastix>
-class ITK_TEMPLATE_EXPORT GOMEA
+class ITK_TEMPLATE_EXPORT GOMEA final
   : public itk::GOMEAOptimizer
   , public OptimizerBase<TElastix>
 {
