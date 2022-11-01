@@ -243,7 +243,7 @@ template <class TElastix>
 void
 RegistrationBase<TElastix>::AfterEachResolutionBase()
 {
-  this->FinalFullEvaluation();
+  // this->FinalFullEvaluation();
 }
 
 
