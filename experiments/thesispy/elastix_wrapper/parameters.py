@@ -62,14 +62,19 @@ class Parameters:
             }
         )
 
-    def multi_resolution(self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None) -> Parameters:
-        return self.args(
-            {
-                "NumberOfResolutions": n,
-                "ImagePyramidSchedule": p_sched,
-                "GridSpacingSchedule": g_sched,
-            }
-        )
+    def multi_resolution(
+        self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None, downsampling: bool = True
+    ) -> Parameters:
+        args = {
+            "NumberOfResolutions": n,
+            "ImagePyramidSchedule": p_sched,
+            "GridSpacingSchedule": g_sched,
+        }
+        if not downsampling:
+            args["FixedImagePyramid"] = "FixedSmoothingImagePyramid"
+            args["MovingImagePyramid"] = "MovingSmoothingImagePyramid"
+        
+        return self.args(args)
 
     def stopping_criteria(
         self,
@@ -92,8 +97,8 @@ class Parameters:
         fos: LinkageType = LinkageType.CP_MARGINAL,
         pop_size: List[int] | int = None,
         shrinkage: bool = False,
-        constraints: bool = True,
-        max_set_size: int = 27
+        constraints: bool = False,
+        max_set_size: int = 27,
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
         static_linkage_type = 0
@@ -109,7 +114,7 @@ class Parameters:
                 "UseShrinkage": shrinkage,
                 "UseConstraints": constraints,
                 "StaticLinkageType": static_linkage_type,
-                "StaticLinkageMaxSetSize": max_set_size
+                "StaticLinkageMaxSetSize": max_set_size,
             }
         )
 

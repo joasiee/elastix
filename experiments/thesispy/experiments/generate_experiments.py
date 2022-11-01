@@ -82,7 +82,7 @@ def nomask_msd():
 def fair_comparison():
     for seed in range(10):
         seed += 1
-        for mesh_size in [2, 3, 4]:
+        for mesh_size in [3, 4, 5]:
                 for optimizer in ["ASGD", "GOMEA"]:
                     if optimizer == "ASGD":
                         params = (
@@ -97,14 +97,36 @@ def fair_comparison():
                             .stopping_criteria(iterations=2000)
                         )
                     yield params
+
+
+def fair_comparison_multiresolution():
+    for seed in range(10):
+        seed += 1
+        for mesh_size in [3, 4, 5]:
+                for optimizer in ["ASGD", "GOMEA"]:
+                    if optimizer == "ASGD":
+                        params = (
+                            Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
+                            .asgd()
+                            .multi_resolution(3, g_sched=[1, 1, 1], downsampling=False)
+                            .stopping_criteria(iterations=[2000, 5000, 20000])
+                        )
+                    else:
+                        params = (
+                            Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
+                            .gomea(LinkageType.CP_MARGINAL, constraints=False)
+                            .multi_resolution(3, g_sched=[1, 1, 1], downsampling=False)
+                            .stopping_criteria(iterations=[50, 100, 500])
+                        )
+                    yield params
         
     
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    queue.clear()
-    fn = fair_comparison
+    # queue.clear()
+    fn = fair_comparison_multiresolution
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

@@ -90,7 +90,7 @@
             "name": "sphereincube",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/bin/elastix",
+            "program": "${workspaceFolder}/build/RelWithDebInfo/bin/elastix",
             "args": [
                 "-f",
                 "01_Fixed.mhd",
