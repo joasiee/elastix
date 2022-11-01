@@ -354,8 +354,9 @@ randomRealUniform01(void)
 int
 randomInt(int maximum)
 {
-  std::uniform_int_distribution<int> distribution(0, maximum);
-  return distribution(mersenne_generator);
+  int result;
+  result = (int)(((double)maximum) * randomRealUniform01());
+  return (result);
 }
 
 /**
@@ -542,7 +543,7 @@ short
 betterFitness(double objective_value_x, double constraint_value_x, double objective_value_y, double constraint_value_y)
 {
   short result{ 0 };
- 
+
   if (constraint_value_x > 0) /* x is infeasible */
   {
     if (constraint_value_y > 0) /* Both are infeasible */
