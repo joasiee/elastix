@@ -75,8 +75,8 @@ GOMEAOptimizer::ResumeOptimization()
 void
 GOMEAOptimizer::StopOptimization()
 {
-  PROFILE_FUNCTION();
   itkDebugMacro("StopOptimization");
+  this->saveVariancesForNextResolution();
   InvokeEvent(EndEvent());
 }
 
@@ -495,7 +495,10 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     individual_NIS[population_index][j] = 0;
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
-      populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * random1DNormalUnit();
+      if (m_CurrentResolution > 0 && variances_last_resolution.size() == m_NrOfParameters)
+        populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * random1DNormalUnit() * sqrt(variances_last_resolution[k]);
+      else
+        populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * random1DNormalUnit();
     }
     this->costFunctionEvaluation(populations[population_index][j],
                                  j,
@@ -1849,6 +1852,16 @@ GOMEAOptimizer::UpdatePosition()
   this->InvokeEvent(IterationEvent());
 }
 
+void
+GOMEAOptimizer::saveVariancesForNextResolution()
+{
+  estimateFullCovarianceMatrixML(0);
+
+  variances_last_resolution = ParametersType(number_of_parameters);
+  for (unsigned int i = 0; i < number_of_parameters; i++)
+    variances_last_resolution[i] = full_covariance_matrix[0](i, i);
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=- Section Ezilaitini -=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1923,7 +1936,7 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
         number_of_generations[population_index]++;
         this->UpdatePosition();
 
-        if (this->m_SubSampling)
+        if (this->m_SubSampling || number_of_generations[population_index] % NumberOfGenerationsPerReevaluation == 0)
           this->evaluatePopulation(population_index);
 
         PROFILE_END_SESSION();

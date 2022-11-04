@@ -95,6 +95,8 @@ public:
   void
   StopOptimization();
 
+  itkStaticConstMacro(NumberOfGenerationsPerReevaluation, unsigned int, 100);
+
   itkGetConstMacro(CurrentIteration, unsigned long);
   itkGetConstMacro(NumberOfEvaluations, unsigned long);
   itkGetConstReferenceMacro(StopCondition, StopConditionType);
@@ -177,6 +179,7 @@ protected:
   StopConditionType m_StopCondition{ Unknown };
   unsigned int      m_NrOfParameters;
   unsigned int      m_ImageDimension;
+  unsigned int      m_CurrentResolution{ 0U };
   bool              m_SubSampling{ false };
 
   MeasureType m_ConstraintValue{ 0.0 };
@@ -319,6 +322,8 @@ private:
   void
   UpdatePosition();
   void
+  saveVariancesForNextResolution();
+  void
   GetValueSanityCheck(const ParametersType & parameters) const;
 
   mutable std::ostringstream m_StopConditionDescription;
@@ -345,13 +350,15 @@ private:
 
   bool m_PartialEvaluations{ false };
   bool m_UseShrinkage{ false };
-  bool m_UseConstraints { true };
+  bool m_UseConstraints{ true };
 
   template <typename T>
   using Vector1D = std::vector<T>;
   template <typename T>
   using Vector2D = std::vector<std::vector<T>>;
 
+  ParametersType variances_last_resolution;
+  
   Vector1D<ParametersType> mean_vectors;
   Vector1D<ParametersType> mean_shift_vector;
   Vector2D<ParametersType> populations;
