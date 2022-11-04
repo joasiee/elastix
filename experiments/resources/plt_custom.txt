@@ -1,7 +1,13 @@
-lines.linewidth: 1
+text.usetex : true
+lines.linewidth: 2
 axes.titlelocation: left
-axes.linewidth: 0.6
-axes.spines.right : False
-axes.spines.top : False
-ytick.right: False
-xtick.top: False
+axes.linewidth: 0.8
+axes.grid: True
+axes.grid.which: major
+xtick.minor.visible: True
+xtick.top: True
+xtick.direction: in
+ytick.right: True
+ytick.direction: in
+grid.linestyle: --
+# axes.prop_cycle: cycler('color', ['1b9e77', 'd95f02', '7570b3', 'e7298a', '66a61e', 'e6ab02', 'a6761d'])
