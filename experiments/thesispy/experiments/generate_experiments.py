@@ -116,7 +116,7 @@ def fair_comparison_multiresolution():
                             Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
                             .gomea(LinkageType.CP_MARGINAL, constraints=False)
                             .multi_resolution(3, g_sched=[1, 1, 1], downsampling=False)
-                            .stopping_criteria(iterations=[50, 100, 500])
+                            .stopping_criteria(iterations=[50, 50, 500])
                         )
                     yield params
         
@@ -125,7 +125,7 @@ def fair_comparison_multiresolution():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    # queue.clear()
+    queue.clear()
     fn = fair_comparison_multiresolution
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))

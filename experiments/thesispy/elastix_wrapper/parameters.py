@@ -73,7 +73,7 @@ class Parameters:
         if not downsampling:
             args["FixedImagePyramid"] = "FixedSmoothingImagePyramid"
             args["MovingImagePyramid"] = "MovingSmoothingImagePyramid"
-        
+
         return self.args(args)
 
     def stopping_criteria(
@@ -107,7 +107,7 @@ class Parameters:
         return self.args(
             {
                 "Optimizer": "GOMEA",
-                "OptimizerName": fos.name,
+                "OptimizerName": "RV-GOMEA",
                 "FosElementSize": fos.value,
                 "BasePopulationSize": pop_size,
                 "PartialEvaluations": pevals,
@@ -119,7 +119,13 @@ class Parameters:
         )
 
     def asgd(self, params: Dict[str, Any] = None):
-        return self.args({"Optimizer": "AdaptiveStochasticGradientDescent"}, params)
+        return self.args(
+            {
+                "Optimizer": "AdaptiveStochasticGradientDescent",
+                "OptimizerName": "ASGD",
+            },
+            params,
+        )
 
     def debug(self):
         return self.args(

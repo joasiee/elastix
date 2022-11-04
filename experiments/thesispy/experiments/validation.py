@@ -16,6 +16,8 @@ import logging
 import time
 
 logger = logging.getLogger("Validation")
+VALIDATION_NAMES = ["tre", "mean_surface_distance", "hausdorff_distance", "dice_similarity", "bending_energy", "dvf_rmse"]
+VALIDATION_ABBRVS = ["$TRE$", "$MSD$", "$HD$", "$DSC$", "$E_b$", r"$\vec{v}_{\epsilon}$"]
 
 
 class ProgressParallel(Parallel):

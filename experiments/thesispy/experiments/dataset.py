@@ -17,9 +17,9 @@ class FinishedRun:
     def __init__(self, name: str, config: Dict[str, Any], metrics: pd.DataFrame) -> None:
         self.name = name
         self.config = config
-        self.resolutions_train = []
-        self.resolutions_final = []
-        self.validation = None
+        metrics = metrics.astype({"_step": "uint64", "_runtime": "ulonglong", "_timestamp": "ulonglong"})
+        self.resolutions = []
+        self.summary = pd.Series(dtype="float64")
 
         nr_resolutions = int(self.config["NumberOfResolutions"])
         for r in range(0, nr_resolutions):
@@ -28,10 +28,17 @@ class FinishedRun:
             columns = ["_step", "_runtime", "_timestamp"] + [c for c in metrics.columns if f"R{r}/" in c]
             metrics_r = metrics[columns]
             metrics_r.columns = [c.replace(f"R{r}/", "") for c in metrics_r.columns]
-            self.resolutions_train.append(metrics_r.loc[indices].iloc[:-1])
-            self.resolutions_final.append(metrics_r.loc[indices].iloc[-1])
+            self.resolutions.append(metrics_r.loc[indices])
+
+            if r == nr_resolutions - 1:
+                self.summary = metrics_r.loc[indices].iloc[-1]
+                val_indices = metrics.index[~np.isnan(metrics[f"validation/tre"])]
+                columns = [c for c in metrics.columns if f"validation/" in c]
+                metrics_v = metrics[columns]
+                metrics_v.columns = [c.replace(f"validation/", "") for c in metrics_v.columns]
+                self.summary = pd.concat([self.summary, metrics_v.loc[val_indices].iloc[-1]])
             
-        self.validation = metrics.loc[metrics.index[-1]]
+        
 
     def query(self, query: str):
         return dq.match(self.config, query)
@@ -92,15 +99,31 @@ class Dataset:
             df_add = pd.DataFrame(columns=metrics)
             for run in runs:
                 if val:
-                    val_df = run.resolutions_val[resolution][metrics].to_frame()
+                    val_df = run.summary[metrics].to_frame()
                     val_df = val_df.transpose()
                     df_add = pd.concat([df_add, val_df])
                 else:
-                    df_add = pd.concat([df_add, run.resolutions_train[resolution][metrics]])
+                    df_add = pd.concat([df_add, run.resolutions[resolution][metrics]])
             for i, attr in enumerate(attrs):
                 df_add[attr] = str(group[i])
             df = pd.concat([df, df_add])
         return df
+
+    def aggregate_for_plot(self, attrs: List[str] = [], metric: str = "metric", resolution: int = 0):
+        res = {}
+        for group, runs in self.groupby(attrs):
+            comb_arr = []
+            max_size = len(runs[0].resolutions[resolution][metric])
+            for run in runs:
+                comb_arr.append(run.resolutions[resolution][metric].to_numpy())
+                max_size = max(max_size, len(run.resolutions[resolution][metric]))
+            for i in range(len(comb_arr)):
+                comb_arr[i] = np.pad(comb_arr[i], (0,max_size - len(comb_arr[i])), "edge")
+            comb_arr = np.array(comb_arr)
+            avg_arr = np.mean(comb_arr, axis=0)
+            std_arr = np.std(comb_arr, axis=0) * 2.0
+            res[group] = (avg_arr, std_arr)
+        return res
 
     def save(self):
         path = DATASETS_PATH / f"{self.project}.pkl"
