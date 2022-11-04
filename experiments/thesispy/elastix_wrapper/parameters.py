@@ -63,7 +63,7 @@ class Parameters:
         )
 
     def multi_resolution(
-        self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None, downsampling: bool = True
+        self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None, downsampling: bool = False
     ) -> Parameters:
         args = {
             "NumberOfResolutions": n,

@@ -90,7 +90,7 @@
             "name": "sphereincube",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceFolder}/build/RelWithDebInfo/bin/elastix",
+            "program": "${workspaceFolder}/build/Debug/bin/elastix",
             "args": [
                 "-f",
                 "01_Fixed.mhd",
@@ -104,6 +104,41 @@
                 "$OMP_NUM_THREADS"
             ],
             "cwd": "${workspaceFolder}/run/sphereincube",
+        },
+        {
+            "name": "(gdb) sphereincube",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/bin/elastix",
+            "args": [
+                "-f",
+                "01_Fixed.mhd",
+                "-m",
+                "01_Moving.mhd",
+                "-p",
+                "params.txt",
+                "-out",
+                "out",
+                "-threads",
+                "$OMP_NUM_THREADS"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/run/sphereincube",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }
