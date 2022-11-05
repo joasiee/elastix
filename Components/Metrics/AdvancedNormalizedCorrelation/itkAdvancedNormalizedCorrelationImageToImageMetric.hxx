@@ -304,7 +304,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   MeasureType &                   constraintValue) const -> MeasureType
 {
   MeasureType measure = this->GetValue(parameters);
-  constraintValue = (m_PctPixelsMissed >= Superclass::MissedPixelConstraintThreshold) * m_PctPixelsMissed;
+  constraintValue = (m_PctPixelsMissed >= this->m_MissedPixelConstraintThreshold) * m_PctPixelsMissed;
   return measure;
 }
 

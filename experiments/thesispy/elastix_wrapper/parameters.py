@@ -98,7 +98,8 @@ class Parameters:
         fos: LinkageType = LinkageType.CP_MARGINAL,
         pop_size: List[int] | int = None,
         shrinkage: bool = False,
-        constraints: bool = False,
+        use_constraints: bool = False,
+        contraints_threshold: float = 0.0,
         max_set_size: int = 27,
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
@@ -113,7 +114,8 @@ class Parameters:
                 "BasePopulationSize": pop_size,
                 "PartialEvaluations": pevals,
                 "UseShrinkage": shrinkage,
-                "UseConstraints": constraints,
+                "UseConstraints": use_constraints,
+                "ConstraintsThreshold": contraints_threshold,
                 "StaticLinkageType": static_linkage_type,
                 "StaticLinkageMaxSetSize": max_set_size,
             }

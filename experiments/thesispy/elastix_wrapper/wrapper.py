@@ -169,8 +169,8 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=3, metric="AdvancedMeanSquares", seed=3, use_missedpixel_penalty=True)
-        .gomea(LinkageType.CP_MARGINAL)
+        Parameters.from_base(mesh_size=3, metric="AdvancedMeanSquares", seed=3, use_missedpixel_penalty=False)
+        .gomea(LinkageType.CP_MARGINAL, use_constraints=True)
         .stopping_criteria(20)
         .instance(Collection.SYNTHETIC, 1)
     )

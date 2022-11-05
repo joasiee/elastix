@@ -108,7 +108,6 @@ public:
   /** Constants for the image dimensions. */
   itkStaticConstMacro(MovingImageDimension, unsigned int, TMovingImage::ImageDimension);
   itkStaticConstMacro(FixedImageDimension, unsigned int, TFixedImage::ImageDimension);
-  itkStaticConstMacro(MissedPixelConstraintThreshold, double, 2.0);
   itkStaticConstMacro(MissedPixelPenalty, unsigned int, 512);
 
 
@@ -294,6 +293,9 @@ public:
   itkSetMacro(SamplingPercentage, double);
   itkGetConstReferenceMacro(SamplingPercentage, double);
 
+  itkSetMacro(MissedPixelConstraintThreshold, double);
+  itkGetConstReferenceMacro(MissedPixelConstraintThreshold, double);
+
   itkGetConstMacro(UseMissedPixelPenalty, bool);
   itkSetMacro(UseMissedPixelPenalty, bool);
 
@@ -367,7 +369,7 @@ public:
   GetConstraintValue(IntermediateResults & evaluation) const
   {
     MeasureType constraintValue = evaluation.GetConstraintValue();
-    return (constraintValue >= MissedPixelConstraintThreshold) * constraintValue;
+    return (constraintValue >= m_MissedPixelConstraintThreshold) * constraintValue;
   }
 
   virtual IntermediateResults
@@ -444,6 +446,7 @@ protected:
   std::vector<int>                  m_BSplinePointOffsetMap;
   double                            m_SamplingPercentage{ 0.05 };
   double                            m_MissedPixelPenalty{ MissedPixelPenalty };
+  double                            m_MissedPixelConstraintThreshold{ 0.0 };
   FOS                               m_FOS{ 0 };
   mutable IntermediateResults       m_PartialEvaluationHelper;
   std::vector<bool>                 m_ParametersOutsideOfMask;
