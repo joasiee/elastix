@@ -178,6 +178,11 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
       partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
     thisAsAdvanced->SetPartialEvaluations(partialEvaluations);
 
+    bool useMissedPixelPenalty = false;
+    this->GetConfiguration()->ReadParameter(
+      useMissedPixelPenalty, "UseMissedPixelPenalty", this->GetComponentLabel(), level, 0);
+    thisAsAdvanced->SetUseMissedPixelPenalty(useMissedPixelPenalty);
+
     this->m_Configuration->ReadParameter(
       m_WriteSamplesEveryIteration, "WriteSamplesEveryIteration", "", level, 0, true);
 

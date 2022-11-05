@@ -130,8 +130,6 @@ public:
   /** Number of samples to allocate to a thread minimally. */
   itkStaticConstMacro(SamplesPerThread, unsigned int, 2);
 
-  itkStaticConstMacro(MissedPixelPenalty, unsigned int, 512);
-
   MeasureType
   GetValue(const TransformParametersType & parameters) const override;
 
@@ -228,7 +226,6 @@ protected:
   using SelfHessianSamplerType = ImageGridSampler<FixedImageType>;
 
   double m_NormalizationFactor;
-  double m_MaxPixelDifference;
 
   /** Compute a pixel's contribution to the measure and derivatives;
    * Called by GetValueAndDerivative(). */

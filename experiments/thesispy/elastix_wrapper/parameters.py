@@ -25,11 +25,12 @@ class Parameters:
         metric: str = "AdvancedNormalizedCorrelation",
         mesh_size: List[int] | int = 4,
         use_mask: bool = False,
+        use_missedpixel_penalty: bool = False,
         seed: int = None,
     ):
         with BASE_PARAMS_PATH.open() as f:
             params: Dict[str, Any] = json.loads(f.read())
-        return cls(params).args({"Metric": metric, "MeshSize": mesh_size, "UseMask": use_mask, "RandomSeed": seed})
+        return cls(params).args({"Metric": metric, "MeshSize": mesh_size, "UseMask": use_mask, "UseMissedPixelPenalty": use_missedpixel_penalty, "RandomSeed": seed})
 
     @classmethod
     def from_json(cls, jsondump):
@@ -293,10 +294,9 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=2, seed=1, metric="AdvancedMeanSquares")
+        Parameters.from_base(mesh_size=2, seed=1, metric="AdvancedMeanSquares", use_missedpixel_penalty=True)
         .gomea(LinkageType.CP_MARGINAL)
-        .regularize(0.01, True)
-        .stopping_criteria(2)
+        .stopping_criteria(5)
         .instance(Collection.SYNTHETIC, 1)
     )
     params.write(Path())

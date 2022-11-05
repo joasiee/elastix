@@ -45,7 +45,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AdvancedMeanSq
 
   this->m_UseNormalization = false;
   this->m_NormalizationFactor = 1.0;
-  this->m_MaxPixelDifference = MissedPixelPenalty;
 
   /** SelfHessian related variables, experimental feature. */
   this->m_SelfHessianSmoothingSigma = 1.0;
@@ -140,7 +139,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::Initialize()
     const double diff1 = this->m_FixedImageTrueMax - this->m_MovingImageTrueMin;
     const double diff2 = this->m_MovingImageTrueMax - this->m_FixedImageTrueMin;
     const double maxdiff = std::max(diff1, diff2);
-    this->m_MaxPixelDifference = maxdiff;
+    this->m_MissedPixelPenalty = maxdiff * maxdiff;
 
     /** We guess that maxdiff/10 is the maximum average difference that will
      * be observed.
@@ -217,8 +216,17 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   m_PctMissedPixels = pctMissed * 100.0;
   this->m_MissedPixelsMean(m_PctMissedPixels);
 
-  measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
   this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
+
+  if (this->m_UseMissedPixelPenalty)
+  {
+    double penalty = static_cast<double>(numberOfPixelsMissed) * this->m_MissedPixelPenalty;
+    penalty *= pow(2, m_PctMissedPixels);
+    measure += penalty;
+    numberOfPixelsCounted = sampleContainerSize;
+  }
+
+  measure *= this->m_NormalizationFactor / static_cast<RealType>(numberOfPixelsCounted);
 
   return measure;
 } // end GetValue()
@@ -290,7 +298,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
   const double        pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
   this->m_MissedPixelsMean(pctMissed * 100.0);
 
-  result[0] = measure * m_NormalizationFactor;
+  result[0] = measure;
   result[1] = numberOfPixelsCounted;
   result.SetConstraintValue((double)numberOfPixelsMissed / (double)this->GetNumberOfFixedImageSamples() * 100.0);
 
@@ -301,8 +309,20 @@ template <class TFixedImage, class TMovingImage>
 typename AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(IntermediateResults & evaluation) const
 {
-  MeasureType measure = evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : NumericTraits<MeasureType>::max();
-  return measure;
+  if (evaluation[1] == 0)
+    return NumericTraits<MeasureType>::max();
+
+  MeasureType measure = evaluation[0];
+
+  if (this->m_UseMissedPixelPenalty)
+  {
+    double penalty = (double)(this->GetNumberOfFixedImageSamples() - evaluation[1]) * this->m_MissedPixelPenalty;
+    penalty *= pow(2, evaluation.GetConstraintValue());
+    measure += penalty;
+    return measure * this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
+  }
+
+  return measure * this->m_NormalizationFactor / evaluation[1];
 }
 
 /**

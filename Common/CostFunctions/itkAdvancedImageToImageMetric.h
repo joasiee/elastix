@@ -109,6 +109,8 @@ public:
   itkStaticConstMacro(MovingImageDimension, unsigned int, TMovingImage::ImageDimension);
   itkStaticConstMacro(FixedImageDimension, unsigned int, TFixedImage::ImageDimension);
   itkStaticConstMacro(MissedPixelConstraintThreshold, double, 2.0);
+  itkStaticConstMacro(MissedPixelPenalty, unsigned int, 512);
+
 
   /** Typedefs from the superclass. */
   using typename Superclass::CoordinateRepresentationType;
@@ -292,6 +294,9 @@ public:
   itkSetMacro(SamplingPercentage, double);
   itkGetConstReferenceMacro(SamplingPercentage, double);
 
+  itkGetConstMacro(UseMissedPixelPenalty, bool);
+  itkSetMacro(UseMissedPixelPenalty, bool);
+
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
 
@@ -438,6 +443,7 @@ protected:
   std::vector<std::vector<int>>     m_BSplinePointsRegionsNoMask;
   std::vector<int>                  m_BSplinePointOffsetMap;
   double                            m_SamplingPercentage{ 0.05 };
+  double                            m_MissedPixelPenalty{ MissedPixelPenalty };
   FOS                               m_FOS{ 0 };
   mutable IntermediateResults       m_PartialEvaluationHelper;
   std::vector<bool>                 m_ParametersOutsideOfMask;
@@ -447,6 +453,7 @@ protected:
   bool                              m_InterpolatorIsBSpline{ false };
   bool                              m_InterpolatorIsBSplineFloat{ false };
   bool                              m_InterpolatorIsReducedBSpline{ false };
+  bool                              m_UseMissedPixelPenalty{ false };
   LinearInterpolatorPointer         m_LinearInterpolator{ nullptr };
   BSplineInterpolatorPointer        m_BSplineInterpolator{ nullptr };
   BSplineInterpolatorFloatPointer   m_BSplineInterpolatorFloat{ nullptr };

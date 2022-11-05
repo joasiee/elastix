@@ -119,7 +119,11 @@ def fair_comparison_multiresolution():
                             .stopping_criteria(iterations=[50, 50, 500])
                         )
                     yield params
-        
+
+
+def constrained_selection():
+    for seed in range(10):
+        seed += 1       
     
 
 
