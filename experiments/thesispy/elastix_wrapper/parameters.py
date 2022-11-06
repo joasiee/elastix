@@ -115,7 +115,7 @@ class Parameters:
                 "PartialEvaluations": pevals,
                 "UseShrinkage": shrinkage,
                 "UseConstraints": use_constraints,
-                "MissedPixelConstraintThreshold": contraints_threshold,
+                "MissedPixelConstraintThreshold": contraints_threshold * 100.0,
                 "StaticLinkageType": static_linkage_type,
                 "StaticLinkageMaxSetSize": max_set_size,
             }
@@ -297,7 +297,7 @@ class Parameters:
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=2, seed=1, metric="AdvancedMeanSquares", use_missedpixel_penalty=True)
-        .gomea(LinkageType.CP_MARGINAL)
+        .gomea(LinkageType.CP_MARGINAL, contraints_threshold=0.1)
         .stopping_criteria(5)
         .instance(Collection.SYNTHETIC, 1)
     )
