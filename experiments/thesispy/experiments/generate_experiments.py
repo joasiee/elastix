@@ -123,14 +123,23 @@ def fair_comparison_multiresolution():
 
 def constrained_selection():
     for seed in range(10):
-        seed += 1       
+        seed += 1
+        for constraint_threshold in [0.0, 2.0, 5.0, 10.0]:
+            params_constrained = (Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed)
+                            .gomea(LinkageType.CP_MARGINAL, use_constraints=True, contraints_threshold=constraint_threshold)
+                            .stopping_criteria(iterations=1000))
+            yield params_constrained
+        params_penalty = (Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True)
+                            .gomea(LinkageType.CP_MARGINAL, use_constraints=False)
+                            .stopping_criteria(iterations=1000))
+        yield params_penalty
     
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = fair_comparison_multiresolution
+    fn = constrained_selection
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

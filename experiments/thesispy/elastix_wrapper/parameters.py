@@ -115,7 +115,7 @@ class Parameters:
                 "PartialEvaluations": pevals,
                 "UseShrinkage": shrinkage,
                 "UseConstraints": use_constraints,
-                "ConstraintsThreshold": contraints_threshold,
+                "MissedPixelConstraintThreshold": contraints_threshold,
                 "StaticLinkageType": static_linkage_type,
                 "StaticLinkageMaxSetSize": max_set_size,
             }
