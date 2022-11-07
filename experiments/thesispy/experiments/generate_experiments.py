@@ -124,7 +124,7 @@ def fair_comparison_multiresolution():
 def constrained_selection():
     for seed in range(10):
         seed += 1
-        for constraint_threshold in [0.0, 0.02, 0.05, 0.1]:
+        for constraint_threshold in [0.0, 0.005, 0.02, 0.05, 0.1]:
             params_constrained = (Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed)
                             .gomea(LinkageType.CP_MARGINAL, use_constraints=True, contraints_threshold=constraint_threshold)
                             .stopping_criteria(iterations=1000))

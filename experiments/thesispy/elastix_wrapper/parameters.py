@@ -22,7 +22,7 @@ class Parameters:
     @classmethod
     def from_base(
         cls,
-        metric: str = "AdvancedNormalizedCorrelation",
+        metric: str = "AdvancedMeanSquares",
         mesh_size: List[int] | int = 4,
         use_mask: bool = False,
         use_missedpixel_penalty: bool = False,

@@ -67,6 +67,8 @@ class SaveStrategyWandb(SaveStrategy):
         self._log_buffer()
         wandb.save(str((self.run_dir / "out" / "TransformParameters.0.txt").resolve()))
         wandb.save(str((self.run_dir / "out" / "controlpoints.dat").resolve()))
+        if not finished:
+            wandb.save(str((self.run_dir / "out" / "elastix.log").resolve()))
         wandb_dir = Path(wandb.run.dir)
         wandb.finish()
         if finished:

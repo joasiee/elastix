@@ -49,30 +49,29 @@ def run(
     try:
         execute_elastix(params_file, out_dir, params, suppress_stdout)
         finished = True
-    except subprocess.CalledProcessError as err:
-        err_msg = err.stderr.decode("utf-8").strip("\n")
-        logger.error(f"Something went wrong while running elastix at: {str(run_dir)}: {err_msg}")
     except TimeoutException:
         logger.warning(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
     except KeyboardInterrupt:
         logger.warning(f"Run ended prematurely by user.")
-
-    if finished and validate:
-        val_metrics, run_result = validation(params, run_dir)
-
-    if save_strategy:
+    except Exception as e:
+        logger.error(f"Run ended with exception: {e}")
+    finally:
         if finished and validate:
-            for metric in val_metrics:
-                wd.sv_strategy.save_custom(metric)
-        wd.stop()
-        wd.join()
-        wd.sv_strategy.close(finished)
+            val_metrics, run_result = validation(params, run_dir)
 
-    time_end = time.perf_counter()
-    logger.info(f"Run ended. It took {time_end - time_start:0.4f} seconds")
+        if save_strategy:
+            if finished and validate:
+                for metric in val_metrics:
+                    wd.sv_strategy.save_custom(metric)
+            wd.stop()
+            wd.join()
+            wd.sv_strategy.close(finished)
 
-    if finished and visualize:
-        execute_visualize(out_dir)
+        time_end = time.perf_counter()
+        logger.info(f"Run ended. It took {time_end - time_start:0.4f} seconds")
+
+        if finished and visualize:
+            execute_visualize(out_dir)
 
     return run_result
 
@@ -101,7 +100,7 @@ def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppre
             env = os.environ.copy()
             env["OMP_WAIT_POLICY"] = "PASSIVE"
 
-        subprocess.run(args, check=True, stdout=output, stderr=subprocess.PIPE, env=env)
+        subprocess.run(args, check=True, stdout=output, env=env)
 
 
 def generate_transformed_points(
@@ -169,9 +168,10 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=3, metric="AdvancedMeanSquares", seed=3, use_missedpixel_penalty=False)
-        .gomea(LinkageType.CP_MARGINAL, use_constraints=True)
+        Parameters.from_base(mesh_size=3, metric="AdvancedMeanSquares", seed=3)
+        .gomea(LinkageType.CP_MARGINAL)
         .stopping_criteria(20)
+        .args({"Optimizer": "Null"})
         .instance(Collection.SYNTHETIC, 1)
     )
     run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True, validate=False)
