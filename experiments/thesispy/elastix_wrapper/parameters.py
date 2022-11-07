@@ -81,6 +81,7 @@ class Parameters:
         self,
         iterations: List[int] | int = None,
         evals: List[int] | int = None,
+        pixel_evals: List[int] | int = None,
         max_time_s: int = 0,
         fitness_var: float = 1e-9,
     ):
@@ -88,6 +89,7 @@ class Parameters:
             {
                 "MaximumNumberOfIterations": iterations,
                 "MaxNumberOfEvaluations": evals,
+                "MaxNumberOfPixelEvaluations": pixel_evals,
                 "MaxTimeSeconds": max_time_s,
                 "FitnessVarianceTolerance": fitness_var,
             }
@@ -100,7 +102,7 @@ class Parameters:
         shrinkage: bool = False,
         use_constraints: bool = False,
         contraints_threshold: float = 0.0,
-        max_set_size: int = 27,
+        max_set_size: int = 24,
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
         static_linkage_type = 0
@@ -193,7 +195,7 @@ class Parameters:
             self["FinalGridSpacingInVoxels"] = voxel_spacings
 
         self["NumberOfSpatialSamples"] = total_samples
-        if self["ImageSampler"] != "Full":
+        if self["ImageSampler"] != "Full" and "Full" not in self["ImageSampler"]:
             self["NumberOfSpatialSamples"] = [
                 int(x * self["SamplingPercentage"]) for x in self["NumberOfSpatialSamples"]
             ]
@@ -297,7 +299,9 @@ class Parameters:
 if __name__ == "__main__":
     params = (
         Parameters.from_base(mesh_size=2, seed=1, metric="AdvancedMeanSquares", use_missedpixel_penalty=True)
-        .gomea(LinkageType.CP_MARGINAL, contraints_threshold=0.1)
+        .gomea(LinkageType.CP_MARGINAL, contraints_threshold=0.1, pop_size=10)
+        .regularize(0.01)
+        .multi_resolution(2, g_sched=[1, 1])
         .stopping_criteria(5)
         .instance(Collection.SYNTHETIC, 1)
     )

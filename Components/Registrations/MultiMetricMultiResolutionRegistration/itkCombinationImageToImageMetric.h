@@ -464,6 +464,9 @@ public:
   ModifiedTimeType
   GetMTime() const override;
 
+  const size_t&
+  GetNumberOfPixelEvaluations() const override;
+
 protected:
   CombinationImageToImageMetric();
   ~CombinationImageToImageMetric() override = default;

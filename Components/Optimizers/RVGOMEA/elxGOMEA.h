@@ -32,11 +32,11 @@ public:
   using Superclass1::DerivativeType;
   using Superclass1::ScalesType;
 
-  /** Typedef's inherited from Elastix.*/
+  /** Typedef's inherited from Superclass2. */
   using typename Superclass2::ElastixType;
-  using typename Superclass2::ConfigurationPointer;
   using typename Superclass2::RegistrationType;
-  typedef typename Superclass2::ITKBaseType ITKBaseType;
+  using ITKBaseType = typename Superclass2::ITKBaseType;
+  using SizeValueType = itk::SizeValueType;
 
   /** Other typedef's. */
   using FixedImageType = typename ElastixType::FixedImageType;
@@ -70,6 +70,15 @@ public:
 protected:
   GOMEA() = default;
   ~GOMEA() override = default;
+
+  size_t
+  GetNumberOfPixelEvaluations() const override
+  {
+    using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
+    MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
+    size_t       numberOfPixelEvaluations = testPtr ? testPtr->GetNumberOfPixelEvaluations() : 0;
+    return numberOfPixelEvaluations;
+  }
 
 private:
   elxOverrideGetSelfMacro;

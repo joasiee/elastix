@@ -785,8 +785,8 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 
 template <class TFixedImage, class TMovingImage>
 auto
-CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const ParametersType & parameters, MeasureType & constraintValue) const
-  -> MeasureType
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const ParametersType & parameters,
+                                                                   MeasureType & constraintValue) const -> MeasureType
 {
   /** Initialise. */
   MeasureType measure = NumericTraits<MeasureType>::Zero;
@@ -883,6 +883,21 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::CopyPartialEvaluation(
   {
     this->m_Metrics[i]->CopyPartialEvaluation(toCopy, toChange);
   }
+}
+
+template <class TFixedImage, class TMovingImage>
+const size_t&
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetNumberOfPixelEvaluations() const
+{
+  this->m_NumberOfPixelEvaluations = 0;
+
+  for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
+  {
+    Superclass * metricAsAdvanced = dynamic_cast<Superclass *>(this->GetMetric(i));
+    this->m_NumberOfPixelEvaluations += metricAsAdvanced->GetNumberOfPixelEvaluations();
+  }
+
+  return this->m_NumberOfPixelEvaluations;
 }
 
 

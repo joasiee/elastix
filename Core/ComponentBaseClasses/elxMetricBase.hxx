@@ -191,6 +191,8 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
     this->m_Configuration->ReadParameter(
       m_WriteSamplesEveryIteration, "WriteSamplesEveryIteration", "", level, 0, true);
 
+    thisAsAdvanced->SetNumberOfPixelEvaluations(0);
+
     if (m_WriteSamplesEveryIteration)
     {
       std::ostringstream samplesDir("");

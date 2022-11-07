@@ -646,6 +646,9 @@ GOMEAOptimizer::checkSubgenerationTerminationConditions(void)
   if (this->checkNumberOfEvaluationsTerminationCondition())
     return (1);
 
+  if (this->checkNumberOfPixelEvaluationTerminationCondition())
+    return (1);
+
   if (this->checkNumberOfIterationsTerminationCondition())
     return (1);
 
@@ -660,9 +663,22 @@ short
 GOMEAOptimizer::checkNumberOfEvaluationsTerminationCondition(void)
 {
   PROFILE_FUNCTION();
-  if (m_NumberOfEvaluations >= m_MaxNumberOfEvaluations && m_MaxNumberOfEvaluations > 0)
+  if (m_MaxNumberOfEvaluations > 0 && m_NumberOfEvaluations >= m_MaxNumberOfEvaluations)
   {
     this->m_StopCondition = MaximumNumberOfEvaluationsTermination;
+    return (1);
+  }
+
+  return (0);
+}
+
+short
+GOMEAOptimizer::checkNumberOfPixelEvaluationTerminationCondition(void)
+{
+  PROFILE_FUNCTION();
+  if (m_MaxNumberOfPixelEvaluations > 0 && this->GetNumberOfPixelEvaluations() >= m_MaxNumberOfPixelEvaluations)
+  {
+    this->m_StopCondition = MaximumNumberOfPixelEvaluationsTermination;
     return (1);
   }
 

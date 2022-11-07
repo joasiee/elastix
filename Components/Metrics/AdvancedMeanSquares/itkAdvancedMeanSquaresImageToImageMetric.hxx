@@ -211,6 +211,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
     numberOfPixelsCounted += mapped;
   }
 
+  this->m_NumberOfPixelEvaluations += sampleContainerSize;
   const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
   const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize);
   m_PctMissedPixels = pctMissed * 100.0;
@@ -289,14 +290,15 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
     }
   }
 
+  this->m_NumberOfPixelEvaluations += sumNrPixels;
+  const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
+  const double        pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
+  this->m_MissedPixelsMean(pctMissed * 100.0);
+
   if (fosIndex == -1)
   {
     this->CheckNumberOfSamples(sumNrPixels, numberOfPixelsCounted);
   }
-
-  const unsigned long numberOfPixelsMissed = sumNrPixels - numberOfPixelsCounted;
-  const double        pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
-  this->m_MissedPixelsMean(pctMissed * 100.0);
 
   result[0] = measure;
   result[1] = numberOfPixelsCounted;
@@ -634,6 +636,8 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::AfterThreadedG
     this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted = 0;
     this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsMissed = 0;
   }
+
+  this->m_NumberOfPixelEvaluations += this->m_NumberOfPixelsCounted + this->m_NumberOfPixelsMissed;
 
   /** Check if enough samples were valid. */
   ImageSampleContainerPointer sampleContainer = this->GetImageSampler()->GetOutput();

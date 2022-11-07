@@ -69,6 +69,7 @@ public:
   typedef enum
   {
     MaximumNumberOfEvaluationsTermination,
+    MaximumNumberOfPixelEvaluationsTermination,
     MaximumNumberOfIterationsTermination,
     AverageFitnessTermination,
     FitnessVarianceTermination,
@@ -101,8 +102,8 @@ public:
   itkGetConstMacro(NumberOfEvaluations, unsigned long);
   itkGetConstReferenceMacro(StopCondition, StopConditionType);
 
-  itkGetConstMacro(MaximumNumberOfIterations, int);
-  itkSetClampMacro(MaximumNumberOfIterations, int, 1, NumericTraits<int>::max());
+  itkGetConstMacro(MaximumNumberOfIterations, unsigned long);
+  itkSetClampMacro(MaximumNumberOfIterations, unsigned long, 0, NumericTraits<unsigned long>::max());
 
   itkGetConstMacro(DistributionMultiplierDecrease, double);
   itkSetMacro(DistributionMultiplierDecrease, double);
@@ -125,8 +126,11 @@ public:
   itkGetConstMacro(MaxNumberOfPopulations, int);
   itkSetMacro(MaxNumberOfPopulations, int);
 
-  itkGetConstMacro(MaxNumberOfEvaluations, int);
-  itkSetMacro(MaxNumberOfEvaluations, int);
+  itkGetConstMacro(MaxNumberOfEvaluations, unsigned long);
+  itkSetClampMacro(MaxNumberOfEvaluations, unsigned long, 0, NumericTraits<unsigned long>::max());
+
+  itkGetConstMacro(MaxNumberOfPixelEvaluations, unsigned long);
+  itkSetClampMacro(MaxNumberOfPixelEvaluations, unsigned long, 0, NumericTraits<unsigned long>::max());
 
   itkGetConstMacro(MaxNoImprovementStretch, int);
   itkSetMacro(MaxNoImprovementStretch, int);
@@ -172,6 +176,13 @@ protected:
   SetRandomSeed(long unsigned int seed)
   {
     GOMEA::random_seed = seed;
+  }
+
+  virtual size_t
+  GetNumberOfPixelEvaluations() const
+  {
+    itkWarningMacro("GetNumberOfPixelEvaluations() of derived class with access to metric should be used.");
+    return m_NumberOfEvaluations;
   }
 
   unsigned long     m_NumberOfEvaluations{ 0L };
@@ -232,6 +243,8 @@ private:
   checkTimeLimitTerminationCondition(void);
   short
   checkNumberOfEvaluationsTerminationCondition(void);
+  short
+  checkNumberOfPixelEvaluationTerminationCondition(void);
   short
   checkNumberOfIterationsTerminationCondition(void);
   void
@@ -328,8 +341,9 @@ private:
 
   mutable std::ostringstream m_StopConditionDescription;
 
-  unsigned long m_MaximumNumberOfIterations{ 100L };
-  unsigned long m_MaxNumberOfEvaluations{ 0L };
+  unsigned long m_MaximumNumberOfIterations{ 1000UL };
+  unsigned long m_MaxNumberOfEvaluations{ 0UL };
+  unsigned long m_MaxNumberOfPixelEvaluations{ 0UL };
 
   double m_Tau{ 0.35 };
   double m_DistributionMultiplierDecrease{ 0.9 };
@@ -358,7 +372,7 @@ private:
   using Vector2D = std::vector<std::vector<T>>;
 
   ParametersType variances_last_resolution;
-  
+
   Vector1D<ParametersType> mean_vectors;
   Vector1D<ParametersType> mean_shift_vector;
   Vector2D<ParametersType> populations;

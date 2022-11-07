@@ -71,16 +71,22 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   m_CurrentResolution = level;
 
   /** Set MaximumNumberOfIterations.*/
-  int maximumNumberOfIterations = 100;
+  unsigned long maximumNumberOfIterations = 1000UL;
   this->m_Configuration->ReadParameter(
     maximumNumberOfIterations, "MaximumNumberOfIterations", this->GetComponentLabel(), level, 0);
   this->SetMaximumNumberOfIterations(maximumNumberOfIterations);
 
   /** Set MaxNumberOfEvaluations.*/
-  unsigned long maxNumberOfEvaluations = 0L;
+  unsigned long maxNumberOfEvaluations = 0;
   this->m_Configuration->ReadParameter(
     maxNumberOfEvaluations, "MaxNumberOfEvaluations", this->GetComponentLabel(), level, 0);
   this->SetMaxNumberOfEvaluations(maxNumberOfEvaluations);
+
+  /** Set MaxNumberOfPixelEvaluations.*/
+  unsigned long maxNumberOfPixelEvaluations = 0L;
+  this->m_Configuration->ReadParameter(
+    maxNumberOfPixelEvaluations, "MaxNumberOfPixelEvaluations", this->GetComponentLabel(), level, 0);
+  this->SetMaxNumberOfPixelEvaluations(maxNumberOfPixelEvaluations);
 
   /** Set FosElementSize.*/
   int fosElementSize = -1;
@@ -179,6 +185,10 @@ GOMEA<TElastix>::AfterEachResolution(void)
   {
     case MaximumNumberOfEvaluationsTermination:
       stopcondition = "Maximum number of evaluations has been reached";
+      break;
+
+    case MaximumNumberOfPixelEvaluationsTermination:
+      stopcondition = "Maximum number of pixel evaluations has been reached";
       break;
 
     case MaximumNumberOfIterationsTermination:

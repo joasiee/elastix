@@ -336,6 +336,9 @@ public:
   itkGetConstReferenceMacro(UseMultiThread, bool);
   itkBooleanMacro(UseMultiThread);
 
+  itkGetConstReferenceMacro(NumberOfPixelEvaluations, size_t);
+  itkSetMacro(NumberOfPixelEvaluations, size_t);
+
   /** Contains calls from GetValueAndDerivative that are thread-unsafe,
    * together with preparation for multi-threading.
    * Note that the only reason why this function is not protected, is
@@ -450,6 +453,7 @@ protected:
   FOS                               m_FOS{ 0 };
   mutable IntermediateResults       m_PartialEvaluationHelper;
   std::vector<bool>                 m_ParametersOutsideOfMask;
+  mutable size_t                    m_NumberOfPixelEvaluations{ 0UL };
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };
