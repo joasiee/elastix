@@ -76,8 +76,7 @@ protected:
   {
     using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
     MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
-    size_t       numberOfPixelEvaluations = testPtr ? testPtr->GetNumberOfPixelEvaluations() : 0;
-    return numberOfPixelEvaluations;
+    return testPtr ? testPtr->GetNumberOfPixelEvaluations() : 0;
   }
 
 private:

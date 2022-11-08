@@ -20,11 +20,13 @@ GOMEA<TElastix>::BeforeRegistration(void)
   this->AddTargetCellToIterationInfo("3a:PdPct");
   this->AddTargetCellToIterationInfo("3b:DistMult");
   this->AddTargetCellToIterationInfo("3c:Constraints");
+  this->AddTargetCellToIterationInfo("3d:Evaluations");
 
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3a:PdPct") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3b:DistMult") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3c:Constraints") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("3d:Evaluations") << std::showpoint << std::fixed;
 
 
   std::string sampler;
@@ -50,6 +52,7 @@ GOMEA<TElastix>::AfterEachIteration(void)
   this->GetIterationInfoAt("3a:PdPct") << pdpct_mean;
   this->GetIterationInfoAt("3b:DistMult") << this->GetAverageDistributionMultiplier();
   this->GetIterationInfoAt("3c:Constraints") << this->m_ConstraintValue;
+  this->GetIterationInfoAt("3d:Evaluations") << this->GetNumberOfPixelEvaluations() / 1e6;
   this->m_PdPctMean = {};
 
   this->WriteDistributionMultipliers(this->m_DistMultOutFile);
