@@ -3,4 +3,5 @@
 for i in $(seq "$1")
 do
   sbatch run_experiments
+  sleep 0.05
 done
