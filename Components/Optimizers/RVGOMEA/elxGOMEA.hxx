@@ -101,6 +101,12 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(staticLinkageType, "StaticLinkageType", this->GetComponentLabel(), level, 0);
   this->SetStaticLinkageType(staticLinkageType);
 
+  /** Set StaticLinkageMinSetSize.*/
+  int staticLinkageMinSetSize = 3;
+  this->m_Configuration->ReadParameter(
+    staticLinkageMinSetSize, "StaticLinkageMinSetSize", this->GetComponentLabel(), level, 0);
+  this->SetStaticLinkageMinSetSize(staticLinkageMinSetSize);
+
   /** Set StaticLinkageMaxSetSize.*/
   int staticLinkageMaxSetSize = 24;
   this->m_Configuration->ReadParameter(

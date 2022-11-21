@@ -141,6 +141,9 @@ public:
   itkGetConstMacro(StaticLinkageType, int);
   itkSetMacro(StaticLinkageType, int);
 
+  itkGetConstMacro(StaticLinkageMinSetSize, int);
+  itkSetMacro(StaticLinkageMinSetSize, int);
+
   itkGetConstMacro(StaticLinkageMaxSetSize, int);
   itkSetMacro(StaticLinkageMaxSetSize, int);
 
@@ -358,6 +361,7 @@ private:
   int m_MaxNoImprovementStretch{ 0 };
   int m_FosElementSize{ -1 };
   int m_StaticLinkageType{ 0 };
+  int m_StaticLinkageMinSetSize{ 3 };
   int m_StaticLinkageMaxSetSize{ 24 };
   int number_of_subgenerations_per_population_factor{ 8 };
   int number_of_populations{ 0 };

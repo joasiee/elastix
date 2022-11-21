@@ -427,7 +427,7 @@ GOMEAOptimizer::initializeFOS(int population_index)
     {
       new_FOS = this->learnLinkageTreeRVGOMEA(population_index);
       if (static_linkage_type == BSplineStaticLinkageType::EuclideanSimilarity)
-        filterFOS(new_FOS, 3, m_StaticLinkageMaxSetSize);
+        filterFOS(new_FOS, m_StaticLinkageMinSetSize, m_StaticLinkageMaxSetSize);
     }
     else
       new_FOS = copyFOS(linkage_model[0]);
@@ -467,6 +467,24 @@ GOMEAOptimizer::initializeFOS(int population_index)
     }
   }
   linkage_model[population_index] = new_FOS;
+
+  std::vector<bool> is_in_FOS(m_NrOfParameters, false);
+
+  for (i = 0; i < new_FOS->length; i++)
+  {
+    for (int j = 0; j < new_FOS->set_length[i]; j++)
+    {
+      is_in_FOS[new_FOS->sets[i][j]] = true;
+    }
+  }
+  for (const bool & b : is_in_FOS)
+  {
+    if (!b)
+    {
+      std::cout << "ERROR: at least one parameter index was not found in FOS" << std::endl;
+      exit(1);
+    }
+  }
 }
 
 /**

@@ -102,6 +102,7 @@ class Parameters:
         shrinkage: bool = False,
         use_constraints: bool = False,
         contraints_threshold: float = 0.0,
+        min_set_size: int = 3,
         max_set_size: int = 24,
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
@@ -119,6 +120,7 @@ class Parameters:
                 "UseConstraints": use_constraints,
                 "MissedPixelConstraintThreshold": contraints_threshold * 100.0,
                 "StaticLinkageType": static_linkage_type,
+                "StaticLinkageMinSetSize": min_set_size,
                 "StaticLinkageMaxSetSize": max_set_size,
             }
         )
