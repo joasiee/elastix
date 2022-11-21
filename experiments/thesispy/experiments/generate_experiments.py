@@ -11,18 +11,6 @@ def yield_experiments(collection: Collection, instance: int, project: str, exp_f
         yield Experiment(params, project_name)
 
 
-def gridsizes():
-    for gridsize in [12]:
-        for seed in range(5):
-            params = (
-                Parameters.from_base(mesh_size=gridsize, seed=seed)
-                .multi_resolution(1, [3, 3, 3])
-                .gomea()
-                .stopping_criteria(30)
-            )
-            yield params
-
-
 def regularization_weight():
     for weight in np.arange(200, 10200, 200):
         weight = int(weight)
@@ -36,22 +24,6 @@ def regularization_weight():
         )
         yield params
 
-
-def fos_settings_wmask_offset():
-    for seed in range(1):
-        seed += 1
-        for setting in [
-            LinkageType.UNIVARIATE,
-            LinkageType.CP_MARGINAL,
-            LinkageType.STATIC_EUCLIDEAN,
-            LinkageType.FULL,
-        ]:
-            params = (
-                Parameters.from_base(mesh_size=4, seed=seed, metric="AdvancedMeanSquares", use_mask=True)
-                .gomea(setting)
-                .stopping_criteria(iterations=500)
-            )
-            yield params
 
 def subsampling_percentage():
     for seed in range(10):
@@ -79,67 +51,98 @@ def nomask_msd():
             )
             yield params
 
+
 def fair_comparison():
     for seed in range(10):
         seed += 1
         for mesh_size in [3, 4, 5]:
-                for optimizer in ["ASGD", "GOMEA"]:
-                    if optimizer == "ASGD":
-                        params = (
-                            Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
-                            .asgd()
-                            .stopping_criteria(iterations=50000)
+            for optimizer in ["ASGD", "GOMEA"]:
+                if optimizer == "ASGD":
+                    params = (
+                        Parameters.from_base(
+                            mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False
                         )
-                    else:
-                        params = (
-                            Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
-                            .gomea(LinkageType.CP_MARGINAL, constraints=False)
-                            .stopping_criteria(iterations=2000)
+                        .asgd()
+                        .stopping_criteria(iterations=50000)
+                    )
+                else:
+                    params = (
+                        Parameters.from_base(
+                            mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False
                         )
-                    yield params
+                        .gomea(LinkageType.CP_MARGINAL, constraints=False)
+                        .stopping_criteria(iterations=2000)
+                    )
+                yield params
 
 
 def fair_comparison_multiresolution():
     for seed in range(10):
         seed += 1
         for mesh_size in [3, 4, 5]:
-                for optimizer in ["ASGD", "GOMEA"]:
-                    if optimizer == "ASGD":
-                        params = (
-                            Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
-                            .asgd()
-                            .multi_resolution(3, g_sched=[1, 1, 1], downsampling=False)
-                            .stopping_criteria(iterations=[2000, 5000, 20000])
+            for optimizer in ["ASGD", "GOMEA"]:
+                if optimizer == "ASGD":
+                    params = (
+                        Parameters.from_base(
+                            mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False
                         )
-                    else:
-                        params = (
-                            Parameters.from_base(mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False)
-                            .gomea(LinkageType.CP_MARGINAL, constraints=False)
-                            .multi_resolution(3, g_sched=[1, 1, 1], downsampling=False)
-                            .stopping_criteria(iterations=[50, 50, 500])
+                        .asgd()
+                        .multi_resolution(3, g_sched=[1, 1, 1], downsampling=False)
+                        .stopping_criteria(iterations=[2000, 5000, 20000])
+                    )
+                else:
+                    params = (
+                        Parameters.from_base(
+                            mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False
                         )
-                    yield params
+                        .gomea(LinkageType.CP_MARGINAL, constraints=False)
+                        .multi_resolution(3, g_sched=[1, 1, 1], downsampling=False)
+                        .stopping_criteria(iterations=[50, 50, 500])
+                    )
+                yield params
 
 
 def constrained_selection():
     for seed in range(10):
         seed += 1
         for constraint_threshold in [0.0, 0.005, 0.02, 0.05, 0.1]:
-            params_constrained = (Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed)
-                            .gomea(LinkageType.CP_MARGINAL, use_constraints=True, contraints_threshold=constraint_threshold)
-                            .stopping_criteria(iterations=1000))
+            params_constrained = (
+                Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed)
+                .gomea(LinkageType.CP_MARGINAL, use_constraints=True, contraints_threshold=constraint_threshold)
+                .stopping_criteria(iterations=1000)
+            )
             yield params_constrained
-        params_penalty = (Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True)
-                            .gomea(LinkageType.CP_MARGINAL, use_constraints=False)
-                            .stopping_criteria(iterations=1000))
+        params_penalty = (
+            Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True)
+            .gomea(LinkageType.CP_MARGINAL, use_constraints=False)
+            .stopping_criteria(iterations=1000)
+        )
         yield params_penalty
-    
+
+
+def linkage_models():
+    peval_budget = 100000e6
+    max_iterations = 10000
+    for seed in range(10):
+        seed += 1
+        for linkage in [
+            LinkageType.UNIVARIATE,
+            LinkageType.CP_MARGINAL,
+            LinkageType.STATIC_EUCLIDEAN,
+            LinkageType.FULL,
+        ]:
+            params = (
+                Parameters.from_base(mesh_size=5, seed=seed, use_missedpixel_penalty=True)
+                .gomea(linkage)
+                .stopping_criteria(iterations=max_iterations, pixel_evals=peval_budget)
+            )
+            yield params
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = constrained_selection
+    fn = linkage_models
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")
