@@ -121,8 +121,9 @@ class Dataset:
                 comb_arr[i] = np.pad(comb_arr[i], (0,max_size - len(comb_arr[i])), "edge")
             comb_arr = np.array(comb_arr)
             avg_arr = np.mean(comb_arr, axis=0)
+            median_arr = np.median(comb_arr, axis=0)
             std_arr = np.std(comb_arr, axis=0) * 2.0
-            res[group] = (avg_arr, std_arr)
+            res[group] = (avg_arr, median_arr, std_arr)
         return res
 
     def save(self):

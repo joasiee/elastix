@@ -17,7 +17,7 @@ import time
 
 logger = logging.getLogger("Validation")
 VALIDATION_NAMES = ["tre", "mean_surface_distance", "hausdorff_distance", "dice_similarity", "bending_energy", "dvf_rmse"]
-VALIDATION_ABBRVS = ["$TRE$", "$MSD$", "$HD$", "$DSC$", "$E_b$", r"$\vec{v}_{\epsilon}$"]
+VALIDATION_ABBRVS = ["$TRE$", "$WASD$", "$WHD$", "$DSC$", "$E_b$", r"$\vec{v}_{\epsilon}$"]
 
 
 class ProgressParallel(Parallel):
@@ -153,7 +153,9 @@ def jacobian_determinant(dvf, fig=None):
         sns.heatmap(jac_det, cmap="jet", ax=ax, square=True, cbar_kws={"fraction": 0.045, "pad": 0.02})
     else:
         ax = sns.heatmap(jac_det, cmap="jet", square=True)
-    ax.invert_yaxis()
+    ax.invert_xaxis()
+    ax.set_xticks([])
+    ax.set_yticks([])
     logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
     return jac_det
 
@@ -177,7 +179,8 @@ def plot_voxels(
             _, ax = plt.subplots(figsize=(7, 7))
         else:
             ax = fig.add_subplot(2, 2, 1)
-        ax.imshow(data, cmap=cmap_name, alpha=alpha)
+        ax.imshow(data, cmap="gray")
+        return
 
     if y_slice_depth is None:
         y_slice_depth = data.shape[1] // 2
@@ -189,7 +192,7 @@ def plot_voxels(
 
     sliced_data = np.copy(data)
     sliced_data[:, :y_slice_depth, :] = 0
-    sliced_data[sliced_data < 5] = 0
+    sliced_data[sliced_data < 25] = 0
 
     cmap = cm.get_cmap(cmap_name)
     norm = Normalize(vmin=np.min(sliced_data), vmax=1.5 * np.max(sliced_data))
@@ -199,6 +202,7 @@ def plot_voxels(
     ax.voxels(sliced_data, facecolors=colors, edgecolor=(0, 0, 0, 0.2))
     ax.set_xlim3d(0, data.shape[0] + 2)
     ax.set_ylim3d(5, data.shape[1])
+    ax.minorticks_off()
     ax.set_box_aspect((np.ptp(ax.get_xlim()), np.ptp(ax.get_ylim()), np.ptp(ax.get_zlim())))
     ax.locator_params(axis="y", nbins=3)
     ax.view_init(*orientation)
@@ -212,7 +216,7 @@ def plot_voxels(
 def plot_dvf(data, scale=1, invert=False, slice=None, fig=None):
     if len(data.shape[:-1]) > 2:
         if slice is None:
-            slice = data.shape[0] // 2
+            slice = data.shape[2] // 2
         data = data[:, :, slice, :]
 
     X, Y = np.meshgrid(np.arange(data.shape[0]), np.arange(data.shape[1]))
@@ -238,6 +242,10 @@ def plot_dvf(data, scale=1, invert=False, slice=None, fig=None):
     ax.set_xlim(0, data.shape[0])
     ax.set_ylim(0, data.shape[1])
     ax.set_aspect("equal")
+    ax.invert_yaxis()
+    ax.invert_xaxis()
+    ax.set_xticks([])
+    ax.set_yticks([])
     fig.colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
 
 
@@ -276,6 +284,7 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None, fig=None):
         ax = fig.add_subplot(2, 2, 2)
 
     ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=0.3, s=20)
+    ax.grid(False)
     ax.scatter(points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap, alpha=0.8)
 
 
@@ -294,7 +303,7 @@ def calc_validation(result: RunResult):
             metrics.append({"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf)})
     if result.deformed is not None:
         metrics.append({"validation/dice_similarity": dice_similarity(result.deformed, result.instance.fixed, levels)})
-        if result.instance.collection == Collection.SYNTHETIC:
+        if result.instance.collection == Collection.SYNTHETIC or result.instance.collection == Collection.EXAMPLES:
             plot_voxels(result.deformed, fig=fig)
     if result.deformed_lms is not None:
         metrics.append(
@@ -322,3 +331,17 @@ def calc_validation(result: RunResult):
     logger.info(f"Validation metrics calculated in {end - start:.2f}s")
 
     return metrics
+
+
+def plot_run_result(result: RunResult):
+    fig = plt.figure(figsize=(8, 8))    
+    plot_dvf(result.dvf, fig=fig)
+    plot_voxels(result.deformed, fig=fig)
+    jacobian_determinant(result.dvf, fig=fig)
+    plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, fig=fig)
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
+    axes = fig.get_axes()
+    axes[0].set_title("DVF (slice)", fontsize=10)
+    axes[2].set_title("Deformed source", fontsize=10)
+    axes[3].set_title("Jacobian determinant (slice)", fontsize=10)
+    axes[5].set_title("Control points (slice)", fontsize=10)
