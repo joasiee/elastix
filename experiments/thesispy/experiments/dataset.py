@@ -112,6 +112,9 @@ class Dataset:
     def aggregate_for_plot(self, attrs: List[str] = [], metric: str = "metric", resolution: int = 0):
         res = {}
         for group, runs in self.groupby(attrs):
+            if len(runs) == 0:
+                continue
+            
             comb_arr = []
             max_size = len(runs[0].resolutions[resolution][metric])
             for run in runs:

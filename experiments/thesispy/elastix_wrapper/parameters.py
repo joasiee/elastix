@@ -140,6 +140,7 @@ class Parameters:
                 "WritePyramidImagesAfterEachResolution": True,
                 "WriteSamplesEveryIteration": True,
                 "WriteControlPointsEveryIteration": True,
+                "WriteExtraOutput": True,
             }
         )
 
