@@ -76,7 +76,9 @@ def run(
     return run_result
 
 
-def execute_elastix(params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True):
+def execute_elastix(
+    params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True
+):
     with time_limit(params["MaxTimeSeconds"]):
         args = [
             ELASTIX,
@@ -131,7 +133,9 @@ def execute_visualize(out_dir: Path):
             break
 
     if visualizer:
-        subprocess.run([visualizer, str((out_dir / "result.0.mhd").resolve())], cwd=str(out_dir.resolve()))
+        subprocess.run(
+            [visualizer, str((out_dir / "result.0.mhd").resolve())], cwd=str(out_dir.resolve())
+        )
 
 
 def get_run_result(collection: Collection, instance_id: int, transform_params: Path):
@@ -146,7 +150,9 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
         run_result.deformed_surface_points = []
         for surface_points_path in instance.surface_points_paths:
             generate_transformed_points(transform_params, out_dir, surface_points_path)
-            run_result.deformed_surface_points.append(read_deformed_lms(out_dir / "outputpoints.txt"))
+            run_result.deformed_surface_points.append(
+                read_deformed_lms(out_dir / "outputpoints.txt")
+            )
 
     generate_transformed_points(transform_params, out_dir, moving_img_path=instance.moving_path)
     run_result.dvf = get_np_array(out_dir / "deformationField.mhd")
@@ -162,16 +168,25 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
 def validation(params: Parameters, run_dir: Path):
     out_dir = run_dir.joinpath(Path("out"))
     transform_params = out_dir / "TransformParameters.0.txt"
-    run_result = get_run_result(Collection(params["Collection"]), int(params["Instance"]), transform_params)
+    run_result = get_run_result(
+        Collection(params["Collection"]), int(params["Instance"]), transform_params
+    )
 
     return calc_validation(run_result), run_result
 
+
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=3, metric="AdvancedMeanSquares", seed=3)
+        Parameters.from_base(mesh_size=4)
         .gomea(LinkageType.CP_MARGINAL)
-        .stopping_criteria(20)
-        .args({"Optimizer": "Null"})
+        .stopping_criteria(iterations=500)
+        .debug()
         .instance(Collection.SYNTHETIC, 1)
     )
-    run(params_main, Path("output/" + str(params_main)), suppress_stdout=False, visualize=True, validate=False)
+    run(
+        params_main,
+        Path("output/" + str(params_main)),
+        suppress_stdout=False,
+        visualize=True,
+        validate=True,
+    )

@@ -148,14 +148,14 @@ def linkage_models():
     for seed in range(10):
         seed += 1
         for linkage in [
-            # LinkageType.UNIVARIATE,
-            # LinkageType.CP_MARGINAL,
+            LinkageType.UNIVARIATE,
+            LinkageType.CP_MARGINAL,
             LinkageType.STATIC_EUCLIDEAN,
-            # LinkageType.FULL,
+            LinkageType.FULL,
         ]:
             params = (
-                Parameters.from_base(mesh_size=5, seed=seed, use_missedpixel_penalty=True)
-                .gomea(linkage, min_set_size=3, max_set_size=6)
+                Parameters.from_base(mesh_size=7, seed=seed, use_missedpixel_penalty=True)
+                .gomea(linkage)
                 .stopping_criteria(iterations=max_iterations, pixel_evals=peval_budget)
             )
             yield params
@@ -163,8 +163,8 @@ def linkage_models():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    queue.clear()
-    fn = regularization_weight
+    # queue.clear()
+    fn = linkage_models
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")
