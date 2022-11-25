@@ -156,6 +156,9 @@ public:
   itkGetConstMacro(UseConstraints, bool);
   itkSetMacro(UseConstraints, bool);
 
+  itkGetConstMacro(WriteExtraOutput, bool);
+  itkSetMacro(WriteExtraOutput, bool);
+
   const std::string
   GetStopConditionDescription() const override;
 
@@ -167,6 +170,9 @@ public:
 
   void
   WriteDistributionMultipliers(std::ofstream & outfile) const;
+
+  void
+  writeTransformParametersWithConstraint(std::ofstream & outfile) const;
 
   double
   GetAverageDistributionMultiplier() const;
@@ -340,7 +346,7 @@ private:
   void
   saveVariancesForNextResolution();
   void
-  GetValueSanityCheck(const ParametersType & parameters) const;
+  GetValueSanityCheck(const ParametersType & parameters, MeasureType obj_val_partial, MeasureType cons_val_partial) const;
 
   mutable std::ostringstream m_StopConditionDescription;
 
@@ -355,6 +361,7 @@ private:
   double distribution_multiplier_increase;
   double eta_ams{ 1.0 };
   double eta_cov{ 1.0 };
+  double max_constraint_value{ 0.0 };
 
   int m_MaxNumberOfPopulations{ 1 };
   int m_BasePopulationSize{ 0 };
@@ -369,6 +376,7 @@ private:
   bool m_PartialEvaluations{ false };
   bool m_UseShrinkage{ false };
   bool m_UseConstraints{ true };
+  bool m_WriteExtraOutput{ false };
 
   template <typename T>
   using Vector1D = std::vector<T>;
@@ -376,6 +384,7 @@ private:
   using Vector2D = std::vector<std::vector<T>>;
 
   ParametersType variances_last_resolution;
+  ParametersType max_constraint_parameters;
 
   Vector1D<ParametersType> mean_vectors;
   Vector1D<ParametersType> mean_shift_vector;

@@ -222,7 +222,11 @@ GOMEAOptimizer::mergeSortFitnessMerge(double * objectives,
     {
       if (i < r)
       {
-        if (betterFitness(objectives[tosort[i]], constraints[tosort[i]], objectives[tosort[j]], constraints[tosort[j]]))
+        if (betterFitness(objectives[tosort[i]],
+                          constraints[tosort[i]],
+                          objectives[tosort[j]],
+                          constraints[tosort[j]],
+                          m_UseConstraints))
           first = 1;
       }
     }
@@ -514,7 +518,8 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
       if (m_CurrentResolution > 0 && variances_last_resolution.size() == m_NrOfParameters)
-        populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * random1DNormalUnit() * sqrt(variances_last_resolution[k]);
+        populations[population_index][j][k] =
+          m_CurrentPosition[k] + (j > 0) * random1DNormalUnit() * sqrt(variances_last_resolution[k]);
       else
         populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * random1DNormalUnit();
     }
@@ -743,7 +748,8 @@ GOMEAOptimizer::checkAverageFitnessTerminationCondition(void)
     if (i < number_of_populations - 1 && betterFitness(average_objective_values[i + 1],
                                                        average_constraint_values[i + 1],
                                                        average_objective_values[i],
-                                                       average_constraint_values[i]))
+                                                       average_constraint_values[i],
+                                                       m_UseConstraints))
     {
       for (j = i; j >= 0; j--)
         populations_terminated[j] = 1;
@@ -773,7 +779,8 @@ GOMEAOptimizer::determineBestSolutionInCurrentPopulations(int * population_of_be
       if (betterFitness(objective_values[i][j],
                         constraint_values[i][j],
                         objective_values[(*population_of_best)][(*index_of_best)],
-                        constraint_values[(*population_of_best)][(*index_of_best)]))
+                        constraint_values[(*population_of_best)][(*index_of_best)],
+                        m_UseConstraints))
       {
         (*population_of_best) = i;
         (*index_of_best) = j;
@@ -1264,7 +1271,8 @@ GOMEAOptimizer::getBestInPopulation(int population_index, int * individual_index
     if (betterFitness(objective_values[population_index][i],
                       constraint_values[population_index][i],
                       objective_values[population_index][*individual_index],
-                      constraint_values[population_index][*individual_index]))
+                      constraint_values[population_index][*individual_index],
+                      m_UseConstraints))
       *individual_index = i;
 }
 
@@ -1283,7 +1291,8 @@ GOMEAOptimizer::getOverallBest(int * population_index, int * individual_index)
     if (betterFitness(objective_values[i][best_individual_index],
                       constraint_values[i][best_individual_index],
                       objective_values[*population_index][*individual_index],
-                      constraint_values[*population_index][*individual_index]))
+                      constraint_values[*population_index][*individual_index],
+                      m_UseConstraints))
     {
       *population_index = i;
       *individual_index = best_individual_index;
@@ -1314,7 +1323,6 @@ GOMEAOptimizer::costFunctionEvaluation(const ParametersType & parameters,
   PROFILE_FUNCTION();
   obj_val = this->m_PartialEvaluations ? this->GetValue(parameters, -1, individual_index, constraint_val)
                                        : this->GetValue(parameters, constraint_val);
-  constraint_val *= m_UseConstraints;
 
   ++m_NumberOfEvaluations;
 }
@@ -1331,20 +1339,29 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
   {
     this->costFunctionEvaluation(
       populations[population_index][individual_index], individual_index, obj_val, constraint_val);
-    return;
+  }
+  else
+  {
+    obj_val =
+      this->GetValue(populations[population_index][individual_index], fos_index, individual_index, constraint_val);
+
+    // this->GetValueSanityCheck(populations[population_index][individual_index], obj_val, constraint_val);
+
+    ++m_NumberOfEvaluations;
   }
 
-  obj_val =
-    this->GetValue(populations[population_index][individual_index], fos_index, individual_index, constraint_val);
-  constraint_val *= m_UseConstraints;
-
-  // this->GetValueSanityCheck(populations[population_index][individual_index]);
-
-  ++m_NumberOfEvaluations;
+  if (m_WriteExtraOutput)
+  {
+    if (constraint_val > max_constraint_value)
+    {
+      max_constraint_value = constraint_val;
+      max_constraint_parameters = populations[population_index][individual_index];
+    }
+  }
 }
 
 void
-GOMEAOptimizer::GetValueSanityCheck(const ParametersType & parameters) const
+GOMEAOptimizer::GetValueSanityCheck(const ParametersType & parameters, MeasureType obj_val_partial, MeasureType cons_val_partial) const
 {
   Array<double> derivative(m_NrOfParameters);
   MeasureType   constraint_val, constraint_val2;
@@ -1357,8 +1374,11 @@ GOMEAOptimizer::GetValueSanityCheck(const ParametersType & parameters) const
   if (abs(obj_val - obj_val2) > 1e-8 || abs(constraint_val - constraint_val2) > 1e-8)
     std::cout << "WTF0\n";
 
-  if (abs(obj_val - obj_val3) > 1e-8)
+  if (abs(obj_val - obj_val_partial) > 1e-8 || abs(constraint_val - cons_val_partial) > 1e-8)
     std::cout << "WTF1\n";
+
+  if (abs(obj_val - obj_val3) > 1e-8)
+    std::cout << "WTF2\n";
 }
 
 /**
@@ -1602,7 +1622,8 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
   improvement = betterFitness(obj_val,
                               cons_val,
                               objective_values[population_index][individual_index],
-                              constraint_values[population_index][individual_index]);
+                              constraint_values[population_index][individual_index],
+                              m_UseConstraints);
   if (improvement || randomRealUniform01() < 0.05)
   {
     objective_values[population_index][individual_index] = obj_val;
@@ -1643,7 +1664,8 @@ GOMEAOptimizer::applyAMS(int population_index, int individual_index)
   improvement = betterFitness(obj_val,
                               cons_val,
                               objective_values[population_index][individual_index],
-                              constraint_values[population_index][individual_index]);
+                              constraint_values[population_index][individual_index],
+                              m_UseConstraints);
   if (improvement || randomRealUniform01() < 0.05)
   {
     objective_values[population_index][individual_index] = obj_val;
@@ -1692,7 +1714,8 @@ GOMEAOptimizer::applyForcedImprovements(int population_index, int individual_ind
       improvement = betterFitness(obj_val,
                                   cons_val,
                                   objective_values[population_index][individual_index],
-                                  constraint_values[population_index][individual_index]);
+                                  constraint_values[population_index][individual_index],
+                                  m_UseConstraints);
       // printf("alpha=%.1e\tf=%.30e\n",alpha,obj_val);
 
       if (!improvement)
@@ -1804,13 +1827,15 @@ GOMEAOptimizer::generationalImprovementForOnePopulationForFOSElement(int      po
     if (betterFitness(objective_values[population_index][i],
                       constraint_values[population_index][i],
                       objective_values[population_index][index_best_population],
-                      constraint_values[population_index][index_best_population]))
+                      constraint_values[population_index][index_best_population],
+                      m_UseConstraints))
       index_best_population = i;
 
     if (betterFitness(objective_values[population_index][i],
                       constraint_values[population_index][i],
                       objective_values_selections[population_index][0],
-                      constraint_values_selections[population_index][0]))
+                      constraint_values_selections[population_index][0],
+                      m_UseConstraints))
     {
       number_of_improvements++;
       for (j = 0; j < num_indices; j++)
@@ -2056,6 +2081,22 @@ GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
     for (const double & distm : this->distribution_multipliers[0])
     {
       outfile << distm << " ";
+    }
+    outfile << "\n";
+    outfile.flush();
+  }
+}
+
+void
+GOMEAOptimizer::writeTransformParametersWithConstraint(std::ofstream & outfile) const
+{
+  PROFILE_FUNCTION();
+  if (this->m_WriteExtraOutput)
+  {
+    outfile << max_constraint_value << " ";
+    for (const double & param_value : this->max_constraint_parameters)
+    {
+      outfile << param_value << " ";
     }
     outfile << "\n";
     outfile.flush();

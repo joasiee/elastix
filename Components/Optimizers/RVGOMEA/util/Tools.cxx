@@ -540,26 +540,38 @@ distanceEuclidean2D(double x1, double y1, double x2, double y2)
  * - x and y are both feasible and x has a smaller objective value than y
  */
 short
-betterFitness(double objective_value_x, double constraint_value_x, double objective_value_y, double constraint_value_y)
+betterFitness(double objective_value_x,
+              double constraint_value_x,
+              double objective_value_y,
+              double constraint_value_y,
+              bool   use_constraints)
 {
   short result{ 0 };
 
-  if (constraint_value_x > 0) /* x is infeasible */
+  if (!use_constraints)
   {
-    if (constraint_value_y > 0) /* Both are infeasible */
-    {
-      if (constraint_value_x < constraint_value_y)
-        result = 1;
-    }
-  }
-  else /* x is feasible */
-  {
-    if (constraint_value_y > 0) /* x is feasible and y is not */
+    if (objective_value_x < objective_value_y)
       result = 1;
-    else /* Both are feasible */
+  }
+  else
+  {
+    if (constraint_value_x > 0) /* x is infeasible */
     {
-      if (objective_value_x < objective_value_y)
+      if (constraint_value_y > 0) /* Both are infeasible */
+      {
+        if (constraint_value_x < constraint_value_y)
+          result = 1;
+      }
+    }
+    else /* x is feasible */
+    {
+      if (constraint_value_y > 0) /* x is feasible and y is not */
         result = 1;
+      else /* Both are feasible */
+      {
+        if (objective_value_x < objective_value_y)
+          result = 1;
+      }
     }
   }
 

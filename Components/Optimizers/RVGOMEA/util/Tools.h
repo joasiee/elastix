@@ -118,5 +118,9 @@ double
 distanceEuclidean2D(double x1, double y1, double x2, double y2);
 
 short
-betterFitness(double objective_value_x, double constraint_value_x, double objective_value_y, double constraint_value_y);
+betterFitness(double objective_value_x,
+              double constraint_value_x,
+              double objective_value_y,
+              double constraint_value_y,
+              bool   use_consrtraints);
 } // namespace GOMEA

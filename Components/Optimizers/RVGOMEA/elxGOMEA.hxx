@@ -56,6 +56,7 @@ GOMEA<TElastix>::AfterEachIteration(void)
   this->m_PdPctMean = {};
 
   this->WriteDistributionMultipliers(this->m_DistMultOutFile);
+  this->writeTransformParametersWithConstraint(this->m_TransformParametersExtraOutFile);
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
@@ -167,6 +168,19 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(useConstraints, "UseConstraints", this->GetComponentLabel(), level, 0);
   this->SetUseConstraints(useConstraints);
 
+  /** Set WriteExtraOutput*/
+  bool writeExtraOutput = false;
+  this->m_Configuration->ReadParameter(writeExtraOutput, "WriteExtraOutput", this->GetComponentLabel(), level, 0);
+  this->SetWriteExtraOutput(writeExtraOutput);
+
+  if (this->GetWriteExtraOutput())
+  {
+    std::ostringstream makeFileName("");
+    makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_transform_params_constraints.dat";
+    std::string fileName = makeFileName.str();
+    this->m_TransformParametersExtraOutFile.open(fileName.c_str());
+  }
+
   std::ostringstream makeFileName("");
   makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
   std::string fileName = makeFileName.str();
@@ -187,6 +201,7 @@ void
 GOMEA<TElastix>::AfterEachResolution(void)
 {
   this->m_DistMultOutFile.close();
+  this->m_TransformParametersExtraOutFile.close();
 
   std::string stopcondition;
 

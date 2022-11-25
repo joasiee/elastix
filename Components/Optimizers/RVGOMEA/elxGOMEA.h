@@ -87,6 +87,7 @@ private:
   operator=(const Self &) = delete;
 
   std::ofstream m_DistMultOutFile;
+  std::ofstream m_TransformParametersExtraOutFile;
 };
 
 } // end namespace elastix
