@@ -16,8 +16,37 @@ import logging
 import time
 
 logger = logging.getLogger("Validation")
-VALIDATION_NAMES = ["tre", "mean_surface_distance", "hausdorff_distance", "dice_similarity", "bending_energy", "dvf_rmse"]
+VALIDATION_NAMES = [
+    "tre",
+    "mean_surface_distance",
+    "hausdorff_distance",
+    "dice_similarity",
+    "bending_energy",
+    "dvf_rmse",
+]
+VALIDATION_NAMES_NEW = [
+    "tre",
+    "mean_surface_cube",
+    "mean_surface_sphere",
+    "hausdorff_cube",
+    "hausdorff_sphere",
+    "dice_cube",
+    "dice_sphere",
+    "bending_energy",
+    "dvf_rmse",
+]
 VALIDATION_ABBRVS = ["$TRE$", "$WASD$", "$WHD$", "$DSC$", "$E_b$", r"$\vec{v}_{\epsilon}$"]
+VALIDATION_ABBRVS_NEW = [
+    "$TRE$",
+    "$ASD_{\textsc{cube}}$",
+    "$ASD_{\textsc{sphere}}$",
+    "$HD_{\textsc{cube}}$",
+    "$HD_{\textsc{sphere}}$",
+    "$DSC_{\textsc{cube}}$",
+    "$DSC_{\textsc{sphere}}$",
+    "$E_b$",
+    r"$\vec{v}_{\epsilon}$"
+]
 
 
 class ProgressParallel(Parallel):
@@ -77,9 +106,14 @@ def bending_energy_point(dvf, p):
     return sum
 
 
-def bending_energy(dvf):
+def bending_energy(dvf, mask=None):
+    if mask is not None:
+        dvf[~mask] = np.array([0 for _ in range(dvf.shape[-1])])
     results = ProgressParallel(
-        n_jobs=N_CORES, desc="computing bending energy", backend="multiprocessing", total=np.prod(dvf.shape[:-1])
+        n_jobs=N_CORES,
+        desc="computing bending energy",
+        backend="multiprocessing",
+        total=np.prod(dvf.shape[:-1]),
     )(delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1]))
     be = np.sum(results) / np.prod(dvf.shape[:-1])
     logger.info(f"Bending Energy: {be}")
@@ -94,27 +128,37 @@ def dice_similarity(moving_deformed, fixed, levels):
 
     similarities = []
     for region_value in np.unique(regions_fixed)[1:]:
-        intersection = np.sum((regions_moving_deformed == regions_fixed) & (regions_fixed == region_value))
-        sum_pixels = np.sum(regions_fixed == region_value) + np.sum(regions_moving_deformed == region_value)
+        intersection = np.sum(
+            (regions_moving_deformed == regions_fixed) & (regions_fixed == region_value)
+        )
+        sum_pixels = np.sum(regions_fixed == region_value) + np.sum(
+            regions_moving_deformed == region_value
+        )
         similarities.append(2.0 * intersection / sum_pixels)
 
-    similarity = np.mean(similarities)
-    logger.info(f"Dice Similarity: {similarity}")
-    return similarity
+    logger.info(f"Dice Similarities: Cube: {similarities[0]}, Sphere: {similarities[1]}")
+    return similarities
 
 
 def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
     distances = []
     for i in range(len(surface_points)):
-        max_distance1 = np.max(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing
-        max_distance2 = np.max(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1)) * spacing
+        max_distance1 = (
+            np.max(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1))
+            * spacing
+        )
+        max_distance2 = (
+            np.max(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1))
+            * spacing
+        )
         distances.append(max(max_distance1, max_distance2))
-    hdist = np.mean(distances)
-    logger.info(f"Weighted Hausdorff Distance: {hdist}")
-    return hdist
+    logger.info(f"Hausdorff Distances: Cube: {distances[0]}, Sphere: {distances[1]}")
+    return distances
 
 
-def dvf_rmse(dvf1, dvf2, spacing=1):
+def dvf_rmse(dvf1, dvf2, spacing=1, mask=None):
+    if mask is not None:
+        dvf1[~mask] = np.array([0 for _ in range(dvf1.shape[-1])])
     rmse = np.linalg.norm((dvf1 - dvf2) * spacing, axis=3).mean()
     logger.info(f"DVF RMSE: {rmse}")
     return rmse
@@ -123,12 +167,17 @@ def dvf_rmse(dvf1, dvf2, spacing=1):
 def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
     distances = []
     for i in range(len(surface_points)):
-        mean_distance1 = np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing
-        mean_distance2 = np.mean(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1)) * spacing
+        mean_distance1 = (
+            np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1))
+            * spacing
+        )
+        mean_distance2 = (
+            np.mean(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1))
+            * spacing
+        )
         distances.append((mean_distance1 + mean_distance2) / 2)
-    msd = np.mean(distances)
-    logger.info(f"Weighted Mean Surface Distance: {msd}")
-    return msd
+    logger.info(f"Mean Surface Distances: Cube: {distances[0]}, Sphere: {distances[1]}")
+    return distances
 
 
 def tre(lms1, lms2, spacing=1):
@@ -150,7 +199,9 @@ def jacobian_determinant(dvf, fig=None):
 
     if fig is not None:
         ax = fig.add_subplot(2, 2, 4)
-        sns.heatmap(jac_det, cmap="jet", ax=ax, square=True, cbar_kws={"fraction": 0.045, "pad": 0.02})
+        sns.heatmap(
+            jac_det, cmap="jet", ax=ax, square=True, cbar_kws={"fraction": 0.045, "pad": 0.02}
+        )
     else:
         ax = sns.heatmap(jac_det, cmap="jet", square=True)
     ax.invert_xaxis()
@@ -158,6 +209,7 @@ def jacobian_determinant(dvf, fig=None):
     ax.set_yticks([])
     logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
     return jac_det
+
 
 def get_cmap_color(cmap, f, a):
     c = cmap(f)
@@ -237,7 +289,9 @@ def plot_dvf(data, scale=1, invert=False, slice=None, fig=None):
     else:
         ax = fig.add_subplot(2, 2, 3)
 
-    qq = ax.quiver(X, Y, v, u, c, scale=scale, units="xy", angles="xy", scale_units="xy", cmap=plt.cm.jet)
+    qq = ax.quiver(
+        X, Y, v, u, c, scale=scale, units="xy", angles="xy", scale_units="xy", cmap=plt.cm.jet
+    )
 
     ax.set_xlim(0, data.shape[0])
     ax.set_ylim(0, data.shape[1])
@@ -262,7 +316,11 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None, fig=None):
     grid_origin = grid_origin + 0.5
     X, Y = np.meshgrid(
         *[
-            np.arange(grid_origin[i], grid_origin[i] + grid_spacing[i] * points_slice.shape[i], grid_spacing[i])
+            np.arange(
+                grid_origin[i],
+                grid_origin[i] + grid_spacing[i] * points_slice.shape[i],
+                grid_spacing[i],
+            )
             for i in range(len(points_slice.shape[:-1]))
         ]
     )
@@ -285,7 +343,9 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None, fig=None):
 
     ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=0.3, s=20)
     ax.grid(False)
-    ax.scatter(points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap, alpha=0.8)
+    ax.scatter(
+        points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap, alpha=0.8
+    )
 
 
 def calc_validation(result: RunResult):
@@ -295,30 +355,43 @@ def calc_validation(result: RunResult):
     fig = plt.figure(figsize=(8, 8))
     levels = 2 if result.instance.collection == Collection.EXAMPLES else 3
     if result.dvf is not None:
+        mask = None
+        if result.instance.dvf is not None:
+            mask = np.linalg.norm(result.instance.dvf, axis=-1) > 0
+            metrics.append(
+                {"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf, mask=mask)}
+            )
         if result.instance.collection == Collection.SYNTHETIC:
-            metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
+            metrics.append({"validation/bending_energy": bending_energy(result.dvf, mask=mask)})
         jacobian_determinant(result.dvf, fig=fig)
         plot_dvf(result.dvf, fig=fig)
-        if result.instance.dvf is not None:
-            metrics.append({"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf)})
     if result.deformed is not None:
-        metrics.append({"validation/dice_similarity": dice_similarity(result.deformed, result.instance.fixed, levels)})
-        if result.instance.collection == Collection.SYNTHETIC or result.instance.collection == Collection.EXAMPLES:
+        dice_similarities = dice_similarity(result.deformed, result.instance.fixed, levels)
+        metrics.append({"validation/dice_cube": dice_similarities[0]})
+        metrics.append({"validation/dice_sphere": dice_similarities[1]})
+        if (
+            result.instance.collection == Collection.SYNTHETIC
+            or result.instance.collection == Collection.EXAMPLES
+        ):
             plot_voxels(result.deformed, fig=fig)
     if result.deformed_lms is not None:
-        metrics.append(
-            {
-                "validation/hausdorff_distance": hausdorff_distance(
-                    result.instance.surface_points, result.deformed_surface_points
-                )
-            }
+        hd_dists = hausdorff_distance(
+            result.instance.surface_points, result.deformed_surface_points
+        )
+        md_dists = mean_surface_distance(
+            result.instance.surface_points, result.deformed_surface_points
         )
         metrics.append(
-            {
-                "validation/mean_surface_distance": mean_surface_distance(
-                    result.instance.surface_points, result.deformed_surface_points
-                )
-            }
+            [
+                {"validation/hausdorff_cube": hd_dists[0]},
+                {"validation/hausdorff_sphere": hd_dists[1]},
+            ]
+        )
+        metrics.append(
+            [
+                {"validation/mean_surface_cube": md_dists[0]},
+                {"validation/mean_surface_sphere": md_dists[1]},
+            ]
         )
         metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
     if result.control_points is not None:
@@ -334,7 +407,7 @@ def calc_validation(result: RunResult):
 
 
 def plot_run_result(result: RunResult):
-    fig = plt.figure(figsize=(8, 8))    
+    fig = plt.figure(figsize=(8, 8))
     plot_dvf(result.dvf, fig=fig)
     plot_voxels(result.deformed, fig=fig)
     jacobian_determinant(result.dvf, fig=fig)
