@@ -172,7 +172,7 @@ public:
   WriteDistributionMultipliers(std::ofstream & outfile) const;
 
   void
-  writeTransformParametersWithConstraint(std::ofstream & outfile) const;
+  writeTransformParametersWithConstraint(std::ofstream & outfile);
 
   double
   GetAverageDistributionMultiplier() const;

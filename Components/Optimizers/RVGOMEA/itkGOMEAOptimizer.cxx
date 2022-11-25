@@ -2088,7 +2088,7 @@ GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
 }
 
 void
-GOMEAOptimizer::writeTransformParametersWithConstraint(std::ofstream & outfile) const
+GOMEAOptimizer::writeTransformParametersWithConstraint(std::ofstream & outfile)
 {
   PROFILE_FUNCTION();
   if (this->m_WriteExtraOutput)
@@ -2101,6 +2101,7 @@ GOMEAOptimizer::writeTransformParametersWithConstraint(std::ofstream & outfile) 
     outfile << "\n";
     outfile.flush();
   }
+  max_constraint_value = 0.0;
 }
 
 /**
