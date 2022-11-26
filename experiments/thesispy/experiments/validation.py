@@ -381,18 +381,10 @@ def calc_validation(result: RunResult):
         md_dists = mean_surface_distance(
             result.instance.surface_points, result.deformed_surface_points
         )
-        metrics.append(
-            [
-                {"validation/hausdorff_cube": hd_dists[0]},
-                {"validation/hausdorff_sphere": hd_dists[1]},
-            ]
-        )
-        metrics.append(
-            [
-                {"validation/mean_surface_cube": md_dists[0]},
-                {"validation/mean_surface_sphere": md_dists[1]},
-            ]
-        )
+        metrics.append({"validation/hausdorff_cube": hd_dists[0]})
+        metrics.append({"validation/hausdorff_sphere": hd_dists[1]})
+        metrics.append({"validation/mean_surface_cube": md_dists[0]})
+        metrics.append({"validation/mean_surface_sphere": md_dists[1]})
         metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
     if result.control_points is not None:
         plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, fig=fig)
