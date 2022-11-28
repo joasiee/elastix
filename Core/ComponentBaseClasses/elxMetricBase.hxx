@@ -243,7 +243,7 @@ void
 MetricBase<TElastix>::WriteSamplesOfIteration() const
 {
   const AdvancedMetricType * thisAsAdvanced = dynamic_cast<const AdvancedMetricType *>(this);
-  if (thisAsAdvanced->GetUseImageSampler())
+  if (thisAsAdvanced->GetUseImageSampler() || thisAsAdvanced->GetPartialEvaluations())
   {
     const unsigned int itNr = this->m_Elastix->GetIterationCounter();
     std::ofstream      outFile;
