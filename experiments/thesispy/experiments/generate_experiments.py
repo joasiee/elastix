@@ -1,3 +1,4 @@
+import itertools
 import numpy as np
 from thesispy.elastix_wrapper.parameters import Parameters
 from thesispy.experiments.experiment import Experiment, ExperimentQueue
@@ -143,19 +144,36 @@ def constrained_selection():
 
 
 def linkage_models():
-    peval_budget = 100000e6
+    peval_budget = 30000e6
     max_iterations = 10000
     for seed in range(10):
         seed += 1
         for linkage in [
-            LinkageType.UNIVARIATE,
-            LinkageType.CP_MARGINAL,
+            # LinkageType.UNIVARIATE,
+            # LinkageType.CP_MARGINAL,
             LinkageType.STATIC_EUCLIDEAN,
-            LinkageType.FULL,
+            # LinkageType.FULL,
         ]:
+            for mesh_size in [5, 7, 9]:
+                params = (
+                    Parameters.from_base(mesh_size=mesh_size, seed=seed)
+                    .gomea(linkage, min_set_size=6, max_set_size=9)
+                    .stopping_criteria(iterations=max_iterations, pixel_evals=peval_budget)
+                )
+                yield params
+
+
+def linkage_models_static():
+    peval_budget = 30000e6
+    max_iterations = 10000
+    for seed in range(3):
+        seed += 1
+        for min, max in itertools.product([3, 6, 9, 12], [6, 9, 12, 15, 18, 24, 32]):
+            if min >= max:
+                continue
             params = (
-                Parameters.from_base(mesh_size=7, seed=seed, use_missedpixel_penalty=True)
-                .gomea(linkage)
+                Parameters.from_base(mesh_size=5, seed=seed)
+                .gomea(LinkageType.STATIC_EUCLIDEAN, min_set_size=min, max_set_size=max)
                 .stopping_criteria(iterations=max_iterations, pixel_evals=peval_budget)
             )
             yield params
@@ -163,7 +181,7 @@ def linkage_models():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    # queue.clear()
+    queue.clear()
     fn = linkage_models
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))

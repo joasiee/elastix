@@ -106,9 +106,7 @@ def bending_energy_point(dvf, p):
     return sum
 
 
-def bending_energy(dvf, mask=None):
-    if mask is not None:
-        dvf[~mask] = np.array([0 for _ in range(dvf.shape[-1])])
+def bending_energy(dvf):
     results = ProgressParallel(
         n_jobs=N_CORES,
         desc="computing bending energy",
@@ -156,9 +154,7 @@ def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
     return distances
 
 
-def dvf_rmse(dvf1, dvf2, spacing=1, mask=None):
-    if mask is not None:
-        dvf1[~mask] = np.array([0 for _ in range(dvf1.shape[-1])])
+def dvf_rmse(dvf1, dvf2, spacing=1):        
     rmse = np.linalg.norm((dvf1 - dvf2) * spacing, axis=3).mean()
     logger.info(f"DVF RMSE: {rmse}")
     return rmse
@@ -355,14 +351,15 @@ def calc_validation(result: RunResult):
     fig = plt.figure(figsize=(8, 8))
     levels = 2 if result.instance.collection == Collection.EXAMPLES else 3
     if result.dvf is not None:
-        mask = None
+        dvf_copy = np.copy(result.dvf)
         if result.instance.dvf is not None:
             mask = np.linalg.norm(result.instance.dvf, axis=-1) > 0
+            dvf_copy[~mask] = np.array([0 for _ in range(dvf_copy.shape[-1])])
             metrics.append(
-                {"validation/dvf_rmse": dvf_rmse(result.dvf, result.instance.dvf, mask=mask)}
+                {"validation/dvf_rmse": dvf_rmse(dvf_copy, result.instance.dvf)}
             )
         if result.instance.collection == Collection.SYNTHETIC:
-            metrics.append({"validation/bending_energy": bending_energy(result.dvf, mask=mask)})
+            metrics.append({"validation/bending_energy": bending_energy(dvf_copy)})
         jacobian_determinant(result.dvf, fig=fig)
         plot_dvf(result.dvf, fig=fig)
     if result.deformed is not None:
