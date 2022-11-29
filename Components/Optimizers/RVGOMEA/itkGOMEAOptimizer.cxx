@@ -1345,7 +1345,7 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
     obj_val =
       this->GetValue(populations[population_index][individual_index], fos_index, individual_index, constraint_val);
 
-    // this->GetValueSanityCheck(populations[population_index][individual_index], obj_val, constraint_val);
+    this->GetValueSanityCheck(populations[population_index][individual_index], obj_val, constraint_val);
 
     ++m_NumberOfEvaluations;
   }

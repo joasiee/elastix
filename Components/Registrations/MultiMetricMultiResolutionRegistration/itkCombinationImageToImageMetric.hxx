@@ -790,6 +790,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 {
   /** Initialise. */
   MeasureType measure = NumericTraits<MeasureType>::Zero;
+  constraintValue = NumericTraits<MeasureType>::Zero;
 
   this->BeforeThreadedInit(parameters);
 
@@ -828,6 +829,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 {
   /** Initialise. */
   MeasureType measure = NumericTraits<MeasureType>::Zero;
+  constraintValue = NumericTraits<MeasureType>::Zero;
 
   this->BeforeThreadedInit(parameters);
 
