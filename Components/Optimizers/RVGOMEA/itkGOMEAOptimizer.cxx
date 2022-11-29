@@ -89,16 +89,16 @@ GOMEAOptimizer::initialize(void)
   {
     if (m_MaxNumberOfPopulations == 1)
     {
+      m_BasePopulationSize = static_cast<int>(10 + 12.18 * log2((double)m_NrOfParameters));
       switch (m_FosElementSize)
       {
         case FOSType::Full:
-          m_BasePopulationSize = m_NrOfParameters * 10;
+          m_BasePopulationSize = std::max((int) m_NrOfParameters * 10, m_BasePopulationSize);
           break;
         case FOSType::StaticLinkageTree:
-          m_BasePopulationSize = m_StaticLinkageMaxSetSize * 10;
+          m_BasePopulationSize = std::max((int) m_StaticLinkageMaxSetSize * 10, m_BasePopulationSize);
           break;
         default:
-          m_BasePopulationSize = static_cast<int>(10 + 12.18 * log2((double)m_NrOfParameters));
           break;
       }
     }
