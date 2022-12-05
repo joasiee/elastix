@@ -45,7 +45,7 @@ VALIDATION_ABBRVS_NEW = [
     "$DSC_{\textsc{cube}}$",
     "$DSC_{\textsc{sphere}}$",
     "$E_b$",
-    r"$\vec{v}_{\epsilon}$"
+    r"$\vec{v}_{\epsilon}$",
 ]
 
 
@@ -154,7 +154,7 @@ def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
     return distances
 
 
-def dvf_rmse(dvf1, dvf2, spacing=1):        
+def dvf_rmse(dvf1, dvf2, spacing=1):
     rmse = np.linalg.norm((dvf1 - dvf2) * spacing, axis=3).mean()
     logger.info(f"DVF RMSE: {rmse}")
     return rmse
@@ -250,6 +250,9 @@ def plot_voxels(
     ax.voxels(sliced_data, facecolors=colors, edgecolor=(0, 0, 0, 0.2))
     ax.set_xlim3d(0, data.shape[0] + 2)
     ax.set_ylim3d(5, data.shape[1])
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_zticklabels([])
     ax.minorticks_off()
     ax.set_box_aspect((np.ptp(ax.get_xlim()), np.ptp(ax.get_ylim()), np.ptp(ax.get_zlim())))
     ax.locator_params(axis="y", nbins=3)
@@ -299,7 +302,13 @@ def plot_dvf(data, scale=1, invert=False, slice=None, fig=None):
     fig.colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
 
 
-def plot_cpoints(points, grid_spacing, grid_origin, slice=None, fig=None):
+def plot_cpoints(
+    points,
+    grid_spacing,
+    grid_origin,
+    slice=None,
+    fig=None,
+):
     points_slice = points
     if len(points.shape) == 4:
         if slice is None:
@@ -338,9 +347,16 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None, fig=None):
         ax = fig.add_subplot(2, 2, 2)
 
     ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=0.3, s=20)
+
     ax.grid(False)
     ax.scatter(
-        points_slice[..., 0], points_slice[..., 1], marker="s", s=15, c=colors, cmap=cmap, alpha=0.8
+        points_slice[..., 0],
+        points_slice[..., 1],
+        marker="s",
+        s=15,
+        c=colors,
+        cmap=cmap,
+        alpha=0.8,
     )
 
 
@@ -355,9 +371,7 @@ def calc_validation(result: RunResult):
         if result.instance.dvf is not None:
             mask = np.linalg.norm(result.instance.dvf, axis=-1) > 0
             dvf_copy[~mask] = np.array([0 for _ in range(dvf_copy.shape[-1])])
-            metrics.append(
-                {"validation/dvf_rmse": dvf_rmse(dvf_copy, result.instance.dvf)}
-            )
+            metrics.append({"validation/dvf_rmse": dvf_rmse(dvf_copy, result.instance.dvf)})
         if result.instance.collection == Collection.SYNTHETIC:
             metrics.append({"validation/bending_energy": bending_energy(dvf_copy)})
         jacobian_determinant(result.dvf, fig=fig)
