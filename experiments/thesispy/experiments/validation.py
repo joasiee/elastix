@@ -30,22 +30,18 @@ VALIDATION_NAMES_NEW = [
     "mean_surface_sphere",
     "hausdorff_cube",
     "hausdorff_sphere",
-    "dice_cube",
-    "dice_sphere",
     "bending_energy",
     "dvf_rmse",
 ]
 VALIDATION_ABBRVS = ["$TRE$", "$WASD$", "$WHD$", "$DSC$", "$E_b$", r"$\vec{v}_{\epsilon}$"]
 VALIDATION_ABBRVS_NEW = [
     "$TRE$",
-    "$ASD_{\textsc{cube}}$",
-    "$ASD_{\textsc{sphere}}$",
-    "$HD_{\textsc{cube}}$",
-    "$HD_{\textsc{sphere}}$",
-    "$DSC_{\textsc{cube}}$",
-    "$DSC_{\textsc{sphere}}$",
+    "$ASD_{\\textsc{cube}}$",
+    "$ASD_{\\textsc{sphere}}$",
+    "$HD_{\\textsc{cube}}$",
+    "$HD_{\\textsc{sphere}}$",
     "$E_b$",
-    r"$\vec{v}_{\epsilon}$",
+    "$\\vec{v}_{\\epsilon}$",
 ]
 
 

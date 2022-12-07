@@ -13,13 +13,32 @@ def yield_experiments(collection: Collection, instance: int, project: str, exp_f
 
 
 def regularization_weight():
-    for weight in np.geomspace(0.01, 10.0, 20):
-        weight = np.round(weight, 3)
+    for weight in [0.0] + list(np.geomspace(0.0001, 10.0, 50)):
+        weight = np.round(weight, 5)
         params = (
-            Parameters.from_base(mesh_size=4)
-            .gomea(LinkageType.CP_MARGINAL, use_constraints=True, contraints_threshold=0.005)
+            Parameters.from_base(mesh_size=5)
+            .asgd()
             .regularize(weight)
-            .stopping_criteria(iterations=500)
+            .stopping_criteria(iterations=10000)
+        )
+        yield params
+        params = (
+            Parameters.from_base(mesh_size=5)
+            .gomea()
+            .regularize(weight)
+            .stopping_criteria(iterations=300)
+        )
+        yield params
+
+def regularization_weight_subsampling():
+    for weight in [0.0] + list(np.geomspace(0.001, 5.0, 49)):
+        weight = np.round(weight, 4)
+        params = (
+            Parameters.from_base(mesh_size=5)
+            .asgd()
+            .sampler("Random", pct=0.05)
+            .regularize(weight)
+            .stopping_criteria(iterations=1000)
         )
         yield params
 
@@ -164,8 +183,7 @@ def linkage_models():
 
 
 def linkage_models_static():
-    peval_budget = 30000e6
-    max_iterations = 10000
+    max_iterations = 300
     for seed in range(3):
         seed += 1
         for min, max in itertools.product([3, 6, 9, 12], [6, 9, 12, 15, 18, 24, 32]):
@@ -174,7 +192,7 @@ def linkage_models_static():
             params = (
                 Parameters.from_base(mesh_size=5, seed=seed)
                 .gomea(LinkageType.STATIC_EUCLIDEAN, min_set_size=min, max_set_size=max)
-                .stopping_criteria(iterations=max_iterations, pixel_evals=peval_budget)
+                .stopping_criteria(iterations=max_iterations)
             )
             yield params
 
@@ -182,7 +200,7 @@ def linkage_models_static():
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = linkage_models
+    fn = linkage_models_static
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

@@ -10,4 +10,4 @@ xtick.direction: in
 ytick.right: True
 ytick.direction: in
 grid.linestyle: --
-# axes.prop_cycle: cycler('color', ['1b9e77', 'd95f02', '7570b3', 'e7298a', '66a61e', 'e6ab02', 'a6761d'])
+axes.prop_cycle: cycler('color', ['EE7733', '0077BB', '997700', 'AA4499', 'CC3311', '009988', 'BBBBBB', '000000'])

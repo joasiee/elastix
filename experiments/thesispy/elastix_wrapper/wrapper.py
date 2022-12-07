@@ -177,16 +177,18 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=4)
-        .gomea(LinkageType.CP_MARGINAL)
+        Parameters.from_base(mesh_size=5)
+        .asgd()
+        .sampler("Random", 0.1)
+        .multi_resolution(3)
         .stopping_criteria(iterations=500)
-        .debug()
+        .args({"ShowExactMetricValue": "true"})
         .instance(Collection.SYNTHETIC, 1)
     )
     run(
         params_main,
         Path("output/" + str(params_main)),
         suppress_stdout=False,
-        visualize=True,
-        validate=True,
+        visualize=False,
+        validate=False,
     )

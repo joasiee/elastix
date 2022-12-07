@@ -44,5 +44,6 @@ def get_runs_as_dataset(project, filters={}):
 
     runs = []
     for run in api.runs(entity + "/" + project, filters=filters):
-        runs.append(parse_run(run))
+        if run.state == "finished":
+            runs.append(parse_run(run))
     return Dataset(project, runs)
