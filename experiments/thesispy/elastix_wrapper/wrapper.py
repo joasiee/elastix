@@ -177,12 +177,10 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=5)
-        .asgd()
-        .sampler("Random", 0.1)
-        .multi_resolution(3)
+        Parameters.from_base(mesh_size=4)
+        .gomea()
+        .debug()
         .stopping_criteria(iterations=500)
-        .args({"ShowExactMetricValue": "true"})
         .instance(Collection.SYNTHETIC, 1)
     )
     run(

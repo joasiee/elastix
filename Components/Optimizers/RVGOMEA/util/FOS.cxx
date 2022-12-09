@@ -37,6 +37,7 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-= Section Includes -=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 #include "./FOS.h"
+#include "FOS.h"
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 
@@ -479,7 +480,7 @@ determineNearestNeighbour(int index, int mpm_length)
 }
 
 double **
-computeMIMatrix(MatrixXd & covariance_matrix, int n)
+computeMIMatrix(const MatrixXd & covariance_matrix, int n)
 {
   PROFILE_FUNCTION();
   int    i, j;
@@ -513,17 +514,15 @@ computeDistanceMatrixBSplineGrid(int n)
   for (int i = 1; i < grid_region_dimensions.size(); ++i)
     divisions[i] = divisions[i - 1] * grid_region_dimensions[i - 1];
 
-  int nGridPoints = n / grid_region_dimensions.size();
+  const int nGridPoints = n / grid_region_dimensions.size();
   for (int i = 0; i < nGridPoints; ++i)
   {
-    int      gridPointIndex_i = i % nGridPoints;
-    VectorXd gridPoint_i = computeGridPosition(gridPointIndex_i, divisions);
+    VectorXd gridPoint_i = computeGridPosition(i, divisions);
 
     // sets distance of control point parameters of different control points to their euclidean distance
     for (int j = i + 1; j < nGridPoints; ++j)
     {
-      int      gridPointIndex_j = j % nGridPoints;
-      VectorXd gridPoint_j = computeGridPosition(gridPointIndex_j, divisions);
+      VectorXd gridPoint_j = computeGridPosition(j, divisions);
       VectorXd u_v = gridPoint_i - gridPoint_j;
       double   distance = sqrt(u_v.dot(u_v));
 
@@ -540,6 +539,35 @@ computeDistanceMatrixBSplineGrid(int n)
     }
   }
   return distances;
+}
+
+MatrixXd
+computeMIMatrixBSplineGrid(const MatrixXd & covariance_matrix, int n)
+{
+  double ** matrix = computeMIMatrix(covariance_matrix, n);
+  const int nGridPoints = n / grid_region_dimensions.size();
+  MatrixXd cPointsMatrix = MatrixXd::Zero(nGridPoints, nGridPoints);
+
+  // calculate average mutual information between control points by averaging over all dimensions
+  for (int i = 0; i < nGridPoints; ++i)
+  {
+    for (int j = 0; j < i; ++j)
+    {
+      double sum = 0;
+      for (int dim = 0; dim < grid_region_dimensions.size(); ++dim)
+      {
+        sum += matrix[dim * nGridPoints + i][dim * nGridPoints + j];
+      }
+      cPointsMatrix(i, j) = sum / (double) grid_region_dimensions.size();
+      cPointsMatrix(j, i) = cPointsMatrix(i, j);
+    }
+  }
+
+  for (int i = 0; i < n; ++i)
+    free(matrix[i]);
+  free(matrix);
+
+  return cPointsMatrix;
 }
 
 VectorXd

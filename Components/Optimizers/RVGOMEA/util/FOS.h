@@ -80,9 +80,11 @@ determineNearestNeighbour(int index, int mpm_length);
 double
 getSimilarity(int a, int b);
 double **
-computeMIMatrix(MatrixXd & covariance_matrix, int n);
+computeMIMatrix(const MatrixXd & covariance_matrix, int n);
 MatrixXd
-computeDistanceMatrixBSplineGrid(int n, const std::vector<int> & gridDimensions);
+computeDistanceMatrixBSplineGrid(int n);
+MatrixXd
+computeMIMatrixBSplineGrid(const MatrixXd & covariance_matrix, int n);
 VectorXd
 computeGridPosition(int index, const std::vector<int> & divisions);
 MatrixXd

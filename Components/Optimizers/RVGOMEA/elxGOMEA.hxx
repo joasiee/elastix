@@ -56,7 +56,12 @@ GOMEA<TElastix>::AfterEachIteration(void)
   this->m_PdPctMean = {};
 
   this->WriteDistributionMultipliers(this->m_DistMultOutFile);
-  this->writeTransformParametersWithConstraint(this->m_TransformParametersExtraOutFile);
+
+  if (this->GetWriteExtraOutput())
+  {
+    this->WriteTransformParametersWithConstraint(this->m_TransformParametersExtraOutFile);
+    this->WriteMutualInformationMatrix();
+  }
 
   /** Select new samples if desired. These
    * will be used in the next iteration */
@@ -176,9 +181,16 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   if (this->GetWriteExtraOutput())
   {
     std::ostringstream makeFileName("");
-    makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_transform_params_constraints.dat";
+    makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level
+                 << "_transform_params_constraints.dat";
     std::string fileName = makeFileName.str();
     this->m_TransformParametersExtraOutFile.open(fileName.c_str());
+
+    std::ostringstream matricesDir("");
+    matricesDir << this->m_Configuration->GetCommandLineArgument("-out") << "mutual_information_matrices.R" << level
+                << "/";
+    this->m_MutualInformationOutDir = matricesDir.str();
+    std::filesystem::create_directory(this->m_MutualInformationOutDir);
   }
 
   std::ostringstream makeFileName("");
@@ -245,6 +257,21 @@ void
 GOMEA<TElastix>::AfterRegistration(void)
 {
   elxout << "\nFinal metric value = " << this->m_Value << "\n";
+}
+
+template <class TElastix>
+void
+GOMEA<TElastix>::WriteMutualInformationMatrix() const
+{
+  std::ostringstream makeFileName("");
+  makeFileName << this->m_MutualInformationOutDir << "MI_matrix_" << this->m_CurrentIteration << ".dat";
+  std::string   fileName = makeFileName.str();
+  std::ofstream file;
+  file.open(fileName.c_str());
+
+  this->WriteMutualInformationMatrixToFile(file);
+
+  file.close();
 }
 } // namespace elastix
 

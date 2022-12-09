@@ -93,10 +93,10 @@ GOMEAOptimizer::initialize(void)
       switch (m_FosElementSize)
       {
         case FOSType::Full:
-          m_BasePopulationSize = std::max((int) m_NrOfParameters * 10, m_BasePopulationSize);
+          m_BasePopulationSize = std::max((int)m_NrOfParameters * 10, m_BasePopulationSize);
           break;
         case FOSType::StaticLinkageTree:
-          m_BasePopulationSize = std::max((int) m_StaticLinkageMaxSetSize * 10, m_BasePopulationSize);
+          m_BasePopulationSize = std::max((int)m_StaticLinkageMaxSetSize * 10, m_BasePopulationSize);
           break;
         default:
           break;
@@ -1074,6 +1074,9 @@ GOMEAOptimizer::estimateParameters(int population_index)
         this->initializeDistributionMultipliers(population_index);
     }
 
+    if (m_WriteExtraOutput)
+      this->estimateFullCovarianceMatrixML(population_index);
+
     if (m_PartialEvaluations)
     {
       if (learn_linkage_tree || number_of_generations[population_index] == 0)
@@ -1345,7 +1348,7 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
     obj_val =
       this->GetValue(populations[population_index][individual_index], fos_index, individual_index, constraint_val);
 
-    this->GetValueSanityCheck(populations[population_index][individual_index], obj_val, constraint_val);
+    // this->GetValueSanityCheck(populations[population_index][individual_index], obj_val, constraint_val);
 
     ++m_NumberOfEvaluations;
   }
@@ -1361,7 +1364,9 @@ GOMEAOptimizer::costFunctionEvaluation(int           population_index,
 }
 
 void
-GOMEAOptimizer::GetValueSanityCheck(const ParametersType & parameters, MeasureType obj_val_partial, MeasureType cons_val_partial) const
+GOMEAOptimizer::GetValueSanityCheck(const ParametersType & parameters,
+                                    MeasureType            obj_val_partial,
+                                    MeasureType            cons_val_partial) const
 {
   Array<double> derivative(m_NrOfParameters);
   MeasureType   constraint_val, constraint_val2;
@@ -2088,20 +2093,28 @@ GOMEAOptimizer::WriteDistributionMultipliers(std::ofstream & outfile) const
 }
 
 void
-GOMEAOptimizer::writeTransformParametersWithConstraint(std::ofstream & outfile)
+GOMEAOptimizer::WriteTransformParametersWithConstraint(std::ofstream & outfile)
 {
   PROFILE_FUNCTION();
-  if (this->m_WriteExtraOutput)
+
+  outfile << max_constraint_value << " ";
+  for (const double & param_value : this->max_constraint_parameters)
   {
-    outfile << max_constraint_value << " ";
-    for (const double & param_value : this->max_constraint_parameters)
-    {
-      outfile << param_value << " ";
-    }
-    outfile << "\n";
-    outfile.flush();
+    outfile << param_value << " ";
   }
+  outfile << "\n";
+  outfile.flush();
+
   max_constraint_value = 0.0;
+}
+
+void
+GOMEAOptimizer::WriteMutualInformationMatrixToFile(std::ofstream & outfile) const
+{
+  PROFILE_FUNCTION();
+  MatrixXd mi_matrix_grid = computeMIMatrixBSplineGrid(full_covariance_matrix[0], m_NrOfParameters);
+  outfile << mi_matrix_grid << "\n";
+  outfile.flush();
 }
 
 /**

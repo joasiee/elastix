@@ -86,8 +86,13 @@ private:
   void
   operator=(const Self &) = delete;
 
+  void
+  WriteMutualInformationMatrix() const;
+
   std::ofstream m_DistMultOutFile;
   std::ofstream m_TransformParametersExtraOutFile;
+
+  std::string m_MutualInformationOutDir;
 };
 
 } // end namespace elastix
