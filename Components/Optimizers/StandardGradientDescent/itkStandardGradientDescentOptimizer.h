@@ -119,6 +119,7 @@ public:
 
   /** Get the current time. This equals the CurrentIteration in this base class
    * but may be different in inheriting classes, such as the AccelerateGradientDescent */
+  itkSetMacro(CurrentTime, double);
   itkGetConstMacro(CurrentTime, double);
 
   /** Set the current time to the initial time. This can be useful

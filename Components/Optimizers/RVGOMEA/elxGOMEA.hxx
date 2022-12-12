@@ -173,6 +173,11 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->m_Configuration->ReadParameter(useConstraints, "UseConstraints", this->GetComponentLabel(), level, 0);
   this->SetUseConstraints(useConstraints);
 
+  /** Set UseASGD*/
+  bool useASGD = false;
+  this->m_Configuration->ReadParameter(useASGD, "UseASGD", this->GetComponentLabel(), level, 0);
+  this->SetUseASGD(useASGD);
+
   /** Set WriteExtraOutput*/
   bool writeExtraOutput = false;
   this->m_Configuration->ReadParameter(writeExtraOutput, "WriteExtraOutput", this->GetComponentLabel(), level, 0);
@@ -193,6 +198,13 @@ GOMEA<TElastix>::BeforeEachResolution(void)
     std::filesystem::create_directory(this->m_MutualInformationOutDir);
   }
 
+  if (this->GetUseASGD())
+  {
+    m_ASGD = GradientDescentType::New();
+    m_ASGD->BeforeEachResolution();
+  }
+
+  // Open the output file for the distribution multipliers
   std::ostringstream makeFileName("");
   makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "R" << level << "_dist_mults.dat";
   std::string fileName = makeFileName.str();
@@ -257,6 +269,20 @@ void
 GOMEA<TElastix>::AfterRegistration(void)
 {
   elxout << "\nFinal metric value = " << this->m_Value << "\n";
+}
+
+template <class TElastix>
+inline void
+GOMEA<TElastix>::OptimizeParametersWithGradientDescent(ParametersType & parameters, int iterations)
+{
+  m_ASGD->ResetCurrentTimeToInitialTime();
+  m_ASGD->SetCurrentIteration(0);
+
+  m_ASGD->SetInitialPosition(parameters);
+  m_ASGD->SetNumberOfIterations(iterations);
+  m_ASGD->StartOptimization();
+
+  parameters = m_ASGD->GetCurrentPosition();
 }
 
 template <class TElastix>

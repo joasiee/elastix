@@ -137,6 +137,8 @@ public:
   /** Set use OpenMP or not. */
   itkSetMacro(UseOpenMP, bool);
 
+  itkSetMacro(CurrentIteration, unsigned long);
+
 protected:
   GradientDescentOptimizer2();
   ~GradientDescentOptimizer2() override = default;

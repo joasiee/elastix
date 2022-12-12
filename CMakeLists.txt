@@ -304,6 +304,7 @@ set( elxComponents_INCLUDE_DIRECTORIES
   ${elastix_SOURCE_DIR}/Components/ResampleInterpolators
   ${elastix_SOURCE_DIR}/Components/Resamplers
   ${elastix_SOURCE_DIR}/Components/Transforms
+  ${elastix_SOURCE_DIR}/Components/Optimizers/AdaptiveStochasticGradientDescent
 )
 
 set( elxINCLUDE_DIRECTORIES

@@ -156,6 +156,9 @@ public:
   itkGetConstMacro(UseConstraints, bool);
   itkSetMacro(UseConstraints, bool);
 
+  itkGetConstMacro(UseASGD, bool);
+  itkSetMacro(UseASGD, bool);
+
   itkGetConstMacro(WriteExtraOutput, bool);
   itkSetMacro(WriteExtraOutput, bool);
 
@@ -193,9 +196,12 @@ protected:
   virtual size_t
   GetNumberOfPixelEvaluations() const
   {
-    itkWarningMacro("GetNumberOfPixelEvaluations() of derived class with access to metric should be used.");
     return m_NumberOfEvaluations;
   }
+
+  virtual void
+  OptimizeParametersWithGradientDescent(ParametersType & params, int iterations)
+  {}
 
   unsigned long     m_NumberOfEvaluations{ 0L };
   unsigned long     m_CurrentIteration{ 0L };
@@ -349,7 +355,9 @@ private:
   void
   saveVariancesForNextResolution();
   void
-  GetValueSanityCheck(const ParametersType & parameters, MeasureType obj_val_partial, MeasureType cons_val_partial) const;
+  GetValueSanityCheck(const ParametersType & parameters,
+                      MeasureType            obj_val_partial,
+                      MeasureType            cons_val_partial) const;
 
   mutable std::ostringstream m_StopConditionDescription;
 
@@ -378,6 +386,7 @@ private:
 
   bool m_PartialEvaluations{ false };
   bool m_UseShrinkage{ false };
+  bool m_UseASGD{ false };
   bool m_UseConstraints{ true };
   bool m_WriteExtraOutput{ false };
 

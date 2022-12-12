@@ -233,4 +233,3 @@ foreach( userComponentDir ${ELASTIX_USER_COMPONENT_DIRS} )
 
   endforeach()
 endforeach()
-

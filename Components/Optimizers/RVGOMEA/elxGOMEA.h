@@ -3,6 +3,7 @@
 
 #include "elxIncludes.h"
 #include "itkGOMEAOptimizer.h"
+#include "elxAdaptiveStochasticGradientDescent.h"
 #include "itkAdvancedImageToImageMetric.h"
 
 namespace elastix
@@ -50,6 +51,9 @@ public:
   using CombinationTransformType = itk::AdvancedCombinationTransform<double, FixedImageType::ImageDimension>;
   using BSplineBaseType = itk::AdvancedBSplineDeformableTransformBase<double, FixedImageType::ImageDimension>;
 
+  using GradientDescentType = AdaptiveStochasticGradientDescent<TElastix>;
+  using GradientDescentPointer = typename GradientDescentType::Pointer;
+
   /** Methods to set parameters and print output at different stages
    * in the registration process.*/
   void
@@ -79,6 +83,9 @@ protected:
     return testPtr ? testPtr->GetNumberOfPixelEvaluations() : 0;
   }
 
+  void
+  OptimizeParametersWithGradientDescent(ParametersType & parameters, int iterations) override;
+
 private:
   elxOverrideGetSelfMacro;
 
@@ -88,6 +95,8 @@ private:
 
   void
   WriteMutualInformationMatrix() const;
+
+  GradientDescentPointer m_ASGD;
 
   std::ofstream m_DistMultOutFile;
   std::ofstream m_TransformParametersExtraOutFile;
