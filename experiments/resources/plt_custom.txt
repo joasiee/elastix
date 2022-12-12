@@ -11,3 +11,5 @@ ytick.right: True
 ytick.direction: in
 grid.linestyle: --
 axes.prop_cycle: cycler('color', ['EE7733', '0077BB', '997700', 'AA4499', 'CC3311', '009988', 'BBBBBB', '000000'])
+axes.labelsize: 12
+axes.titlesize: 14
