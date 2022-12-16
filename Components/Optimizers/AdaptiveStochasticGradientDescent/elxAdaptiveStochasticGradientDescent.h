@@ -27,9 +27,11 @@
 #include "itkAdvancedTransform.h"
 #include "itkMersenneTwisterRandomVariateGenerator.h"
 
-
 namespace elastix
 {
+template <class TElastix>
+class ITK_TEMPLATE_EXPORT GOMEA;
+
 /**
  * \class AdaptiveStochasticGradientDescent
  * \brief A gradient descent optimizer with an adaptive gain.
@@ -423,6 +425,8 @@ private:
   /** The flag of using noise compensation. */
   bool m_UseNoiseCompensation;
   bool m_OriginalButSigmoidToDefault;
+
+  friend class GOMEA<TElastix>;
 };
 
 } // end namespace elastix

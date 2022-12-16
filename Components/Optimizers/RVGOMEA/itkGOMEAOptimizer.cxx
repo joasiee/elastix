@@ -144,6 +144,9 @@ GOMEAOptimizer::initialize(void)
   GOMEA::grid_region_dimensions = std::move(m_BSplineGridRegionDimensions);
   GOMEA::static_linkage_type = static_cast<BSplineStaticLinkageType>(m_StaticLinkageType);
 
+  if (m_UseASGD)
+    this->InitializeASGD();
+
   // finish initialization
   this->checkOptions();
   initializeRandomNumberGenerator();
@@ -1047,6 +1050,9 @@ GOMEAOptimizer::makePopulation(int population_index)
 
   this->generateAndEvaluateNewSolutionsToFillPopulation(population_index);
 
+  if (m_UseASGD)
+    this->applyASGD(population_index);
+
   this->computeRanksForOnePopulation(population_index);
 }
 
@@ -1681,6 +1687,23 @@ GOMEAOptimizer::applyAMS(int population_index, int individual_index)
     improvement = 1;
   }
   return (improvement);
+}
+
+void
+GOMEAOptimizer::applyASGD(int population_index)
+{
+  PROFILE_FUNCTION();
+  int * solutions_random_order = randomPermutation(population_sizes[population_index]);
+  int   number_of_solutions = m_TauASGD * population_sizes[population_index];
+
+  for (int i = 0; i < number_of_solutions; i++)
+  {
+    int individual_index = solutions_random_order[i];
+    this->OptimizeParametersWithGradientDescent(populations[population_index][individual_index],
+                                                m_NumberOfASGDIterations);
+  }
+
+  free(solutions_random_order);
 }
 
 void

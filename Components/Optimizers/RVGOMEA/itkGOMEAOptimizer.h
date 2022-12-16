@@ -117,6 +117,9 @@ public:
   itkGetConstMacro(FitnessVarianceTolerance, double);
   itkSetMacro(FitnessVarianceTolerance, double);
 
+  itkGetConstMacro(TauASGD, double);
+  itkSetMacro(TauASGD, double);
+
   itkGetConstMacro(ImageDimension, int);
   itkSetMacro(ImageDimension, int);
 
@@ -146,6 +149,9 @@ public:
 
   itkGetConstMacro(StaticLinkageMaxSetSize, int);
   itkSetMacro(StaticLinkageMaxSetSize, int);
+
+  itkGetConstMacro(NumberOfASGDIterations, int);
+  itkSetMacro(NumberOfASGDIterations, int);
 
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
@@ -198,6 +204,10 @@ protected:
   {
     return m_NumberOfEvaluations;
   }
+
+  virtual void
+  InitializeASGD()
+  {}
 
   virtual void
   OptimizeParametersWithGradientDescent(ParametersType & params, int iterations)
@@ -329,6 +339,8 @@ private:
   short
   applyAMS(int population_index, int individual_index);
   void
+  applyASGD(int population_index);
+  void
   applyForcedImprovements(int population_index, int individual_index, int donor_index);
   void
   generateNewPartialSolutionFromFOSElement(int population_index, int FOS_index, VectorXd & result);
@@ -369,6 +381,7 @@ private:
   double m_DistributionMultiplierDecrease{ 0.9 };
   double m_StDevThreshold{ 1.0 };
   double m_FitnessVarianceTolerance{ 0.0 };
+  double m_TauASGD{ 0.1 };
   double distribution_multiplier_increase;
   double eta_ams{ 1.0 };
   double eta_cov{ 1.0 };
@@ -381,6 +394,7 @@ private:
   int m_StaticLinkageType{ 0 };
   int m_StaticLinkageMinSetSize{ 3 };
   int m_StaticLinkageMaxSetSize{ 24 };
+  int m_NumberOfASGDIterations{ 50 };
   int number_of_subgenerations_per_population_factor{ 8 };
   int number_of_populations{ 0 };
 

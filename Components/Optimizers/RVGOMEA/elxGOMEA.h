@@ -3,7 +3,7 @@
 
 #include "elxIncludes.h"
 #include "itkGOMEAOptimizer.h"
-#include "elxAdaptiveStochasticGradientDescent.h"
+#include "../AdaptiveStochasticGradientDescent/elxAdaptiveStochasticGradientDescent.h"
 #include "itkAdvancedImageToImageMetric.h"
 
 namespace elastix
@@ -82,6 +82,9 @@ protected:
     MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
     return testPtr ? testPtr->GetNumberOfPixelEvaluations() : 0;
   }
+
+  void
+  InitializeASGD() override;
 
   void
   OptimizeParametersWithGradientDescent(ParametersType & parameters, int iterations) override;
