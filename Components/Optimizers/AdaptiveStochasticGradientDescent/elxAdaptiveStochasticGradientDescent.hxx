@@ -462,6 +462,13 @@ template <class TElastix>
 void
 AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimation()
 {
+  if (m_HybridMode)
+  {
+    this->m_OriginalButSigmoidToDefault = false;
+    this->AutomaticParameterEstimationOriginal();
+    return;
+  }
+
   /** Total time. */
   itk::TimeProbe timer1;
   timer1.Start();
@@ -491,9 +498,9 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimation()
     this->AutomaticParameterEstimationUsingDisplacementDistribution();
   }
 
-  /** Print the elapsed time. */
-  timer1.Stop();
-  elxout << "Automatic parameter estimation took " << Conversion::SecondsToDHMS(timer1.GetMean(), 2) << std::endl;
+  // /** Print the elapsed time. */
+  // // timer1.Stop();
+  // // elxout << "Automatic parameter estimation took " << Conversion::SecondsToDHMS(timer1.GetMean(), 2) << std::endl;
 
 } // end AutomaticParameterEstimation()
 
@@ -507,6 +514,7 @@ void
 AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOriginal()
 {
   itk::TimeProbe timer2{}, timer3{};
+  std::cout.setstate(std::ios_base::failbit);
 
   /** Get the user input. */
   const double delta = this->GetMaximumStepLength();
@@ -639,6 +647,8 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOrigina
     this->SetSigmoidMin(fmin);
     this->SetSigmoidScale(omega);
   }
+
+  std::cout.clear();
 } // end AutomaticParameterEstimationOriginal()
 
 

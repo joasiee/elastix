@@ -120,7 +120,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetNumberOfASGDIterations(numberOfASGDIterations);
 
   /** Set StaticLinkageMaxSetSize.*/
-  int staticLinkageMaxSetSize = 24;
+  int staticLinkageMaxSetSize = 12;
   this->m_Configuration->ReadParameter(
     staticLinkageMaxSetSize, "StaticLinkageMaxSetSize", this->GetComponentLabel(), level, 0);
   this->SetStaticLinkageMaxSetSize(staticLinkageMaxSetSize);
@@ -180,7 +180,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetUseShrinkage(useShrinkage);
 
   /** Set UseConstraints*/
-  bool useConstraints = true;
+  bool useConstraints = false;
   this->m_Configuration->ReadParameter(useConstraints, "UseConstraints", this->GetComponentLabel(), level, 0);
   this->SetUseConstraints(useConstraints);
 
@@ -212,6 +212,8 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   if (this->GetUseASGD())
   {
     m_ASGD = GradientDescentType::New();
+    m_ASGD->SetElastix(this->GetElastix());
+    m_ASGD->BeforeEachResolution();
   }
 
   // Open the output file for the distribution multipliers
@@ -315,37 +317,7 @@ void
 GOMEA<TElastix>::InitializeASGD()
 {
   m_ASGD->SetCostFunction(this->GetCostFunction());
-  
-  unsigned int       level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
-  const unsigned int numberOfParameters =
-    this->GetElastix()->GetElxTransformBase()->GetAsITKBaseType()->GetNumberOfParameters();
-
-  m_ASGD->SetParam_A(20.0);
-  m_ASGD->SetInitialTime(0.0);
-  m_ASGD->m_MaxBandCovSize = 192;
-  m_ASGD->m_NumberOfBandStructureSamples = 10;
-  m_ASGD->SetUseAdaptiveStepSizes(true);
-  m_ASGD->m_AutomaticParameterEstimation = true;
-  m_ASGD->m_UseConstantStep = false;
-  m_ASGD->m_MaximumStepLengthRatio = 1.0;
-
-  const unsigned int fixdim = std::min((unsigned int)this->GetElastix()->FixedDimension, (unsigned int)2);
-  const unsigned int movdim = std::min((unsigned int)this->GetElastix()->MovingDimension, (unsigned int)2);
-  double             sum = 0.0;
-  for (unsigned int d = 0; d < fixdim; ++d)
-  {
-    sum += this->GetElastix()->GetFixedImage()->GetSpacing()[d];
-  }
-  for (unsigned int d = 0; d < movdim; ++d)
-  {
-    sum += this->GetElastix()->GetMovingImage()->GetSpacing()[d];
-  }
-  m_ASGD->m_MaximumStepLength = m_ASGD->m_MaximumStepLengthRatio * sum / static_cast<double>(fixdim + movdim);
-  m_ASGD->m_NumberOfGradientMeasurements = 0;
-  m_ASGD->m_NumberOfJacobianMeasurements =
-    std::max(static_cast<unsigned int>(1000), static_cast<unsigned int>(numberOfParameters));
-  m_ASGD->m_NumberOfSamplesForExactGradient = 100000;
-  m_ASGD->m_SigmoidScaleFactor = 0.1;
+  m_ASGD->SetHybridMode(true);
 }
 } // namespace elastix
 

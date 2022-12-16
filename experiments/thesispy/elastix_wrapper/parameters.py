@@ -24,8 +24,8 @@ class Parameters:
         cls,
         metric: str = "AdvancedMeanSquares",
         mesh_size: List[int] | int = 4,
-        use_mask: bool = False,
-        use_missedpixel_penalty: bool = False,
+        use_mask: bool = None,
+        use_missedpixel_penalty: bool = None,
         seed: int = None,
     ):
         with BASE_PARAMS_PATH.open() as f:
@@ -83,7 +83,7 @@ class Parameters:
         evals: List[int] | int = None,
         pixel_evals: List[int] | int = None,
         max_time_s: int = 0,
-        fitness_var: float = 1e-9,
+        fitness_var: float = None,
     ):
         return self.args(
             {
@@ -99,11 +99,14 @@ class Parameters:
         self,
         fos: LinkageType = LinkageType.CP_MARGINAL,
         pop_size: List[int] | int = None,
-        shrinkage: bool = False,
-        use_constraints: bool = False,
+        shrinkage: bool = None,
+        use_constraints: bool = None,
         contraints_threshold: float = 0.0,
-        min_set_size: int = 3,
-        max_set_size: int = 24,
+        min_set_size: int = None,
+        max_set_size: int = None,
+        hybrid: bool = None,
+        tau_asgd: float = None,
+        asgd_iterations: int = None,
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
         static_linkage_type = 0
@@ -122,6 +125,9 @@ class Parameters:
                 "StaticLinkageType": static_linkage_type,
                 "StaticLinkageMinSetSize": min_set_size,
                 "StaticLinkageMaxSetSize": max_set_size,
+                "UseASGD": hybrid,
+                "TauASGD": tau_asgd,
+                "NumberOfASGDIterations": asgd_iterations,
             }
         )
 

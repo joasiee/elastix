@@ -63,7 +63,7 @@ ImageSamplerBase<TElastix>::BeforeEachResolutionBase()
     this->GetAsITKBaseType()->SetUseMultiThread(false);
   }
 
-  bool useMask = true;
+  bool useMask = false;
   this->m_Configuration->ReadParameter(useMask, "UseMask", "", level, 0, true);
   this->GetAsITKBaseType()->SetUseMask(useMask);
 

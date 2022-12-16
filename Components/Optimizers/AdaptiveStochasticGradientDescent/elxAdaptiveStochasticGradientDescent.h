@@ -277,6 +277,8 @@ public:
   itkSetMacro(AutomaticParameterEstimation, bool);
   itkGetConstMacro(AutomaticParameterEstimation, bool);
 
+  itkSetMacro(HybridMode, bool);
+
   /** Set/Get maximum step length. */
   itkSetMacro(MaximumStepLength, double);
   itkGetConstMacro(MaximumStepLength, double);
@@ -426,6 +428,7 @@ private:
   bool m_UseNoiseCompensation;
   bool m_OriginalButSigmoidToDefault;
 
+  bool m_HybridMode{ false };
   friend class GOMEA<TElastix>;
 };
 

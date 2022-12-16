@@ -44,4 +44,5 @@
 (ImagePyramidSchedule 1 1 1)
 (FinalGridSpacingInVoxels 6 6 6)
 (NumberOfSpatialSamples 13824)
-(UseASGD "true")
+(UseASGD "false")
+(RandomSeed 55)
