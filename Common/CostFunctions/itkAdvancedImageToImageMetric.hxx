@@ -1032,7 +1032,7 @@ typename AdvancedImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
                                                                 int                             fosIndex,
                                                                 int                             individualIndex,
-                                                                MeasureType & constraintValue) const
+                                                                MeasureType &                   constraintValue) const
 {
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
@@ -1040,13 +1040,25 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
                                               : m_SolutionEvaluations[individualIndex] - m_PartialEvaluationHelper +
                                                   this->GetValuePartial(parameters, fosIndex);
   measure = this->GetValue(result);
-  constraintValue = this->GetConstraintValue(result);
-  
+  constraintValue = this->GetConstraintValue(result.GetConstraintValue(), fosIndex);
+
   m_PartialEvaluationHelper = std::move(result);
 
   return measure;
 } // end GetValue()
 
+
+template <class TFixedImage, class TMovingImage>
+typename AdvancedImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetConstraintValue(MeasureType missedPixelsPct,
+                                                                          int         fosIndex) const
+{
+  MeasureType constraintValue = NumericTraits<MeasureType>::Zero;
+
+  MeasureType missedPixelPct = (missedPixelsPct >= m_MissedPixelConstraintThreshold) * missedPixelsPct;
+
+  return constraintValue;
+}
 
 template <class TFixedImage, class TMovingImage>
 IntermediateResults
@@ -1246,6 +1258,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
 
   this->m_BSplinePointsRegions.resize(length + 1);
   this->m_BSplinePointsRegionsNoMask.resize(length + 1);
+  this->m_BsplineFOSSetsToControlPointOffsets.clear();
+  this->m_BsplineFOSSetsToControlPointOffsets.resize(length + 1);
 
   CombinationTransformType * comboPtr =
     dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
@@ -1254,15 +1268,20 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
   ImagePointer wrappedImage = bsplinePtr->GetWrappedImages()[0];
 
   std::vector<bool> pointAdded(this->m_BSplineFOSRegions.size(), false);
+  std::vector<bool> offsetAdded(this->m_BSplineFOSRegions.size(), false);
   const int         num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
 
-  // now compute mappings between control points and fos sets, and vice versa.
+  for (i = 0; i < num_points; i++)
+  {
+    m_BsplineFOSSetsToControlPointOffsets[0].push_back(i);
+  }
+
+  // now compute mappings between control points and fos sets.
   // for each fos set j:
   for (j = 0; j < (unsigned)this->m_FOS.length; ++j)
   {
     std::fill(pointAdded.begin(), pointAdded.end(), false);
-    this->m_BSplinePointsRegions[j + 1].clear();
-    this->m_BSplinePointsRegionsNoMask[j + 1].clear();
+    std::fill(offsetAdded.begin(), offsetAdded.end(), false);
 
     // for each index i in fos set:
     for (i = 0; i < (unsigned)this->m_FOS.set_length[j]; ++i)
@@ -1270,6 +1289,12 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
       // calc control point number and its corresponding index
       int            cpoint = (this->m_FOS.sets[j][i] % num_points);
       ImageIndexType p = wrappedImage->ComputeIndex(cpoint);
+
+      if (pointAdded[cpoint])
+        continue;
+
+      pointAdded[cpoint] = true;
+      this->m_BsplineFOSSetsToControlPointOffsets[j + 1].push_back(cpoint);
 
       // calculate the region of influence for this control point
       ImageIndexType lower, upper;
@@ -1292,9 +1317,9 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
         offset = this->m_BSplinePointOffsetMap[offset];
 
         // add region to mapping from fos sets to regions if not added yet and within mask.
-        if (!pointAdded[offset])
+        if (!offsetAdded[offset])
         {
-          pointAdded[offset] = true;
+          offsetAdded[offset] = true;
 
           this->m_BSplinePointsRegionsNoMask[j + 1].push_back(offset);
           if (this->m_SubfunctionSamplers[offset])

@@ -243,7 +243,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const
   -> MeasureType
 {
   MeasureType measure = this->GetValue(parameters);
-  constraintValue = m_PctMissedPixels;
+  constraintValue = this->GetConstraintValue(m_PctMissedPixels, -1);
   return measure;
 } // end GetValue() with contraints
 

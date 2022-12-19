@@ -490,6 +490,14 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::SetCoefficient
   }
 }
 
+template <class TScalarType, unsigned int NDimensions>
+unsigned int
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberOfFoldsForControlPoints(
+  std::vector<int> & offsets) const
+{
+  
+  return 0;
+}
 
 // Print self
 template <class TScalarType, unsigned int NDimensions>

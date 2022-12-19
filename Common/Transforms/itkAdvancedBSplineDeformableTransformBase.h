@@ -337,6 +337,9 @@ public:
   NumberOfParametersType
   GetNumberOfNonZeroJacobianIndices() const override = 0;
 
+  unsigned int
+  ComputeNumberOfFoldsForControlPoints(std::vector<int> & offsets) const;
+
   /** This typedef should be equal to the typedef used
    * in derived classes based on the weights function.
    */

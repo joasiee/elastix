@@ -248,7 +248,7 @@ private:
   void
   operator=(const Self &) = delete;
 
-  mutable double m_PctPixelsMissed;
+  mutable double m_PctMissedPixels;
   mutable bool   m_SubtractMean;
 
   using AccumulateType = typename NumericTraits<MeasureType>::AccumulateType;
