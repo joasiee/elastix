@@ -159,9 +159,6 @@ public:
   GetValue(const TransformParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const TransformParametersType & parameters, MeasureType & constraintValue) const override;
-
-  MeasureType
   GetValue(IntermediateResults & evaluation) const override;
 
   IntermediateResults
@@ -248,7 +245,6 @@ private:
   void
   operator=(const Self &) = delete;
 
-  mutable double m_PctMissedPixels;
   mutable bool   m_SubtractMean;
 
   using AccumulateType = typename NumericTraits<MeasureType>::AccumulateType;

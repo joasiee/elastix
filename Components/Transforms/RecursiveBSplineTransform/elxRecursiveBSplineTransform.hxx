@@ -145,6 +145,12 @@ RecursiveBSplineTransform<TElastix>::BeforeEachResolution()
     passiveEdgeWidth, "PassiveEdgeWidth", this->GetComponentLabel(), level, 0, false);
   this->SetOptimizerScales(passiveEdgeWidth);
 
+  /** Set ComputeControlPointFolds */
+  bool computeFolds = false;
+  this->GetConfiguration()->ReadParameter(
+    computeFolds, "ComputeControlPointFolds", this->GetComponentLabel(), level, 0);
+  this->m_BSplineTransform->SetComputeControlPointFolds(computeFolds);
+
   /** Set WriteControlPoints*/
   this->m_Configuration->ReadParameter(
     this->m_WriteControlPoints, "WriteControlPointsEveryIteration", this->GetComponentLabel(), level, 0);
@@ -622,8 +628,8 @@ RecursiveBSplineTransform<TElastix>::SetOptimizerScales(const unsigned int edgeW
 template <class TElastix>
 void
 RecursiveBSplineTransform<TElastix>::WriteControlPoints(std::string && filepath) const
-{  
-  std::ofstream      outFile;
+{
+  std::ofstream outFile;
   outFile.open(filepath.c_str());
   this->m_BSplineTransform->WriteParametersAsPoints(outFile);
   outFile.close();

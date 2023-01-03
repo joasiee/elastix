@@ -267,8 +267,8 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
 
   const unsigned long numberOfPixelsMissed = sampleContainer.Size() - numberOfPixelsCounted;
   const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainer.Size());
-  m_PctMissedPixels = 100.0 * pctMissed;
-  this->m_MissedPixelsMean(m_PctMissedPixels);
+  this->m_PctMissedPixels = pctMissed;
+  this->m_MissedPixelsMean(pctMissed * 100.0);
 
   /** If SubtractMean, then subtract things from sff, smm and sfm. */
   const RealType N = static_cast<RealType>(numberOfPixelsCounted);
@@ -296,17 +296,6 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   return measure;
 
 } // end GetValue()
-
-template <class TFixedImage, class TMovingImage>
-auto
-AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
-  const TransformParametersType & parameters,
-  MeasureType &                   constraintValue) const -> MeasureType
-{
-  MeasureType measure = this->GetValue(parameters);
-  constraintValue = this->GetConstraintValue(m_PctMissedPixels, -1);
-  return measure;
-}
 
 template <class TFixedImage, class TMovingImage>
 auto
@@ -407,7 +396,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::GetV
   const unsigned long numberOfPixelsMissed = sumNrPixels - pixels;
   const double        pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sumNrPixels);
   this->m_MissedPixelsMean(pctMissed * 100.0);
-  result.SetConstraintValue((double)numberOfPixelsMissed / (double)this->GetNumberOfFixedImageSamples() * 100.0);
+  result.constraints.missedPixelPct = (double)numberOfPixelsMissed / (double)this->GetNumberOfFixedImageSamples();
 
   return result;
 }

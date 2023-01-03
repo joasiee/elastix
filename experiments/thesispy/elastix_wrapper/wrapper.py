@@ -178,7 +178,7 @@ def validation(params: Parameters, run_dir: Path):
 if __name__ == "__main__":
     params_main = (
         Parameters.from_base(mesh_size=4, seed=76)
-        .gomea(LinkageType.CP_MARGINAL, hybrid=False)
+        .gomea(LinkageType.CP_MARGINAL, use_constraints=True, compute_folds_constraints=True)
         .stopping_criteria(iterations=50)
         .instance(Collection.SYNTHETIC, 1)
     )

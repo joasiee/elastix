@@ -1030,6 +1030,22 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsi
 template <class TFixedImage, class TMovingImage>
 typename AdvancedImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
+                                                                MeasureType &                   constraintValue) const
+{
+  MeasureType                        measure = this->GetValue(parameters);
+  const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
+
+  Constraints constraints;
+  constraints.missedPixelPct = m_PctMissedPixels;
+  constraints.bsplineFolds = bsplinePtr->ComputeNumberOfFoldsForControlPoints(nullptr);
+
+  constraintValue = this->GetConstraintValue(constraints);
+  return measure;
+}
+
+template <class TFixedImage, class TMovingImage>
+typename AdvancedImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
                                                                 int                             fosIndex,
                                                                 int                             individualIndex,
                                                                 MeasureType &                   constraintValue) const
@@ -1039,8 +1055,12 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
   IntermediateResults result = fosIndex == -1 ? this->GetValuePartial(parameters, fosIndex)
                                               : m_SolutionEvaluations[individualIndex] - m_PartialEvaluationHelper +
                                                   this->GetValuePartial(parameters, fosIndex);
+
+  const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
+  result.constraints.bsplineFolds += bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
+
   measure = this->GetValue(result);
-  constraintValue = this->GetConstraintValue(result.GetConstraintValue(), fosIndex);
+  constraintValue = this->GetConstraintValue(result.constraints);
 
   m_PartialEvaluationHelper = std::move(result);
 
@@ -1050,14 +1070,14 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
 
 template <class TFixedImage, class TMovingImage>
 typename AdvancedImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
-AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetConstraintValue(MeasureType missedPixelsPct,
-                                                                          int         fosIndex) const
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetConstraintValue(Constraints constraints) const
 {
   MeasureType constraintValue = NumericTraits<MeasureType>::Zero;
 
-  MeasureType missedPixelPct = (missedPixelsPct >= m_MissedPixelConstraintThreshold) * missedPixelsPct;
+  MeasureType missedPixelPct =
+    (constraints.missedPixelPct >= m_MissedPixelConstraintThreshold) * constraints.missedPixelPct;
 
-  return constraintValue;
+  return std::max(missedPixelPct, (double) constraints.bsplineFolds);
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1079,6 +1099,9 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluation(
   int                             fosIndex) const
 {
   m_PartialEvaluationHelper = this->GetValuePartial(parameters, fosIndex);
+  const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
+  m_PartialEvaluationHelper.constraints.bsplineFolds =
+    bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1190,10 +1213,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
 {
   unsigned int i, j, d;
 
-  CombinationTransformType * comboPtr =
-    dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
-  const BSplineOrder3TransformType * bsplinePtr =
-    dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
+  const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
 
   ImagePointer           wrappedImage = bsplinePtr->GetWrappedImages()[0];
   const FixedImageType * fixedImage = this->GetFixedImage();
@@ -1205,7 +1225,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
   // this->m_BSplineRegionsToFosSets.clear();
 
   // this->m_BSplineRegionsToFosSets.resize(coeffRegionCropped.GetNumberOfPixels());
-  this->m_BSplinePointOffsetMap.reserve(coeffRegionCropped.GetNumberOfPixels());
+  this->m_BSplinePointOffsetMap.resize(coeffRegionCropped.GetNumberOfPixels());
 
   // crop control points grid to only contain those at lower left corners of fixed image pixel areas.
   for (d = 0; d < FixedImageDimension; ++d)
@@ -1267,7 +1287,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
     dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
   ImagePointer wrappedImage = bsplinePtr->GetWrappedImages()[0];
 
-  std::vector<bool> pointAdded(this->m_BSplineFOSRegions.size(), false);
+  std::vector<bool> pointAdded(this->m_BSplinePointOffsetMap.size(), false);
   std::vector<bool> offsetAdded(this->m_BSplineFOSRegions.size(), false);
   const int         num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
 

@@ -173,7 +173,7 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
     this->m_Configuration->ReadParameter(samplingPercentage, "SamplingPercentage", this->GetComponentLabel(), level, 0);
     thisAsAdvanced->SetSamplingPercentage(samplingPercentage);
 
-    double missedPixelConstraintThreshold = 0.0;
+    double missedPixelConstraintThreshold = 1.0;
     this->m_Configuration->ReadParameter(
       missedPixelConstraintThreshold, "MissedPixelConstraintThreshold", this->GetComponentLabel(), level, 0);
     thisAsAdvanced->SetMissedPixelConstraintThreshold(missedPixelConstraintThreshold);

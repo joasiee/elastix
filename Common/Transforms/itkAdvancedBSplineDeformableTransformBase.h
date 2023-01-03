@@ -237,6 +237,7 @@ public:
   using RegionType = ImageRegion<Self::SpaceDimension>;
 
   using IndexType = typename RegionType::IndexType;
+  using OffsetType = typename RegionType::OffsetType;
   using SizeType = typename RegionType::SizeType;
   using SpacingType = typename ImageType::SpacingType;
   using DirectionType = typename ImageType::DirectionType;
@@ -338,12 +339,15 @@ public:
   GetNumberOfNonZeroJacobianIndices() const override = 0;
 
   unsigned int
-  ComputeNumberOfFoldsForControlPoints(std::vector<int> & offsets) const;
+  ComputeNumberOfFoldsForControlPoints(const std::vector<int> * offsets) const;
 
   /** This typedef should be equal to the typedef used
    * in derived classes based on the weights function.
    */
   using ContinuousIndexType = ContinuousIndex<ScalarType, SpaceDimension>;
+
+  itkSetMacro(ComputeControlPointFolds, bool);
+  itkGetConstMacro(ComputeControlPointFolds, bool);
 
 protected:
   /** Print contents of an AdvancedBSplineDeformableTransformBase. */
@@ -401,6 +405,8 @@ protected:
   DirectionType                                     m_IndexToPoint;
   bool                                              m_PointToIndexMatrixIsDiagonal;
 
+  bool m_ComputeControlPointFolds { false };
+
   RegionType m_ValidRegion;
 
   /** Variables defining the interpolation support region. */
@@ -436,6 +442,15 @@ private:
   AdvancedBSplineDeformableTransformBase(const Self &) = delete;
   void
   operator=(const Self &) = delete;
+
+  unsigned int
+  ComputeNumberOfFoldsForControlPoint(int offset) const;
+
+  RegionType
+  GetRegionAroundControlPoint(const IndexType & index) const;
+
+  OutputPointType
+  GetPositionOfControlPoint(const IndexType & index) const;
 };
 
 } // namespace itk

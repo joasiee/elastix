@@ -30,6 +30,7 @@ def regularization_weight():
         )
         yield params
 
+
 def regularization_weight_subsampling():
     for weight in [0.0] + list(np.geomspace(0.001, 5.0, 49)):
         weight = np.round(weight, 4)
@@ -200,7 +201,7 @@ def linkage_models_static():
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = linkage_models_static
+    fn = regularization_weight_test
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

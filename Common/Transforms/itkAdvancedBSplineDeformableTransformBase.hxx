@@ -493,10 +493,89 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::SetCoefficient
 template <class TScalarType, unsigned int NDimensions>
 unsigned int
 AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberOfFoldsForControlPoints(
-  std::vector<int> & offsets) const
+  const std::vector<int> * offsets) const
 {
+  unsigned int totalNumberOfFolds = 0;
+
+  if (m_ComputeControlPointFolds)
+  {
+    if (offsets)
+    {
+      for (unsigned int i = 0; i < offsets->size(); ++i)
+        totalNumberOfFolds += this->ComputeNumberOfFoldsForControlPoint((*offsets)[i]);
+    }
+    else
+    {
+      for (unsigned int i = 0; i < this->m_GridRegion.GetNumberOfPixels(); ++i)
+        totalNumberOfFolds += this->ComputeNumberOfFoldsForControlPoint(i);
+    }
+  }
   
-  return 0;
+  return totalNumberOfFolds / 2;
+}
+
+template <class TScalarType, unsigned int NDimensions>
+unsigned int
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberOfFoldsForControlPoint(int offset) const
+{
+  IndexType                                    index = m_WrappedImage[0]->ComputeIndex(offset);
+  RegionType                                   region = this->GetRegionAroundControlPoint(index);
+  ImageRegionConstIteratorWithIndex<ImageType> wrappedImageIterator(m_WrappedImage[0], region);
+  OutputPointType                              centerPoint = this->GetPositionOfControlPoint(index);
+  unsigned int                                 numberOfFolds = 0;
+
+  while (!wrappedImageIterator.IsAtEnd())
+  {
+    if (m_WrappedImage[0]->ComputeOffset(wrappedImageIterator.GetIndex()) != offset)
+    {
+
+      OutputPointType point = this->GetPositionOfControlPoint(wrappedImageIterator.GetIndex());
+      OffsetType      indexDiff = wrappedImageIterator.GetIndex() - index;
+      OutputPointType diff = centerPoint - point;
+      bool            folded = true;
+
+      for (unsigned int dim = 0; dim < NDimensions; ++dim)
+      {
+        diff[dim] = diff[dim] * indexDiff[dim];
+        folded = folded && (diff[dim] >= 0);
+      }
+
+      numberOfFolds += folded;
+    }
+
+    ++wrappedImageIterator;
+  }
+
+  return numberOfFolds;
+}
+
+template <class TScalarType, unsigned int NDimensions>
+auto
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetRegionAroundControlPoint(
+  const IndexType & index) const -> RegionType
+{
+  OffsetType unitOffset;
+  unitOffset.Fill(1);
+
+  IndexType regionStart = index - unitOffset;
+  IndexType regionEnd = index + unitOffset;
+
+  for (unsigned int dim = 0; dim < NDimensions; ++dim)
+  {
+    regionStart[dim] = std::max(regionStart[dim], m_GridRegion.GetIndex()[dim]);
+    regionEnd[dim] = std::min(regionEnd[dim], m_GridRegion.GetUpperIndex()[dim]);
+  }
+
+  OffsetType regionSizeAsOffset = regionEnd - regionStart + unitOffset;
+  SizeType   regionSize;
+  for (unsigned int dim = 0; dim < NDimensions; ++dim)
+  {
+    regionSize[dim] = regionSizeAsOffset[dim];
+  }
+
+  RegionType region(regionStart, regionSize);
+
+  return region;
 }
 
 // Print self
@@ -605,6 +684,21 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::TransformConti
 }
 
 template <class TScalarType, unsigned int NDimensions>
+auto
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetPositionOfControlPoint(
+  const IndexType & index) const -> OutputPointType
+{
+  OutputPointType point = this->TransformContinuousGridIndexToPoint(index);
+
+  for (unsigned int i = 0; i < SpaceDimension; ++i)
+  {
+    point[i] = point[i] + m_CoefficientImages[i]->GetPixel(index);
+  }
+
+  return point;
+}
+
+template <class TScalarType, unsigned int NDimensions>
 void
 AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::WriteParametersAsPoints(std::ofstream & outfile) const
 {
@@ -619,12 +713,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::WriteParameter
     {
       outfile << index[i] << " ";
     }
-    InputPointType point = this->TransformContinuousGridIndexToPoint(index);
-
-    for (unsigned int i = 0; i < SpaceDimension; ++i)
-    {
-      point[i] = point[i] + m_CoefficientImages[i]->GetPixel(index);
-    }
+    OutputPointType point = this->GetPositionOfControlPoint(index);
 
     for (unsigned int i = 0; i < SpaceDimension; ++i)
     {

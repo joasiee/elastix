@@ -134,9 +134,6 @@ public:
   GetValue(const TransformParametersType & parameters) const override;
 
   MeasureType
-  GetValue(const TransformParametersType & parameters, MeasureType & constraintValue) const override;
-
-  MeasureType
   GetValue(IntermediateResults & evaluation) const override;
 
   IntermediateResults
@@ -260,7 +257,6 @@ private:
   bool           m_UseNormalization;
   double         m_SelfHessianSmoothingSigma;
   double         m_SelfHessianNoiseRange;
-  mutable double m_PctMissedPixels;
   unsigned int   m_NumberOfSamplesForSelfHessian;
 };
 

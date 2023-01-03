@@ -356,6 +356,9 @@ public:
   using Superclass::GetValue;
 
   MeasureType
+  GetValue(const TransformParametersType & parameters, MeasureType & constraintValue) const override;
+
+  MeasureType
   GetValue(const TransformParametersType & parameters,
            int                             fosIndex,
            int                             individualIndex,
@@ -369,7 +372,7 @@ public:
   }
 
   MeasureType
-  GetConstraintValue(MeasureType missedPixelsPct, int fosIndex) const;
+  GetConstraintValue(Constraints constraints) const;
 
   virtual IntermediateResults
   GetValuePartial(const ParametersType & parameters, int fosIndex) const;
@@ -446,11 +449,12 @@ protected:
   std::vector<int>                  m_BSplinePointOffsetMap;
   double                            m_SamplingPercentage{ 0.05 };
   double                            m_MissedPixelPenalty{ MissedPixelPenalty };
-  double                            m_MissedPixelConstraintThreshold{ 0.0 };
+  double                            m_MissedPixelConstraintThreshold{ 1.0 };
   FOS                               m_FOS{ 0 };
   mutable IntermediateResults       m_PartialEvaluationHelper;
   std::vector<bool>                 m_ParametersOutsideOfMask;
   mutable size_t                    m_NumberOfPixelEvaluations{ 0UL };
+  mutable double                    m_PctMissedPixels;
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };
@@ -686,6 +690,14 @@ protected:
    * Only does something when Use{Fixed,Moving}Limiter is set to true; */
   virtual void
   InitializeLimiters();
+
+  const BSplineOrder3TransformType *
+  GetTransformAsBsplinePtr() const
+  {
+    CombinationTransformType * comboPtr =
+      dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
+    return dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
+  }
 
   /** Inheriting classes can specify whether they use the image limiter functionality
    * Make sure to set it before calling Initialize; default: false. */

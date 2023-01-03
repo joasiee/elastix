@@ -214,15 +214,15 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   this->m_NumberOfPixelEvaluations += sampleContainerSize;
   const unsigned long numberOfPixelsMissed = sampleContainerSize - numberOfPixelsCounted;
   const double pctMissed = static_cast<RealType>(numberOfPixelsMissed) / static_cast<RealType>(sampleContainerSize);
-  m_PctMissedPixels = pctMissed * 100.0;
-  this->m_MissedPixelsMean(m_PctMissedPixels);
+  this->m_PctMissedPixels = pctMissed;
+  this->m_MissedPixelsMean(pctMissed * 100.0);
 
   this->CheckNumberOfSamples(sampleContainerSize, numberOfPixelsCounted);
 
   if (this->m_UseMissedPixelPenalty)
   {
     double penalty = static_cast<double>(numberOfPixelsMissed) * this->m_MissedPixelPenalty;
-    penalty *= pow(2, m_PctMissedPixels);
+    penalty *= pow(2, pctMissed * 100.0);
     measure += penalty;
     numberOfPixelsCounted = sampleContainerSize;
   }
@@ -231,21 +231,6 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
 
   return measure;
 } // end GetValue()
-
-/**
- * ******************* GetValue with contraints *******************
- */
-
-template <class TFixedImage, class TMovingImage>
-auto
-AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
-                                                                           MeasureType & constraintValue) const
-  -> MeasureType
-{
-  MeasureType measure = this->GetValue(parameters);
-  constraintValue = this->GetConstraintValue(m_PctMissedPixels, -1);
-  return measure;
-} // end GetValue() with contraints
 
 template <class TFixedImage, class TMovingImage>
 IntermediateResults
@@ -302,7 +287,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartia
 
   result[0] = measure;
   result[1] = numberOfPixelsCounted;
-  result.SetConstraintValue((double)numberOfPixelsMissed / (double)this->GetNumberOfFixedImageSamples() * 100.0);
+  result.constraints.missedPixelPct = (double)numberOfPixelsMissed / (double)this->GetNumberOfFixedImageSamples();
 
   return result;
 }
@@ -319,7 +304,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValue(Inter
   if (this->m_UseMissedPixelPenalty)
   {
     double penalty = (double)(this->GetNumberOfFixedImageSamples() - evaluation[1]) * this->m_MissedPixelPenalty;
-    penalty *= pow(2, evaluation.GetConstraintValue());
+    penalty *= pow(2, evaluation.constraints.missedPixelPct * 100.0);
     measure += penalty;
     return measure * this->m_NormalizationFactor / static_cast<RealType>(this->GetNumberOfFixedImageSamples());
   }
