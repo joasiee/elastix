@@ -1701,6 +1701,11 @@ GOMEAOptimizer::applyASGD(int population_index)
     int individual_index = solutions_random_order[i];
     this->OptimizeParametersWithGradientDescent(populations[population_index][individual_index],
                                                 m_NumberOfASGDIterations);
+    this->costFunctionEvaluation(populations[population_index][individual_index],
+                                 individual_index,
+                                 objective_values[population_index][individual_index],
+                                 constraint_values[population_index][individual_index]);
+    this->SavePartialEvaluation(individual_index);
   }
 
   free(solutions_random_order);
