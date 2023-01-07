@@ -114,7 +114,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetStaticLinkageMinSetSize(staticLinkageMinSetSize);
 
   /** Set NumberOfASGDIterations.*/
-  int numberOfASGDIterations = 20;
+  int numberOfASGDIterations = 200;
   this->m_Configuration->ReadParameter(
     numberOfASGDIterations, "NumberOfASGDIterations", this->GetComponentLabel(), level, 0);
   this->SetNumberOfASGDIterations(numberOfASGDIterations);
