@@ -164,7 +164,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetStDevThreshold(stDevThreshold);
 
   /** Set FitnessVarianceTolerance*/
-  double fitnessVarianceTolerance = 1e-6;
+  double fitnessVarianceTolerance = 1e-9;
   this->m_Configuration->ReadParameter(
     fitnessVarianceTolerance, "FitnessVarianceTolerance", this->GetComponentLabel(), level, 0);
   this->SetFitnessVarianceTolerance(fitnessVarianceTolerance);
