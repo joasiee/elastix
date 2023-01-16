@@ -502,27 +502,31 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberO
     if (offsets)
     {
       for (unsigned int i = 0; i < offsets->size(); ++i)
-        totalNumberOfFolds += this->ComputeNumberOfFoldsForControlPoint((*offsets)[i]);
+      {
+        int foldedWith = this->IsControlPointFolded((*offsets)[i]);
+        bool folded = foldedWith >= 0;
+        totalNumberOfFolds += folded;
+        totalNumberOfFolds += folded && std::find((*offsets).begin(), (*offsets).end(), foldedWith) == (*offsets).end();
+      }
     }
     else
     {
       for (unsigned int i = 0; i < this->m_GridRegion.GetNumberOfPixels(); ++i)
-        totalNumberOfFolds += this->ComputeNumberOfFoldsForControlPoint(i);
+        totalNumberOfFolds += this->IsControlPointFolded(i) >= 0;
     }
   }
   
-  return totalNumberOfFolds / 2;
+  return totalNumberOfFolds;
 }
 
 template <class TScalarType, unsigned int NDimensions>
-unsigned int
-AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberOfFoldsForControlPoint(int offset) const
+int
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::IsControlPointFolded(int offset) const
 {
   IndexType                                    index = m_WrappedImage[0]->ComputeIndex(offset);
   RegionType                                   region = this->GetRegionAroundControlPoint(index);
   ImageRegionConstIteratorWithIndex<ImageType> wrappedImageIterator(m_WrappedImage[0], region);
   OutputPointType                              centerPoint = this->GetPositionOfControlPoint(index);
-  unsigned int                                 numberOfFolds = 0;
 
   while (!wrappedImageIterator.IsAtEnd())
   {
@@ -540,13 +544,14 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberO
         folded = folded && (diff[dim] >= 0);
       }
 
-      numberOfFolds += folded;
+      if (folded)
+        return m_WrappedImage[0]->ComputeOffset(wrappedImageIterator.GetIndex());
     }
 
     ++wrappedImageIterator;
   }
 
-  return numberOfFolds;
+  return -1;
 }
 
 template <class TScalarType, unsigned int NDimensions>
