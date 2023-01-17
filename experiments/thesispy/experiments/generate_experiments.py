@@ -162,6 +162,23 @@ def constrained_selection():
         )
         yield params_penalty
 
+def fold_constraints():
+    for seed in range(10):
+        for mesh_size in [4, 5, 6]:
+            param_folds = (
+                Parameters.from_base(mesh_size=mesh_size, seed=seed)
+                .gomea(LinkageType.CP_MARGINAL, use_constraints=True, compute_folds_constraints=True)
+                .stopping_criteria(iterations=1000)
+            )
+            yield param_folds
+            param_no_folds = (
+                Parameters.from_base(mesh_size=mesh_size, seed=seed)
+                .gomea(LinkageType.CP_MARGINAL, use_constraints=False, compute_folds_constraints=False)
+                .stopping_criteria(iterations=1000)
+            )
+            yield param_no_folds
+
+
 
 def linkage_models():
     peval_budget = 30000e6
@@ -201,7 +218,7 @@ def linkage_models_static():
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = regularization_weight_test
+    fn = fold_constraints
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

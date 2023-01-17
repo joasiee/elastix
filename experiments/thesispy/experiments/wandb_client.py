@@ -30,7 +30,7 @@ def get_run_result(project: str, run_id: str):
 
 
 def get_runs(project: str, filters: dict = None):
-    return api.runs(f"{entity}/{project}")
+    return api.runs(f"{entity}/{project}", filters=filters)
 
 
 def parse_run(run):
