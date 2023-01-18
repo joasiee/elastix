@@ -178,7 +178,7 @@ def tre(lms1, lms2, spacing=1):
     return tre
 
 
-def jacobian_determinant(dvf, fig=None):
+def jacobian_determinant(dvf, fig=None, vmin=None, vmax=None, plot=True):
     axis_swap = 2 if len(dvf.shape) == 4 else 1
     dvf = np.swapaxes(dvf, 0, axis_swap)
     dvf_img = sitk.GetImageFromArray(dvf, isVector=True)
@@ -189,16 +189,18 @@ def jacobian_determinant(dvf, fig=None):
         slice = jac_det.shape[-1] // 2
         jac_det = jac_det[..., slice]
 
-    if fig is not None:
-        ax = fig.add_subplot(2, 2, 4)
-        sns.heatmap(
-            jac_det, cmap="jet", ax=ax, square=True, cbar_kws={"fraction": 0.045, "pad": 0.02}
-        )
-    else:
-        ax = sns.heatmap(jac_det, cmap="jet", square=True)
-    ax.invert_xaxis()
-    ax.set_xticks([])
-    ax.set_yticks([])
+    if plot:
+        if fig is not None:
+            ax = fig.add_subplot(2, 2, 4)
+            sns.heatmap(
+                jac_det, cmap="jet", ax=ax, square=True, cbar_kws={"fraction": 0.045, "pad": 0.02}, vmin=vmin, vmax=vmax
+            )
+        else:
+            ax = sns.heatmap(jac_det, cmap="jet", square=True, vmin=vmin, vmax=vmax)
+        ax.invert_xaxis()
+        ax.set_xticks([])
+        ax.set_yticks([])
+
     logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
     return jac_det
 
@@ -260,7 +262,7 @@ def plot_voxels(
                 ax.scatter(lm[0], lm[1], lm[2], s=50, c="r")
 
 
-def plot_dvf(data, scale=1, invert=False, slice=None, fig=None):
+def plot_dvf(data, scale=1, invert=False, slice=None, fig=None, vmin=None, vmax=None):
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[2] // 2
@@ -285,7 +287,7 @@ def plot_dvf(data, scale=1, invert=False, slice=None, fig=None):
         ax = fig.add_subplot(2, 2, 3)
 
     qq = ax.quiver(
-        X, Y, v, u, c, scale=scale, units="xy", angles="xy", scale_units="xy", cmap=plt.cm.jet
+        X, Y, v, u, c, scale=scale, units="xy", angles="xy", scale_units="xy", cmap=plt.cm.jet, clim=(vmin, vmax)
     )
 
     ax.set_xlim(0, data.shape[0])
@@ -404,16 +406,29 @@ def calc_validation(result: RunResult):
 
     return metrics
 
+def get_vmin_vmax(result1: RunResult, result2: RunResult):
+    result1_mag = np.sqrt(result1.dvf[:, :, result1.dvf.shape[2] // 2, 0] ** 2 + result1.dvf[:, :, result1.dvf.shape[2] // 2, 1] ** 2)
+    result2_mag = np.sqrt(result2.dvf[:, :, result2.dvf.shape[2] // 2, 0] ** 2 + result2.dvf[:, :, result2.dvf.shape[2] // 2, 1] ** 2)
+    vmin_dvf = np.min([np.min(result1_mag), np.min(result2_mag)])
+    vmax_dvf = np.max([np.max(result1_mag), np.max(result2_mag)])
 
-def plot_run_result(result: RunResult):
+    jac_hybrid = jacobian_determinant(result1.dvf, plot=False)
+    jac_baseline = jacobian_determinant(result2.dvf, plot=False)
+    vmin_jac = np.min([np.min(jac_baseline), np.min(jac_hybrid)])
+    vmax_jac = np.max([np.max(jac_baseline), np.max(jac_hybrid)])
+
+    return (vmin_dvf, vmax_dvf), (vmin_jac, vmax_jac)
+
+
+def plot_run_result(result: RunResult, clim_dvf = None, clim_jac = None):
     fig = plt.figure(figsize=(8, 8))
-    plot_dvf(result.dvf, fig=fig)
+    plot_dvf(result.dvf, fig=fig, vmin=clim_dvf[0], vmax=clim_dvf[1])
     plot_voxels(result.deformed, fig=fig)
-    jacobian_determinant(result.dvf, fig=fig)
+    jacobian_determinant(result.dvf, fig=fig, vmin=clim_jac[0], vmax=clim_jac[1])
     plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, fig=fig)
     plt.tight_layout(rect=[0, 0, 1, 0.98])
     axes = fig.get_axes()
-    axes[0].set_title("DVF (slice)", fontsize=10)
-    axes[2].set_title("Deformed source", fontsize=10)
-    axes[3].set_title("Jacobian determinant (slice)", fontsize=10)
-    axes[5].set_title("Control points (slice)", fontsize=10)
+    axes[0].set_title("DVF (slice)", fontsize=12)
+    axes[2].set_title("Deformed source", fontsize=12)
+    axes[3].set_title("Jacobian determinant (slice)", fontsize=12)
+    axes[5].set_title("Control points (slice)", fontsize=12)
