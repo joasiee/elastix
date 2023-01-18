@@ -271,7 +271,7 @@ def hybrid_sweep():
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = fold_constraints
+    fn = regularization_weight
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")
