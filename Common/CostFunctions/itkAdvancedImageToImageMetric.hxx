@@ -1057,7 +1057,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
                                                   this->GetValuePartial(parameters, fosIndex);
 
   const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
-  result.constraints.bsplineFolds += bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
+  // result.constraints.bsplineFolds += bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
+  result.constraints.bsplineFolds = bsplinePtr->ComputeNumberOfFoldsForControlPoints(nullptr);
 
   measure = this->GetValue(result);
   constraintValue = this->GetConstraintValue(result.constraints);
@@ -1099,9 +1100,9 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluation(
   int                             fosIndex) const
 {
   m_PartialEvaluationHelper = this->GetValuePartial(parameters, fosIndex);
-  const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
-  m_PartialEvaluationHelper.constraints.bsplineFolds =
-    bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
+  // const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
+  // m_PartialEvaluationHelper.constraints.bsplineFolds =
+  //   bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
 }
 
 template <class TFixedImage, class TMovingImage>

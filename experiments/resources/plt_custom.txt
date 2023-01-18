@@ -9,7 +9,9 @@ xtick.top: True
 xtick.direction: in
 ytick.right: True
 ytick.direction: in
+xtick.labelsize : 12
+ytick.labelsize : 12
 grid.linestyle: --
 axes.prop_cycle: cycler('color', ['EE7733', '0077BB', '997700', 'AA4499', 'CC3311', '009988', 'BBBBBB', '000000'])
-axes.labelsize: 12
-axes.titlesize: 14
+axes.labelsize: 14
+axes.titlesize: 16

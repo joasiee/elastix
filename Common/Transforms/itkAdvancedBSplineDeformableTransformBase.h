@@ -443,8 +443,8 @@ private:
   void
   operator=(const Self &) = delete;
 
-  unsigned int
-  ComputeNumberOfFoldsForControlPoint(int offset) const;
+  int
+  IsControlPointFolded(int offset) const;
 
   RegionType
   GetRegionAroundControlPoint(const IndexType & index) const;
