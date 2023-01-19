@@ -89,6 +89,12 @@ public:
     StaticBoundedRandomLinkageTree = -5
   } FOSType;
 
+  typedef enum
+  {
+    Random = 0,
+    BestN = 1
+  } RedistributionMethod;
+
   void
   StartOptimization() override;
   void
@@ -152,6 +158,9 @@ public:
 
   itkGetConstMacro(NumberOfASGDIterations, int);
   itkSetMacro(NumberOfASGDIterations, int);
+
+  itkGetConstMacro(RedistributionMethod, RedistributionMethod);
+  itkSetMacro(RedistributionMethod, RedistributionMethod);
 
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
@@ -397,6 +406,8 @@ private:
   int m_NumberOfASGDIterations{ 50 };
   int number_of_subgenerations_per_population_factor{ 8 };
   int number_of_populations{ 0 };
+
+  RedistributionMethod m_RedistributionMethod{ RedistributionMethod::Random };
 
   bool m_PartialEvaluations{ false };
   bool m_UseShrinkage{ false };

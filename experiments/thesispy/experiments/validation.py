@@ -306,6 +306,8 @@ def plot_cpoints(
     grid_origin,
     slice=None,
     fig=None,
+    colors=None,
+    alpha=0.3
 ):
     points_slice = points
     if len(points.shape) == 4:
@@ -328,23 +330,33 @@ def plot_cpoints(
         ]
     )
 
-    colors = np.zeros(points_slice.shape[:-1])
-    x_slice = colors.shape[0] // 2
-    y_slice = colors.shape[1] // 2
-    colors[:x_slice, :y_slice] = 0.25
-    colors[x_slice:, :y_slice] = 0.5
-    colors[:x_slice, y_slice:] = 0.75
-    colors[x_slice:, y_slice:] = 1.0
+    cmap = None
 
-    colormap_colors = ["#ffcc00", "red", "green", "blue"]
-    cmap = LinearSegmentedColormap.from_list("quadrants", colormap_colors)
+    if colors is None:
+        colors = np.zeros(points_slice.shape[:-1])
+        x_slice = colors.shape[0] // 2
+        y_slice = colors.shape[1] // 2
+        colors[:x_slice, :y_slice] = 0.25
+        colors[x_slice:, :y_slice] = 0.5
+        colors[:x_slice, y_slice:] = 0.75
+        colors[x_slice:, y_slice:] = 1.0
+
+        colormap_colors = ["#ffcc00", "red", "green", "blue"]
+        cmap = LinearSegmentedColormap.from_list("quadrants", colormap_colors)
+    else:
+        # hacky way of preserving right color ordering if single list is given
+        # TODO: change code above so that X and Y dont need to be reversed
+        X_c = X
+        X = Y
+        Y = X_c
 
     if fig is None:
         _, ax = plt.subplots(figsize=(7, 7))
     else:
         ax = fig.add_subplot(2, 2, 2)
 
-    ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=0.3, s=20)
+
+    ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=alpha, s=20)
 
     ax.grid(False)
     ax.scatter(

@@ -18,7 +18,7 @@ from thesispy.experiments.instance import (
     read_controlpoints,
     read_transform_params,
 )
-from thesispy.definitions import Collection, LinkageType
+from thesispy.definitions import *
 
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 TRANSFORMIX = os.environ.get("TRANSFORMIX_EXECUTABLE")
@@ -177,8 +177,8 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=4, seed=9)
-        .gomea(LinkageType.CP_MARGINAL, hybrid=True)
+        Parameters.from_base(mesh_size=4, seed=2)
+        .gomea(LinkageType.CP_MARGINAL, hybrid=True, redis_method=RedistributionMethod.BestN)
         .stopping_criteria(iterations=50)
         .instance(Collection.SYNTHETIC, 1)
     )

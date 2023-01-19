@@ -108,6 +108,7 @@ class Parameters:
         hybrid: bool = None,
         tau_asgd: float = None,
         asgd_iterations: int = None,
+        redis_method: RedistributionMethod = None,
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
         static_linkage_type = 0
@@ -130,6 +131,7 @@ class Parameters:
                 "UseASGD": hybrid,
                 "TauASGD": tau_asgd,
                 "NumberOfASGDIterations": asgd_iterations,
+                "RedistributionMethod": redis_method.value,
             }
         )
 

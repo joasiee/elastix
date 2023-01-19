@@ -30,5 +30,9 @@ class LinkageType(Enum):
     CP_MARGINAL = -6
     STATIC_EUCLIDEAN = -3
 
+class RedistributionMethod(Enum):
+    Random = 0
+    BestN = 1
+
 
 STATIC_LINKAGE_MAPPING = {LinkageType.STATIC_EUCLIDEAN: 1}

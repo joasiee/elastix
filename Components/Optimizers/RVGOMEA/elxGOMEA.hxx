@@ -142,6 +142,12 @@ GOMEA<TElastix>::BeforeEachResolution(void)
     maxNumberOfPopulations, "MaxNumberOfPopulations", this->GetComponentLabel(), level, 0);
   this->SetMaxNumberOfPopulations(maxNumberOfPopulations);
 
+  /** Set RedistributionMethod */
+  int redistributionMethod = 0;
+  this->m_Configuration->ReadParameter(
+    redistributionMethod, "RedistributionMethod", this->GetComponentLabel(), level, 0);
+  this->SetRedistributionMethod(static_cast<RedistributionMethod>(redistributionMethod));
+
   /** Set Tau*/
   double tau = 0.35;
   this->m_Configuration->ReadParameter(tau, "Tau", this->GetComponentLabel(), level, 0);

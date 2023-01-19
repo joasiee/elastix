@@ -43,6 +43,22 @@ GOMEAOptimizer::PrintSettings() const
   std::cout << indent.GetNextIndent() << "Tau: " << m_Tau << "\n";
   std::cout << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n";
   std::cout << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n";
+  std::cout << indent.GetNextIndent() << "Partial Evaluations: " << m_PartialEvaluations << "\n";
+  std::cout << indent.GetNextIndent() << "Constraints: " << m_UseConstraints << "\n";
+  std::cout << indent.GetNextIndent() << "Max. no. of iterations: " << m_MaximumNumberOfIterations << "\n";
+
+  if (m_MaxNumberOfEvaluations > 0 || m_MaxNumberOfPixelEvaluations > 0)
+  {
+    std::cout << indent.GetNextIndent() << "Max. no. of evaluations: " << m_MaxNumberOfEvaluations << "\n";
+    std::cout << indent.GetNextIndent() << "Max. no. of pixel evaluations: " << m_MaxNumberOfPixelEvaluations << "\n";
+  }
+
+  if (m_UseASGD)
+  {
+    std::cout << indent.GetNextIndent() << "Tau-LS: " << m_TauASGD << "\n";
+    std::cout << indent.GetNextIndent() << "LS Iterations: " << m_NumberOfASGDIterations << "\n";
+    std::cout << indent.GetNextIndent() << "RedistributionMethod: " << m_RedistributionMethod << "\n";
+  }
 }
 
 void
@@ -912,6 +928,12 @@ GOMEAOptimizer::makeSelectionsForOnePopulation(int population_index)
   {
     for (i = 0; i < selection_sizes[population_index]; i++)
     {
+      // copy pointer, disabled for now as it leads to different results for the same seed; something happens at end of
+      // generation, or start of next generation.
+      // selections[population_index][i].set_data(populations[population_index][sorted[i]].data_block(),
+      // m_NrOfParameters, false);
+
+      // manually copy each parameter index
       for (j = 0; (unsigned)j < m_NrOfParameters; j++)
         selections[population_index][i][j] = populations[population_index][sorted[i]][j];
 
@@ -1693,12 +1715,22 @@ void
 GOMEAOptimizer::applyASGD(int population_index)
 {
   PROFILE_FUNCTION();
-  int * solutions_random_order = randomPermutation(population_sizes[population_index]);
-  int   number_of_solutions = m_TauASGD * population_sizes[population_index];
+  int number_of_solutions = m_TauASGD * population_sizes[population_index];
+
+  int * solutions_order;
+
+  // Select solutions to be optimized randomly or by best fitness
+  if (m_RedistributionMethod == RedistributionMethod::Random)
+    solutions_order = randomPermutation(population_sizes[population_index]);
+  else if (m_RedistributionMethod == RedistributionMethod::BestN)
+  {
+    this->computeRanksForOnePopulation(population_index);
+    solutions_order = mergeSort(ranks[population_index].data(), population_sizes[population_index]);
+  }
 
   for (int i = 0; i < number_of_solutions; i++)
   {
-    int individual_index = solutions_random_order[i];
+    int individual_index = solutions_order[i];
     this->OptimizeParametersWithGradientDescent(populations[population_index][individual_index],
                                                 m_NumberOfASGDIterations);
     this->costFunctionEvaluation(populations[population_index][individual_index],
@@ -1708,7 +1740,7 @@ GOMEAOptimizer::applyASGD(int population_index)
     this->SavePartialEvaluation(individual_index);
   }
 
-  free(solutions_random_order);
+  free(solutions_order);
 }
 
 void

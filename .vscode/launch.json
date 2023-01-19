@@ -139,6 +139,16 @@
                     "ignoreFailures": true
                 }
             ]
-        }
+        },
+        {
+            "type": "gdb",
+            "request": "launch",
+            "name": "debug sphereincube native GDB",
+            "target": "${workspaceFolder}/build/Debug/bin/elastix",
+            "arguments": "-f 01_Fixed.mhd -m 01_Moving.mhd -p params.txt -out out -threads $OMP_NUM_THREADS",
+            "cwd": "${workspaceFolder}/run/sphereincube",
+            "stopAtEntry": false,
+            "valuesFormatting": "prettyPrinters",
+        },
     ]
 }
