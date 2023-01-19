@@ -58,6 +58,7 @@ GOMEAOptimizer::PrintSettings() const
     std::cout << indent.GetNextIndent() << "Tau-LS: " << m_TauASGD << "\n";
     std::cout << indent.GetNextIndent() << "LS Iterations: " << m_NumberOfASGDIterations << "\n";
     std::cout << indent.GetNextIndent() << "RedistributionMethod: " << m_RedistributionMethod << "\n";
+    std::cout << indent.GetNextIndent() << "IterationSchedule: " << m_ASGDIterationSchedule << "\n";
   }
 }
 
@@ -1727,6 +1728,9 @@ GOMEAOptimizer::applyASGD(int population_index)
     this->computeRanksForOnePopulation(population_index);
     solutions_order = mergeSort(ranks[population_index].data(), population_sizes[population_index]);
   }
+
+  if (m_ASGDIterationSchedule == ASGDIterationSchedule::Logarithmic)
+    m_NumberOfASGDIterations = std::max(NumberOfASGDIterationsLog(number_of_generations[population_index]), 0);
 
   for (int i = 0; i < number_of_solutions; i++)
   {

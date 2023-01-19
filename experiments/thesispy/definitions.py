@@ -34,5 +34,9 @@ class RedistributionMethod(Enum):
     Random = 0
     BestN = 1
 
+class IterationSchedule(Enum):
+    Static = 0
+    Logarithmic = 1
+
 
 STATIC_LINKAGE_MAPPING = {LinkageType.STATIC_EUCLIDEAN: 1}

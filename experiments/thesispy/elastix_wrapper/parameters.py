@@ -30,7 +30,15 @@ class Parameters:
     ):
         with BASE_PARAMS_PATH.open() as f:
             params: Dict[str, Any] = json.loads(f.read())
-        return cls(params).args({"Metric": metric, "MeshSize": mesh_size, "UseMask": use_mask, "UseMissedPixelPenalty": use_missedpixel_penalty, "RandomSeed": seed})
+        return cls(params).args(
+            {
+                "Metric": metric,
+                "MeshSize": mesh_size,
+                "UseMask": use_mask,
+                "UseMissedPixelPenalty": use_missedpixel_penalty,
+                "RandomSeed": seed,
+            }
+        )
 
     @classmethod
     def from_json(cls, jsondump):
@@ -52,7 +60,9 @@ class Parameters:
         self.n_param("MovingImagePyramid", 2)
         self.n_param("Interpolator", 2)
         self.n_param("ImageSampler", 2)
-        regularize_metric = "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
+        regularize_metric = (
+            "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
+        )
 
         return self.args(
             {
@@ -64,7 +74,11 @@ class Parameters:
         )
 
     def multi_resolution(
-        self, n: int = 3, p_sched: List[int] = None, g_sched: List[int] = None, downsampling: bool = False
+        self,
+        n: int = 3,
+        p_sched: List[int] = None,
+        g_sched: List[int] = None,
+        downsampling: bool = False,
     ) -> Parameters:
         args = {
             "NumberOfResolutions": n,
@@ -109,6 +123,7 @@ class Parameters:
         tau_asgd: float = None,
         asgd_iterations: int = None,
         redis_method: RedistributionMethod = None,
+        it_schedule: IterationSchedule = None,
     ) -> Parameters:
         pevals = False if fos == LinkageType.FULL else True
         static_linkage_type = 0
@@ -131,7 +146,8 @@ class Parameters:
                 "UseASGD": hybrid,
                 "TauASGD": tau_asgd,
                 "NumberOfASGDIterations": asgd_iterations,
-                "RedistributionMethod": redis_method.value,
+                "RedistributionMethod": redis_method.value if redis_method is not None else None,
+                "ASGDIterationSchedule": it_schedule.value if it_schedule is not None else None,
             }
         )
 
@@ -202,7 +218,9 @@ class Parameters:
         for i, voxel_dim in enumerate(voxel_dims):
             voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             for n in range(len(total_samples)):
-                total_samples[n] *= int(voxel_dim / self["ImagePyramidSchedule"][n * len(voxel_dims) + i])
+                total_samples[n] *= int(
+                    voxel_dim / self["ImagePyramidSchedule"][n * len(voxel_dims) + i]
+                )
 
         if "FinalGridSpacingInVoxels" not in self.params:
             self["FinalGridSpacingInVoxels"] = voxel_spacings
@@ -247,7 +265,9 @@ class Parameters:
         if INSTANCES_CONFIG[collection]["masks"]:
             self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
         if INSTANCES_CONFIG[collection]["landmarks"]:
-            self.lms_fixed_path = INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
+            self.lms_fixed_path = (
+                INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
+            )
 
         return self
 
@@ -311,7 +331,9 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=2, seed=1, metric="AdvancedMeanSquares", use_missedpixel_penalty=True)
+        Parameters.from_base(
+            mesh_size=2, seed=1, metric="AdvancedMeanSquares", use_missedpixel_penalty=True
+        )
         .gomea(LinkageType.CP_MARGINAL, contraints_threshold=0.1, pop_size=10)
         .regularize(0.01)
         .multi_resolution(2, g_sched=[1, 1])

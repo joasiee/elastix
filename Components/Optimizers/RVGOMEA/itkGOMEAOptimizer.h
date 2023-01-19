@@ -95,6 +95,12 @@ public:
     BestN = 1
   } RedistributionMethod;
 
+  typedef enum
+  {
+    Static = 0,
+    Logarithmic = 1
+  } ASGDIterationSchedule;
+
   void
   StartOptimization() override;
   void
@@ -159,8 +165,8 @@ public:
   itkGetConstMacro(NumberOfASGDIterations, int);
   itkSetMacro(NumberOfASGDIterations, int);
 
-  itkGetConstMacro(RedistributionMethod, RedistributionMethod);
   itkSetMacro(RedistributionMethod, RedistributionMethod);
+  itkSetMacro(ASGDIterationSchedule, ASGDIterationSchedule);
 
   itkGetConstMacro(PartialEvaluations, bool);
   itkSetMacro(PartialEvaluations, bool);
@@ -379,6 +385,11 @@ private:
   GetValueSanityCheck(const ParametersType & parameters,
                       MeasureType            obj_val_partial,
                       MeasureType            cons_val_partial) const;
+  int
+  NumberOfASGDIterationsLog(int iteration_nr)
+  {
+    return static_cast<int>(80 * std::log10(iteration_nr - 10) - 50.0);
+  }
 
   mutable std::ostringstream m_StopConditionDescription;
 
@@ -408,6 +419,7 @@ private:
   int number_of_populations{ 0 };
 
   RedistributionMethod m_RedistributionMethod{ RedistributionMethod::Random };
+  ASGDIterationSchedule m_ASGDIterationSchedule{ ASGDIterationSchedule::Static };
 
   bool m_PartialEvaluations{ false };
   bool m_UseShrinkage{ false };

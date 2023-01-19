@@ -148,6 +148,12 @@ GOMEA<TElastix>::BeforeEachResolution(void)
     redistributionMethod, "RedistributionMethod", this->GetComponentLabel(), level, 0);
   this->SetRedistributionMethod(static_cast<RedistributionMethod>(redistributionMethod));
 
+  /** Set ASGDIterationSchedule */
+  int asgdIterationSchedule = 0;
+  this->m_Configuration->ReadParameter(
+    asgdIterationSchedule, "ASGDIterationSchedule", this->GetComponentLabel(), level, 0);
+  this->SetASGDIterationSchedule(static_cast<ASGDIterationSchedule>(asgdIterationSchedule));
+
   /** Set Tau*/
   double tau = 0.35;
   this->m_Configuration->ReadParameter(tau, "Tau", this->GetComponentLabel(), level, 0);
