@@ -388,7 +388,7 @@ private:
   int
   NumberOfASGDIterationsLog(int iteration_nr)
   {
-    return static_cast<int>(80 * std::log10(iteration_nr - 5) - 50.0);
+    return static_cast<int>(100 * std::log10(iteration_nr - 5) - 50.0);
   }
 
   mutable std::ostringstream m_StopConditionDescription;
