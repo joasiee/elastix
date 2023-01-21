@@ -418,7 +418,7 @@ private:
   int number_of_subgenerations_per_population_factor{ 8 };
   int number_of_populations{ 0 };
 
-  RedistributionMethod m_RedistributionMethod{ RedistributionMethod::Random };
+  RedistributionMethod m_RedistributionMethod{ RedistributionMethod::BestN };
   ASGDIterationSchedule m_ASGDIterationSchedule{ ASGDIterationSchedule::Static };
 
   bool m_PartialEvaluations{ false };

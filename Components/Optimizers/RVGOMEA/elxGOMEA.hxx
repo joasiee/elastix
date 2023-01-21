@@ -143,7 +143,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetMaxNumberOfPopulations(maxNumberOfPopulations);
 
   /** Set RedistributionMethod */
-  int redistributionMethod = 0;
+  int redistributionMethod = 1;
   this->m_Configuration->ReadParameter(
     redistributionMethod, "RedistributionMethod", this->GetComponentLabel(), level, 0);
   this->SetRedistributionMethod(static_cast<RedistributionMethod>(redistributionMethod));
