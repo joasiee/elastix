@@ -2,7 +2,7 @@ import itertools
 import numpy as np
 from thesispy.elastix_wrapper.parameters import Parameters
 from thesispy.experiments.experiment import Experiment, ExperimentQueue
-from thesispy.definitions import LinkageType, Collection
+from thesispy.definitions import *
 
 
 def yield_experiments(collection: Collection, instance: int, project: str, exp_fn):
@@ -267,11 +267,30 @@ def hybrid_sweep():
             )
             yield params
 
+def hybrid_schedules():
+    for seed in range(10):
+        seed += 1
+        for schedule in [IterationSchedule.Static, IterationSchedule.Logarithmic]:
+            for redis_method in [RedistributionMethod.BestN, RedistributionMethod.Random]:
+                params = (
+                    Parameters.from_base(mesh_size=5, seed=seed)
+                    .gomea(
+                        LinkageType.CP_MARGINAL,
+                        hybrid=True,
+                        tau_asgd=0.1,
+                        asgd_iterations=100,
+                        it_schedule=schedule,
+                        redis_method=redis_method,
+                    )
+                    .stopping_criteria(iterations=400)
+                )
+                yield params
+
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = regularization_weight
+    fn = hybrid_schedules
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

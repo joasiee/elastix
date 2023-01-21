@@ -36,7 +36,4 @@
 (ImagePyramidSchedule 1 1 1)
 (FinalGridSpacingInVoxels 6 6 6)
 (NumberOfSpatialSamples 13824)
-(UseASGD "true")
-(RedistributionMethod 0)
-(BasePopulationSize 10)
-(ASGDIterationSchedule 1)
+(BasePopulationSize 50)
