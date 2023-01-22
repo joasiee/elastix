@@ -130,7 +130,7 @@ def dice_similarity(moving_deformed, fixed, levels):
         )
         similarities.append(2.0 * intersection / sum_pixels)
 
-    logger.info(f"Dice Similarities: Cube: {similarities[0]}, Sphere: {similarities[1]}")
+    logger.info(f"Dice Similarities: {similarities}")
     return similarities
 
 
@@ -146,7 +146,7 @@ def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
             * spacing
         )
         distances.append(max(max_distance1, max_distance2))
-    logger.info(f"Hausdorff Distances: Cube: {distances[0]}, Sphere: {distances[1]}")
+    logger.info(f"Hausdorff Distances: {distances}")
     return distances
 
 
@@ -168,7 +168,7 @@ def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
             * spacing
         )
         distances.append((mean_distance1 + mean_distance2) / 2)
-    logger.info(f"Mean Surface Distances: Cube: {distances[0]}, Sphere: {distances[1]}")
+    logger.info(f"Mean Surface Distances: {distances}")
     return distances
 
 
@@ -178,7 +178,7 @@ def tre(lms1, lms2, spacing=1):
     return tre
 
 
-def jacobian_determinant(dvf, fig=None, vmin=None, vmax=None, plot=True):
+def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
     axis_swap = 2 if len(dvf.shape) == 4 else 1
     dvf = np.swapaxes(dvf, 0, axis_swap)
     dvf_img = sitk.GetImageFromArray(dvf, isVector=True)
@@ -190,13 +190,17 @@ def jacobian_determinant(dvf, fig=None, vmin=None, vmax=None, plot=True):
         jac_det = jac_det[..., slice]
 
     if plot:
-        if fig is not None:
-            ax = fig.add_subplot(2, 2, 4)
-            sns.heatmap(
-                jac_det, cmap="jet", ax=ax, square=True, cbar_kws={"fraction": 0.045, "pad": 0.02}, vmin=vmin, vmax=vmax
-            )
-        else:
-            ax = sns.heatmap(jac_det, cmap="jet", square=True, vmin=vmin, vmax=vmax)
+        if ax is None:
+            fig, ax = plt.subplots(figsize=(5, 5))
+        sns.heatmap(
+            jac_det,
+            cmap="jet",
+            ax=ax,
+            square=True,
+            cbar_kws={"fraction": 0.045, "pad": 0.02},
+            vmin=vmin,
+            vmax=vmax,
+        )
         ax.invert_xaxis()
         ax.set_xticks([])
         ax.set_yticks([])
@@ -218,23 +222,19 @@ def plot_voxels(
     orientation=(0, -70),
     cmap_name="Greys",
     alpha=1.0,
-    fig=None,
+    ax=None,
 ):
     if len(data.shape) == 2:
-        if fig is None:
-            _, ax = plt.subplots(figsize=(7, 7))
-        else:
-            ax = fig.add_subplot(2, 2, 1)
+        if ax is None:
+            _, ax = plt.subplots(figsize=(5, 5))
         ax.imshow(data, cmap="gray")
         return
 
     if y_slice_depth is None:
         y_slice_depth = data.shape[1] // 2
 
-    if fig is None:
+    if ax is None:
         ax = plt.figure(figsize=(8, 8)).add_subplot(projection="3d")
-    else:
-        ax = fig.add_subplot(2, 2, 1, projection="3d")
 
     sliced_data = np.copy(data)
     sliced_data[:, :y_slice_depth, :] = 0
@@ -262,7 +262,7 @@ def plot_voxels(
                 ax.scatter(lm[0], lm[1], lm[2], s=50, c="r")
 
 
-def plot_dvf(data, scale=1, invert=False, slice=None, fig=None, vmin=None, vmax=None):
+def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=None):
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[2] // 2
@@ -281,13 +281,21 @@ def plot_dvf(data, scale=1, invert=False, slice=None, fig=None, vmin=None, vmax=
     v = data[:, :, 1]
     c = np.sqrt(u**2 + v**2)
 
-    if fig is None:
-        fig, ax = plt.subplots(figsize=(7, 7))
-    else:
-        ax = fig.add_subplot(2, 2, 3)
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(5, 5))
 
     qq = ax.quiver(
-        X, Y, v, u, c, scale=scale, units="xy", angles="xy", scale_units="xy", cmap=plt.cm.jet, clim=(vmin, vmax)
+        X,
+        Y,
+        v,
+        u,
+        c,
+        scale=scale,
+        units="xy",
+        angles="xy",
+        scale_units="xy",
+        cmap=plt.cm.jet,
+        clim=(vmin, vmax),
     )
 
     ax.set_xlim(0, data.shape[0])
@@ -297,18 +305,10 @@ def plot_dvf(data, scale=1, invert=False, slice=None, fig=None, vmin=None, vmax=
     ax.invert_xaxis()
     ax.set_xticks([])
     ax.set_yticks([])
-    fig.colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
+    ax.get_figure().colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
 
 
-def plot_cpoints(
-    points,
-    grid_spacing,
-    grid_origin,
-    slice=None,
-    fig=None,
-    colors=None,
-    alpha=0.3
-):
+def plot_cpoints(points, grid_spacing, grid_origin, slice=None, ax=None, colors=None, alpha=0.3):
     points_slice = points
     if len(points.shape) == 4:
         if slice is None:
@@ -350,11 +350,8 @@ def plot_cpoints(
         X = Y
         Y = X_c
 
-    if fig is None:
+    if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
-    else:
-        ax = fig.add_subplot(2, 2, 2)
-
 
     ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=alpha, s=20)
 
@@ -371,31 +368,31 @@ def plot_cpoints(
 
 
 def calc_validation(result: RunResult):
-    logger.info("Calculating validation metrics:")
+    logger.info(f"Calculating validation metrics for {result.instance.collection}:")
     start = time.perf_counter()
+    
+    metrics = validation_metrics(result)
+
+    validation_fig = validation_visualization(result)
+    if validation_fig is not None:
+        metrics.append({"visualization/overview": wandb.Image(validation_fig)})
+
+    end = time.perf_counter()
+    logger.info(f"Validation metrics calculated in {end - start:.2f}s")
+
+    return metrics
+
+
+def validation_metrics(result:RunResult):
     metrics = []
-    fig = plt.figure(figsize=(8, 8))
-    levels = 2 if result.instance.collection == Collection.EXAMPLES else 3
-    if result.dvf is not None:
+    
+    metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
+
+    if result.instance.collection == Collection.SYNTHETIC:
         dvf_copy = np.copy(result.dvf)
-        if result.instance.dvf is not None:
-            mask = np.linalg.norm(result.instance.dvf, axis=-1) > 0
-            dvf_copy[~mask] = np.array([0 for _ in range(dvf_copy.shape[-1])])
-            metrics.append({"validation/dvf_rmse": dvf_rmse(dvf_copy, result.instance.dvf)})
-        if result.instance.collection == Collection.SYNTHETIC:
-            metrics.append({"validation/bending_energy": bending_energy(dvf_copy)})
-        jacobian_determinant(result.dvf, fig=fig)
-        plot_dvf(result.dvf, fig=fig)
-    if result.deformed is not None:
-        dice_similarities = dice_similarity(result.deformed, result.instance.fixed, levels)
-        metrics.append({"validation/dice_cube": dice_similarities[0]})
-        metrics.append({"validation/dice_sphere": dice_similarities[1]})
-        if (
-            result.instance.collection == Collection.SYNTHETIC
-            or result.instance.collection == Collection.EXAMPLES
-        ):
-            plot_voxels(result.deformed, fig=fig)
-    if result.deformed_lms is not None:
+        mask = np.linalg.norm(result.instance.dvf, axis=-1) > 0
+        dvf_copy[~mask] = np.array([0 for _ in range(dvf_copy.shape[-1])])
+        metrics.append({"validation/dvf_rmse": dvf_rmse(dvf_copy, result.instance.dvf)})
         hd_dists = hausdorff_distance(
             result.instance.surface_points, result.deformed_surface_points
         )
@@ -407,20 +404,41 @@ def calc_validation(result: RunResult):
         metrics.append({"validation/mean_surface_cube": md_dists[0]})
         metrics.append({"validation/mean_surface_sphere": md_dists[1]})
         metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
-    if result.control_points is not None:
-        plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, fig=fig)
-
-    plt.tight_layout()
-    metrics.append({"visualization/slices": wandb.Image(fig)})
-
-    end = time.perf_counter()
-    logger.info(f"Validation metrics calculated in {end - start:.2f}s")
+    if result.instance.collection == Collection.LEARN:
+        metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
 
     return metrics
 
+def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
+    fig = None
+    if result.instance.collection == Collection.SYNTHETIC or result.instance.collection == Collection.EXAMPLES:
+        fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+        if result.instance.collection == Collection.SYNTHETIC:
+            axes[0, 0].remove()
+            axes[0, 0] = fig.add_subplot(2, 2, 1, projection="3d")
+        plot_voxels(result.deformed, ax=axes[0, 0])
+        plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, ax=axes[0, 1])
+        plot_dvf(result.dvf, ax=axes[1, 0], vmin=clim_dvf[0], vmax=clim_dvf[1])
+        jacobian_determinant(result.dvf, ax=axes[1, 1], vmin=clim_jac[0], vmax=clim_jac[1])
+        
+        plt.tight_layout(rect=[0, 0, 1, 0.98])
+        axes[1, 0].set_title("DVF (slice)", fontsize=12)
+        axes[0, 0].set_title("Deformed source", fontsize=12)
+        axes[1, 1].set_title("Jacobian determinant (slice)", fontsize=12)
+        axes[0, 1].set_title("Control points (slice)", fontsize=12)
+
+    return fig
+
+
 def get_vmin_vmax(result1: RunResult, result2: RunResult):
-    result1_mag = np.sqrt(result1.dvf[:, :, result1.dvf.shape[2] // 2, 0] ** 2 + result1.dvf[:, :, result1.dvf.shape[2] // 2, 1] ** 2)
-    result2_mag = np.sqrt(result2.dvf[:, :, result2.dvf.shape[2] // 2, 0] ** 2 + result2.dvf[:, :, result2.dvf.shape[2] // 2, 1] ** 2)
+    result1_mag = np.sqrt(
+        result1.dvf[:, :, result1.dvf.shape[2] // 2, 0] ** 2
+        + result1.dvf[:, :, result1.dvf.shape[2] // 2, 1] ** 2
+    )
+    result2_mag = np.sqrt(
+        result2.dvf[:, :, result2.dvf.shape[2] // 2, 0] ** 2
+        + result2.dvf[:, :, result2.dvf.shape[2] // 2, 1] ** 2
+    )
     vmin_dvf = np.min([np.min(result1_mag), np.min(result2_mag)])
     vmax_dvf = np.max([np.max(result1_mag), np.max(result2_mag)])
 
@@ -430,17 +448,3 @@ def get_vmin_vmax(result1: RunResult, result2: RunResult):
     vmax_jac = np.max([np.max(jac_baseline), np.max(jac_hybrid)])
 
     return (vmin_dvf, vmax_dvf), (vmin_jac, vmax_jac)
-
-
-def plot_run_result(result: RunResult, clim_dvf = None, clim_jac = None):
-    fig = plt.figure(figsize=(8, 8))
-    plot_dvf(result.dvf, fig=fig, vmin=clim_dvf[0], vmax=clim_dvf[1])
-    plot_voxels(result.deformed, fig=fig)
-    jacobian_determinant(result.dvf, fig=fig, vmin=clim_jac[0], vmax=clim_jac[1])
-    plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, fig=fig)
-    plt.tight_layout(rect=[0, 0, 1, 0.98])
-    axes = fig.get_axes()
-    axes[0].set_title("DVF (slice)", fontsize=12)
-    axes[2].set_title("Deformed source", fontsize=12)
-    axes[3].set_title("Jacobian determinant (slice)", fontsize=12)
-    axes[5].set_title("Control points (slice)", fontsize=12)

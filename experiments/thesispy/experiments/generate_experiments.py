@@ -15,27 +15,29 @@ def yield_experiments(collection: Collection, instance: int, project: str, exp_f
 def regularization_weight():
     for weight in [0.0] + list(np.geomspace(0.0001, 10.0, 50)):
         weight = np.round(weight, 5)
-        # params = (
-        #     Parameters.from_base(mesh_size=5)
-        #     .asgd()
-        #     .regularize(weight)
-        #     .stopping_criteria(iterations=10000)
-        # )
-        # yield params
         params = (
-            Parameters.from_base(mesh_size=5)
+            Parameters.from_base(mesh_size=6)
+            .asgd()
+            .regularize(weight)
+            .stopping_criteria(iterations=10000)
+        )
+        yield params
+
+        params = (
+            Parameters.from_base(mesh_size=6)
             .gomea(LinkageType.CP_MARGINAL, hybrid=True)
             .regularize(weight)
             .stopping_criteria(iterations=300)
         )
         yield params
-        # params = (
-        #     Parameters.from_base(mesh_size=5)
-        #     .gomea()
-        #     .regularize(weight)
-        #     .stopping_criteria(iterations=300)
-        # )
-        # yield params
+
+        params = (
+            Parameters.from_base(mesh_size=6)
+            .gomea(LinkageType.CP_MARGINAL, hybrid=False)
+            .regularize(weight)
+            .stopping_criteria(iterations=300)
+        )
+        yield params
 
 
 

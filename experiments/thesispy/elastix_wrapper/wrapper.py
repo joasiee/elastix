@@ -177,15 +177,17 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=4, seed=2)
-        .gomea(LinkageType.CP_MARGINAL, hybrid=True, redis_method=RedistributionMethod.BestN, it_schedule=IterationSchedule.Logarithmic)
-        .stopping_criteria(iterations=50)
-        .instance(Collection.SYNTHETIC, 1)
+        Parameters.from_base(mesh_size=7, seed=2, metric="AdvancedNormalizedCorrelation")
+        .asgd()
+        # .regularize(0.1)
+        .multi_resolution(1, p_sched=[3], downsampling=True)
+        .stopping_criteria(iterations=1000)
+        .instance(Collection.LEARN, 1)
     )
     run(
         params_main,
         Path("output/" + str(params_main)),
         suppress_stdout=False,
-        visualize=False,
+        visualize=True,
         validate=False,
     )
