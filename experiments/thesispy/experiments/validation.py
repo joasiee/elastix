@@ -273,14 +273,17 @@ def plot_voxels(
                 ax.scatter(lm[0], lm[1], lm[2], s=50, c="r")
 
 
-def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=None):
+def plot_dvf(
+    data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=None, max_vectors=None
+):
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[2] // 2
         data = data[:, :, slice, :]
 
-    factors = [min(1.0, 30 / x) for x in data.shape[:-1]] + [1.0]
-    data = zoom(data, factors)
+    if max_vectors is not None:
+        factors = [min(1.0, max_vectors / x) for x in data.shape[:-1]] + [1.0]
+        data = zoom(data, factors)
 
     X, Y = np.meshgrid(np.arange(data.shape[0]), np.arange(data.shape[1]))
     if invert:
@@ -320,6 +323,7 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
     ax.set_xticks([])
     ax.set_yticks([])
     ax.get_figure().colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
+    return fig
 
 
 def plot_cpoints(
@@ -440,7 +444,9 @@ def validation_metrics(result: RunResult):
 
 def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
     figs = []
-    collection = result.instance.collection
+    instance = result.instance
+    collection = instance.collection
+    to_dict = lambda x, title: {f"visualization/{title}": x}
 
     if collection == Collection.SYNTHETIC or collection == Collection.EXAMPLES:
         fig, axes = plt.subplots(2, 2, figsize=(8, 8))
@@ -453,7 +459,7 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
             result.control_points,
             result.grid_spacing,
             result.grid_origin,
-            result.instance.direction,
+            instance.direction,
             ax=axes[0, 1],
         )
         plot_dvf(result.dvf, ax=axes[1, 0], vmin=clim_dvf[0], vmax=clim_dvf[1])
@@ -463,20 +469,12 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         axes[0, 0].set_title(f"Deformed source", fontsize=12)
         axes[1, 1].set_title(f"Jacobian determinant {slice_txt}", fontsize=12)
         axes[0, 1].set_title(f"Control points {slice_txt}", fontsize=12)
-        figs.append({"visualization/overview": wandb.Image(fig)})
+        figs.append(to_dict(wandb.Image(fig), "overview"))
+    elif collection == Collection.LEARN:
+        figs.append(to_dict(wandb.Object3D(cpoint_cloud(result.control_points)), "cpoints"))
 
-    figs.append(
-        {
-            "visualization/tre_hist": wandb.Image(
-                tre_hist(result.deformed_lms, result.instance.lms_moving, result.instance.spacing)
-            )
-        }
-    )
-
-    if collection == Collection.LEARN:
-        figs.append(
-            {"visualization/control_points": wandb.Object3D(cpoint_cloud(result.control_points))}
-        )
+    tre_img = wandb.Image(tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing))
+    figs.append(to_dict(tre_img, "tre_hist"))
 
     return figs
 
