@@ -8,10 +8,10 @@ from thesispy.elastix_wrapper.parameters import Parameters, Collection
 from thesispy.experiments.experiment import Experiment, run_experiment
 
 params = (
-    Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=1)
+    Parameters.from_base(mesh_size=5, metric="AdvancedMeanSquares", seed=1)
     .asgd()
-    .stopping_criteria(100)
-    .instance(Collection.SYNTHETIC, 1)
+    .stopping_criteria(0)
+    .instance(Collection.LEARN, 1)
 )
 
 experiment = Experiment(params, "zandbak")

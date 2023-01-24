@@ -178,6 +178,16 @@ def tre(lms1, lms2, spacing=1):
     return tre
 
 
+def tre_hist(lms1, lms2, spacing=1, ax=None, bins=40):
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(5, 5))
+    tres = np.linalg.norm((lms1 - lms2) * spacing, axis=1)
+    ax.hist(tres, bins=bins)
+    ax.set_xlabel("TRE (mm)")
+    ax.set_ylabel("Count")
+    return fig
+
+
 def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
     axis_swap = 2 if len(dvf.shape) == 4 else 1
     dvf = np.swapaxes(dvf, 0, axis_swap)
@@ -308,26 +318,29 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
     ax.get_figure().colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
 
 
-def plot_cpoints(points, grid_spacing, grid_origin, slice=None, ax=None, colors=None, alpha=0.3):
+def plot_cpoints(points, grid_spacing, grid_origin, grid_direction, slice=None, ax=None, colors=None, alpha=0.3):
     points_slice = points
+    
     if len(points.shape) == 4:
         if slice is None:
             slice = points.shape[2] // 2
         points_slice = points[:, :, slice, :]
-
+        points_slice = np.swapaxes(points_slice, 0, 1)
+    
     grid_spacing = np.array(grid_spacing)
     grid_origin = np.array(grid_origin)
-
     grid_origin = grid_origin + 0.5
+
     X, Y = np.meshgrid(
         *[
             np.arange(
                 grid_origin[i],
-                grid_origin[i] + grid_spacing[i] * points_slice.shape[i],
-                grid_spacing[i],
+                grid_origin[i] + grid_direction[i, i] * grid_spacing[i] * points_slice.shape[i],
+                grid_spacing[i] * grid_direction[i, i],
             )
             for i in range(len(points_slice.shape[:-1]))
-        ]
+        ],
+        indexing="xy"
     )
 
     cmap = None
@@ -343,17 +356,11 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None, ax=None, colors=
 
         colormap_colors = ["#ffcc00", "red", "green", "blue"]
         cmap = LinearSegmentedColormap.from_list("quadrants", colormap_colors)
-    else:
-        # hacky way of preserving right color ordering if single list is given
-        # TODO: change code above so that X and Y dont need to be reversed
-        X_c = X
-        X = Y
-        Y = X_c
 
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
 
-    ax.scatter(Y, X, marker="+", c=colors, cmap=cmap, alpha=alpha, s=20)
+    ax.scatter(X, Y, marker="+", c=colors, cmap=cmap, alpha=alpha, s=20)
 
     ax.grid(False)
     ax.scatter(
@@ -370,12 +377,9 @@ def plot_cpoints(points, grid_spacing, grid_origin, slice=None, ax=None, colors=
 def calc_validation(result: RunResult):
     logger.info(f"Calculating validation metrics for {result.instance.collection}:")
     start = time.perf_counter()
-    
-    metrics = validation_metrics(result)
 
-    validation_fig = validation_visualization(result)
-    if validation_fig is not None:
-        metrics.append({"visualization/overview": wandb.Image(validation_fig)})
+    metrics = validation_metrics(result)
+    metrics.extend(validation_visualization(result))
 
     end = time.perf_counter()
     logger.info(f"Validation metrics calculated in {end - start:.2f}s")
@@ -383,10 +387,16 @@ def calc_validation(result: RunResult):
     return metrics
 
 
-def validation_metrics(result:RunResult):
+def validation_metrics(result: RunResult):
     metrics = []
-    
-    metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
+
+    metrics.append(
+        {
+            "validation/tre": tre(
+                result.deformed_lms, result.instance.lms_moving, result.instance.spacing
+            )
+        }
+    )
 
     if result.instance.collection == Collection.SYNTHETIC:
         dvf_copy = np.copy(result.dvf)
@@ -403,31 +413,42 @@ def validation_metrics(result:RunResult):
         metrics.append({"validation/hausdorff_sphere": hd_dists[1]})
         metrics.append({"validation/mean_surface_cube": md_dists[0]})
         metrics.append({"validation/mean_surface_sphere": md_dists[1]})
-        metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
-    if result.instance.collection == Collection.LEARN:
-        metrics.append({"validation/tre": tre(result.deformed_lms, result.instance.lms_moving)})
+        metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
 
     return metrics
 
-def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
-    fig = None
-    if result.instance.collection == Collection.SYNTHETIC or result.instance.collection == Collection.EXAMPLES:
-        fig, axes = plt.subplots(2, 2, figsize=(8, 8))
-        if result.instance.collection == Collection.SYNTHETIC:
-            axes[0, 0].remove()
-            axes[0, 0] = fig.add_subplot(2, 2, 1, projection="3d")
-        plot_voxels(result.deformed, ax=axes[0, 0])
-        plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, ax=axes[0, 1])
-        plot_dvf(result.dvf, ax=axes[1, 0], vmin=clim_dvf[0], vmax=clim_dvf[1])
-        jacobian_determinant(result.dvf, ax=axes[1, 1], vmin=clim_jac[0], vmax=clim_jac[1])
-        
-        plt.tight_layout(rect=[0, 0, 1, 0.98])
-        axes[1, 0].set_title("DVF (slice)", fontsize=12)
-        axes[0, 0].set_title("Deformed source", fontsize=12)
-        axes[1, 1].set_title("Jacobian determinant (slice)", fontsize=12)
-        axes[0, 1].set_title("Control points (slice)", fontsize=12)
 
-    return fig
+def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
+    figs = []
+    collection = result.instance.collection
+
+    fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+    slice_txt = "" if collection == Collection.EXAMPLES else "(slice)"
+
+    if collection == Collection.SYNTHETIC:
+        axes[0, 0].remove()
+        axes[0, 0] = fig.add_subplot(2, 2, 1, projection="3d")
+        plot_voxels(result.deformed, ax=axes[0, 0])
+
+    plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, result.instance.direction, ax=axes[0, 1])
+    plot_dvf(result.dvf, ax=axes[1, 0], vmin=clim_dvf[0], vmax=clim_dvf[1])
+    jacobian_determinant(result.dvf, ax=axes[1, 1], vmin=clim_jac[0], vmax=clim_jac[1])
+
+    plt.tight_layout(rect=[0, 0, 1, 0.98])
+    axes[1, 0].set_title(f"DVF {slice_txt}", fontsize=12)
+    axes[0, 0].set_title(f"Deformed source", fontsize=12)
+    axes[1, 1].set_title(f"Jacobian determinant {slice_txt}", fontsize=12)
+    axes[0, 1].set_title(f"Control points {slice_txt}", fontsize=12)
+    figs.append({"visualization/overview": wandb.Image(fig)})
+    figs.append(
+        {
+            "visualization/tre_hist": wandb.Image(
+                tre_hist(result.deformed_lms, result.instance.lms_moving, result.instance.spacing)
+            )
+        }
+    )
+
+    return figs
 
 
 def get_vmin_vmax(result1: RunResult, result2: RunResult):

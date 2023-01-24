@@ -27,7 +27,7 @@
                 "-threads",
                 "$OMP_NUM_THREADS",
             ],
-            "cwd": "/home/joasiee/instances/learn",
+            "cwd": "/home/joasiee/Documents/projects/instances/learn",
         },
         {
             "name": "medium",

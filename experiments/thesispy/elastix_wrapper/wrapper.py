@@ -177,11 +177,11 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=7, seed=2, metric="AdvancedNormalizedCorrelation")
+        Parameters.from_base(mesh_size=5, seed=2, metric="AdvancedNormalizedCorrelation")
         .asgd()
         # .regularize(0.1)
-        .multi_resolution(1, p_sched=[3], downsampling=True)
-        .stopping_criteria(iterations=1000)
+        # .multi_resolution(1, p_sched=[3], downsampling=True)
+        .stopping_criteria(iterations=0)
         .instance(Collection.LEARN, 1)
     )
     run(

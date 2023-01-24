@@ -14,6 +14,7 @@ class Instance:
     fixed: np.ndarray
     spacing: np.ndarray
     origin: np.ndarray
+    direction: np.ndarray
     lms_moving: np.ndarray = None
     lms_fixed: np.ndarray = None
     lms_fixed_path: Path = None
@@ -46,21 +47,32 @@ def get_np_array(img_path: Path):
 
 def load_imgs(collection: Collection, instance: int):
     config = INSTANCES_CONFIG[collection.value]
-    path_moving = INSTANCES_SRC / config["folder"] / "scans" / f"{instance:02}_Moving.{config['extension']}"
-    path_fixed = INSTANCES_SRC / config["folder"] / "scans" / f"{instance:02}_Fixed.{config['extension']}"
+    path_moving = (
+        INSTANCES_SRC / config["folder"] / "scans" / f"{instance:02}_Moving.{config['extension']}"
+    )
+    path_fixed = (
+        INSTANCES_SRC / config["folder"] / "scans" / f"{instance:02}_Fixed.{config['extension']}"
+    )
     moving = get_np_array(path_moving)
     fixed = get_np_array(path_fixed)
     spacing = sitk.ReadImage(str(path_moving.resolve())).GetSpacing()
     origin = sitk.ReadImage(str(path_moving.resolve())).GetOrigin()
-    return moving, path_moving, fixed, spacing, origin
+    direction = np.array(sitk.ReadImage(str(path_moving.resolve())).GetDirection()).reshape(
+        (len(spacing), len(spacing))
+    )
+    return moving, path_moving, fixed, spacing, origin, direction
 
 
 def get_instance(collection: Collection, instance_id: int):
     instance = Instance(collection, instance_id, *load_imgs(collection, instance_id))
     config = INSTANCES_CONFIG[collection.value]
     if config["landmarks"]:
-        path_lms_moving = INSTANCES_SRC / config["folder"] / "landmarks" / f"{instance_id:02}_Moving.txt"
-        path_lms_fixed = INSTANCES_SRC / config["folder"] / "landmarks" / f"{instance_id:02}_Fixed.txt"
+        path_lms_moving = (
+            INSTANCES_SRC / config["folder"] / "landmarks" / f"{instance_id:02}_Moving.txt"
+        )
+        path_lms_fixed = (
+            INSTANCES_SRC / config["folder"] / "landmarks" / f"{instance_id:02}_Fixed.txt"
+        )
         instance.lms_moving = np.loadtxt(path_lms_moving, skiprows=2)
         instance.lms_fixed = np.loadtxt(path_lms_fixed, skiprows=2)
         instance.lms_fixed_path = path_lms_fixed
