@@ -2,6 +2,7 @@ from typing import Collection
 from joblib import Parallel, delayed
 from tqdm import tqdm
 from scipy.spatial import distance
+from scipy.ndimage import zoom
 from skimage.filters import threshold_multiotsu
 import numpy as np
 import SimpleITK as sitk
@@ -278,6 +279,9 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
             slice = data.shape[2] // 2
         data = data[:, :, slice, :]
 
+    factors = [min(1.0, 30 / x) for x in data.shape[:-1]] + [1.0]
+    data = zoom(data, factors)
+
     X, Y = np.meshgrid(np.arange(data.shape[0]), np.arange(data.shape[1]))
     if invert:
         X = X + data[..., 1]
@@ -318,15 +322,17 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
     ax.get_figure().colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
 
 
-def plot_cpoints(points, grid_spacing, grid_origin, grid_direction, slice=None, ax=None, colors=None, alpha=0.3):
+def plot_cpoints(
+    points, grid_spacing, grid_origin, grid_direction, slice=None, ax=None, colors=None, alpha=0.3
+):
     points_slice = points
-    
+
     if len(points.shape) == 4:
         if slice is None:
             slice = points.shape[2] // 2
         points_slice = points[:, :, slice, :]
         points_slice = np.swapaxes(points_slice, 0, 1)
-    
+
     grid_spacing = np.array(grid_spacing)
     grid_origin = np.array(grid_origin)
     grid_origin = grid_origin + 0.5
@@ -340,7 +346,7 @@ def plot_cpoints(points, grid_spacing, grid_origin, grid_direction, slice=None, 
             )
             for i in range(len(points_slice.shape[:-1]))
         ],
-        indexing="xy"
+        indexing="xy",
     )
 
     cmap = None
@@ -372,6 +378,20 @@ def plot_cpoints(points, grid_spacing, grid_origin, grid_direction, slice=None, 
         cmap=cmap,
         alpha=0.8,
     )
+
+
+def cpoint_cloud(points):
+    max_level = points.shape[0] - 1
+    point_cloud = []
+
+    for index in np.ndindex(points.shape[:-1]):
+        point = points[index]
+        min_index = np.min(index)
+        max_index = np.max(index)
+        level = min_index if min_index < max_level - max_index else max_level - max_index
+        point_cloud.append([*point, level])
+
+    return np.array(point_cloud)
 
 
 def calc_validation(result: RunResult):
@@ -422,24 +442,29 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
     figs = []
     collection = result.instance.collection
 
-    fig, axes = plt.subplots(2, 2, figsize=(8, 8))
-    slice_txt = "" if collection == Collection.EXAMPLES else "(slice)"
-
-    if collection == Collection.SYNTHETIC:
-        axes[0, 0].remove()
-        axes[0, 0] = fig.add_subplot(2, 2, 1, projection="3d")
+    if collection == Collection.SYNTHETIC or collection == Collection.EXAMPLES:
+        fig, axes = plt.subplots(2, 2, figsize=(8, 8))
+        slice_txt = "" if collection == Collection.EXAMPLES else "(slice)"
+        if collection == collection.SYNTHETIC:
+            axes[0, 0].remove()
+            axes[0, 0] = fig.add_subplot(2, 2, 1, projection="3d")
         plot_voxels(result.deformed, ax=axes[0, 0])
+        plot_cpoints(
+            result.control_points,
+            result.grid_spacing,
+            result.grid_origin,
+            result.instance.direction,
+            ax=axes[0, 1],
+        )
+        plot_dvf(result.dvf, ax=axes[1, 0], vmin=clim_dvf[0], vmax=clim_dvf[1])
+        jacobian_determinant(result.dvf, ax=axes[1, 1], vmin=clim_jac[0], vmax=clim_jac[1])
+        plt.tight_layout(rect=[0, 0, 1, 0.98])
+        axes[1, 0].set_title(f"DVF {slice_txt}", fontsize=12)
+        axes[0, 0].set_title(f"Deformed source", fontsize=12)
+        axes[1, 1].set_title(f"Jacobian determinant {slice_txt}", fontsize=12)
+        axes[0, 1].set_title(f"Control points {slice_txt}", fontsize=12)
+        figs.append({"visualization/overview": wandb.Image(fig)})
 
-    plot_cpoints(result.control_points, result.grid_spacing, result.grid_origin, result.instance.direction, ax=axes[0, 1])
-    plot_dvf(result.dvf, ax=axes[1, 0], vmin=clim_dvf[0], vmax=clim_dvf[1])
-    jacobian_determinant(result.dvf, ax=axes[1, 1], vmin=clim_jac[0], vmax=clim_jac[1])
-
-    plt.tight_layout(rect=[0, 0, 1, 0.98])
-    axes[1, 0].set_title(f"DVF {slice_txt}", fontsize=12)
-    axes[0, 0].set_title(f"Deformed source", fontsize=12)
-    axes[1, 1].set_title(f"Jacobian determinant {slice_txt}", fontsize=12)
-    axes[0, 1].set_title(f"Control points {slice_txt}", fontsize=12)
-    figs.append({"visualization/overview": wandb.Image(fig)})
     figs.append(
         {
             "visualization/tre_hist": wandb.Image(
@@ -447,6 +472,11 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
             )
         }
     )
+
+    if collection == Collection.LEARN:
+        figs.append(
+            {"visualization/control_points": wandb.Object3D(cpoint_cloud(result.control_points))}
+        )
 
     return figs
 
