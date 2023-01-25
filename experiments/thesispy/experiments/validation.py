@@ -398,6 +398,49 @@ def cpoint_cloud(points):
     return np.array(point_cloud)
 
 
+def plot_color_diff(moving, source, aspect, slice_tuple, invert_y=True, ax=None):
+    if ax is None:
+        _, ax = plt.subplots(figsize=(6, 6))
+
+    img1 = sitk.GetImageFromArray(moving[slice_tuple])
+    img2 = sitk.GetImageFromArray(source[slice_tuple])
+    img_min = np.min([img1, img2])
+    img_max = np.max([img1, img2])
+
+    img1_255 = sitk.Cast(
+        sitk.IntensityWindowing(
+            img1,
+            windowMinimum=img_min,
+            windowMaximum=img_max,
+            outputMinimum=0.0,
+            outputMaximum=255.0,
+        ),
+        sitk.sitkUInt8,
+    )
+    img2_255 = sitk.Cast(
+        sitk.IntensityWindowing(
+            img2,
+            windowMinimum=img_min,
+            windowMaximum=img_max,
+            outputMinimum=0.0,
+            outputMaximum=255.0,
+        ),
+        sitk.sitkUInt8,
+    )
+
+    img3 = sitk.Cast(sitk.Compose(img1_255, img2_255, img1_255), sitk.sitkVectorUInt8)
+    arr = sitk.GetArrayFromImage(img3)
+
+    ax.imshow(np.swapaxes(arr, 0, 1), aspect=aspect)
+    if invert_y:
+        ax.invert_yaxis()
+    else:
+        ax.invert_xaxis()
+    ax.set_ylim(30, 180)
+    ax.axis("off")
+    return ax.get_figure()
+
+
 def calc_validation(result: RunResult):
     logger.info(f"Calculating validation metrics for {result.instance.collection}:")
     start = time.perf_counter()
@@ -443,11 +486,12 @@ def validation_metrics(result: RunResult):
 
 
 def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
-    figs = []
+    figs = [] # aggregate all figures
     instance = result.instance
     collection = instance.collection
     to_dict = lambda x, title: {f"visualization/{title}": x}
 
+    # Visualizations for either SYNTHETIC or EXAMPLES results:
     if collection == Collection.SYNTHETIC or collection == Collection.EXAMPLES:
         fig, axes = plt.subplots(2, 2, figsize=(8, 8))
         slice_txt = "" if collection == Collection.EXAMPLES else "(slice)"
@@ -464,15 +508,33 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         )
         plot_dvf(result.dvf, ax=axes[1, 0], vmin=clim_dvf[0], vmax=clim_dvf[1])
         jacobian_determinant(result.dvf, ax=axes[1, 1], vmin=clim_jac[0], vmax=clim_jac[1])
-        plt.tight_layout(rect=[0, 0, 1, 0.98])
+        fig.tight_layout(rect=[0, 0, 1, 0.98])
         axes[1, 0].set_title(f"DVF {slice_txt}", fontsize=12)
         axes[0, 0].set_title(f"Deformed source", fontsize=12)
         axes[1, 1].set_title(f"Jacobian determinant {slice_txt}", fontsize=12)
         axes[0, 1].set_title(f"Control points {slice_txt}", fontsize=12)
         figs.append(to_dict(wandb.Image(fig), "overview"))
+    
+    # Visualizations for LEARN results:
     elif collection == Collection.LEARN:
         figs.append(to_dict(wandb.Object3D(cpoint_cloud(result.control_points)), "cpoints"))
 
+        fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+        plot_color_diff(
+            result.deformed, instance.fixed, 1.4, (50, slice(None), slice(None)), ax=axes[0]
+        )
+        plot_color_diff(
+            result.deformed,
+            instance.fixed,
+            1.0,
+            (slice(None), 50, slice(None)),
+            invert_y=False,
+            ax=axes[1],
+        )
+        fig.tight_layout()
+        figs.append(to_dict(wandb.Image(fig), "overview"))
+
+    # TRE distribution plot
     tre_img = wandb.Image(tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing))
     figs.append(to_dict(tre_img, "tre_hist"))
 
