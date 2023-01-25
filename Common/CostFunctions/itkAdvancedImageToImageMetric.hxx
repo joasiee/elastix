@@ -1244,21 +1244,20 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
   i = 0;
   while (!coeffImageIterator.IsAtEnd())
   {
-    IndexType imageIndex;
     auto      transformedPoint =
       wrappedImage->template TransformIndexToPhysicalPoint<PixelType>(coeffImageIterator.GetIndex());
-    auto origin = fixedImage->GetOrigin();
-    auto physicalIndex = transformedPoint - origin;
+    auto transformedPointUpper = transformedPoint + wrappedImage->GetDirection() * wrappedImage->GetSpacing();
+    auto imageLowerIndex = fixedImage->TransformPhysicalPointToIndex(transformedPoint);
+    auto imageUpperIndex = fixedImage->TransformPhysicalPointToIndex(transformedPointUpper);
 
-    unsigned int offset = wrappedImage->ComputeOffset(coeffImageIterator.GetIndex());
     for (d = 0; d < FixedImageDimension; ++d)
     {
-      imageIndex[d] = std::max(static_cast<int>(ceil(physicalIndex[d] / fixedImage->GetSpacing()[d])), 0);
-      int sizingIndex = ceil((physicalIndex[d] + wrappedImage->GetSpacing()[d]) / fixedImage->GetSpacing()[d]);
-      sizingIndex = std::min(sizingIndex, static_cast<int>(fixedImage->GetLargestPossibleRegion().GetSize()[d]));
-      this->m_BSplineFOSRegions[i].SetSize(d, sizingIndex - imageIndex[d]);
+      imageLowerIndex[d] = std::max((int) imageLowerIndex[d], 0);
+      imageUpperIndex[d] = std::min((int) imageUpperIndex[d], (int) fixedImage->GetLargestPossibleRegion().GetSize()[d]);
+      this->m_BSplineFOSRegions[i].SetSize(d, imageUpperIndex[d] - imageLowerIndex[d]);
     }
-    this->m_BSplineFOSRegions[i].SetIndex(imageIndex);
+    this->m_BSplineFOSRegions[i].SetIndex(imageLowerIndex);
+    unsigned int offset = wrappedImage->ComputeOffset(coeffImageIterator.GetIndex());
 
     this->m_BSplinePointOffsetMap[offset] = i;
     ++coeffImageIterator;
