@@ -15,12 +15,14 @@ class Instance:
     spacing: np.ndarray
     origin: np.ndarray
     direction: np.ndarray
+    size: np.ndarray
     lms_moving: np.ndarray = None
     lms_fixed: np.ndarray = None
     lms_fixed_path: Path = None
     surface_points: List[np.ndarray] = None
     surface_points_paths: List[Path] = None
     dvf: np.ndarray = None
+    mask: np.ndarray = None
 
 
 @dataclass
@@ -38,10 +40,6 @@ class RunResult:
 def get_np_array(img_path: Path):
     img = sitk.ReadImage(str(img_path.resolve()))
     data = sitk.GetArrayFromImage(img)
-    if len(data.shape) == 4 or (len(data.shape) == 3 and data.shape[-1] > 2):
-        data = np.swapaxes(data, 0, 2)
-    else:
-        data = np.swapaxes(data, 0, 1)
     return data.astype(np.float64)
 
 
@@ -55,12 +53,12 @@ def load_imgs(collection: Collection, instance: int):
     )
     moving = get_np_array(path_moving)
     fixed = get_np_array(path_fixed)
-    spacing = sitk.ReadImage(str(path_moving.resolve())).GetSpacing()
-    origin = sitk.ReadImage(str(path_moving.resolve())).GetOrigin()
-    direction = np.array(sitk.ReadImage(str(path_moving.resolve())).GetDirection()).reshape(
-        (len(spacing), len(spacing))
-    )
-    return moving, path_moving, fixed, spacing, origin, direction
+    img = sitk.ReadImage(str(path_moving.resolve()))
+    spacing = img.GetSpacing()
+    origin = img.GetOrigin()
+    direction = np.array(img.GetDirection()).reshape((len(spacing), len(spacing)))
+    size = np.array(img.GetSize())
+    return moving, path_moving, fixed, spacing, origin, direction, size
 
 
 def get_instance(collection: Collection, instance_id: int):
@@ -87,6 +85,9 @@ def get_instance(collection: Collection, instance_id: int):
     if config["dvf"] and config["dvf_indices"][instance_id - 1]:
         path_dvf = INSTANCES_SRC / config["folder"] / "dvf" / f"{instance_id:02}.npy"
         instance.dvf = np.load(path_dvf)
+    if config["masks"]:
+        path_mask = INSTANCES_SRC / config["folder"] / "masks" / f"{instance_id:02}_Fixed.{config['extension']}"
+        instance.mask = get_np_array(path_mask)
     return instance
 
 

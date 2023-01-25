@@ -10,7 +10,8 @@ from thesispy.experiments.experiment import Experiment, run_experiment
 params = (
     Parameters.from_base(mesh_size=5, seed=1)
     .asgd()
-    .stopping_criteria(0)
+    .multi_resolution(1, p_sched=[3], downsampling=True)
+    .stopping_criteria(3)
     .instance(Collection.LEARN, 1)
 )
 

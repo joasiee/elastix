@@ -2,7 +2,6 @@ from typing import Collection
 from joblib import Parallel, delayed
 from tqdm import tqdm
 from scipy.spatial import distance
-from scipy.ndimage import zoom
 from skimage.filters import threshold_multiotsu
 import numpy as np
 import SimpleITK as sitk
@@ -190,15 +189,12 @@ def tre_hist(lms1, lms2, spacing=1, ax=None, bins=40):
 
 
 def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
-    axis_swap = 2 if len(dvf.shape) == 4 else 1
-    dvf = np.swapaxes(dvf, 0, axis_swap)
     dvf_img = sitk.GetImageFromArray(dvf, isVector=True)
     jac_det_contracting_field = sitk.DisplacementFieldJacobianDeterminant(dvf_img)
     jac_det = sitk.GetArrayFromImage(jac_det_contracting_field)
-    jac_det = np.swapaxes(jac_det, 0, axis_swap)
     if len(jac_det.shape) == 3:
-        slice = jac_det.shape[-1] // 2
-        jac_det = jac_det[..., slice]
+        slice = jac_det.shape[0] // 2
+        jac_det = jac_det[:, slice, :]
 
     if plot:
         if ax is None:
@@ -273,29 +269,23 @@ def plot_voxels(
                 ax.scatter(lm[0], lm[1], lm[2], s=50, c="r")
 
 
-def plot_dvf(
-    data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=None, max_vectors=None
-):
+def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=None):
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[2] // 2
-        data = data[:, :, slice, :]
-
-    if max_vectors is not None:
-        factors = [min(1.0, max_vectors / x) for x in data.shape[:-1]] + [1.0]
-        data = zoom(data, factors)
+        data = data[:, slice, :, :]
 
     X, Y = np.meshgrid(np.arange(data.shape[0]), np.arange(data.shape[1]))
     if invert:
-        X = X + data[..., 1]
-        Y = Y + data[..., 0]
+        X = X + data[..., 0]
+        Y = Y + data[..., 2]
         data = -data
 
     X = X + 0.5
     Y = Y + 0.5
 
     u = data[:, :, 0]
-    v = data[:, :, 1]
+    v = data[:, :, 2]
     c = np.sqrt(u**2 + v**2)
 
     if ax is None:
@@ -304,8 +294,8 @@ def plot_dvf(
     qq = ax.quiver(
         X,
         Y,
-        v,
         u,
+        v,
         c,
         scale=scale,
         units="xy",
@@ -318,12 +308,10 @@ def plot_dvf(
     ax.set_xlim(0, data.shape[0])
     ax.set_ylim(0, data.shape[1])
     ax.set_aspect("equal")
-    ax.invert_yaxis()
-    ax.invert_xaxis()
     ax.set_xticks([])
     ax.set_yticks([])
     ax.get_figure().colorbar(qq, fraction=0.045, pad=0.02, label="Displacement magnitude", ax=ax)
-    return fig
+    return ax.get_figure()
 
 
 def plot_cpoints(
@@ -334,8 +322,7 @@ def plot_cpoints(
     if len(points.shape) == 4:
         if slice is None:
             slice = points.shape[2] // 2
-        points_slice = points[:, :, slice, :]
-        points_slice = np.swapaxes(points_slice, 0, 1)
+        points_slice = points[:, slice, :, :]
 
     grid_spacing = np.array(grid_spacing)
     grid_origin = np.array(grid_origin)
@@ -350,7 +337,7 @@ def plot_cpoints(
             )
             for i in range(len(points_slice.shape[:-1]))
         ],
-        indexing="xy",
+        indexing="ij",
     )
 
     cmap = None
@@ -375,7 +362,7 @@ def plot_cpoints(
     ax.grid(False)
     ax.scatter(
         points_slice[..., 0],
-        points_slice[..., 1],
+        points_slice[..., 2],
         marker="s",
         s=15,
         c=colors,
@@ -398,9 +385,11 @@ def cpoint_cloud(points):
     return np.array(point_cloud)
 
 
-def plot_color_diff(moving, source, aspect, slice_tuple, invert_y=True, ax=None):
+def plot_color_diff(moving, source, aspect, slice_tuple, ax=None):
     if ax is None:
-        _, ax = plt.subplots(figsize=(6, 6))
+        fig, ax = plt.subplots(figsize=(6, 6))
+
+    invert_x = slice_tuple[1] != slice(None, None, None)
 
     img1 = sitk.GetImageFromArray(moving[slice_tuple])
     img2 = sitk.GetImageFromArray(source[slice_tuple])
@@ -431,13 +420,104 @@ def plot_color_diff(moving, source, aspect, slice_tuple, invert_y=True, ax=None)
     img3 = sitk.Cast(sitk.Compose(img1_255, img2_255, img1_255), sitk.sitkVectorUInt8)
     arr = sitk.GetArrayFromImage(img3)
 
-    ax.imshow(np.swapaxes(arr, 0, 1), aspect=aspect)
-    if invert_y:
-        ax.invert_yaxis()
-    else:
+    ax.imshow(arr, aspect=aspect)
+    if invert_x:
         ax.invert_xaxis()
     ax.set_ylim(30, 180)
     ax.axis("off")
+    return ax.get_figure()
+
+def plot_dvf_masked(run_result: RunResult, slice_tuple, ax=None, zoom_f=1):
+    if ax is None:
+        _, ax = plt.subplots(figsize=(8, 8))
+
+    fixed = run_result.instance.fixed
+    dvf = run_result.dvf
+    spacing = run_result.instance.spacing
+    size = run_result.instance.size
+    mask = run_result.instance.mask
+    direction = run_result.instance.direction
+
+    image_slice = fixed[slice_tuple]
+
+    inv_mapping = {0: 2, 1: 1, 2: 0}
+    indices_xy = list(map(lambda x: inv_mapping[x], np.flip(np.where(np.array(slice_tuple) == slice(None, None, None)))[0]))
+    extent = (0, size[indices_xy[0]] * spacing[indices_xy[0]], size[indices_xy[1]] * spacing[indices_xy[1]], 0)
+
+    t=ax.imshow(image_slice,extent=extent,interpolation=None)
+    ax.invert_yaxis()
+    if slice_tuple[1] != slice(None, None, None):
+        ax.invert_xaxis()
+    t.set_cmap("gray")
+
+    df_slice = np.copy(dvf[slice_tuple + (slice(None),)])
+    mask_slice = mask[slice_tuple]
+    df_slice[mask_slice == 0] = np.nan
+
+    direction = np.array(direction).reshape((3,3))
+    voxel_to_physical = direction
+    physical_to_voxel = np.linalg.inv(voxel_to_physical)
+
+    for i in range(df_slice.shape[0]):
+        for j in range(df_slice.shape[1]):
+            p = physical_to_voxel @ df_slice[i,j]
+            df_slice[i,j] = p
+
+    coordsX = np.arange(0, size[indices_xy[0]] * spacing[indices_xy[0]], size[indices_xy[0]] * spacing[indices_xy[0]] / float(dvf.shape[inv_mapping[indices_xy[0]]]) )
+    coordsY = np.arange(0, size[indices_xy[1]] * spacing[indices_xy[1]], size[indices_xy[1]] * spacing[indices_xy[1]] / float(dvf.shape[inv_mapping[indices_xy[1]]]) )
+    coordsX, coordsY = np.meshgrid(coordsX, coordsY)
+
+    x = df_slice[:,:,indices_xy[0]]
+    y = df_slice[:,:,indices_xy[1]]
+    coordsX = coordsX[::zoom_f,::zoom_f]
+    coordsY = coordsY[::zoom_f,::zoom_f]
+    x = x[::zoom_f,::zoom_f]
+    y = y[::zoom_f,::zoom_f]
+
+    M = np.sqrt(x*x+y*y)
+    qq=ax.quiver(coordsX, coordsY, x, y, M, cmap=plt.cm.jet, scale_units='xy', angles='xy', scale=1, units='xy', minlength=0)
+
+    ax.axis('off')
+    if slice_tuple[1] != slice(None, None, None) or slice_tuple[2] != slice(None, None, None):
+        ax.set_ylim(80, 300)
+    return ax.get_figure()
+
+def plot_dvf_3d(run_result, zoom_f=5, ax=None):
+    if ax is None:
+        ax = plt.figure(figsize=(10, 10)).add_subplot(projection='3d')
+    dvf = np.copy(run_result.dvf)
+    mask = run_result.instance.mask
+    dvf[mask == 0] = np.nan
+
+    size = run_result.instance.size
+    spacing = run_result.instance.spacing
+    direction = run_result.instance.direction
+    inv_mapping = {0: 2, 1: 1, 2: 0}
+
+    direction = np.array(direction).reshape((3,3))
+    voxel_to_physical = direction
+    physical_to_voxel = np.linalg.inv(voxel_to_physical)
+
+    dvf = dvf[::zoom_f,::zoom_f,::zoom_f,:]
+
+    for p in np.ndindex(dvf.shape[:3]):
+        dvf[p] = physical_to_voxel @ dvf[p]
+
+    coordsX = np.arange(0, size[0] * spacing[0], size[0] * spacing[0] / float(dvf.shape[inv_mapping[0]]))
+    coordsY = np.arange(0, size[1] * spacing[1], size[1] * spacing[1] / float(dvf.shape[inv_mapping[1]]))
+    coordsZ = np.arange(0, size[2] * spacing[2], size[2] * spacing[2] / float(dvf.shape[inv_mapping[2]]))
+    X, Y, Z = np.meshgrid(coordsZ, coordsY, coordsX, indexing='ij')
+    x, y, z = dvf[:,:,:,0], dvf[:,:,:,1], dvf[:,:,:,2]
+
+    M = np.sqrt(x*x+y*y+z*z)
+    M = M[~np.isnan(M)]    
+    
+    q = ax.quiver(X, Y, Z, x, y, z, cmap='jet')
+    q.set_array(M.flatten())
+
+    ax.invert_zaxis()
+    ax.view_init(25, 40)
+
     return ax.get_figure()
 
 
@@ -486,7 +566,7 @@ def validation_metrics(result: RunResult):
 
 
 def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
-    figs = [] # aggregate all figures
+    figs = []  # aggregate all figures
     instance = result.instance
     collection = instance.collection
     to_dict = lambda x, title: {f"visualization/{title}": x}
@@ -514,24 +594,32 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         axes[1, 1].set_title(f"Jacobian determinant {slice_txt}", fontsize=12)
         axes[0, 1].set_title(f"Control points {slice_txt}", fontsize=12)
         figs.append(to_dict(wandb.Image(fig), "overview"))
-    
+
     # Visualizations for LEARN results:
     elif collection == Collection.LEARN:
         figs.append(to_dict(wandb.Object3D(cpoint_cloud(result.control_points)), "cpoints"))
 
-        fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+        fig, axes = plt.subplots(2, 2, figsize=(12, 12))
         plot_color_diff(
-            result.deformed, instance.fixed, 1.4, (50, slice(None), slice(None)), ax=axes[0]
+            result.deformed, instance.fixed, 1.4, (slice(None), slice(None), 50), ax=axes[0, 0]
         )
         plot_color_diff(
             result.deformed,
             instance.fixed,
             1.0,
             (slice(None), 50, slice(None)),
-            invert_y=False,
-            ax=axes[1],
+            ax=axes[0, 1],
         )
-        fig.tight_layout()
+        plot_dvf_masked(result, (slice(None), slice(None), 50), ax=axes[1, 0], zoom_f=3)
+        axes[1, 1].remove()
+        axes[1, 1] = fig.add_subplot(2, 2, 4, projection="3d")
+        plot_dvf_3d(result, ax=axes[1, 1], zoom_f=5)
+
+        # fig.tight_layout()
+        axes[0, 0].set_title("Deformed source vs target (side)", fontsize=12)
+        axes[0, 1].set_title("Deformed source vs target (front)", fontsize=12)
+        axes[1, 0].set_title("DVF (side)", fontsize=12)
+        axes[1, 1].set_title("DVF (3D)", fontsize=12)
         figs.append(to_dict(wandb.Image(fig), "overview"))
 
     # TRE distribution plot
