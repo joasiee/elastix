@@ -8,10 +8,10 @@ from thesispy.elastix_wrapper.parameters import Parameters, Collection
 from thesispy.experiments.experiment import Experiment, run_experiment
 
 params = (
-    Parameters.from_base(mesh_size=5, seed=1)
+    Parameters.from_base(mesh_size=5, seed=1, use_mask=True)
     .asgd()
     .multi_resolution(1, p_sched=[3], downsampling=True)
-    .stopping_criteria(3)
+    .stopping_criteria(100)
     .instance(Collection.LEARN, 1)
 )
 

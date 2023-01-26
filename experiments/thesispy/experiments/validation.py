@@ -44,6 +44,8 @@ VALIDATION_ABBRVS_NEW = [
     "$\\vec{v}_{\\epsilon}$",
 ]
 
+INV_MAPPING = {0: 2, 1: 1, 2: 0}
+
 
 class ProgressParallel(Parallel):
     def __init__(self, use_tqdm=True, total=None, desc=None, *args, **kwargs):
@@ -314,7 +316,9 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
     return ax.get_figure()
 
 
-def plot_cpoints(run_result: RunResult, slice=None, ax=None, colors=None, alpha=0.3):
+def plot_cpoints(
+    run_result: RunResult, slice_index=None, slice_pos=1, ax=None, colors=None, alpha=0.3
+):
     points = run_result.control_points
     points_slice = points
 
@@ -323,12 +327,14 @@ def plot_cpoints(run_result: RunResult, slice=None, ax=None, colors=None, alpha=
     grid_direction = run_result.instance.direction.reshape(3, 3)
     grid_origin = grid_direction @ grid_origin
 
+    slice_tuple = [slice(None), slice(None), slice(None)]
     if len(points.shape) == 4:
-        if slice is None:
-            slice = points.shape[2] // 2
-        points_slice = points[:, slice, :, :]
+        if slice_index is None:
+            slice_index = points.shape[2] // 2
+        slice_tuple[slice_pos] = slice_index
+        points_slice = points[tuple(slice_tuple)]
 
-    indices_xy = [0, 2]
+    indices_xy = get_indices_xy(slice_tuple, inv=False)
 
     for p in np.ndindex(points_slice.shape[:-1]):
         points_slice[p] = grid_direction @ points_slice[p]
@@ -337,8 +343,7 @@ def plot_cpoints(run_result: RunResult, slice=None, ax=None, colors=None, alpha=
         *[
             np.arange(
                 grid_origin[indices_xy[i]],
-                grid_origin[indices_xy[i]]
-                + grid_spacing[indices_xy[i]] * points_slice.shape[i],
+                grid_origin[indices_xy[i]] + grid_spacing[indices_xy[i]] * points_slice.shape[i],
                 grid_spacing[indices_xy[i]],
             )
             for i in range(len(points_slice.shape[:-1]))
@@ -367,8 +372,8 @@ def plot_cpoints(run_result: RunResult, slice=None, ax=None, colors=None, alpha=
 
     ax.grid(False)
     ax.scatter(
-        points_slice[..., 0],
-        points_slice[..., 2],
+        points_slice[..., indices_xy[0]],
+        points_slice[..., indices_xy[1]],
         marker="s",
         s=15,
         c=colors,
@@ -396,6 +401,7 @@ def plot_color_diff(moving, source, aspect, slice_tuple, ax=None):
         fig, ax = plt.subplots(figsize=(6, 6))
 
     invert_x = slice_tuple[1] != slice(None, None, None)
+    invert_y = slice_tuple[0] != slice(None, None, None)
 
     img1 = sitk.GetImageFromArray(moving[slice_tuple])
     img2 = sitk.GetImageFromArray(source[slice_tuple])
@@ -427,9 +433,12 @@ def plot_color_diff(moving, source, aspect, slice_tuple, ax=None):
     arr = sitk.GetArrayFromImage(img3)
 
     ax.imshow(arr, aspect=aspect)
-    if invert_x:
+    if invert_x or invert_y:
         ax.invert_xaxis()
-    ax.set_ylim(30, 180)
+    if invert_y:
+        ax.invert_yaxis()
+    if slice_tuple[0] == slice(None, None, None):
+        ax.set_ylim(30, 180)
     ax.axis("off")
     return ax.get_figure()
 
@@ -447,13 +456,7 @@ def plot_dvf_masked(run_result: RunResult, slice_tuple, ax=None, zoom_f=1):
 
     image_slice = fixed[slice_tuple]
 
-    inv_mapping = {0: 2, 1: 1, 2: 0}
-    indices_xy = list(
-        map(
-            lambda x: inv_mapping[x],
-            np.flip(np.where(np.array(slice_tuple) == slice(None, None, None)))[0],
-        )
-    )
+    indices_xy = get_indices_xy(slice_tuple)
     extent = (
         0,
         size[indices_xy[0]] * spacing[indices_xy[0]],
@@ -483,12 +486,12 @@ def plot_dvf_masked(run_result: RunResult, slice_tuple, ax=None, zoom_f=1):
     coordsX = np.arange(
         0,
         size[indices_xy[0]] * spacing[indices_xy[0]],
-        size[indices_xy[0]] * spacing[indices_xy[0]] / float(dvf.shape[inv_mapping[indices_xy[0]]]),
+        size[indices_xy[0]] * spacing[indices_xy[0]] / float(dvf.shape[INV_MAPPING[indices_xy[0]]]),
     )
     coordsY = np.arange(
         0,
         size[indices_xy[1]] * spacing[indices_xy[1]],
-        size[indices_xy[1]] * spacing[indices_xy[1]] / float(dvf.shape[inv_mapping[indices_xy[1]]]),
+        size[indices_xy[1]] * spacing[indices_xy[1]] / float(dvf.shape[INV_MAPPING[indices_xy[1]]]),
     )
     coordsX, coordsY = np.meshgrid(coordsX, coordsY)
 
@@ -526,6 +529,8 @@ def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     dvf = np.copy(run_result.dvf)
     mask = run_result.instance.mask
     dvf[mask == 0] = np.nan
+    dvf = np.swapaxes(dvf, 1, 2)
+    dvf = np.swapaxes(dvf, 0, 2)
 
     size = run_result.instance.size
     spacing = run_result.instance.spacing
@@ -556,11 +561,11 @@ def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     M = np.sqrt(x * x + y * y + z * z)
     M = M[~np.isnan(M)]
 
-    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet")
+    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", normalize=True, linewidth=1.5, length=4)
     q.set_array(M.flatten())
 
-    ax.invert_zaxis()
-    ax.view_init(25, 40)
+    ax.view_init(20, 30)
+    ax.invert_xaxis()
 
     return ax.get_figure()
 
@@ -648,17 +653,23 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
             (slice(None), 50, slice(None)),
             ax=axes[0, 1],
         )
+        plot_color_diff(
+            result.deformed,
+            instance.fixed,
+            0.714,
+            (120, slice(None), slice(None)),
+            ax=axes[0, 2],
+        )
         plot_dvf_masked(result, (slice(None), slice(None), 50), ax=axes[1, 0], zoom_f=3)
         axes[1, 1].remove()
         axes[1, 1] = fig.add_subplot(2, 3, 5, projection="3d")
         plot_dvf_3d(result, ax=axes[1, 1], zoom_f=5)
-        plot_cpoints(result, ax=axes[0, 2])
         tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing, ax=axes[1, 2])
 
         # fig.tight_layout()
         axes[0, 0].set_title("Deformed source vs target (side)", fontsize=12)
         axes[0, 1].set_title("Deformed source vs target (front)", fontsize=12)
-        axes[0, 2].set_title("Control points (slice)", fontsize=12)
+        axes[0, 2].set_title("Deformed source vs target (top)", fontsize=12)
         axes[1, 0].set_title("DVF (side)", fontsize=12)
         axes[1, 1].set_title("DVF (3D)", fontsize=12)
         axes[1, 2].set_title("TRE distribution", fontsize=12)
@@ -685,3 +696,10 @@ def get_vmin_vmax(result1: RunResult, result2: RunResult):
     vmax_jac = np.max([np.max(jac_baseline), np.max(jac_hybrid)])
 
     return (vmin_dvf, vmax_dvf), (vmin_jac, vmax_jac)
+
+
+def get_indices_xy(slice_tuple, inv=True):
+    indices_xy = np.where(np.array(slice_tuple) == slice(None, None, None))[0]
+    if inv:
+        indices_xy = list(map(lambda x: INV_MAPPING[x], np.flip(indices_xy)))
+    return indices_xy

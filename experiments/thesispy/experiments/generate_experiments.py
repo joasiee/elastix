@@ -169,27 +169,27 @@ def fair_comparison_hybrid():
 
 
 def constrained_selection():
-    # for seed in range(10):
-    #     seed += 1
-    #     for constraint_threshold in [0.0, 0.005, 0.02, 0.05, 0.1]:
-    #         params_constrained = (
-    #             Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed)
-    #             .gomea(
-    #                 LinkageType.CP_MARGINAL,
-    #                 use_constraints=True,
-    #                 contraints_threshold=constraint_threshold,
-    #             )
-    #             .stopping_criteria(iterations=1000)
-    #         )
-    #         yield params_constrained
-    #     params_penalty = (
-    #         Parameters.from_base(
-    #             mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True
-    #         )
-    #         .gomea(LinkageType.CP_MARGINAL, use_constraints=False)
-    #         .stopping_criteria(iterations=1000)
-    #     )
-    #     yield params_penalty
+    for seed in range(10):
+        seed += 1
+        for constraint_threshold in [0.0, 0.005, 0.02, 0.05, 0.1]:
+            params_constrained = (
+                Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed)
+                .gomea(
+                    LinkageType.CP_MARGINAL,
+                    use_constraints=True,
+                    contraints_threshold=constraint_threshold,
+                )
+                .stopping_criteria(iterations=1000)
+            )
+            yield params_constrained
+        params_penalty = (
+            Parameters.from_base(
+                mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True
+            )
+            .gomea(LinkageType.CP_MARGINAL, use_constraints=False)
+            .stopping_criteria(iterations=1000)
+        )
+        yield params_penalty
     for seed in range(10):
         seed += 1
         params = (
@@ -225,10 +225,10 @@ def linkage_models():
     for seed in range(10):
         seed += 1
         for linkage in [
-            # LinkageType.UNIVARIATE,
-            # LinkageType.CP_MARGINAL,
+            LinkageType.UNIVARIATE,
+            LinkageType.CP_MARGINAL,
             LinkageType.STATIC_EUCLIDEAN,
-            # LinkageType.FULL,
+            LinkageType.FULL,
         ]:
             for mesh_size in [5, 7, 9]:
                 params = (
@@ -289,10 +289,23 @@ def hybrid_schedules():
                 yield params
 
 
+def asgd_sweep():
+    for nr_resolutions in [1, 2, 3, 4, 5]:
+        p_sched = [i for i in range(nr_resolutions + 1, 1, -1)]
+        for mesh_size in [5, 6, 8, 10, 12]:
+            params = (
+                Parameters.from_base(mesh_size=mesh_size, seed=83, metric="AdvancedNormalizedCorrelation", use_mask=True)
+                .asgd()
+                .multi_resolution(nr_resolutions, p_sched=p_sched, g_sched=[1 for _ in range(nr_resolutions)])
+                .stopping_criteria(iterations=2000)
+            )
+            yield params
+
+
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = hybrid_schedules
+    fn = asgd_sweep
 
-    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.LEARN, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

@@ -722,7 +722,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::WriteParameter
 
     for (unsigned int i = 0; i < SpaceDimension; ++i)
     {
-      outfile << point[i] + 0.5 << " ";
+      outfile << point[i] << " ";
     }
     outfile << "\n";
 
