@@ -244,7 +244,10 @@ def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
     jet_cmap.set_bad(alpha=0)
 
     ax.imshow(fixed_slice, cmap="gray", alpha=0.6)
-    ax.imshow(jac_det_slice, alpha=0.5, cmap="jet")
+    im_jac = ax.imshow(jac_det_slice, alpha=0.5, cmap="jet")
+    cbar = ax.get_figure().colorbar(im_jac, ax=ax, location="bottom", pad=0.1, alpha=1.0)
+    cbar.set_label("Contraction --> Expansion")
+
     ax.set_xlim(min_x, max_x)
     ax.set_ylim(min_y, max_y)
     ax.invert_xaxis()
