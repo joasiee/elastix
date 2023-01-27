@@ -217,6 +217,40 @@ def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
     logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
     return jac_det
 
+def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
+    if ax is None:
+        _, ax = plt.subplots(figsize=(7, 7))
+    dvf_img = sitk.GetImageFromArray(run_result.dvf, isVector=True)
+    jac_det_contracting_field = sitk.DisplacementFieldJacobianDeterminant(dvf_img)
+    jac_det = sitk.GetArrayFromImage(jac_det_contracting_field)
+
+    mask = run_result.instance.mask
+    fixed = run_result.instance.fixed
+
+    mask_slice = mask[slice_tuple]
+    max_indices = np.where(mask_slice == 1)
+    margin = 5
+    min_x, max_x = np.min(max_indices[1]) - margin, np.max(max_indices[1]) + margin
+    min_y, max_y = np.min(max_indices[0]) - margin, np.max(max_indices[0]) + margin
+
+    fixed_slice = fixed[slice_tuple]
+    fixed_slice[mask_slice == 0] = np.nan
+    gray_cmap = plt.cm.get_cmap("gray")
+    gray_cmap.set_bad(alpha=0)
+
+    jac_det_slice = jac_det[slice_tuple]
+    jac_det_slice[mask_slice == 0] = np.nan
+    jet_cmap = plt.cm.get_cmap("jet")
+    jet_cmap.set_bad(alpha=0)
+
+    ax.imshow(fixed_slice, cmap="gray", alpha=0.6)
+    ax.imshow(jac_det_slice, alpha=0.5, cmap="jet")
+    ax.set_xlim(min_x, max_x)
+    ax.set_ylim(min_y, max_y)
+    ax.invert_xaxis()
+    ax.axis("off")
+    return ax.get_figure()
+
 
 def get_cmap_color(cmap, f, a):
     c = cmap(f)
@@ -443,7 +477,7 @@ def plot_color_diff(moving, source, aspect, slice_tuple, ax=None):
     return ax.get_figure()
 
 
-def plot_dvf_masked(run_result: RunResult, slice_tuple, ax=None, zoom_f=1):
+def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=1):
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 8))
 
@@ -513,8 +547,10 @@ def plot_dvf_masked(run_result: RunResult, slice_tuple, ax=None, zoom_f=1):
         scale_units="xy",
         angles="xy",
         scale=1,
-        units="xy",
         minlength=0,
+        width=10,
+        headaxislength=4,
+        minshaft=1.75,
     )
 
     ax.axis("off")
@@ -664,7 +700,7 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         axes[1, 1].remove()
         axes[1, 1] = fig.add_subplot(2, 3, 5, projection="3d")
         plot_dvf_3d(result, ax=axes[1, 1], zoom_f=5)
-        tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing, ax=axes[1, 2])
+        jacobian_determinant_masked(result, (slice(None), 85, slice(None)), ax=axes[1, 2])
 
         # fig.tight_layout()
         axes[0, 0].set_title("Deformed source vs target (side)", fontsize=12)
@@ -672,8 +708,12 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         axes[0, 2].set_title("Deformed source vs target (top)", fontsize=12)
         axes[1, 0].set_title("DVF (side)", fontsize=12)
         axes[1, 1].set_title("DVF (3D)", fontsize=12)
-        axes[1, 2].set_title("TRE distribution", fontsize=12)
+        axes[1, 2].set_title("Jacobian determinant (front)", fontsize=12)
         figs.append(to_dict(wandb.Image(fig), "overview"))
+
+    tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
+    figs.append(to_dict(wandb.Image(tre_fig), "tre_hist"))
+
 
     return figs
 
