@@ -28,8 +28,7 @@ VALIDATION_NAMES_NEW = [
     "tre",
     "mean_surface_cube",
     "mean_surface_sphere",
-    "hausdorff_cube",
-    "hausdorff_sphere",
+    "dice_sphere",
     "bending_energy",
     "dvf_rmse",
 ]
@@ -38,8 +37,7 @@ VALIDATION_ABBRVS_NEW = [
     "$TRE$",
     "$ASD_{\\textsc{cube}}$",
     "$ASD_{\\textsc{sphere}}$",
-    "$HD_{\\textsc{cube}}$",
-    "$HD_{\\textsc{sphere}}$",
+    "$DSC_{\\textsc{sphere}}$",
     "$E_b$",
     "$\\vec{v}_{\\epsilon}$",
 ]
@@ -217,6 +215,7 @@ def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
     logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
     return jac_det
 
+
 def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
@@ -376,17 +375,7 @@ def plot_cpoints(
     for p in np.ndindex(points_slice.shape[:-1]):
         points_slice[p] = grid_direction @ points_slice[p]
 
-    X, Y = np.meshgrid(
-        *[
-            np.arange(
-                grid_origin[indices_xy[i]],
-                grid_origin[indices_xy[i]] + grid_spacing[indices_xy[i]] * points_slice.shape[i],
-                grid_spacing[indices_xy[i]],
-            )
-            for i in range(len(points_slice.shape[:-1]))
-        ],
-        indexing="ij",
-    )
+    X, Y = mesh_grids(grid_origin, grid_spacing, indices_xy, points_slice.shape[:-1], 2, indexing="ij")
 
     cmap = None
 
@@ -520,17 +509,7 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=1):
             p = physical_to_voxel @ df_slice[i, j]
             df_slice[i, j] = p
 
-    coordsX = np.arange(
-        0,
-        size[indices_xy[0]] * spacing[indices_xy[0]],
-        size[indices_xy[0]] * spacing[indices_xy[0]] / float(dvf.shape[INV_MAPPING[indices_xy[0]]]),
-    )
-    coordsY = np.arange(
-        0,
-        size[indices_xy[1]] * spacing[indices_xy[1]],
-        size[indices_xy[1]] * spacing[indices_xy[1]] / float(dvf.shape[INV_MAPPING[indices_xy[1]]]),
-    )
-    coordsX, coordsY = np.meshgrid(coordsX, coordsY)
+    coordsX, coordsY = mesh_grids([0, 0, 0], spacing, indices_xy, size, 2)
 
     x = df_slice[:, :, indices_xy[0]]
     y = df_slice[:, :, indices_xy[1]]
@@ -571,10 +550,8 @@ def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     dvf = np.swapaxes(dvf, 1, 2)
     dvf = np.swapaxes(dvf, 0, 2)
 
-    size = run_result.instance.size
     spacing = run_result.instance.spacing
     direction = run_result.instance.direction
-    inv_mapping = {0: 2, 1: 1, 2: 0}
 
     direction = np.array(direction).reshape((3, 3))
     voxel_to_physical = direction
@@ -585,22 +562,13 @@ def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     for p in np.ndindex(dvf.shape[:3]):
         dvf[p] = physical_to_voxel @ dvf[p]
 
-    coordsX = np.arange(
-        0, size[0] * spacing[0], size[0] * spacing[0] / float(dvf.shape[inv_mapping[0]])
-    )
-    coordsY = np.arange(
-        0, size[1] * spacing[1], size[1] * spacing[1] / float(dvf.shape[inv_mapping[1]])
-    )
-    coordsZ = np.arange(
-        0, size[2] * spacing[2], size[2] * spacing[2] / float(dvf.shape[inv_mapping[2]])
-    )
-    X, Y, Z = np.meshgrid(coordsZ, coordsY, coordsX, indexing="ij")
+    X, Y, Z = mesh_grids([0,0,0], spacing, [0, 1, 2], dvf.shape[:-1], 3, indexing="ij")
     x, y, z = dvf[:, :, :, 0], dvf[:, :, :, 1], dvf[:, :, :, 2]
 
     M = np.sqrt(x * x + y * y + z * z)
     M = M[~np.isnan(M)]
 
-    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", normalize=True, linewidth=1.5, length=4)
+    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", normalize=True, linewidth=1)
     q.set_array(M.flatten())
 
     ax.view_init(20, 30)
@@ -702,7 +670,7 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         plot_dvf_masked(result, (slice(None), slice(None), 50), ax=axes[1, 0], zoom_f=3)
         axes[1, 1].remove()
         axes[1, 1] = fig.add_subplot(2, 3, 5, projection="3d")
-        plot_dvf_3d(result, ax=axes[1, 1], zoom_f=5)
+        plot_dvf_3d(result, ax=axes[1, 1], zoom_f=6)
         jacobian_determinant_masked(result, (slice(None), 85, slice(None)), ax=axes[1, 2])
 
         # fig.tight_layout()
@@ -716,7 +684,6 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
 
     tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
     figs.append(to_dict(wandb.Image(tre_fig), "tre_hist"))
-
 
     return figs
 
@@ -746,3 +713,17 @@ def get_indices_xy(slice_tuple, inv=True):
     if inv:
         indices_xy = list(map(lambda x: INV_MAPPING[x], np.flip(indices_xy)))
     return indices_xy
+
+
+def mesh_grids(origin, spacing, indices, size, dims, indexing="xy"):
+    return np.meshgrid(
+        *[
+            np.arange(
+                origin[indices[i]],
+                origin[indices[i]] + spacing[indices[i]] * size[indices[i]],
+                spacing[indices[i]],
+            )
+            for i in range(dims)
+        ],
+        indexing=indexing,
+    )

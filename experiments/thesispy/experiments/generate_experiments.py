@@ -13,31 +13,33 @@ def yield_experiments(collection: Collection, instance: int, project: str, exp_f
 
 
 def regularization_weight():
-    for weight in [0.0] + list(np.geomspace(0.0001, 10.0, 50)):
-        weight = np.round(weight, 5)
-        params = (
-            Parameters.from_base(mesh_size=6)
-            .asgd()
-            .regularize(weight)
-            .stopping_criteria(iterations=10000)
-        )
-        yield params
+    for seed in range(5):
+        seed += 1
+        for weight in [0.0] + list(np.geomspace(0.0001, 10.0, 30)):
+            weight = np.round(weight, 5)
+            params = (
+                Parameters.from_base(mesh_size=6, seed=seed)
+                .asgd()
+                .regularize(weight)
+                .stopping_criteria(iterations=10000)
+            )
+            yield params
 
-        params = (
-            Parameters.from_base(mesh_size=6)
-            .gomea(LinkageType.CP_MARGINAL, hybrid=True)
-            .regularize(weight)
-            .stopping_criteria(iterations=300)
-        )
-        yield params
+            params = (
+                Parameters.from_base(mesh_size=6, seed=seed)
+                .gomea(LinkageType.CP_MARGINAL, hybrid=True)
+                .regularize(weight)
+                .stopping_criteria(iterations=300)
+            )
+            yield params
 
-        params = (
-            Parameters.from_base(mesh_size=6)
-            .gomea(LinkageType.CP_MARGINAL, hybrid=False)
-            .regularize(weight)
-            .stopping_criteria(iterations=300)
-        )
-        yield params
+            params = (
+                Parameters.from_base(mesh_size=6, seed=seed)
+                .gomea(LinkageType.CP_MARGINAL, hybrid=False)
+                .regularize(weight)
+                .stopping_criteria(iterations=300)
+            )
+            yield params
 
 
 
@@ -255,19 +257,23 @@ def linkage_models_static():
 
 
 def hybrid_sweep():
-    for tau_asgd in [0.05, 0.1, 0.15, 0.2, 0.25, 0.3]:
-        for iterations_asgd in [5, 10, 20, 30, 50, 100, 200, 500]:
-            params = (
-                Parameters.from_base(mesh_size=5, seed=83)
-                .gomea(
-                    LinkageType.CP_MARGINAL,
-                    hybrid=True,
-                    tau_asgd=tau_asgd,
-                    asgd_iterations=iterations_asgd,
+    for seed in range(5):
+        seed += 1
+        for tau_asgd in [0.05, 0.1, 0.15, 0.2, 0.25, 0.3]:
+            for iterations_asgd in [5, 10, 20, 30, 50, 100, 200, 500]:
+                params = (
+                    Parameters.from_base(mesh_size=5, seed=seed)
+                    .gomea(
+                        LinkageType.CP_MARGINAL,
+                        hybrid=True,
+                        tau_asgd=tau_asgd,
+                        asgd_iterations=iterations_asgd,
+                        redis_method=RedistributionMethod.Random,
+                        it_schedule=IterationSchedule.Static,
+                    )
+                    .stopping_criteria(iterations=5000, pixel_evals=50000e6)
                 )
-                .stopping_criteria(iterations=1000)
-            )
-            yield params
+                yield params
 
 def hybrid_schedules():
     for seed in range(10):
@@ -304,8 +310,8 @@ def asgd_sweep():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    queue.clear()
-    fn = asgd_sweep
+    # queue.clear()
+    fn = hybrid_sweep
 
-    queue.bulk_push(list(yield_experiments(Collection.LEARN, 1, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

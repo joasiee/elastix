@@ -34,7 +34,7 @@ def get_runs(project: str, filters: dict = None):
 
 
 def parse_run(run):
-    return FinishedRun(run.name, run.config, pd.DataFrame.from_dict(run.scan_history()))
+    return FinishedRun(run.name, run.id, run.config, pd.DataFrame.from_dict(run.scan_history()))
 
 
 def get_runs_as_dataset(project, filters={}):

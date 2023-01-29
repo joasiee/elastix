@@ -14,8 +14,9 @@ if not DATASETS_PATH.exists():
 
 
 class FinishedRun:
-    def __init__(self, name: str, config: Dict[str, Any], metrics: pd.DataFrame) -> None:
+    def __init__(self, name: str, id: str, config: Dict[str, Any], metrics: pd.DataFrame) -> None:
         self.name = name
+        self.id = id
         self.config = config
         metrics = metrics.astype({"_step": "uint64", "_runtime": "ulonglong", "_timestamp": "ulonglong"})
         self.resolutions = []
