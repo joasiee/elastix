@@ -16,14 +16,6 @@ import logging
 import time
 
 logger = logging.getLogger("Validation")
-VALIDATION_NAMES = [
-    "tre",
-    "mean_surface_distance",
-    "hausdorff_distance",
-    "dice_similarity",
-    "bending_energy",
-    "dvf_rmse",
-]
 VALIDATION_NAMES_NEW = [
     "tre",
     "mean_surface_cube",
@@ -32,7 +24,6 @@ VALIDATION_NAMES_NEW = [
     "bending_energy",
     "dvf_rmse",
 ]
-VALIDATION_ABBRVS = ["$TRE$", "$WASD$", "$WHD$", "$DSC$", "$E_b$", r"$\vec{v}_{\epsilon}$"]
 VALIDATION_ABBRVS_NEW = [
     "$TRE$",
     "$ASD_{\\textsc{cube}}$",
@@ -623,7 +614,7 @@ def validation_metrics(result: RunResult):
     return metrics
 
 
-def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
+def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None), tre=True):
     figs = []  # aggregate all figures
     instance = result.instance
     collection = instance.collection
@@ -684,20 +675,21 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         axes[1, 2].set_title("Jacobian determinant (front)", fontsize=12)
         figs.append(to_dict(wandb.Image(fig), "overview"))
 
-    tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
-    figs.append(to_dict(wandb.Image(tre_fig), "tre_hist"))
+    if tre:
+        tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
+        figs.append(to_dict(wandb.Image(tre_fig), "tre_hist"))
 
     return figs
 
 
 def get_vmin_vmax(result1: RunResult, result2: RunResult):
     result1_mag = np.sqrt(
-        result1.dvf[:, :, result1.dvf.shape[2] // 2, 0] ** 2
-        + result1.dvf[:, :, result1.dvf.shape[2] // 2, 1] ** 2
+        result1.dvf[:, result1.dvf.shape[1] // 2, :, 0] ** 2
+        + result1.dvf[:, result1.dvf.shape[1] // 2, :, 2] ** 2
     )
     result2_mag = np.sqrt(
-        result2.dvf[:, :, result2.dvf.shape[2] // 2, 0] ** 2
-        + result2.dvf[:, :, result2.dvf.shape[2] // 2, 1] ** 2
+        result2.dvf[:, result2.dvf.shape[1] // 2, :, 0] ** 2
+        + result2.dvf[:, result2.dvf.shape[1] // 2, :, 2] ** 2
     )
     vmin_dvf = np.min([np.min(result1_mag), np.min(result2_mag)])
     vmax_dvf = np.max([np.max(result1_mag), np.max(result2_mag)])
