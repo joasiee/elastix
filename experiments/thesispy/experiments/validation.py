@@ -172,8 +172,10 @@ def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
     return distances
 
 
-def tre(lms1, lms2, spacing=1):
-    tre = np.linalg.norm((lms1 - lms2) * spacing, axis=1).mean()
+def tre(result: RunResult):
+    tre = np.linalg.norm(
+        (result.deformed_lms - result.instance.lms_moving) * result.instance.spacing, axis=1
+    ).mean()
     logger.info(f"TRE: {tre}")
     return tre
 
@@ -186,6 +188,13 @@ def tre_hist(lms1, lms2, spacing=1, ax=None, bins=40):
     ax.set_xlabel("TRE (mm)")
     ax.set_ylabel("Count")
     return ax.get_figure()
+
+
+def tre_hist_wandb(result: RunResult, bins=40):
+    tres = np.linalg.norm(
+        (result.deformed_lms - result.instance.lms_moving) * result.instance.spacing, axis=1
+    )
+    return wandb.Histogram(tres, num_bins=bins)
 
 
 def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
@@ -375,7 +384,7 @@ def plot_cpoints(
     for p in np.ndindex(points_slice.shape[:-1]):
         points_slice[p] = grid_direction @ points_slice[p]
 
-    X, Y = mesh_grids(grid_origin, grid_spacing, indices_xy, points_slice.shape[:-1], 2, indexing="ij")
+    X, Y = mesh_grids(grid_origin, grid_spacing, indices_xy, points.shape[:-1], 2, indexing="ij")
 
     cmap = None
 
@@ -531,7 +540,7 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=1):
         scale=1,
         minlength=0,
         headaxislength=1,
-        width=0.01
+        width=0.01,
     )
 
     ax.axis("off")
@@ -561,7 +570,7 @@ def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     for p in np.ndindex(dvf.shape[:3]):
         dvf[p] = physical_to_voxel @ dvf[p]
 
-    X, Y, Z = mesh_grids([0,0,0], spacing, [0, 1, 2], dvf.shape[:-1], 3, indexing="ij")
+    X, Y, Z = mesh_grids([0, 0, 0], spacing, [0, 1, 2], dvf.shape[:-1], 3, indexing="ij")
     x, y, z = dvf[:, :, :, 0], dvf[:, :, :, 1], dvf[:, :, :, 2]
 
     M = np.sqrt(x * x + y * y + z * z)
@@ -592,13 +601,7 @@ def calc_validation(result: RunResult):
 def validation_metrics(result: RunResult):
     metrics = []
 
-    metrics.append(
-        {
-            "validation/tre": tre(
-                result.deformed_lms, result.instance.lms_moving, result.instance.spacing
-            )
-        }
-    )
+    metrics.append({"validation/tre": tre(result)})
 
     if result.instance.collection == Collection.SYNTHETIC:
         dvf_copy = np.copy(result.dvf)
