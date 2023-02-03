@@ -105,6 +105,8 @@ def read_deformed_lms(path: Path):
 
 
 def read_controlpoints(path: Path):
+    if not path.exists():
+        return None
     with open(path) as file:
         lines = file.readlines()
         dim = len(lines[0].split()) // 2

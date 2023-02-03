@@ -168,13 +168,14 @@ class Parameters:
         return self.args({
             "Transform": "EulerTransform",
             "AutomaticScalesEstimation": True,
+            "AutomaticTransformInitialization": True,
+            "AutomaticTransformInitializationMethod": "Origins",
         })
 
     def affine(self):
+        self.rigid()
         return self.args({
-            "Transform": "AffineTransform",
-            "AutomaticScalesEstimation": True,
-            "AutomaticTransformInitialization": True,
+            "Transform": "SimilarityTransform"
         })
 
     def debug(self):
