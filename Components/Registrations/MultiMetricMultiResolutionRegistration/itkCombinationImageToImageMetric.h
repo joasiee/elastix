@@ -241,6 +241,9 @@ public:
   SetImageSampler(ImageSamplerType * _arg) override;
   void
   SetUseImageSampler(const bool _arg) override;
+  
+  ImageSamplerType *
+  GetImageSampler() const override;
 
   /** Pass the transform to all sub metrics.  */
   void

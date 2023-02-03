@@ -78,7 +78,8 @@ class Parameters:
         n: int = 3,
         p_sched: List[int] = None,
         g_sched: List[int] = None,
-        downsampling: bool = False,
+        downsampling: bool = True,
+        smoothing: bool = True,
     ) -> Parameters:
         args = {
             "NumberOfResolutions": n,
@@ -88,6 +89,9 @@ class Parameters:
         if not downsampling:
             args["FixedImagePyramid"] = "FixedSmoothingImagePyramid"
             args["MovingImagePyramid"] = "MovingSmoothingImagePyramid"
+        if downsampling and not smoothing:
+            args["FixedImagePyramid"] = "FixedShrinkingImagePyramid"
+            args["MovingImagePyramid"] = "MovingShrinkingImagePyramid"
 
         return self.args(args)
 

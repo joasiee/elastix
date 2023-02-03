@@ -695,6 +695,14 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::SetUseImageSampler(con
   }
 }
 
+template <class TFixedImage, class TMovingImage>
+auto
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetImageSampler() const -> ImageSamplerType *
+{
+  Superclass * metricAsAdvanced = dynamic_cast<Superclass *>(this->GetMetric(0));
+  return metricAsAdvanced->GetImageSampler();
+}
+
 
 /**
  * ******************* InitializeThreadingParameters *******************
