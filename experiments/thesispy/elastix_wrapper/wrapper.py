@@ -3,6 +3,7 @@ import os
 import time
 import subprocess
 import logging
+import pandas as pd
 
 from typing import Any, Dict
 
@@ -161,6 +162,8 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
     _, spacing, origin = read_transform_params(transform_params)
     run_result.grid_spacing = spacing
     run_result.grid_origin = origin
+    final_evals = pd.read_csv(out_dir / "final_evals.txt", sep=",", index_col=0, header=None)
+    run_result.bending_energy = final_evals.loc["bending_energy"].values[0]
 
     return run_result
 

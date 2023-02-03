@@ -35,6 +35,7 @@ class RunResult:
     control_points: np.ndarray = None
     grid_spacing: np.ndarray = None
     grid_origin: np.ndarray = None
+    bending_energy: float = None
 
 
 def get_np_array(img_path: Path):

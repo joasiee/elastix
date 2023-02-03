@@ -56,39 +56,6 @@ def regularization_weight_subsampling():
         yield params
 
 
-def subsampling_percentage():
-    for seed in range(10):
-        for pct in [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0]:
-            for gomea in [True, False]:
-                sampler = "Full" if pct == 1.0 else "RandomCoordinate"
-                params = (
-                    Parameters.from_base(mesh_size=5, seed=seed)
-                    .multi_resolution(1, [4])
-                    .sampler(sampler, pct=pct)
-                )
-                if gomea:
-                    params.gomea(fos=LinkageType.CP_MARGINAL).stopping_criteria(iterations=300)
-                else:
-                    params.asgd().stopping_criteria(iterations=15000)
-
-                yield params
-
-
-def nomask_msd():
-    mesh_sizes = [2, 4, 6, 10]
-    for seed in range(3):
-        seed += 1
-        for mesh_size in mesh_sizes:
-            params = (
-                Parameters.from_base(
-                    mesh_size=mesh_size, metric="AdvancedMeanSquares", seed=seed, use_mask=False
-                )
-                .gomea(LinkageType.CP_MARGINAL)
-                .stopping_criteria(iterations=500)
-            )
-            yield params
-
-
 def fair_comparison():
     for seed in range(10):
         seed += 1
@@ -241,58 +208,22 @@ def linkage_models():
                 yield params
 
 
-def linkage_models_static():
-    max_iterations = 300
-    for seed in range(3):
-        seed += 1
-        for min, max in itertools.product([3, 6, 9, 12], [6, 9, 12, 15, 18, 24, 32]):
-            if min >= max:
-                continue
+def hybrid_sweep():
+    for tau_asgd in [0.05, 0.1, 0.15, 0.2, 0.25, 0.3]:
+        for iterations_asgd in [5, 10, 20, 30, 50, 100, 200, 500]:
             params = (
-                Parameters.from_base(mesh_size=5, seed=seed)
-                .gomea(LinkageType.STATIC_EUCLIDEAN, min_set_size=min, max_set_size=max)
-                .stopping_criteria(iterations=max_iterations)
+                Parameters.from_base(mesh_size=5, seed=88)
+                .gomea(
+                    LinkageType.CP_MARGINAL,
+                    hybrid=True,
+                    tau_asgd=tau_asgd,
+                    asgd_iterations=iterations_asgd,
+                    redis_method=RedistributionMethod.Random,
+                    it_schedule=IterationSchedule.Static,
+                )
+                .stopping_criteria(iterations=5000, pixel_evals=50000e6)
             )
             yield params
-
-
-def hybrid_sweep():
-    for seed in range(5):
-        seed += 1
-        for tau_asgd in [0.05, 0.1, 0.15, 0.2, 0.25, 0.3]:
-            for iterations_asgd in [5, 10, 20, 30, 50, 100, 200, 500]:
-                params = (
-                    Parameters.from_base(mesh_size=5, seed=seed)
-                    .gomea(
-                        LinkageType.CP_MARGINAL,
-                        hybrid=True,
-                        tau_asgd=tau_asgd,
-                        asgd_iterations=iterations_asgd,
-                        redis_method=RedistributionMethod.Random,
-                        it_schedule=IterationSchedule.Static,
-                    )
-                    .stopping_criteria(iterations=5000, pixel_evals=50000e6)
-                )
-                yield params
-
-def hybrid_schedules():
-    for seed in range(10):
-        seed += 1
-        for schedule in [IterationSchedule.Static, IterationSchedule.Logarithmic]:
-            for redis_method in [RedistributionMethod.BestN, RedistributionMethod.Random]:
-                params = (
-                    Parameters.from_base(mesh_size=5, seed=seed)
-                    .gomea(
-                        LinkageType.CP_MARGINAL,
-                        hybrid=True,
-                        tau_asgd=0.1,
-                        asgd_iterations=100,
-                        it_schedule=schedule,
-                        redis_method=redis_method,
-                    )
-                    .stopping_criteria(iterations=400)
-                )
-                yield params
 
 
 def asgd_sweep():
@@ -310,7 +241,7 @@ def asgd_sweep():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    # queue.clear()
+    queue.clear()
     fn = hybrid_sweep
 
     queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))

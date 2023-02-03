@@ -28,6 +28,8 @@
 #include "itkImageMaskSpatialObject.h"
 #include "itkErodeMaskImageFilter.h"
 
+#include "../../Components/Metrics/BendingEnergyPenalty/itkTransformBendingEnergyPenaltyTerm.h"
+
 namespace elastix
 {
 
@@ -98,7 +100,7 @@ public:
   /** Typedef for ITKBaseType. */
   using ITKBaseType = itk::MultiResolutionImageRegistrationMethod2<FixedImageType, MovingImageType>;
   using MetricType = typename ITKBaseType::MetricType;
-  using MetricPointer = typename ITKBaseType::MetricPointer;
+  using TransformType = typename ITKBaseType::TransformType;
   using ParametersType = typename ITKBaseType::ParametersType;
 
   /** Typedef for mask erosion options */
@@ -147,7 +149,10 @@ public:
                      const unsigned int        level) const;
 
   void
-  AfterEachResolutionBase() override;
+  BeforeRegistrationBase() override;
+
+  void
+  AfterRegistrationBase() override;
 
 protected:
   /** The constructor. */
@@ -174,6 +179,9 @@ protected:
   using FixedMaskErodeFilterPointer = typename FixedMaskErodeFilterType::Pointer;
   using MovingMaskErodeFilterType = itk::ErodeMaskImageFilter<MovingMaskImageType>;
   using MovingMaskErodeFilterPointer = typename MovingMaskErodeFilterType::Pointer;
+
+  using BendingEnergyMetricType = itk::TransformBendingEnergyPenaltyTerm<FixedImageType, double>;
+  using BendingEnergyMetricPointer = typename BendingEnergyMetricType::Pointer;
 
   /** Generate a spatial object from a mask image, possibly after eroding the image
    * Input:
@@ -220,8 +228,13 @@ private:
   void
   operator=(const Self &) = delete;
 
-  void
+  double
   FinalFullEvaluation();
+
+  double
+  FinalBendingEnergyEvaluation();
+
+  std::ofstream m_FinalEvaluationsFile;
 };
 
 } // end namespace elastix

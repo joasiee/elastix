@@ -90,6 +90,15 @@ RegistrationBase<TElastix>::ReadMaskParameters(UseMaskErosionArrayType & useMask
 
 } // end ReadMaskParameters()
 
+template <class TElastix>
+void
+RegistrationBase<TElastix>::BeforeRegistrationBase()
+{
+  std::ostringstream makeFileName("");
+  makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "final_evals.txt";
+  this->m_FinalEvaluationsFile.open(makeFileName.str().c_str());
+}
+
 
 /**
  * ******************* GenerateFixedMaskSpatialObject **********************
@@ -215,13 +224,29 @@ RegistrationBase<TElastix>::GenerateMovingMaskSpatialObject(const MovingMaskImag
 } // end GenerateMovingMaskSpatialObject()
 
 template <class TElastix>
-void
+double
+RegistrationBase<TElastix>::FinalBendingEnergyEvaluation()
+{
+  const MetricType * metric = this->GetAsITKBaseType()->GetMetric();
+  TransformType * transform = this->GetAsITKBaseType()->GetTransform();
+  BendingEnergyMetricPointer metricBE = BendingEnergyMetricType::New();
+
+  metricBE->SetUseImageSampler(true);
+  metricBE->SetImageSampler(metric->GetImageSampler());
+  metricBE->SetTransform(transform);
+
+  const ParametersType & parameters = this->GetAsITKBaseType()->GetOptimizer()->GetCurrentPosition();
+  return metricBE->GetValue(parameters);
+}
+
+template <class TElastix>
+double
 RegistrationBase<TElastix>::FinalFullEvaluation()
 {
   using FullSamplerType = itk::ImageFullSampler<FixedImageType>;
   using FullSamplerPointer = typename FullSamplerType::Pointer;
 
-  MetricPointer metric = this->GetAsITKBaseType()->GetMetric();
+  MetricType * metric = this->GetAsITKBaseType()->GetMetric();
   FullSamplerPointer fullSampler = FullSamplerType::New();
   fullSampler->SetMask(metric->GetFixedImageMask());
   fullSampler->SetInput(metric->GetFixedImage());
@@ -229,10 +254,7 @@ RegistrationBase<TElastix>::FinalFullEvaluation()
   metric->SetImageSampler(fullSampler);
 
   const ParametersType & parameters = this->GetAsITKBaseType()->GetOptimizer()->GetCurrentPosition();
-  this->GetAsITKBaseType()->GetOptimizer()->SetValue(metric->GetValue(parameters));
-  elxout << std::endl << "Final full evaluation:" << std::endl; 
-  this->GetAsITKBaseType()->GetOptimizer()->InvokeEvent(itk::IterationEvent());
-  elxout << std::endl;
+  return metric->GetValue(parameters);
 }
 
 /**
@@ -241,9 +263,11 @@ RegistrationBase<TElastix>::FinalFullEvaluation()
 
 template <class TElastix>
 void
-RegistrationBase<TElastix>::AfterEachResolutionBase()
+RegistrationBase<TElastix>::AfterRegistrationBase()
 {
-  // this->FinalFullEvaluation();
+  m_FinalEvaluationsFile << "metric_value, " << FinalFullEvaluation() << std::endl;
+  m_FinalEvaluationsFile << "bending_energy, " << FinalBendingEnergyEvaluation() << std::endl;
+  m_FinalEvaluationsFile.close();
 }
 
 

@@ -331,13 +331,9 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(
-            mesh_size=2, seed=1, metric="AdvancedMeanSquares", use_missedpixel_penalty=True
-        )
-        .gomea(LinkageType.CP_MARGINAL, contraints_threshold=0.1, pop_size=10)
-        .regularize(0.01)
-        .multi_resolution(2, g_sched=[1, 1])
-        .stopping_criteria(5)
+        Parameters.from_base(mesh_size=5)
+        .asgd()
+        .stopping_criteria(50)
         .instance(Collection.SYNTHETIC, 1)
     )
     params.write(Path())

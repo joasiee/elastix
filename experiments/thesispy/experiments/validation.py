@@ -593,6 +593,8 @@ def validation_metrics(result: RunResult):
     metrics = []
 
     metrics.append({"validation/tre": tre(result)})
+    metrics.append({"validation/bending_energy": result.bending_energy})
+    logger.info(f"Bending Energy: {result.bending_energy:.3f}")
 
     if result.instance.collection == Collection.SYNTHETIC:
         dvf_copy = np.copy(result.dvf)
@@ -609,7 +611,6 @@ def validation_metrics(result: RunResult):
         metrics.append({"validation/hausdorff_sphere": hd_dists[1]})
         metrics.append({"validation/mean_surface_cube": md_dists[0]})
         metrics.append({"validation/mean_surface_sphere": md_dists[1]})
-        metrics.append({"validation/bending_energy": bending_energy(result.dvf)})
 
     return metrics
 

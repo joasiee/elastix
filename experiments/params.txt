@@ -24,7 +24,7 @@
 (MeshSize 5 5 5)
 (Optimizer "AdaptiveStochasticGradientDescent")
 (OptimizerName "ASGD")
-(MaximumNumberOfIterations 0)
+(MaximumNumberOfIterations 50)
 (MaxTimeSeconds 0)
 (Collection "SYNTHETIC")
 (Instance 1)
