@@ -549,7 +549,7 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=4):
         scale=1,
         minlength=0,
         headaxislength=2.5,
-        width=0.004,
+        width=0.002,
     )
 
     ax.set_xticks([])
@@ -595,7 +595,7 @@ def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     M = np.sqrt(x * x + y * y + z * z)
     M = M[~np.isnan(M)]
 
-    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", linewidths=0.75)
+    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", linewidths=0.5)
     q.set_array(M.flatten())
 
     ax.view_init(20, 30)
