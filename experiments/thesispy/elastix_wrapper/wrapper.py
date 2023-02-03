@@ -3,9 +3,9 @@ import os
 import time
 import subprocess
 import logging
-import pandas as pd
-
 from typing import Any, Dict
+
+import pandas as pd
 
 from thesispy.elastix_wrapper import TimeoutException, time_limit
 from thesispy.elastix_wrapper.parameters import Parameters
@@ -180,10 +180,12 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=5)
+        Parameters.from_base(mesh_size=10, use_mask=True, metric="AdvancedNormalizedCorrelation")
         .asgd()
-        .stopping_criteria(iterations=10)
-        .instance(Collection.SYNTHETIC, 1)
+        .regularize(0.01)
+        .multi_resolution(5, p_sched=[5, 4, 3, 2, 1])
+        .stopping_criteria(iterations=[100, 100, 200, 300, 250])
+        .instance(Collection.LEARN, 1)
     )
     run(
         params_main,

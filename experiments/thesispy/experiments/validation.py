@@ -422,15 +422,18 @@ def cpoint_cloud(points):
     return np.array(point_cloud)
 
 
-def plot_color_diff(moving, source, aspect, slice_tuple, ax=None):
+def plot_color_diff(result: RunResult, slice_tuple, ax=None):
     if ax is None:
         fig, ax = plt.subplots(figsize=(6, 6))
+
+    moving = result.deformed
+    target = result.instance.fixed
 
     invert_x = slice_tuple[1] != slice(None, None, None)
     invert_y = slice_tuple[0] != slice(None, None, None)
 
     img1 = sitk.GetImageFromArray(moving[slice_tuple])
-    img2 = sitk.GetImageFromArray(source[slice_tuple])
+    img2 = sitk.GetImageFromArray(target[slice_tuple])
     img_min = np.min([img1, img2])
     img_max = np.max([img1, img2])
 
@@ -458,41 +461,56 @@ def plot_color_diff(moving, source, aspect, slice_tuple, ax=None):
     img3 = sitk.Cast(sitk.Compose(img1_255, img2_255, img1_255), sitk.sitkVectorUInt8)
     arr = sitk.GetArrayFromImage(img3)
 
-    ax.imshow(arr, aspect=aspect)
+    indices_xy = get_indices_xy(slice_tuple)
+    origin = result.instance.origin
+    size = result.instance.size
+    spacing = result.instance.spacing
+    extent = (
+        origin[indices_xy[0]],
+        size[indices_xy[0]] * spacing[indices_xy[0]],
+        size[indices_xy[1]] * spacing[indices_xy[1]],
+        origin[indices_xy[1]],
+    )
+
+    ax.imshow(arr, extent=extent)
     if invert_x or invert_y:
         ax.invert_xaxis()
     if invert_y:
         ax.invert_yaxis()
-    if slice_tuple[0] == slice(None, None, None):
-        ax.set_ylim(30, 180)
-    ax.axis("off")
+    if slice_tuple[1] != slice(None, None, None) or slice_tuple[2] != slice(None, None, None):
+        ax.set_ylim(80, 300)
+    
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.patch.set_linewidth(2)
     return ax.get_figure()
 
 
-def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=1):
+def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=4):
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 8))
 
-    fixed = run_result.instance.fixed
+    moving = run_result.instance.moving
     dvf = run_result.dvf
     spacing = run_result.instance.spacing
+    origin = run_result.instance.origin
     size = run_result.instance.size
     mask = run_result.instance.mask
     direction = run_result.instance.direction
 
-    image_slice = fixed[slice_tuple]
+    image_slice = moving[slice_tuple]
 
     indices_xy = get_indices_xy(slice_tuple)
     extent = (
-        0,
+        origin[indices_xy[0]],
         size[indices_xy[0]] * spacing[indices_xy[0]],
         size[indices_xy[1]] * spacing[indices_xy[1]],
-        0,
+        origin[indices_xy[1]],
     )
 
-    t = ax.imshow(image_slice, extent=extent, interpolation=None)
+    t = ax.imshow(image_slice, extent=extent)
     ax.invert_yaxis()
-    if slice_tuple[1] != slice(None, None, None):
+    if slice_tuple[1] != slice(None, None, None) or slice_tuple[0] != slice(None, None, None):
         ax.invert_xaxis()
     t.set_cmap("gray")
 
@@ -509,7 +527,7 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=1):
             p = physical_to_voxel @ df_slice[i, j]
             df_slice[i, j] = p
 
-    coordsX, coordsY = mesh_grids([0, 0, 0], spacing, indices_xy, size, 2)
+    coordsX, coordsY = mesh_grids(origin, spacing, indices_xy, size, 2)
 
     x = df_slice[:, :, indices_xy[0]]
     y = df_slice[:, :, indices_xy[1]]
@@ -530,19 +548,21 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=1):
         angles="xy",
         scale=1,
         minlength=0,
-        headaxislength=1,
-        width=0.01,
+        headaxislength=2.5,
+        width=0.004,
     )
 
-    ax.axis("off")
-    if slice_tuple[1] != slice(None, None, None) or slice_tuple[2] != slice(None, None, None):
+    ax.set_xticks([])
+    ax.set_yticks([])
+    ax.patch.set_linewidth(2)
+    if slice_tuple[2] != slice(None, None, None) or slice_tuple[1] != slice(None, None, None):
         ax.set_ylim(80, 300)
     return ax.get_figure()
 
 
 def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     if ax is None:
-        ax = plt.figure(figsize=(10, 10)).add_subplot(projection="3d")
+        ax = plt.figure(figsize=(5, 5)).add_subplot(projection="3d")
     dvf = np.copy(run_result.dvf)
     mask = run_result.instance.mask
     dvf[mask == 0] = np.nan
@@ -550,24 +570,32 @@ def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     dvf = np.swapaxes(dvf, 0, 2)
 
     spacing = run_result.instance.spacing
+    origin = run_result.instance.origin
     direction = run_result.instance.direction
 
     direction = np.array(direction).reshape((3, 3))
     voxel_to_physical = direction
     physical_to_voxel = np.linalg.inv(voxel_to_physical)
 
+    sizes = np.copy(dvf.shape[:-1])
     dvf = dvf[::zoom_f, ::zoom_f, ::zoom_f, :]
 
     for p in np.ndindex(dvf.shape[:3]):
         dvf[p] = physical_to_voxel @ dvf[p]
 
-    X, Y, Z = mesh_grids([0, 0, 0], spacing, [0, 1, 2], dvf.shape[:-1], 3, indexing="ij")
     x, y, z = dvf[:, :, :, 0], dvf[:, :, :, 1], dvf[:, :, :, 2]
+
+    X, Y, Z = mesh_grids(origin, spacing, [0, 1, 2], sizes, 3, indexing="ij")
+    X, Y, Z = (
+        X[::zoom_f, ::zoom_f, ::zoom_f],
+        Y[::zoom_f, ::zoom_f, ::zoom_f],
+        Z[::zoom_f, ::zoom_f, ::zoom_f],
+    )
 
     M = np.sqrt(x * x + y * y + z * z)
     M = M[~np.isnan(M)]
 
-    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", arrow_length_ratio=0, linewidths=1)
+    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", linewidths=0.75)
     q.set_array(M.flatten())
 
     ax.view_init(20, 30)
@@ -594,7 +622,7 @@ def validation_metrics(result: RunResult):
 
     metrics.append({"validation/tre": tre(result)})
     metrics.append({"validation/bending_energy": result.bending_energy})
-    logger.info(f"Bending Energy: {result.bending_energy:.3f}")
+    logger.info(f"Bending Energy: {result.bending_energy:.5f}")
 
     if result.instance.collection == Collection.SYNTHETIC:
         dvf_copy = np.copy(result.dvf)
@@ -615,7 +643,9 @@ def validation_metrics(result: RunResult):
     return metrics
 
 
-def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None), tre=True):
+def validation_visualization(
+    result: RunResult, clim_dvf=(None, None), clim_jac=(None, None), tre=True
+):
     figs = []  # aggregate all figures
     instance = result.instance
     collection = instance.collection
@@ -643,38 +673,24 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
     elif collection == Collection.LEARN:
         figs.append(to_dict(wandb.Object3D(cpoint_cloud(result.control_points)), "cpoints"))
 
-        fig, axes = plt.subplots(2, 3, figsize=(18, 12))
-        plot_color_diff(
-            result.deformed, instance.fixed, 1.4, (slice(None), slice(None), 50), ax=axes[0, 0]
-        )
-        plot_color_diff(
-            result.deformed,
-            instance.fixed,
-            1.0,
-            (slice(None), 50, slice(None)),
-            ax=axes[0, 1],
-        )
-        plot_color_diff(
-            result.deformed,
-            instance.fixed,
-            0.714,
-            (120, slice(None), slice(None)),
-            ax=axes[0, 2],
-        )
-        plot_dvf_masked(result, (slice(None), slice(None), 50), ax=axes[1, 0], zoom_f=3)
-        axes[1, 1].remove()
-        axes[1, 1] = fig.add_subplot(2, 3, 5, projection="3d")
-        plot_dvf_3d(result, ax=axes[1, 1], zoom_f=6)
-        jacobian_determinant_masked(result, (slice(None), 85, slice(None)), ax=axes[1, 2])
+        fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+        plot_color_diff(result, (slice(None), slice(None), 50), ax=axes[0, 0])
+        plot_color_diff(result, (slice(None), 50, slice(None)), ax=axes[0, 1])
+        plot_color_diff(result, (120, slice(None), slice(None)), ax=axes[0, 2])
+        plot_dvf_masked(result, (slice(None), slice(None), 50), ax=axes[1, 0])
+        plot_dvf_masked(result, (slice(None), 50, slice(None)), ax=axes[1, 1])
+        plot_dvf_masked(result, (120, slice(None), slice(None)), ax=axes[1, 2])
 
-        # fig.tight_layout()
-        axes[0, 0].set_title("Deformed source vs target (side)", fontsize=12)
-        axes[0, 1].set_title("Deformed source vs target (front)", fontsize=12)
-        axes[0, 2].set_title("Deformed source vs target (top)", fontsize=12)
-        axes[1, 0].set_title("DVF (side)", fontsize=12)
-        axes[1, 1].set_title("DVF (3D)", fontsize=12)
-        axes[1, 2].set_title("Jacobian determinant (front)", fontsize=12)
+        axes[0, 0].set_title("Deformed source vs target (side)")
+        axes[0, 1].set_title("Deformed source vs target (front)")
+        axes[0, 2].set_title("Deformed source vs target (top)")
+        axes[1, 0].set_title("DVF (side)")
+        axes[1, 1].set_title("DVF (front)")
+        axes[1, 2].set_title("DVF (top)")
+        fig.tight_layout()
+
         figs.append(to_dict(wandb.Image(fig), "overview"))
+        figs.append(to_dict(wandb.Image(plot_dvf_3d(result)), "dvf_3d"))
 
     if tre:
         tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
