@@ -164,6 +164,19 @@ class Parameters:
             params,
         )
 
+    def rigid(self):
+        return self.args({
+            "Transform": "EulerTransform",
+            "AutomaticScalesEstimation": True,
+        })
+
+    def affine(self):
+        return self.args({
+            "Transform": "AffineTransform",
+            "AutomaticScalesEstimation": True,
+            "AutomaticTransformInitialization": True,
+        })
+
     def debug(self):
         return self.args(
             {
@@ -188,9 +201,9 @@ class Parameters:
     def prune(self):
         self.params = {k: v for k, v in self.params.items() if v is not None}
 
-    def write(self, dir: Path) -> None:
+    def write(self, dir: Path, suffix=1) -> None:
         self.prune()
-        out_file = dir.joinpath(Path("params.txt"))
+        out_file = dir.joinpath(Path(f"params_{suffix}.txt"))
         with open(str(out_file), "w+") as f:
             for key, value in self.params.items():
                 f.write(Parameters.parse_param(key, value))
@@ -335,8 +348,8 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5)
-        .asgd()
+        Parameters.from_base(mesh_size=5, seed=88)
+        .gomea()
         .stopping_criteria(50)
         .instance(Collection.SYNTHETIC, 1)
     )

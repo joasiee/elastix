@@ -3,7 +3,7 @@ import os
 import time
 import subprocess
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import pandas as pd
 
@@ -27,7 +27,7 @@ logger = logging.getLogger("Wrapper")
 
 
 def run(
-    params: Parameters,
+    params_list: List[Parameters],
     run_dir: Path,
     save_strategy: SaveStrategy = None,
     suppress_stdout: bool = True,
@@ -36,11 +36,18 @@ def run(
 ) -> Dict[str, Any]:
     time_start = time.perf_counter()
 
+    if type(params_list) is not list:
+        params_list = [params_list]
+
     run_dir.mkdir(parents=True)
-    params_file = params.write(run_dir)
+    param_files = []
+    main_params = params_list[-1]
+    for i, params in enumerate(params_list):
+        param_files.append(params.write(run_dir, i + 1))
+
     out_dir = run_dir.joinpath(Path("out"))
     if save_strategy:
-        wd = Watchdog(out_dir, params["NumberOfResolutions"])
+        wd = Watchdog(out_dir, main_params["NumberOfResolutions"])
         wd.set_strategy(save_strategy)
         wd.start()
 
@@ -48,17 +55,17 @@ def run(
     run_result = None
     logger.info(f"Running elastix in: {str(run_dir)}")
     try:
-        execute_elastix(params_file, out_dir, params, suppress_stdout)
+        execute_elastix(param_files, out_dir, main_params, suppress_stdout)
         finished = True
     except TimeoutException:
-        logger.warning(f"Exceeded time limit of {params['MaxTimeSeconds']} seconds.")
+        logger.warning(f"Exceeded time limit of {main_params['MaxTimeSeconds']} seconds.")
     except KeyboardInterrupt:
         logger.warning(f"Run ended prematurely by user.")
     except Exception as e:
         logger.error(f"Run ended with exception: {e}")
     finally:
         if finished and validate:
-            val_metrics, run_result = validation(params, run_dir)
+            val_metrics, run_result = validation(main_params, run_dir)
 
         if save_strategy:
             if finished and validate:
@@ -78,13 +85,15 @@ def run(
 
 
 def execute_elastix(
-    params_file: Path, out_dir: Path, params: Parameters, suppress_stdout: bool = True
+    param_files: List[Path], out_dir: Path, params: Parameters, suppress_stdout: bool = True
 ):
+    param_files_args = [["-p", str(param_file)] for param_file in param_files]
+    param_files_args = [item for sublist in param_files_args for item in sublist]
+
     with time_limit(params["MaxTimeSeconds"]):
         args = [
             ELASTIX,
-            "-p",
-            str(params_file),
+            *param_files_args,
             "-f",
             str(params.fixed_path),
             "-m",
@@ -180,17 +189,17 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=10, use_mask=True, metric="AdvancedNormalizedCorrelation")
+        Parameters.from_base(mesh_size=7, use_mask=True, metric="AdvancedNormalizedCorrelation", seed=88)
         .asgd()
         .regularize(0.01)
-        .multi_resolution(5, p_sched=[5, 4, 3, 2, 1])
-        .stopping_criteria(iterations=[100, 100, 200, 300, 250])
+        .multi_resolution(3, p_sched=[4, 3, 2])
+        .stopping_criteria(iterations=[200, 200, 400])
         .instance(Collection.LEARN, 1)
     )
     run(
-        params_main,
+        [params_main],
         Path("output/" + str(params_main)),
         suppress_stdout=False,
-        visualize=False,
+        visualize=True,
         validate=True,
     )
