@@ -560,13 +560,12 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=4):
     return ax.get_figure()
 
 
-def plot_dvf_3d(run_result, zoom_f=5, ax=None):
+def plot_dvf_3d(run_result, zoom_f=6, ax=None):
     if ax is None:
         ax = plt.figure(figsize=(5, 5)).add_subplot(projection="3d")
     dvf = np.copy(run_result.dvf)
     mask = run_result.instance.mask
     dvf[mask == 0] = np.nan
-    dvf = np.swapaxes(dvf, 1, 2)
     dvf = np.swapaxes(dvf, 0, 2)
 
     spacing = run_result.instance.spacing
@@ -595,11 +594,22 @@ def plot_dvf_3d(run_result, zoom_f=5, ax=None):
     M = np.sqrt(x * x + y * y + z * z)
     M = M[~np.isnan(M)]
 
-    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", linewidths=0.5)
+    q = ax.quiver(X, Y, Z, x, y, z, cmap="jet", linewidths=0.6)
     q.set_array(M.flatten())
 
-    ax.view_init(20, 30)
-    ax.invert_xaxis()
+    ax.view_init(20, -60)
+
+    ax.set_xlim3d(10, sizes[0] * spacing[0] - 30)
+    ax.set_ylim3d(0, sizes[1] * spacing[1] - 40)
+    ax.set_zlim3d(0, sizes[2] * spacing[2])
+
+    ax.set_xlabel("front view")
+    ax.set_ylabel("side view")
+    ax.set_zlabel("vertical view", labelpad=0)
+
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_zticklabels([])
 
     return ax.get_figure()
 
