@@ -192,15 +192,17 @@ def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
     dvf_img = sitk.GetImageFromArray(dvf, isVector=True)
     jac_det_contracting_field = sitk.DisplacementFieldJacobianDeterminant(dvf_img)
     jac_det = sitk.GetArrayFromImage(jac_det_contracting_field)
+
+    jac_det_slice = jac_det
     if len(jac_det.shape) == 3:
-        slice = jac_det.shape[0] // 2
-        jac_det = jac_det[:, slice, :]
+        slice = jac_det.shape[1] // 2
+        jac_det_slice = jac_det[:, slice, :]
 
     if plot:
         if ax is None:
             fig, ax = plt.subplots(figsize=(5, 5))
         sns.heatmap(
-            jac_det,
+            jac_det_slice,
             cmap="jet",
             ax=ax,
             square=True,
@@ -213,7 +215,7 @@ def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
         ax.set_yticks([])
 
     logger.info(f"Jacobian min,max: {np.min(jac_det)}, {np.max(jac_det)}")
-    return jac_det
+    return jac_det_slice, jac_det
 
 
 def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
@@ -225,12 +227,18 @@ def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
 
     mask = run_result.instance.mask
     fixed = run_result.instance.fixed
+    origin = run_result.instance.origin
+    spacing = run_result.instance.spacing
+    size = run_result.instance.size
+    indices_xy = get_indices_xy(slice_tuple)
 
     mask_slice = mask[slice_tuple]
     max_indices = np.where(mask_slice == 1)
     margin = 5
     min_x, max_x = np.min(max_indices[1]) - margin, np.max(max_indices[1]) + margin
+    min_x *= spacing[indices_xy[0]]; max_x *= spacing[indices_xy[0]]
     min_y, max_y = np.min(max_indices[0]) - margin, np.max(max_indices[0]) + margin
+    min_y *= spacing[indices_xy[1]]; max_y *= spacing[indices_xy[1]]
 
     fixed_slice = fixed[slice_tuple]
     fixed_slice[mask_slice == 0] = np.nan
@@ -242,14 +250,24 @@ def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
     jet_cmap = plt.cm.get_cmap("jet")
     jet_cmap.set_bad(alpha=0)
 
-    ax.imshow(fixed_slice, cmap="gray", alpha=0.6)
-    im_jac = ax.imshow(jac_det_slice, alpha=0.5, cmap="jet")
+    extent = (
+        origin[indices_xy[0]],
+        size[indices_xy[0]] * spacing[indices_xy[0]],
+        size[indices_xy[1]] * spacing[indices_xy[1]],
+        origin[indices_xy[1]],
+    )
+
+    ax.imshow(fixed_slice, cmap="gray", alpha=0.6, extent=extent)
+    im_jac = ax.imshow(jac_det_slice, alpha=0.5, cmap="jet", extent=extent)
     cbar = ax.get_figure().colorbar(im_jac, ax=ax, location="bottom", pad=0.1, alpha=1.0)
     cbar.set_label("Contraction --> Expansion")
 
     ax.set_xlim(min_x, max_x)
     ax.set_ylim(min_y, max_y)
-    ax.invert_xaxis()
+
+    if slice_tuple[1] != slice(None, None, None) or slice_tuple[0] != slice(None, None, None):
+        ax.invert_xaxis()
+
     ax.axis("off")
     return ax.get_figure()
 
@@ -632,7 +650,7 @@ def validation_metrics(result: RunResult):
 
     metrics.append({"validation/tre": tre(result)})
     metrics.append({"validation/bending_energy": result.bending_energy})
-    logger.info(f"Bending Energy: {result.bending_energy:.5f}")
+    logger.info(f"Bending Energy: {result.bending_energy:.2f}")
 
     if result.instance.collection == Collection.SYNTHETIC:
         dvf_copy = np.copy(result.dvf)
@@ -650,11 +668,17 @@ def validation_metrics(result: RunResult):
         metrics.append({"validation/mean_surface_cube": md_dists[0]})
         metrics.append({"validation/mean_surface_sphere": md_dists[1]})
 
+    if result.instance.collection == Collection.LEARN:
+        jac_det = jacobian_determinant(result.dvf, plot=False)[1]
+        sdlogj = np.log(jac_det).std()
+        metrics.append({"validation/SDLogJ": sdlogj})
+        logger.info(f"SDLogJ: {sdlogj:.4f}")
+
     return metrics
 
 
 def validation_visualization(
-    result: RunResult, clim_dvf=(None, None), clim_jac=(None, None), tre=True
+    result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)
 ):
     figs = []  # aggregate all figures
     instance = result.instance
@@ -683,13 +707,18 @@ def validation_visualization(
     elif collection == Collection.LEARN:
         figs.append(to_dict(wandb.Object3D(cpoint_cloud(result.control_points)), "cpoints"))
 
-        fig, axes = plt.subplots(2, 3, figsize=(12, 8))
+        fig, axes = plt.subplots(3, 3, figsize=(12, 12))
         plot_color_diff(result, (slice(None), slice(None), 50), ax=axes[0, 0])
         plot_color_diff(result, (slice(None), 50, slice(None)), ax=axes[0, 1])
         plot_color_diff(result, (120, slice(None), slice(None)), ax=axes[0, 2])
+
         plot_dvf_masked(result, (slice(None), slice(None), 50), ax=axes[1, 0])
         plot_dvf_masked(result, (slice(None), 50, slice(None)), ax=axes[1, 1])
         plot_dvf_masked(result, (120, slice(None), slice(None)), ax=axes[1, 2])
+
+        jacobian_determinant_masked(result, (slice(None), slice(None), 50), ax=axes[2, 0])
+        jacobian_determinant_masked(result, (slice(None), 50, slice(None)), ax=axes[2, 1])
+        jacobian_determinant_masked(result, (120, slice(None), slice(None)), ax=axes[2, 2])
 
         axes[0, 0].set_title("Deformed source vs target (side)")
         axes[0, 1].set_title("Deformed source vs target (front)")
@@ -697,14 +726,16 @@ def validation_visualization(
         axes[1, 0].set_title("DVF (side)")
         axes[1, 1].set_title("DVF (front)")
         axes[1, 2].set_title("DVF (top)")
+        axes[2, 0].set_title("Jacobian determinant (side)")
+        axes[2, 1].set_title("Jacobian determinant (front)")
+        axes[2, 2].set_title("Jacobian determinant (top)")
         fig.tight_layout()
 
         figs.append(to_dict(wandb.Image(fig), "overview"))
         figs.append(to_dict(wandb.Image(plot_dvf_3d(result)), "dvf_3d"))
 
-    if tre:
-        tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
-        figs.append(to_dict(wandb.Image(tre_fig), "tre_hist"))
+    tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
+    figs.append(to_dict(wandb.Image(tre_fig), "tre_hist"))
 
     return figs
 
@@ -721,8 +752,8 @@ def get_vmin_vmax(result1: RunResult, result2: RunResult):
     vmin_dvf = np.min([np.min(result1_mag), np.min(result2_mag)])
     vmax_dvf = np.max([np.max(result1_mag), np.max(result2_mag)])
 
-    jac_hybrid = jacobian_determinant(result1.dvf, plot=False)
-    jac_baseline = jacobian_determinant(result2.dvf, plot=False)
+    jac_hybrid = jacobian_determinant(result1.dvf, plot=False)[0]
+    jac_baseline = jacobian_determinant(result2.dvf, plot=False)[0]
     vmin_jac = np.min([np.min(jac_baseline), np.min(jac_hybrid)])
     vmax_jac = np.max([np.max(jac_baseline), np.max(jac_hybrid)])
 

@@ -6,6 +6,7 @@ import logging
 from typing import Any, Dict, List
 
 import pandas as pd
+import numpy as np
 
 from thesispy.elastix_wrapper import TimeoutException, time_limit
 from thesispy.elastix_wrapper.parameters import Parameters
@@ -172,7 +173,12 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
     run_result.grid_spacing = spacing
     run_result.grid_origin = origin
     final_evals = pd.read_csv(out_dir / "final_evals.txt", sep=",", index_col=0, header=None)
-    run_result.bending_energy = final_evals.loc["bending_energy"].values[0]
+    nr_voxels = (
+        np.sum(run_result.instance.mask)
+        if run_result.instance.mask is not None
+        else np.prod(run_result.deformed.shape)
+    )
+    run_result.bending_energy = final_evals.loc["bending_energy"].values[0] * nr_voxels
 
     return run_result
 
@@ -189,7 +195,9 @@ def validation(params: Parameters, run_dir: Path):
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=7, use_mask=True, metric="AdvancedNormalizedCorrelation", seed=88)
+        Parameters.from_base(
+            mesh_size=7, use_mask=True, metric="AdvancedNormalizedCorrelation", seed=88
+        )
         .asgd()
         .regularize(0.01)
         .multi_resolution(3, p_sched=[4, 3, 2])
