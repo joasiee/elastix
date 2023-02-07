@@ -1408,7 +1408,7 @@ GOMEAOptimizer::GetValueSanityCheck(const ParametersType & parameters,
   if (abs(obj_val - obj_val2) > 1e-8 || abs(constraint_val - constraint_val2) > 1e-8)
     std::cout << "WTF0\n";
 
-  if (abs(obj_val - obj_val_partial) > 1e-8 || abs(constraint_val - cons_val_partial) > 1e-8)
+  if (abs(obj_val2 - obj_val_partial) > 1e-8 || abs(constraint_val2 - cons_val_partial) > 1e-8)
     std::cout << "WTF1\n";
 
   if (abs(obj_val - obj_val3) > 1e-8)

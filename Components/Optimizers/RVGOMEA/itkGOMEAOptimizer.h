@@ -108,7 +108,7 @@ public:
   void
   StopOptimization();
 
-  itkStaticConstMacro(NumberOfGenerationsPerReevaluation, unsigned int, 100);
+  itkStaticConstMacro(NumberOfGenerationsPerReevaluation, unsigned int, 50);
 
   itkGetConstMacro(CurrentIteration, unsigned long);
   itkGetConstMacro(NumberOfEvaluations, unsigned long);

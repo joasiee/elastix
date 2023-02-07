@@ -526,6 +526,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::IsControlPoint
   IndexType                                    index = m_WrappedImage[0]->ComputeIndex(offset);
   RegionType                                   region = this->GetRegionAroundControlPoint(index);
   ImageRegionConstIteratorWithIndex<ImageType> wrappedImageIterator(m_WrappedImage[0], region);
+  DirectionType                                direction = this->GetGridDirection();
   OutputPointType                              centerPoint = this->GetPositionOfControlPoint(index);
 
   while (!wrappedImageIterator.IsAtEnd())
@@ -540,7 +541,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::IsControlPoint
 
       for (unsigned int dim = 0; dim < NDimensions; ++dim)
       {
-        diff[dim] = diff[dim] * indexDiff[dim];
+        diff[dim] = diff[dim] * indexDiff[dim] * direction[dim][dim];
         folded = folded && (diff[dim] >= 0);
       }
 

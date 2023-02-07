@@ -817,7 +817,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
 
     /** and combine. */
     measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
-    constraintValue += tempConstraintValue;
+    constraintValue += (i==0) * tempConstraintValue;
   }
 
   /** Return a value. */
@@ -848,14 +848,14 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
     timer.Start();
 
     /** Compute ... */
-    MeasureType tempConstraintValue{ 0.0 };
+    MeasureType tempConstraintValue{ i * -1.0};
     this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex, individualIndex, tempConstraintValue);
     timer.Stop();
     this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
 
     /** and combine. */
     measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
-    constraintValue += tempConstraintValue;
+    constraintValue += (i == 0) * tempConstraintValue;
   }
 
   /** Return a value. */

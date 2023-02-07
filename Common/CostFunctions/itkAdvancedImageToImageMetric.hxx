@@ -1023,10 +1023,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::CheckNumberOfSamples(unsi
   return true;
 } // end CheckNumberOfSamples()
 
-/**
- * ******************* GetValuePartial *******************
- */
-
 template <class TFixedImage, class TMovingImage>
 typename AdvancedImageToImageMetric<TFixedImage, TMovingImage>::MeasureType
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & parameters,
@@ -1057,8 +1053,11 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
                                                   this->GetValuePartial(parameters, fosIndex);
 
   const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
-  // result.constraints.bsplineFolds += bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
-  result.constraints.bsplineFolds = bsplinePtr->ComputeNumberOfFoldsForControlPoints(nullptr);
+  if (bsplinePtr && constraintValue >= 0)
+    result.constraints.bsplineFolds = bsplinePtr->ComputeNumberOfFoldsForControlPoints(nullptr);
+
+  // result.constraints.bsplineFolds +=
+  // bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
 
   measure = this->GetValue(result);
   constraintValue = this->GetConstraintValue(result.constraints);
@@ -1078,7 +1077,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetConstraintValue(Constr
   MeasureType missedPixelPct =
     (constraints.missedPixelPct >= m_MissedPixelConstraintThreshold) * constraints.missedPixelPct;
 
-  return std::max(missedPixelPct, (double) constraints.bsplineFolds);
+  return std::max(missedPixelPct, (double)constraints.bsplineFolds);
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1176,6 +1175,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers(i
   }
 
   this->SetNumberOfFixedImageSamples(totalSamples);
+  this->SetUseImageSampler(true);
+  this->InitializeImageSampler();
   this->SetUseImageSampler(false);
 
   this->m_BSplinePointsRegions.clear();
@@ -1244,7 +1245,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
   i = 0;
   while (!coeffImageIterator.IsAtEnd())
   {
-    auto      transformedPoint =
+    auto transformedPoint =
       wrappedImage->template TransformIndexToPhysicalPoint<PixelType>(coeffImageIterator.GetIndex());
     auto transformedPointUpper = transformedPoint + wrappedImage->GetDirection() * wrappedImage->GetSpacing();
     auto imageLowerIndex = fixedImage->TransformPhysicalPointToIndex(transformedPoint);
@@ -1252,8 +1253,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
 
     for (d = 0; d < FixedImageDimension; ++d)
     {
-      imageLowerIndex[d] = std::max((int) imageLowerIndex[d], 0);
-      imageUpperIndex[d] = std::min((int) imageUpperIndex[d], (int) fixedImage->GetLargestPossibleRegion().GetSize()[d]);
+      imageLowerIndex[d] = std::max((int)imageLowerIndex[d], 0);
+      imageUpperIndex[d] = std::min((int)imageUpperIndex[d], (int)fixedImage->GetLargestPossibleRegion().GetSize()[d]);
       this->m_BSplineFOSRegions[i].SetSize(d, imageUpperIndex[d] - imageLowerIndex[d]);
     }
     this->m_BSplineFOSRegions[i].SetIndex(imageLowerIndex);

@@ -114,7 +114,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetStaticLinkageMinSetSize(staticLinkageMinSetSize);
 
   /** Set NumberOfASGDIterations.*/
-  int numberOfASGDIterations = 100;
+  int numberOfASGDIterations = 50;
   this->m_Configuration->ReadParameter(
     numberOfASGDIterations, "NumberOfASGDIterations", this->GetComponentLabel(), level, 0);
   this->SetNumberOfASGDIterations(numberOfASGDIterations);
@@ -143,13 +143,13 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetMaxNumberOfPopulations(maxNumberOfPopulations);
 
   /** Set RedistributionMethod */
-  int redistributionMethod = 1;
+  int redistributionMethod = 0;
   this->m_Configuration->ReadParameter(
     redistributionMethod, "RedistributionMethod", this->GetComponentLabel(), level, 0);
   this->SetRedistributionMethod(static_cast<RedistributionMethod>(redistributionMethod));
 
   /** Set ASGDIterationSchedule */
-  int asgdIterationSchedule = 0;
+  int asgdIterationSchedule = 1;
   this->m_Configuration->ReadParameter(
     asgdIterationSchedule, "ASGDIterationSchedule", this->GetComponentLabel(), level, 0);
   this->SetASGDIterationSchedule(static_cast<ASGDIterationSchedule>(asgdIterationSchedule));
