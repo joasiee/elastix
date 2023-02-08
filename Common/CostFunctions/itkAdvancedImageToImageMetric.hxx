@@ -870,15 +870,12 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::BeforeThreadedGetValueAnd
   if (this->m_UseMetricSingleThreaded)
   {
     this->SetTransformParameters(parameters);
-    if (this->m_UseImageSampler)
-      this->GetImageSampler()->Update();
-    else
+    this->GetImageSampler()->Update();
+
+    for (auto & subfunctionSampler : m_SubfunctionSamplers)
     {
-      for (auto & subfunctionSampler : m_SubfunctionSamplers)
-      {
-        if (subfunctionSampler)
-          subfunctionSampler->Update();
-      }
+      if (subfunctionSampler)
+        subfunctionSampler->Update();
     }
   }
 
@@ -1175,9 +1172,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers(i
   }
 
   this->SetNumberOfFixedImageSamples(totalSamples);
-  this->SetUseImageSampler(true);
-  this->InitializeImageSampler();
-  this->SetUseImageSampler(false);
 
   this->m_BSplinePointsRegions.clear();
   this->m_BSplinePointsRegionsNoMask.clear();

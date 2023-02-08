@@ -243,7 +243,7 @@ void
 MetricBase<TElastix>::WriteSamplesOfIteration() const
 {
   const AdvancedMetricType * thisAsAdvanced = dynamic_cast<const AdvancedMetricType *>(this);
-  if (thisAsAdvanced->GetUseImageSampler() || thisAsAdvanced->GetPartialEvaluations())
+  if (thisAsAdvanced->GetUseImageSampler())
   {
     const unsigned int itNr = this->m_Elastix->GetIterationCounter();
     std::ofstream      outFile;
@@ -402,7 +402,7 @@ MetricBase<TElastix>::GetAdvancedMetricImageSampler() const -> ImageSamplerBaseT
   {
     return nullptr;
   }
-  if (thisAsMetricWithSampler->GetUseImageSampler() == false && !thisAsMetricWithSampler->GetPartialEvaluations())
+  if (thisAsMetricWithSampler->GetUseImageSampler() == false)
   {
     return nullptr;
   }
