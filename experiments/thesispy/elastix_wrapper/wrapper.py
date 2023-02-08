@@ -196,12 +196,17 @@ def validation(params: Parameters, run_dir: Path):
 if __name__ == "__main__":
     params_main = (
         Parameters.from_base(
-            mesh_size=7, use_mask=True, metric="AdvancedNormalizedCorrelation", seed=88
+            mesh_size=5,
+            seed=1,
+            metric="AdvancedNormalizedCorrelation",
+            use_mask=True,
         )
-        .asgd()
-        .regularize(0.01)
-        .multi_resolution(3, p_sched=[4, 3, 2])
-        .stopping_criteria(iterations=[200, 200, 400])
+        # .regularize(0.01)
+        .multi_resolution(1, p_sched=[5])
+        .gomea(
+            hybrid=True
+        )
+        .stopping_criteria(iterations=[200])
         .instance(Collection.LEARN, 1)
     )
     run(
