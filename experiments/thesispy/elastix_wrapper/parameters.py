@@ -60,9 +60,7 @@ class Parameters:
         self.n_param("MovingImagePyramid", 2)
         self.n_param("Interpolator", 2)
         self.n_param("ImageSampler", 2)
-        regularize_metric = (
-            "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
-        )
+        regularize_metric = "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
 
         return self.args(
             {
@@ -165,18 +163,18 @@ class Parameters:
         )
 
     def rigid(self):
-        return self.args({
-            "Transform": "EulerTransform",
-            "AutomaticScalesEstimation": True,
-            "AutomaticTransformInitialization": True,
-            "AutomaticTransformInitializationMethod": "Origins",
-        })
+        return self.args(
+            {
+                "Transform": "EulerTransform",
+                "AutomaticScalesEstimation": True,
+                "AutomaticTransformInitialization": True,
+                "AutomaticTransformInitializationMethod": "Origins",
+            }
+        )
 
     def affine(self):
         self.rigid()
-        return self.args({
-            "Transform": "SimilarityTransform"
-        })
+        return self.args({"Transform": "SimilarityTransform"})
 
     def debug(self):
         return self.args(
@@ -236,9 +234,7 @@ class Parameters:
         for i, voxel_dim in enumerate(voxel_dims):
             voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             for n in range(len(total_samples)):
-                total_samples[n] *= int(
-                    voxel_dim / self["ImagePyramidSchedule"][n * len(voxel_dims) + i]
-                )
+                total_samples[n] *= int(voxel_dim / self["ImagePyramidSchedule"][n * len(voxel_dims) + i])
 
         if "FinalGridSpacingInVoxels" not in self.params:
             self["FinalGridSpacingInVoxels"] = voxel_spacings
@@ -283,9 +279,7 @@ class Parameters:
         if INSTANCES_CONFIG[collection]["masks"]:
             self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
         if INSTANCES_CONFIG[collection]["landmarks"]:
-            self.lms_fixed_path = (
-                INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
-            )
+            self.lms_fixed_path = INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
 
         return self
 
@@ -349,9 +343,20 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, seed=88)
-        .gomea()
-        .stopping_criteria(50)
-        .instance(Collection.SYNTHETIC, 1)
+        Parameters.from_base(
+            mesh_size=6,
+            seed=1,
+            metric="AdvancedNormalizedCorrelation",
+            use_mask=True,
+        )
+        .regularize(0.01)
+        .multi_resolution(3, p_sched=[6, 4, 2])
+        .gomea(
+            LinkageType.CP_MARGINAL,
+            use_constraints=True,
+            compute_folds_constraints=True,
+        )
+        .stopping_criteria(iterations=[1, 1, 1])
+        .instance(Collection.LEARN, 1)
     )
     params.write(Path())

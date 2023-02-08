@@ -42,7 +42,6 @@ def regularization_weight():
             yield params
 
 
-
 def regularization_weight_subsampling():
     for weight in [0.0] + list(np.geomspace(0.0001, 10.0, 50)):
         weight = np.round(weight, 4)
@@ -129,11 +128,7 @@ def fair_comparison_hybrid():
             )
             yield params
 
-            params = (
-                Parameters.from_base(mesh_size=mesh_size, seed=seed)
-                .asgd()
-                .stopping_criteria(iterations=10000)
-            )
+            params = Parameters.from_base(mesh_size=mesh_size, seed=seed).asgd().stopping_criteria(iterations=10000)
             yield params
 
 
@@ -152,9 +147,7 @@ def constrained_selection():
             )
             yield params_constrained
         params_penalty = (
-            Parameters.from_base(
-                mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True
-            )
+            Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True)
             .gomea(LinkageType.CP_MARGINAL, use_constraints=False)
             .stopping_criteria(iterations=1000)
         )
@@ -167,7 +160,6 @@ def constrained_selection():
             .stopping_criteria(iterations=1000)
         )
         yield params
-
 
 
 def fold_constraints():
@@ -185,7 +177,6 @@ def fold_constraints():
                 .stopping_criteria(iterations=1000)
             )
             yield param_no_folds
-
 
 
 def linkage_models():
@@ -231,7 +222,12 @@ def asgd_sweep():
         p_sched = [i for i in range(nr_resolutions + 1, 1, -1)]
         for mesh_size in [5, 6, 8, 10, 12]:
             params = (
-                Parameters.from_base(mesh_size=mesh_size, seed=83, metric="AdvancedNormalizedCorrelation", use_mask=True)
+                Parameters.from_base(
+                    mesh_size=mesh_size,
+                    seed=83,
+                    metric="AdvancedNormalizedCorrelation",
+                    use_mask=True,
+                )
                 .asgd()
                 .multi_resolution(nr_resolutions, p_sched=p_sched, g_sched=[1 for _ in range(nr_resolutions)])
                 .stopping_criteria(iterations=2000)
@@ -239,10 +235,46 @@ def asgd_sweep():
             yield params
 
 
+def fair_comparison_final():
+    for seed in range(3):
+        seed += 1
+        for mesh_size in [6, 9]:
+            base = (
+                lambda: Parameters.from_base(
+                    mesh_size=mesh_size,
+                    seed=seed,
+                    metric="AdvancedNormalizedCorrelation",
+                    use_mask=True,
+                )
+                .regularize(0.01)
+                .multi_resolution(3, p_sched=[6, 4, 2])
+            )
+
+            params_gomea = base().gomea(LinkageType.CP_MARGINAL).stopping_criteria(iterations=[200, 200, 600])
+            yield params_gomea
+
+            params_gomea_ls = base().gomea(
+                LinkageType.CP_MARGINAL,
+                hybrid=True,
+                redis_method=RedistributionMethod.BestN,
+                it_schedule=IterationSchedule.Logarithmic,
+            ).stopping_criteria(iterations=[200, 200, 600])
+            yield params_gomea_ls
+
+            params_gomea_fc = base().gomea(
+                LinkageType.CP_MARGINAL, use_constraints=True, compute_folds_constraints=True
+            ).stopping_criteria(iterations=[200, 200, 600])
+            yield params_gomea_fc
+
+            params_asgd = base().asgd().stopping_criteria(iterations=[500, 500, 3000])
+            yield params_asgd
+
+
 if __name__ == "__main__":
     queue = ExperimentQueue()
     queue.clear()
-    fn = hybrid_sweep
+    fn = fair_comparison_final
 
-    queue.bulk_push(list(yield_experiments(Collection.SYNTHETIC, 1, fn.__name__, fn)))
+    # Collection + instance niet vergeten!
+    queue.bulk_push(list(yield_experiments(Collection.LEARN, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")
