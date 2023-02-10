@@ -245,7 +245,7 @@ private:
   void
   operator=(const Self &) = delete;
 
-  mutable bool   m_SubtractMean;
+  mutable bool m_SubtractMean;
 
   using AccumulateType = typename NumericTraits<MeasureType>::AccumulateType;
 
@@ -266,6 +266,7 @@ private:
   struct CorrelationGetValueAndDerivativePerThreadStruct
   {
     SizeValueType  st_NumberOfPixelsCounted;
+    SizeValueType  st_NumberOfPixelsMissed;
     AccumulateType st_Sff;
     AccumulateType st_Smm;
     AccumulateType st_Sfm;

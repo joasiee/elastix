@@ -74,12 +74,14 @@ AdaptiveStochasticGradientDescent<TElastix>::BeforeRegistration()
   this->AddTargetCellToIterationInfo("2:Metric");
   this->AddTargetCellToIterationInfo("3a:Time");
   this->AddTargetCellToIterationInfo("3b:StepSize");
+  this->AddTargetCellToIterationInfo("3c:Evaluations");
   this->AddTargetCellToIterationInfo("4:||Gradient||");
 
   /** Format the metric and stepsize as floats. */
   this->GetIterationInfoAt("2:Metric") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3a:Time") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3b:StepSize") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("3c:Evaluations") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("4:||Gradient||") << std::showpoint << std::fixed;
 
   this->m_SettingsVector.clear();
@@ -271,6 +273,8 @@ AdaptiveStochasticGradientDescent<TElastix>::AfterEachIteration()
   this->GetIterationInfoAt("2:Metric") << this->m_Value;
   this->GetIterationInfoAt("3a:Time") << this->GetCurrentTime();
   this->GetIterationInfoAt("3b:StepSize") << this->GetLearningRate();
+  this->GetIterationInfoAt("3c:Evaluations") << this->GetNumberOfPixelEvaluations() / 1e6;
+
   bool asFastAsPossible = false;
   if (asFastAsPossible)
   {

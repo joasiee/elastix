@@ -739,7 +739,7 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Thre
 
   /** Only update these variables at the end to prevent unnecessary "false sharing". */
   this->m_CorrelationGetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsCounted = numberOfPixelsCounted;
-  this->m_GetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsMissed = numberOfPixelsMissed;
+  this->m_CorrelationGetValueAndDerivativePerThreadVariables[threadId].st_NumberOfPixelsMissed = numberOfPixelsMissed;
   this->m_CorrelationGetValueAndDerivativePerThreadVariables[threadId].st_Sff = sff;
   this->m_CorrelationGetValueAndDerivativePerThreadVariables[threadId].st_Smm = smm;
   this->m_CorrelationGetValueAndDerivativePerThreadVariables[threadId].st_Sfm = sfm;
@@ -764,17 +764,17 @@ AdvancedNormalizedCorrelationImageToImageMetric<TFixedImage, TMovingImage>::Afte
   /** Accumulate the number of pixels. */
   this->m_NumberOfPixelsCounted =
     this->m_CorrelationGetValueAndDerivativePerThreadVariables[0].st_NumberOfPixelsCounted;
-  this->m_NumberOfPixelsMissed = this->m_GetValueAndDerivativePerThreadVariables[0].st_NumberOfPixelsMissed;
+  this->m_NumberOfPixelsMissed = this->m_CorrelationGetValueAndDerivativePerThreadVariables[0].st_NumberOfPixelsMissed;
 
   for (ThreadIdType i = 1; i < numberOfThreads; ++i)
   {
     this->m_NumberOfPixelsCounted +=
       this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted;
-    this->m_NumberOfPixelsMissed += this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsMissed;
+    this->m_NumberOfPixelsMissed += this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsMissed;
 
     /** Reset this variable for the next iteration. */
     this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted = 0;
-    this->m_GetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsMissed = 0;
+    this->m_CorrelationGetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsMissed = 0;
   }
 
   this->m_NumberOfPixelEvaluations += this->m_NumberOfPixelsCounted + this->m_NumberOfPixelsMissed;

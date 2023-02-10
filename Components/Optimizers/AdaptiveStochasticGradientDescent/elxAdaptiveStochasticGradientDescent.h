@@ -403,6 +403,14 @@ protected:
   virtual void
   AddRandomPerturbation(ParametersType & parameters, double sigma);
 
+  size_t
+  GetNumberOfPixelEvaluations() const
+  {
+    using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
+    MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
+    return testPtr ? testPtr->GetNumberOfPixelEvaluations() : 0;
+  }
+
 private:
   elxOverrideGetSelfMacro;
 
