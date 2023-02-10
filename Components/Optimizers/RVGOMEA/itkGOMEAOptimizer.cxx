@@ -541,7 +541,8 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
         populations[population_index][j][k] =
           m_CurrentPosition[k] + (j > 0) * random1DNormalUnit() * sqrt(variances_last_resolution[k]);
       else
-        populations[population_index][j][k] = m_CurrentPosition[k] + (j > 0) * random1DNormalUnit();
+        populations[population_index][j][k] =
+          m_CurrentPosition[k] + (j / population_sizes[population_index] - 1) * random1DNormalUnit();
     }
     this->costFunctionEvaluation(populations[population_index][j],
                                  j,
@@ -629,7 +630,6 @@ GOMEAOptimizer::computeRanksForOnePopulation(int population_index)
 
     rank = 0;
     ranks[population_index][sorted[0]] = rank;
-    selections[population_index][rank] = populations[population_index][sorted[0]];
     for (i = 1; i < population_sizes[population_index]; i++)
     {
       if (objective_values[population_index][sorted[i]] != objective_values[population_index][sorted[i - 1]])
@@ -1973,7 +1973,10 @@ void
 GOMEAOptimizer::UpdatePosition()
 {
   PROFILE_FUNCTION();
-  this->SetCurrentPosition(selections[0][0]);
+  int best_solution;
+  this->getBestInPopulation(0, &best_solution);
+
+  this->SetCurrentPosition(populations[0][best_solution]);
   this->costFunctionEvaluation(this->GetCurrentPosition(), 0, this->m_Value, this->m_ConstraintValue);
 
   m_CurrentIteration++;
