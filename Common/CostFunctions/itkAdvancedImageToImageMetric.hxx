@@ -1030,7 +1030,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
 
   Constraints constraints;
   constraints.missedPixelPct = m_PctMissedPixels;
-  constraints.bsplineFolds = bsplinePtr->ComputeNumberOfFoldsForControlPoints(nullptr);
+  constraints.bsplineFolds = bsplinePtr->ComputeNumberOfFolds();
 
   constraintValue = this->GetConstraintValue(constraints);
   return measure;
@@ -1051,10 +1051,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const TransformP
 
   const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
   if (bsplinePtr && constraintValue >= 0)
-    result.constraints.bsplineFolds = bsplinePtr->ComputeNumberOfFoldsForControlPoints(nullptr);
-
-  // result.constraints.bsplineFolds +=
-  // bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
+    result.constraints.bsplineFolds = bsplinePtr->ComputeNumberOfFolds();
 
   measure = this->GetValue(result);
   constraintValue = this->GetConstraintValue(result.constraints);
@@ -1096,9 +1093,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluation(
   int                             fosIndex) const
 {
   m_PartialEvaluationHelper = this->GetValuePartial(parameters, fosIndex);
-  // const BSplineOrder3TransformType * bsplinePtr = this->GetTransformAsBsplinePtr();
-  // m_PartialEvaluationHelper.constraints.bsplineFolds =
-  //   bsplinePtr->ComputeNumberOfFoldsForControlPoints(&m_BsplineFOSSetsToControlPointOffsets[fosIndex + 1]);
 }
 
 template <class TFixedImage, class TMovingImage>
@@ -1273,8 +1267,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
 
   this->m_BSplinePointsRegions.resize(length + 1);
   this->m_BSplinePointsRegionsNoMask.resize(length + 1);
-  this->m_BsplineFOSSetsToControlPointOffsets.clear();
-  this->m_BsplineFOSSetsToControlPointOffsets.resize(length + 1);
 
   CombinationTransformType * comboPtr =
     dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
@@ -1285,11 +1277,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
   std::vector<bool> pointAdded(this->m_BSplinePointOffsetMap.size(), false);
   std::vector<bool> offsetAdded(this->m_BSplineFOSRegions.size(), false);
   const int         num_points = bsplinePtr->GetNumberOfParameters() / FixedImageDimension;
-
-  for (i = 0; i < num_points; i++)
-  {
-    m_BsplineFOSSetsToControlPointOffsets[0].push_back(i);
-  }
 
   // now compute mappings between control points and fos sets.
   // for each fos set j:
@@ -1309,7 +1296,6 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
         continue;
 
       pointAdded[cpoint] = true;
-      this->m_BsplineFOSSetsToControlPointOffsets[j + 1].push_back(cpoint);
 
       // calculate the region of influence for this control point
       ImageIndexType lower, upper;

@@ -445,7 +445,6 @@ protected:
   std::vector<FixedImageRegionType> m_BSplineFOSRegions;
   std::vector<std::vector<int>>     m_BSplinePointsRegions;
   std::vector<std::vector<int>>     m_BSplinePointsRegionsNoMask;
-  std::vector<std::vector<int>>     m_BsplineFOSSetsToControlPointOffsets;
   std::vector<int>                  m_BSplinePointOffsetMap;
   double                            m_SamplingPercentage{ 0.05 };
   double                            m_MissedPixelPenalty{ MissedPixelPenalty };

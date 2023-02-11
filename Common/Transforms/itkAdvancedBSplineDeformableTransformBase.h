@@ -339,7 +339,7 @@ public:
   GetNumberOfNonZeroJacobianIndices() const override = 0;
 
   unsigned int
-  ComputeNumberOfFoldsForControlPoints(const std::vector<int> * offsets) const;
+  ComputeNumberOfFolds() const;
 
   /** This typedef should be equal to the typedef used
    * in derived classes based on the weights function.
@@ -443,7 +443,7 @@ private:
   void
   operator=(const Self &) = delete;
 
-  int
+  bool
   IsControlPointFolded(int offset) const;
 
   RegionType

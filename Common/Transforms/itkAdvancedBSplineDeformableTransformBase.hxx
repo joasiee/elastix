@@ -492,35 +492,21 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::SetCoefficient
 
 template <class TScalarType, unsigned int NDimensions>
 unsigned int
-AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberOfFoldsForControlPoints(
-  const std::vector<int> * offsets) const
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberOfFolds() const
 {
   unsigned int totalNumberOfFolds = 0;
 
   if (m_ComputeControlPointFolds)
   {
-    if (offsets)
-    {
-      for (unsigned int i = 0; i < offsets->size(); ++i)
-      {
-        int foldedWith = this->IsControlPointFolded((*offsets)[i]);
-        bool folded = foldedWith >= 0;
-        totalNumberOfFolds += folded;
-        totalNumberOfFolds += folded && std::find((*offsets).begin(), (*offsets).end(), foldedWith) == (*offsets).end();
-      }
-    }
-    else
-    {
-      for (unsigned int i = 0; i < this->m_GridRegion.GetNumberOfPixels(); ++i)
-        totalNumberOfFolds += this->IsControlPointFolded(i) >= 0;
-    }
+    for (unsigned int i = 0; i < this->m_GridRegion.GetNumberOfPixels(); ++i)
+      totalNumberOfFolds += this->IsControlPointFolded(i);
   }
-  
+
   return totalNumberOfFolds;
 }
 
 template <class TScalarType, unsigned int NDimensions>
-int
+bool
 AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::IsControlPointFolded(int offset) const
 {
   IndexType                                    index = m_WrappedImage[0]->ComputeIndex(offset);
@@ -546,13 +532,13 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::IsControlPoint
       }
 
       if (folded)
-        return m_WrappedImage[0]->ComputeOffset(wrappedImageIterator.GetIndex());
+        return folded;
     }
 
     ++wrappedImageIterator;
   }
 
-  return -1;
+  return false;
 }
 
 template <class TScalarType, unsigned int NDimensions>
