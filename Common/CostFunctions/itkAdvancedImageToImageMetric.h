@@ -392,6 +392,9 @@ public:
   void
   SelectNewSamplesSubfunctionSamplers();
 
+  void
+  RepairFoldsInBsplineTransform(TransformParametersType & parameters);
+
 protected:
   /** Constructor. */
   AdvancedImageToImageMetric();
@@ -696,6 +699,14 @@ protected:
     CombinationTransformType * comboPtr =
       dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
     return dynamic_cast<const BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
+  }
+
+  BSplineOrder3TransformType *
+  GetTransformAsBsplinePtr()
+  {
+    CombinationTransformType * comboPtr =
+      dynamic_cast<CombinationTransformType *>(this->m_AdvancedTransform.GetPointer());
+    return dynamic_cast<BSplineOrder3TransformType *>(comboPtr->GetCurrentTransform());
   }
 
   /** Inheriting classes can specify whether they use the image limiter functionality
