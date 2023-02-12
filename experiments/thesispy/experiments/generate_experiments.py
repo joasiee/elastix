@@ -128,7 +128,11 @@ def fair_comparison_hybrid():
             )
             yield params
 
-            params = Parameters.from_base(mesh_size=mesh_size, seed=seed).asgd().stopping_criteria(iterations=10000)
+            params = (
+                Parameters.from_base(mesh_size=mesh_size, seed=seed)
+                .asgd()
+                .stopping_criteria(iterations=10000)
+            )
             yield params
 
 
@@ -147,7 +151,9 @@ def constrained_selection():
             )
             yield params_constrained
         params_penalty = (
-            Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True)
+            Parameters.from_base(
+                mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True
+            )
             .gomea(LinkageType.CP_MARGINAL, use_constraints=False)
             .stopping_criteria(iterations=1000)
         )
@@ -167,13 +173,17 @@ def fold_constraints():
         for mesh_size in [4, 5, 6]:
             param_folds = (
                 Parameters.from_base(mesh_size=mesh_size, seed=seed)
-                .gomea(LinkageType.CP_MARGINAL, use_constraints=True, compute_folds_constraints=True)
+                .gomea(
+                    LinkageType.CP_MARGINAL, use_constraints=True, compute_folds_constraints=True
+                )
                 .stopping_criteria(iterations=1000)
             )
             yield param_folds
             param_no_folds = (
                 Parameters.from_base(mesh_size=mesh_size, seed=seed)
-                .gomea(LinkageType.CP_MARGINAL, use_constraints=False, compute_folds_constraints=False)
+                .gomea(
+                    LinkageType.CP_MARGINAL, use_constraints=False, compute_folds_constraints=False
+                )
                 .stopping_criteria(iterations=1000)
             )
             yield param_no_folds
@@ -229,52 +239,70 @@ def asgd_sweep():
                     use_mask=True,
                 )
                 .asgd()
-                .multi_resolution(nr_resolutions, p_sched=p_sched, g_sched=[1 for _ in range(nr_resolutions)])
+                .multi_resolution(
+                    nr_resolutions, p_sched=p_sched, g_sched=[1 for _ in range(nr_resolutions)]
+                )
                 .stopping_criteria(iterations=2000)
             )
             yield params
 
 
 def fair_comparison_final():
-    for seed in range(3):
+    for seed in range(2):
         seed += 1
         for mesh_size in [6, 9]:
-            base = (
-                lambda: Parameters.from_base(
-                    mesh_size=mesh_size,
-                    seed=seed,
-                    metric="AdvancedNormalizedCorrelation",
-                    use_mask=True,
+            for reg_weight in [0.001, 0.01, 0.05]:
+                peval_budget = 80000e6
+                base = (
+                    lambda: Parameters.from_base(
+                        mesh_size=mesh_size,
+                        seed=seed,
+                        metric="AdvancedNormalizedCorrelation",
+                        use_mask=True,
+                    )
+                    .regularize(reg_weight)
+                    .multi_resolution(3, r_sched=[6, 4, 2], s_sched=[3, 2, 0])
                 )
-                .regularize(0.01)
-                .multi_resolution(3, p_sched=[6, 4, 2])
-            )
 
-            params_gomea = base().gomea(LinkageType.CP_MARGINAL).stopping_criteria(iterations=[200, 200, 600])
-            yield params_gomea
+                params_gomea = (
+                    base()
+                    .gomea(LinkageType.CP_MARGINAL)
+                    .stopping_criteria(iterations=[100, 200, 2000], pixel_evals=peval_budget)
+                )
+                yield params_gomea
 
-            params_gomea_ls = base().gomea(
-                LinkageType.CP_MARGINAL,
-                hybrid=True,
-                redis_method=RedistributionMethod.BestN,
-                it_schedule=IterationSchedule.Logarithmic,
-            ).stopping_criteria(iterations=[200, 200, 600])
-            yield params_gomea_ls
+                params_gomea_ls = (
+                    base()
+                    .gomea(
+                        LinkageType.CP_MARGINAL,
+                        hybrid=True,
+                        redis_method=RedistributionMethod.Random,
+                        it_schedule=IterationSchedule.Logarithmic,
+                    )
+                    .stopping_criteria(iterations=[100, 200, 2000], pixel_evals=peval_budget)
+                )
+                yield params_gomea_ls
 
-            params_gomea_fc = base().gomea(
-                LinkageType.CP_MARGINAL, use_constraints=True, compute_folds_constraints=True
-            ).stopping_criteria(iterations=[200, 200, 600])
-            yield params_gomea_fc
+                params_gomea_fc = (
+                    base()
+                    .gomea(
+                        LinkageType.CP_MARGINAL,
+                        use_constraints=True,
+                        compute_folds_constraints=True,
+                    )
+                    .stopping_criteria(iterations=[100, 200, 600], pixel_evals=peval_budget)
+                )
+                yield params_gomea_fc
 
-            params_asgd = base().asgd().stopping_criteria(iterations=[500, 500, 3000])
-            yield params_asgd
+                params_asgd = base().asgd().stopping_criteria(iterations=[500, 500, 4000])
+                yield params_asgd
 
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    queue.clear()
+    # queue.clear()
     fn = fair_comparison_final
 
     # Collection + instance niet vergeten!
-    queue.bulk_push(list(yield_experiments(Collection.LEARN, 1, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.LEARN, 2, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")
