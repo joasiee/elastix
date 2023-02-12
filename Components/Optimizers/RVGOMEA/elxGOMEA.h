@@ -89,6 +89,9 @@ protected:
   void
   OptimizeParametersWithGradientDescent(ParametersType & parameters, int iterations) override;
 
+  void
+  RepairFoldsInTransformParameters(ParametersType & parameters) override;
+
 private:
   elxOverrideGetSelfMacro;
 

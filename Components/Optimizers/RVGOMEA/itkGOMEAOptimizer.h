@@ -228,6 +228,10 @@ protected:
   OptimizeParametersWithGradientDescent(ParametersType & params, int iterations)
   {}
 
+  virtual void
+  RepairFoldsInTransformParameters(ParametersType & params)
+  {}
+
   unsigned long     m_NumberOfEvaluations{ 0L };
   unsigned long     m_CurrentIteration{ 0L };
   StopConditionType m_StopCondition{ Unknown };

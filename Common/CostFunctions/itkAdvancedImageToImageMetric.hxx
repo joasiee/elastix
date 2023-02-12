@@ -1198,6 +1198,15 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::SelectNewSamplesSubfuncti
 }
 
 template <class TFixedImage, class TMovingImage>
+inline void
+AdvancedImageToImageMetric<TFixedImage, TMovingImage>::RepairFoldsInBsplineTransform(
+  TransformParametersType & parameters)
+{
+  this->SetTransformParameters(parameters);
+  this->GetTransformAsBsplinePtr()->RepairFolds();
+}
+
+template <class TFixedImage, class TMovingImage>
 void
 AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetRegionsForFOS()
 {

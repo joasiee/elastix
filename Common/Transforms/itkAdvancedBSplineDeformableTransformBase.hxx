@@ -506,6 +506,27 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::ComputeNumberO
 }
 
 template <class TScalarType, unsigned int NDimensions>
+inline void
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::RepairFolds()
+{
+  if (m_ComputeControlPointFolds)
+  {
+    bool foldsInGrid = true;
+    int  maxNrPasses = 10;
+    int  nrPasses = 0;
+    while (foldsInGrid && nrPasses < maxNrPasses)
+    {
+      foldsInGrid = false;
+      for (unsigned int i = 0; i < this->m_GridRegion.GetNumberOfPixels(); ++i)
+      {
+        foldsInGrid |= this->RepairFold(i);
+      }
+      nrPasses++;
+    }
+  }
+}
+
+template <class TScalarType, unsigned int NDimensions>
 bool
 AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::IsControlPointFolded(int offset) const
 {
@@ -539,6 +560,43 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::IsControlPoint
   }
 
   return false;
+}
+
+template <class TScalarType, unsigned int NDimensions>
+bool
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::RepairFold(int offset)
+{
+  IndexType                                    index = m_WrappedImage[0]->ComputeIndex(offset);
+  RegionType                                   region = this->GetRegionAroundControlPoint(index);
+  ImageRegionConstIteratorWithIndex<ImageType> wrappedImageIterator(m_WrappedImage[0], region);
+  DirectionType                                direction = this->GetGridDirection();
+  OutputPointType                              centerPoint = this->GetPositionOfControlPoint(index);
+  bool                                         folded = false;
+
+  while (!wrappedImageIterator.IsAtEnd())
+  {
+    if (m_WrappedImage[0]->ComputeOffset(wrappedImageIterator.GetIndex()) != offset)
+    {
+
+      OutputPointType point = this->GetPositionOfControlPoint(wrappedImageIterator.GetIndex());
+      OffsetType      indexDiff = wrappedImageIterator.GetIndex() - index;
+      OutputPointType diff = centerPoint - point;
+      double          margin = 1e-3;
+
+      for (unsigned int dim = 0; dim < NDimensions; ++dim)
+      {
+        diff[dim] = diff[dim] * indexDiff[dim] * direction[dim][dim];
+        if (diff[dim] >= 0 && indexDiff[dim] != 0)
+        {
+          centerPoint[dim] = point[dim] - direction[dim][dim] * margin;
+          folded = true;
+        }
+      }
+      this->SetPositionOfControlPoint(index, centerPoint);
+    }
+    ++wrappedImageIterator;
+  }
+  return folded;
 }
 
 template <class TScalarType, unsigned int NDimensions>
@@ -688,6 +746,18 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::GetPositionOfC
   }
 
   return point;
+}
+
+template <class TScalarType, unsigned int NDimensions>
+inline void
+AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::SetPositionOfControlPoint(
+  const IndexType &       index,
+  const OutputPointType & position)
+{
+  for (unsigned int i = 0; i < SpaceDimension; ++i)
+  {
+    m_CoefficientImages[i]->SetPixel(index, position[i] - this->TransformContinuousGridIndexToPoint(index)[i]);
+  }
 }
 
 template <class TScalarType, unsigned int NDimensions>

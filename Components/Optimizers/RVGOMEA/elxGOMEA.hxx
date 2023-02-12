@@ -311,6 +311,14 @@ GOMEA<TElastix>::OptimizeParametersWithGradientDescent(ParametersType & paramete
 
 template <class TElastix>
 void
+GOMEA<TElastix>::RepairFoldsInTransformParameters(ParametersType & parameters)
+{
+  AdvancedMetricType * metric = dynamic_cast<AdvancedMetricType *>(this->GetCostFunction());
+  metric->RepairFoldsInBsplineTransform(parameters);
+}
+
+template <class TElastix>
+void
 GOMEA<TElastix>::WriteMutualInformationMatrix() const
 {
   std::ostringstream makeFileName("");

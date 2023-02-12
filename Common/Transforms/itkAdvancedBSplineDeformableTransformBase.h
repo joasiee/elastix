@@ -341,6 +341,9 @@ public:
   unsigned int
   ComputeNumberOfFolds() const;
 
+  void
+  RepairFolds();
+
   /** This typedef should be equal to the typedef used
    * in derived classes based on the weights function.
    */
@@ -446,11 +449,17 @@ private:
   bool
   IsControlPointFolded(int offset) const;
 
+  bool
+  RepairFold(int offset);
+
   RegionType
   GetRegionAroundControlPoint(const IndexType & index) const;
 
   OutputPointType
   GetPositionOfControlPoint(const IndexType & index) const;
+
+  void
+  SetPositionOfControlPoint(const IndexType & index, const OutputPointType & position);
 };
 
 } // namespace itk

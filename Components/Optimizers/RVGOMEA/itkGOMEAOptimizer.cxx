@@ -70,7 +70,9 @@ GOMEAOptimizer::StartOptimization()
   itkDebugMacro("StartOptimization");
 
   this->m_NrOfParameters = this->GetCostFunction()->GetNumberOfParameters();
-  this->SetCurrentPosition(this->GetInitialPosition());
+  ParametersType initialPosition = this->GetInitialPosition();
+  this->RepairFoldsInTransformParameters(initialPosition);
+  this->SetCurrentPosition(initialPosition);
   this->m_CurrentIteration = 0;
   this->m_Value = NumericTraits<MeasureType>::max();
   this->m_NumberOfEvaluations = 0L;
@@ -541,8 +543,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
         populations[population_index][j][k] =
           m_CurrentPosition[k] + (j > 0) * random1DNormalUnit() * sqrt(variances_last_resolution[k]);
       else
-        populations[population_index][j][k] =
-          m_CurrentPosition[k] + (j / population_sizes[population_index] - 1) * random1DNormalUnit();
+        populations[population_index][j][k] = m_CurrentPosition[k] + (j / population_sizes[population_index] - 1) * random1DNormalUnit();
     }
     this->costFunctionEvaluation(populations[population_index][j],
                                  j,
