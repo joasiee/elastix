@@ -56,13 +56,14 @@ class Parameters:
         weight: float,
         analytic: bool = True,
     ) -> Parameters:
+        if weight == 0:
+            return self.args({"Metric0Weight": 1.0, "Metric1Weight": weight})
+
         self.n_param("FixedImagePyramid", 2)
         self.n_param("MovingImagePyramid", 2)
         self.n_param("Interpolator", 2)
         self.n_param("ImageSampler", 2)
-        regularize_metric = (
-            "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
-        )
+        regularize_metric = "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
 
         return self.args(
             {
@@ -221,9 +222,7 @@ class Parameters:
         for i, voxel_dim in enumerate(voxel_dims):
             voxel_spacings.append(ceil(voxel_dim / self["MeshSize"][i]))
             for n in range(len(total_samples)):
-                total_samples[n] *= int(
-                    voxel_dim / self["ImagePyramidRescaleSchedule"][n * len(voxel_dims) + i]
-                )
+                total_samples[n] *= int(voxel_dim / self["ImagePyramidRescaleSchedule"][n * len(voxel_dims) + i])
 
         if "FinalGridSpacingInVoxels" not in self.params:
             self["FinalGridSpacingInVoxels"] = voxel_spacings
@@ -237,13 +236,8 @@ class Parameters:
         return self
 
     def calc_multiresolution_schedules(self, voxel_dims):
-        if not self["GridSpacingSchedule"]:
-            self["GridSpacingSchedule"] = [i for i in range(self["NumberOfResolutions"], 0, -1)]
-
         if not self["Downsampling"]:
-            self["ImagePyramidRescaleSchedule"] = [
-                1 for _ in range(self["NumberOfResolutions"] * len(voxel_dims))
-            ]
+            self["ImagePyramidRescaleSchedule"] = [1 for _ in range(self["NumberOfResolutions"] * len(voxel_dims))]
         elif self["ImagePyramidRescaleSchedule"] is None:
             self["ImagePyramidRescaleSchedule"] = [
                 2 ** (self["NumberOfResolutions"] - i - 1)
@@ -258,9 +252,7 @@ class Parameters:
             ]
 
         if not self["Smoothing"]:
-            self["ImagePyramidSmoothingSchedule"] = [
-                0 for _ in range(self["NumberOfResolutions"] * len(voxel_dims))
-            ]
+            self["ImagePyramidSmoothingSchedule"] = [0 for _ in range(self["NumberOfResolutions"] * len(voxel_dims))]
         elif (
             self["ImagePyramidSmoothingSchedule"] is not None
             and len(self["ImagePyramidSmoothingSchedule"]) == self["NumberOfResolutions"]
@@ -303,9 +295,7 @@ class Parameters:
         if INSTANCES_CONFIG[collection]["masks"]:
             self.fixedmask_path = INSTANCES_SRC / folder / "masks" / fixed
         if INSTANCES_CONFIG[collection]["landmarks"]:
-            self.lms_fixed_path = (
-                INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
-            )
+            self.lms_fixed_path = INSTANCES_SRC / folder / "landmarks" / f"{fixed.split('.')[0]}.txt"
 
         return self
 

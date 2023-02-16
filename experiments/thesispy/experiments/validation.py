@@ -670,7 +670,7 @@ def validation_metrics(result: RunResult):
 
     if result.instance.collection == Collection.LEARN:
         jac_det = jacobian_determinant(result.dvf, plot=False)[1]
-        sdlogj = np.log(jac_det).std()
+        sdlogj = (np.log(jac_det) * result.instance.mask).std()
         metrics.append({"validation/SDLogJ": sdlogj})
         logger.info(f"SDLogJ: {sdlogj:.4f}")
 
