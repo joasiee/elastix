@@ -72,7 +72,6 @@ GOMEAOptimizer::StartOptimization()
   this->m_NrOfParameters = this->GetCostFunction()->GetNumberOfParameters();
   ParametersType initialPosition = this->GetInitialPosition();
   this->RepairFoldsInTransformParameters(initialPosition);
-  std::cout << "Value initialposition: " << this->GetValue(initialPosition) << std::endl;
   this->SetCurrentPosition(initialPosition);
   this->m_CurrentIteration = 0;
   this->m_Value = NumericTraits<MeasureType>::max();
