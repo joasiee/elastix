@@ -72,6 +72,7 @@ GOMEAOptimizer::StartOptimization()
   this->m_NrOfParameters = this->GetCostFunction()->GetNumberOfParameters();
   ParametersType initialPosition = this->GetInitialPosition();
   this->RepairFoldsInTransformParameters(initialPosition);
+  std::cout << "Value initialposition: " << this->GetValue(initialPosition) << std::endl;
   this->SetCurrentPosition(initialPosition);
   this->m_CurrentIteration = 0;
   this->m_Value = NumericTraits<MeasureType>::max();
@@ -543,7 +544,7 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
         populations[population_index][j][k] =
           m_CurrentPosition[k] + (j > 0) * random1DNormalUnit() * sqrt(variances_last_resolution[k]);
       else
-        populations[population_index][j][k] = m_CurrentPosition[k] + (j / population_sizes[population_index] - 1) * random1DNormalUnit();
+        populations[population_index][j][k] = m_CurrentPosition[k] + ((double) j / population_sizes[population_index]) * random1DNormalUnit();
     }
     this->costFunctionEvaluation(populations[population_index][j],
                                  j,
