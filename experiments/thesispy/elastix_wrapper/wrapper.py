@@ -196,23 +196,21 @@ def validation(params: Parameters, run_dir: Path):
 if __name__ == "__main__":
     params_main = (
         Parameters.from_base(
-            mesh_size=5,
+            mesh_size=6,
             seed=1,
             metric="AdvancedNormalizedCorrelation",
             use_mask=True,
         )
-        # .regularize(0.01)
-        .multi_resolution(1, p_sched=[5])
-        .gomea(
-            hybrid=True
-        )
-        .stopping_criteria(iterations=[200])
-        .instance(Collection.LEARN, 1)
+        .multi_resolution(3, r_sched=[6, 4, 2], s_sched=[6, 3, 0])
+        .gomea()
+        .debug()
+        .stopping_criteria(iterations=[100, 10, 5])
+        .instance(Collection.LEARN, 2)
     )
     run(
         [params_main],
         Path("output/" + str(params_main)),
         suppress_stdout=False,
-        visualize=True,
+        visualize=False,
         validate=True,
     )

@@ -251,8 +251,8 @@ def fair_comparison_final():
     for seed in range(2):
         seed += 1
         for mesh_size in [6, 9]:
-            for reg_weight in [0.001, 0.01, 0.05]:
-                peval_budget = 80000e6
+            for reg_weight in [0.0001, 0.001, 0.01, 0.05]:
+                peval_budget = 400000e6
                 base = (
                     lambda: Parameters.from_base(
                         mesh_size=mesh_size,
@@ -261,13 +261,13 @@ def fair_comparison_final():
                         use_mask=True,
                     )
                     .regularize(reg_weight)
-                    .multi_resolution(3, r_sched=[6, 4, 2], s_sched=[3, 2, 0])
+                    .multi_resolution(3, r_sched=[6, 4, 2], s_sched=[6, 3, 0])
                 )
 
                 params_gomea = (
                     base()
                     .gomea(LinkageType.CP_MARGINAL)
-                    .stopping_criteria(iterations=[100, 200, 2000], pixel_evals=peval_budget)
+                    .stopping_criteria(iterations=[200, 200, 2000], pixel_evals=peval_budget)
                 )
                 yield params_gomea
 
@@ -276,10 +276,10 @@ def fair_comparison_final():
                     .gomea(
                         LinkageType.CP_MARGINAL,
                         hybrid=True,
-                        redis_method=RedistributionMethod.Random,
+                        redis_method=RedistributionMethod.BestN,
                         it_schedule=IterationSchedule.Logarithmic,
                     )
-                    .stopping_criteria(iterations=[100, 200, 2000], pixel_evals=peval_budget)
+                    .stopping_criteria(iterations=[200, 200, 2000], pixel_evals=peval_budget)
                 )
                 yield params_gomea_ls
 
@@ -290,7 +290,7 @@ def fair_comparison_final():
                         use_constraints=True,
                         compute_folds_constraints=True,
                     )
-                    .stopping_criteria(iterations=[100, 200, 600], pixel_evals=peval_budget)
+                    .stopping_criteria(iterations=[200, 200, 2000], pixel_evals=peval_budget)
                 )
                 yield params_gomea_fc
 
@@ -300,9 +300,9 @@ def fair_comparison_final():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    # queue.clear()
+    queue.clear()
     fn = fair_comparison_final
 
     # Collection + instance niet vergeten!
-    queue.bulk_push(list(yield_experiments(Collection.LEARN, 2, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.LEARN, 2, fn.__name__ + "_bugfix", fn)))
     print(f"Queue size: {queue.size()}")

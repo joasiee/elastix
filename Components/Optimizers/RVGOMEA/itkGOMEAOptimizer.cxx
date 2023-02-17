@@ -536,13 +536,14 @@ GOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
   for (j = 0; j < population_sizes[population_index]; j++)
   {
     individual_NIS[population_index][j] = 0;
+    const double scaleFactor = randomRealUniform01() * 0.25;
     for (k = 0; (unsigned)k < m_NrOfParameters; k++)
     {
       if (m_CurrentResolution > 0 && variances_last_resolution.size() == m_NrOfParameters)
         populations[population_index][j][k] =
-          m_CurrentPosition[k] + (j > 0) * random1DNormalUnit() * sqrt(variances_last_resolution[k]);
+          this->m_CurrentPosition[k] + (j > 0) * random1DNormalUnit() * sqrt(variances_last_resolution[k]);
       else
-        populations[population_index][j][k] = m_CurrentPosition[k] + ((double) j / population_sizes[population_index]) * random1DNormalUnit();
+        populations[population_index][j][k] = this->m_CurrentPosition[k] + (j > 0) * scaleFactor * random1DNormalUnit();
     }
     this->costFunctionEvaluation(populations[population_index][j],
                                  j,
@@ -1954,8 +1955,7 @@ GOMEAOptimizer::getStDevRatioForFOSElement(int population_index, double * parame
   }
   else
   {
-    MatrixXd inverse =
-      decomposed_cholesky_factors_lower_triangle[population_index][FOS_index].triangularView<Eigen::Lower>();
+    MatrixXd inverse = decomposed_cholesky_factors_lower_triangle[population_index][FOS_index];
     lowerTriangularMatrixInverse(inverse, num_indices);
     z = inverse * x_min_mu;
 
