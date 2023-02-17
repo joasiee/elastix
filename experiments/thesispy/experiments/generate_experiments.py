@@ -261,7 +261,7 @@ def fair_comparison_final():
                         use_mask=True,
                     )
                     .regularize(reg_weight)
-                    .multi_resolution(3, r_sched=[5, 4, 3], s_sched=[6, 3, 0])
+                    .multi_resolution(3, r_sched=[5, 4, 3], s_sched=[6, 2, 0], g_sched=[2, 2, 1])
                 )
 
                 params_gomea = (
@@ -304,5 +304,5 @@ if __name__ == "__main__":
     fn = fair_comparison_final
 
     # Collection + instance niet vergeten!
-    queue.bulk_push(list(yield_experiments(Collection.LEARN, 2, fn.__name__ + "_bugfix", fn)))
+    queue.bulk_push(list(yield_experiments(Collection.LEARN, 1, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

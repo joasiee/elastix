@@ -14,7 +14,7 @@
     "UseDirectionCosines": "true",
     "BSplineInterpolationOrder": 1,
     "FinalBSplineInterpolationOrder": 3,
-    "DefaultPixelValue": -1000,
+    "DefaultPixelValue": 0,
     "NewSamplesEveryIteration": "false",
     "UseNormalization": "true",
     "UseMask": "true",

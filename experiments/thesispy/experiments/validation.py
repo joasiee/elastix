@@ -113,29 +113,23 @@ def dice_similarity(moving_deformed, fixed, levels):
 
     similarities = []
     for region_value in np.unique(regions_fixed)[1:]:
-        intersection = np.sum(
-            (regions_moving_deformed == regions_fixed) & (regions_fixed == region_value)
-        )
-        sum_pixels = np.sum(regions_fixed == region_value) + np.sum(
-            regions_moving_deformed == region_value
-        )
-        similarities.append(2.0 * intersection / sum_pixels)
+        similarities.append(dice_similarity_(regions_moving_deformed, regions_fixed, region_value))
 
     logger.info(f"Dice Similarities: {similarities}")
     return similarities
 
 
+def dice_similarity_(region_a, region_b, value):
+    intersection = np.sum((region_a == region_b) & (region_b == value))
+    sum_pixels = np.sum(region_a == value) + np.sum(region_b == value)
+    return 2.0 * intersection / sum_pixels
+
+
 def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
     distances = []
     for i in range(len(surface_points)):
-        max_distance1 = (
-            np.max(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1))
-            * spacing
-        )
-        max_distance2 = (
-            np.max(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1))
-            * spacing
-        )
+        max_distance1 = np.max(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing
+        max_distance2 = np.max(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1)) * spacing
         distances.append(max(max_distance1, max_distance2))
     logger.info(f"Hausdorff Distances: {distances}")
     return distances
@@ -150,23 +144,15 @@ def dvf_rmse(dvf1, dvf2, spacing=1):
 def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
     distances = []
     for i in range(len(surface_points)):
-        mean_distance1 = (
-            np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1))
-            * spacing
-        )
-        mean_distance2 = (
-            np.mean(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1))
-            * spacing
-        )
+        mean_distance1 = np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing
+        mean_distance2 = np.mean(distance.cdist(surface_points_deformed[i], surface_points[i]).min(axis=1)) * spacing
         distances.append((mean_distance1 + mean_distance2) / 2)
     logger.info(f"Mean Surface Distances: {distances}")
     return distances
 
 
 def tre(result: RunResult):
-    tre = np.linalg.norm(
-        (result.deformed_lms - result.instance.lms_moving) * result.instance.spacing, axis=1
-    ).mean()
+    tre = np.linalg.norm((result.deformed_lms - result.instance.lms_moving) * result.instance.spacing, axis=1).mean()
     logger.info(f"TRE: {tre}")
     return tre
 
@@ -182,9 +168,7 @@ def tre_hist(lms1, lms2, spacing=1, ax=None, bins=40):
 
 
 def tre_hist_wandb(result: RunResult, bins=40):
-    tres = np.linalg.norm(
-        (result.deformed_lms - result.instance.lms_moving) * result.instance.spacing, axis=1
-    )
+    tres = np.linalg.norm((result.deformed_lms - result.instance.lms_moving) * result.instance.spacing, axis=1)
     return wandb.Histogram(tres, num_bins=bins)
 
 
@@ -236,9 +220,11 @@ def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
     max_indices = np.where(mask_slice == 1)
     margin = 5
     min_x, max_x = np.min(max_indices[1]) - margin, np.max(max_indices[1]) + margin
-    min_x *= spacing[indices_xy[0]]; max_x *= spacing[indices_xy[0]]
+    min_x *= spacing[indices_xy[0]]
+    max_x *= spacing[indices_xy[0]]
     min_y, max_y = np.min(max_indices[0]) - margin, np.max(max_indices[0]) + margin
-    min_y *= spacing[indices_xy[1]]; max_y *= spacing[indices_xy[1]]
+    min_y *= spacing[indices_xy[1]]
+    max_y *= spacing[indices_xy[1]]
 
     fixed_slice = fixed[slice_tuple]
     fixed_slice[mask_slice == 0] = np.nan
@@ -370,9 +356,7 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
     return ax.get_figure()
 
 
-def plot_cpoints(
-    run_result: RunResult, slice_index=None, slice_pos=1, ax=None, colors=None, alpha=0.3
-):
+def plot_cpoints(run_result: RunResult, slice_index=None, slice_pos=1, ax=None, colors=None, alpha=0.3):
     points = run_result.control_points
     points_slice = points
 
@@ -497,7 +481,7 @@ def plot_color_diff(result: RunResult, slice_tuple, ax=None):
         ax.invert_yaxis()
     if slice_tuple[1] != slice(None, None, None) or slice_tuple[2] != slice(None, None, None):
         ax.set_ylim(80, 300)
-    
+
     ax.set_xticks([])
     ax.set_yticks([])
     ax.patch.set_linewidth(2)
@@ -657,12 +641,8 @@ def validation_metrics(result: RunResult):
         mask = np.linalg.norm(result.instance.dvf, axis=-1) > 0
         dvf_copy[~mask] = np.array([0 for _ in range(dvf_copy.shape[-1])])
         metrics.append({"validation/dvf_rmse": dvf_rmse(dvf_copy, result.instance.dvf)})
-        hd_dists = hausdorff_distance(
-            result.instance.surface_points, result.deformed_surface_points
-        )
-        md_dists = mean_surface_distance(
-            result.instance.surface_points, result.deformed_surface_points
-        )
+        hd_dists = hausdorff_distance(result.instance.surface_points, result.deformed_surface_points)
+        md_dists = mean_surface_distance(result.instance.surface_points, result.deformed_surface_points)
         metrics.append({"validation/hausdorff_cube": hd_dists[0]})
         metrics.append({"validation/hausdorff_sphere": hd_dists[1]})
         metrics.append({"validation/mean_surface_cube": md_dists[0]})
@@ -674,12 +654,14 @@ def validation_metrics(result: RunResult):
         metrics.append({"validation/SDLogJ": sdlogj})
         logger.info(f"SDLogJ: {sdlogj:.4f}")
 
+        dsc = dice_similarity_(result.instance.mask, result.deformed_mask, 1.0)
+        metrics.append({"validation/dice_similarity": dsc})
+        logger.info(f"Dice Similarity: {dsc:.4f}")
+
     return metrics
 
 
-def validation_visualization(
-    result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)
-):
+def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
     figs = []  # aggregate all figures
     instance = result.instance
     collection = instance.collection
@@ -742,12 +724,10 @@ def validation_visualization(
 
 def get_vmin_vmax(result1: RunResult, result2: RunResult):
     result1_mag = np.sqrt(
-        result1.dvf[:, result1.dvf.shape[1] // 2, :, 0] ** 2
-        + result1.dvf[:, result1.dvf.shape[1] // 2, :, 2] ** 2
+        result1.dvf[:, result1.dvf.shape[1] // 2, :, 0] ** 2 + result1.dvf[:, result1.dvf.shape[1] // 2, :, 2] ** 2
     )
     result2_mag = np.sqrt(
-        result2.dvf[:, result2.dvf.shape[1] // 2, :, 0] ** 2
-        + result2.dvf[:, result2.dvf.shape[1] // 2, :, 2] ** 2
+        result2.dvf[:, result2.dvf.shape[1] // 2, :, 0] ** 2 + result2.dvf[:, result2.dvf.shape[1] // 2, :, 2] ** 2
     )
     vmin_dvf = np.min([np.min(result1_mag), np.min(result2_mag)])
     vmax_dvf = np.max([np.max(result1_mag), np.max(result2_mag)])

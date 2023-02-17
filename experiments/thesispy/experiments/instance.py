@@ -23,12 +23,14 @@ class Instance:
     surface_points_paths: List[Path] = None
     dvf: np.ndarray = None
     mask: np.ndarray = None
+    moving_mask_path: Path = None
 
 
 @dataclass
 class RunResult:
     instance: Instance
     deformed: np.ndarray = None
+    deformed_mask: np.ndarray = None
     deformed_lms: np.ndarray = None
     deformed_surface_points: List[np.ndarray] = None
     dvf: np.ndarray = None
@@ -46,12 +48,8 @@ def get_np_array(img_path: Path):
 
 def load_imgs(collection: Collection, instance: int):
     config = INSTANCES_CONFIG[collection.value]
-    path_moving = (
-        INSTANCES_SRC / config["folder"] / "scans" / f"{instance:02}_Moving.{config['extension']}"
-    )
-    path_fixed = (
-        INSTANCES_SRC / config["folder"] / "scans" / f"{instance:02}_Fixed.{config['extension']}"
-    )
+    path_moving = INSTANCES_SRC / config["folder"] / "scans" / f"{instance:02}_Moving.{config['extension']}"
+    path_fixed = INSTANCES_SRC / config["folder"] / "scans" / f"{instance:02}_Fixed.{config['extension']}"
     moving = get_np_array(path_moving)
     fixed = get_np_array(path_fixed)
     img = sitk.ReadImage(str(path_moving.resolve()))
@@ -66,12 +64,8 @@ def get_instance(collection: Collection, instance_id: int):
     instance = Instance(collection, instance_id, *load_imgs(collection, instance_id))
     config = INSTANCES_CONFIG[collection.value]
     if config["landmarks"]:
-        path_lms_moving = (
-            INSTANCES_SRC / config["folder"] / "landmarks" / f"{instance_id:02}_Moving.txt"
-        )
-        path_lms_fixed = (
-            INSTANCES_SRC / config["folder"] / "landmarks" / f"{instance_id:02}_Fixed.txt"
-        )
+        path_lms_moving = INSTANCES_SRC / config["folder"] / "landmarks" / f"{instance_id:02}_Moving.txt"
+        path_lms_fixed = INSTANCES_SRC / config["folder"] / "landmarks" / f"{instance_id:02}_Fixed.txt"
         instance.lms_moving = np.loadtxt(path_lms_moving, skiprows=2)
         instance.lms_fixed = np.loadtxt(path_lms_fixed, skiprows=2)
         instance.lms_fixed_path = path_lms_fixed
@@ -88,6 +82,9 @@ def get_instance(collection: Collection, instance_id: int):
         instance.dvf = np.load(path_dvf)
     if config["masks"]:
         path_mask = INSTANCES_SRC / config["folder"] / "masks" / f"{instance_id:02}_Fixed.{config['extension']}"
+        instance.moving_mask_path = (
+            INSTANCES_SRC / config["folder"] / "masks" / f"{instance_id:02}_Moving.{config['extension']}"
+        )
         instance.mask = get_np_array(path_mask)
     return instance
 

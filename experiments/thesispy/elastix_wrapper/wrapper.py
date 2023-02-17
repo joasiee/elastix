@@ -85,9 +85,7 @@ def run(
     return run_result
 
 
-def execute_elastix(
-    param_files: List[Path], out_dir: Path, params: Parameters, suppress_stdout: bool = True
-):
+def execute_elastix(param_files: List[Path], out_dir: Path, params: Parameters, suppress_stdout: bool = True):
     param_files_args = [["-p", str(param_file)] for param_file in param_files]
     param_files_args = [item for sublist in param_files_args for item in sublist]
 
@@ -132,7 +130,50 @@ def generate_transformed_points(
     ]
     if moving_img_path is not None:
         args += ["-in", str(moving_img_path.resolve())]
-    subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    result = subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    return result.returncode
+
+
+def transformix_image(params_file: Path, out_dir: Path, moving_img_path: Path, interpolator: str = None):
+    curr_interp = read_key_from_transform_params(params_file, "ResampleInterpolator")
+    if interpolator is not None:
+        change_key_in_transform_params(params_file, "ResampleInterpolator", interpolator)
+
+    args = [
+        TRANSFORMIX,
+        "-tp",
+        str(params_file),
+        "-out",
+        str(out_dir),
+        "-threads",
+        os.environ["OMP_NUM_THREADS"],
+        "-in",
+        str(moving_img_path.resolve()),
+    ]
+    result = subprocess.run(args, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    change_key_in_transform_params(params_file, "ResampleInterpolator", curr_interp)
+
+    return result.returncode
+
+
+def read_key_from_transform_params(transform_params: Path, key: str):
+    with open(transform_params, "r") as f:
+        lines = f.readlines()
+    for line in lines:
+        if line.startswith("(" + key):
+            return line.split()[1].strip(")")
+    return None
+
+
+def change_key_in_transform_params(transform_params: Path, key: str, value: str):
+    with open(transform_params, "r") as f:
+        lines = f.readlines()
+    for i, line in enumerate(lines):
+        if line.startswith("(" + key):
+            lines[i] = f"({key} {value})\n"
+            break
+    with open(transform_params, "w") as f:
+        f.writelines(lines)
 
 
 def execute_visualize(out_dir: Path):
@@ -144,13 +185,14 @@ def execute_visualize(out_dir: Path):
             break
 
     if visualizer:
-        subprocess.run(
-            [visualizer, str((out_dir / "result.0.mhd").resolve())], cwd=str(out_dir.resolve())
-        )
+        subprocess.run([visualizer, str((out_dir / "result.0.mhd").resolve())], cwd=str(out_dir.resolve()))
 
 
 def get_run_result(collection: Collection, instance_id: int, transform_params: Path):
     out_dir = transform_params.parent.resolve()
+    out_dir_transform = out_dir / "transform"
+    out_dir_transform.mkdir(parents=True, exist_ok=True)
+
     instance = get_instance(collection, instance_id)
     run_result = RunResult(instance)
     if instance.lms_fixed is not None:
@@ -161,11 +203,18 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
         run_result.deformed_surface_points = []
         for surface_points_path in instance.surface_points_paths:
             generate_transformed_points(transform_params, out_dir, surface_points_path)
-            run_result.deformed_surface_points.append(
-                read_deformed_lms(out_dir / "outputpoints.txt")
-            )
+            run_result.deformed_surface_points.append(read_deformed_lms(out_dir / "outputpoints.txt"))
 
     generate_transformed_points(transform_params, out_dir, moving_img_path=instance.moving_path)
+
+    if instance.moving_mask_path is not None:
+        transformix_image(
+            transform_params, out_dir_transform, instance.moving_mask_path, "FinalNearestNeighborInterpolator"
+        )
+        run_result.deformed_mask = get_np_array(out_dir_transform / "result.mhd")
+        if collection == Collection.LEARN:
+            run_result.deformed_mask[run_result.instance.fixed == -1024] = 0
+
     run_result.dvf = get_np_array(out_dir / "deformationField.mhd")
     run_result.deformed = get_np_array(out_dir / "result.mhd")
     run_result.control_points = read_controlpoints(out_dir / "controlpoints.dat")
@@ -174,9 +223,7 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
     run_result.grid_origin = origin
     final_evals = pd.read_csv(out_dir / "final_evals.txt", sep=",", index_col=0, header=None)
     nr_voxels = (
-        np.sum(run_result.instance.mask)
-        if run_result.instance.mask is not None
-        else np.prod(run_result.deformed.shape)
+        np.sum(run_result.instance.mask) if run_result.instance.mask is not None else np.prod(run_result.deformed.shape)
     )
     run_result.bending_energy = final_evals.loc["bending_energy"].values[0] * nr_voxels
 
@@ -186,9 +233,7 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
 def validation(params: Parameters, run_dir: Path):
     out_dir = run_dir.joinpath(Path("out"))
     transform_params = out_dir / "TransformParameters.0.txt"
-    run_result = get_run_result(
-        Collection(params["Collection"]), int(params["Instance"]), transform_params
-    )
+    run_result = get_run_result(Collection(params["Collection"]), int(params["Instance"]), transform_params)
 
     return calc_validation(run_result), run_result
 
@@ -196,16 +241,16 @@ def validation(params: Parameters, run_dir: Path):
 if __name__ == "__main__":
     params_main = (
         Parameters.from_base(
-            mesh_size=6,
+            mesh_size=9,
             seed=1,
             metric="AdvancedNormalizedCorrelation",
             use_mask=True,
         )
-        .multi_resolution(3, r_sched=[6, 4, 2], s_sched=[6, 3, 0])
-        .gomea()
-        .debug()
-        .stopping_criteria(iterations=[100, 10, 5])
-        .instance(Collection.LEARN, 2)
+        .asgd()
+        .regularize(0.01)
+        .multi_resolution(3, r_sched=[5, 4, 3], s_sched=[6, 2, 0], g_sched=[2, 2, 1])
+        .stopping_criteria(iterations=[200, 400, 1000])
+        .instance(Collection.LEARN, 1)
     )
     run(
         [params_main],

@@ -30,8 +30,6 @@
 (OptimizerName "RV-GOMEA")
 (FosElementSize -6)
 (PartialEvaluations "true")
-(UseConstraints "true")
-(ComputeControlPointFolds "true")
 (StaticLinkageType 0)
 (MaximumNumberOfIterations 1)
 (MaxTimeSeconds 0)
