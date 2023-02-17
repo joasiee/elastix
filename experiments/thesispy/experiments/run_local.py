@@ -11,8 +11,8 @@ params = (
     Parameters.from_base(mesh_size=6, metric="AdvancedNormalizedCorrelation", seed=1, use_mask=True)
     .asgd()
     .regularize(0.01)
-    .multi_resolution(3, p_sched=[6, 4, 2])
-    .stopping_criteria(200)
+    .multi_resolution(3, r_sched=[6, 4, 2])
+    .stopping_criteria(iterations=200)
     .instance(Collection.LEARN, 1)
 )
 

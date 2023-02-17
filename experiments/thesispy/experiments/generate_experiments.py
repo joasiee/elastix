@@ -251,8 +251,8 @@ def fair_comparison_final():
     for seed in range(2):
         seed += 1
         for mesh_size in [6, 9]:
-            for reg_weight in [0.0001, 0.001, 0.01, 0.05]:
-                peval_budget = 400000e6
+            for reg_weight in [0.0001, 0.001, 0.01, 0.1]:
+                peval_budget = 300000e6
                 base = (
                     lambda: Parameters.from_base(
                         mesh_size=mesh_size,
@@ -261,7 +261,7 @@ def fair_comparison_final():
                         use_mask=True,
                     )
                     .regularize(reg_weight)
-                    .multi_resolution(3, r_sched=[6, 4, 2], s_sched=[6, 3, 0])
+                    .multi_resolution(3, r_sched=[5, 4, 3], s_sched=[6, 3, 0])
                 )
 
                 params_gomea = (
