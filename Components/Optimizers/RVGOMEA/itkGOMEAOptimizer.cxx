@@ -1978,7 +1978,7 @@ GOMEAOptimizer::UpdatePosition()
   this->getBestInPopulation(0, &best_solution);
 
   this->SetCurrentPosition(populations[0][best_solution]);
-  this->costFunctionEvaluation(this->GetCurrentPosition(), 0, this->m_Value, this->m_ConstraintValue);
+  this->costFunctionEvaluation(this->GetCurrentPosition(), best_solution, this->m_Value, this->m_ConstraintValue);
 
   m_CurrentIteration++;
   this->InvokeEvent(IterationEvent());
@@ -2065,11 +2065,11 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
         this->makePopulation(population_index);
 
-        number_of_generations[population_index]++;
-        this->UpdatePosition();
-
         if (this->m_SubSampling || number_of_generations[population_index] % NumberOfGenerationsPerReevaluation == 0)
           this->evaluatePopulation(population_index);
+
+        number_of_generations[population_index]++;
+        this->UpdatePosition();
 
         PROFILE_END_SESSION();
 
