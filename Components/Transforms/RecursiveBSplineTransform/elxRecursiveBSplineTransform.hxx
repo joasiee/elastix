@@ -165,6 +165,16 @@ RecursiveBSplineTransform<TElastix>::BeforeEachResolution()
 
 } // end BeforeEachResolution()
 
+template <class TElastix>
+void
+RecursiveBSplineTransform<TElastix>::AfterEachResolution()
+{
+  unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
+  std::ostringstream filepath("");
+  filepath << this->m_Configuration->GetCommandLineArgument("-out") << "controlpoints.R" << level << ".dat";
+  this->WriteControlPoints(filepath.str());
+}
+
 /**
  * ******************* AfterEachIteration ***********************
  */

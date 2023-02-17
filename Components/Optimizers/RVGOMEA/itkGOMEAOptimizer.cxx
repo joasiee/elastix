@@ -95,6 +95,7 @@ void
 GOMEAOptimizer::StopOptimization()
 {
   itkDebugMacro("StopOptimization");
+  this->SetTransformParameters(this->GetCurrentPosition());
   this->saveVariancesForNextResolution();
   InvokeEvent(EndEvent());
 }

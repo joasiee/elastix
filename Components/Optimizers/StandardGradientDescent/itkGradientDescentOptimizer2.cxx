@@ -174,6 +174,7 @@ GradientDescentOptimizer2 ::StopOptimization()
   itkDebugMacro("StopOptimization");
 
   this->m_Stop = true;
+  this->SetTransformParameters(this->GetScaledCurrentPosition());
   this->InvokeEvent(EndEvent());
 } // end StopOptimization()
 

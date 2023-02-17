@@ -222,6 +222,9 @@ public:
   BeforeEachResolution() override;
 
   void
+  AfterEachResolution() override;
+
+  void
   AfterEachIteration() override;
 
   /** Method to increase the density of the B-spline grid.
