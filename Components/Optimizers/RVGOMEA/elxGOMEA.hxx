@@ -165,7 +165,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetTauASGD(tauAsgd);
 
   /** Set DistributionMultiplierDecrease*/
-  double distributionMultiplierDecrease = 0.95;
+  double distributionMultiplierDecrease = 0.9;
   this->m_Configuration->ReadParameter(
     distributionMultiplierDecrease, "DistributionMultiplierDecrease", this->GetComponentLabel(), level, 0);
   this->SetDistributionMultiplierDecrease(distributionMultiplierDecrease);
