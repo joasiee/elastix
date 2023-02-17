@@ -165,7 +165,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetTauASGD(tauAsgd);
 
   /** Set DistributionMultiplierDecrease*/
-  double distributionMultiplierDecrease = 0.9;
+  double distributionMultiplierDecrease = 0.95;
   this->m_Configuration->ReadParameter(
     distributionMultiplierDecrease, "DistributionMultiplierDecrease", this->GetComponentLabel(), level, 0);
   this->SetDistributionMultiplierDecrease(distributionMultiplierDecrease);
@@ -315,6 +315,23 @@ GOMEA<TElastix>::RepairFoldsInTransformParameters(ParametersType & parameters)
 {
   AdvancedMetricType * metric = dynamic_cast<AdvancedMetricType *>(this->GetCostFunction());
   metric->RepairFoldsInBsplineTransform(parameters);
+}
+
+template <class TElastix>
+void
+GOMEA<TElastix>::ZeroParametersOutsideMask(ParametersType & parameters)
+{
+  AdvancedMetricType * metric = dynamic_cast<AdvancedMetricType *>(this->GetCostFunction());
+  if (metric->GetImageSampler()->GetUseMask())
+  {
+    const std::vector<bool> & mask = metric->GetParametersOutsideOfMask();
+
+    for (unsigned int i = 0; i < mask.size(); ++i)
+    {
+      if (mask[i])
+        parameters[i] = 0.0;
+    }
+  }
 }
 
 template <class TElastix>

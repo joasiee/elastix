@@ -233,6 +233,10 @@ protected:
   RepairFoldsInTransformParameters(ParametersType & params)
   {}
 
+  virtual void
+  ZeroParametersOutsideMask(ParametersType & params)
+  {}
+
   unsigned long     m_NumberOfEvaluations{ 0L };
   unsigned long     m_CurrentIteration{ 0L };
   StopConditionType m_StopCondition{ Unknown };
@@ -403,7 +407,7 @@ private:
   unsigned long m_MaxNumberOfPixelEvaluations{ 0UL };
 
   double m_Tau{ 0.35 };
-  double m_DistributionMultiplierDecrease{ 0.9 };
+  double m_DistributionMultiplierDecrease{ 0.95 };
   double m_StDevThreshold{ 1.0 };
   double m_FitnessVarianceTolerance{ 0.0 };
   double m_TauASGD{ 0.1 };

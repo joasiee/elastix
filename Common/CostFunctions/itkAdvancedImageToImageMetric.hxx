@@ -1343,6 +1343,11 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitFOSMapping(int ** set
       }
     }
   }
+  if (this->GetImageSampler()->GetUseMask())
+  {
+    m_ParametersOutsideOfMask.resize(bsplinePtr->GetNumberOfParameters());
+    this->ComputeParametersOutsideOfMask();
+  }
 }
 
 template <class TFixedImage, class TMovingImage>

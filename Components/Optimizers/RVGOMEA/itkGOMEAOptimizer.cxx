@@ -1613,7 +1613,7 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
 {
   PROFILE_FUNCTION();
   int      j, m, im, *indices, num_indices, *touched_indices, num_touched_indices;
-  double * individual_backup, obj_val, cons_val{ 0.0 }, delta_AMS, shrink_factor;
+  double * individual_backup, obj_val, cons_val{ 0.0 }, delta_AMS;
   short    improvement, out_of_range;
   VectorXd result;
 
@@ -1643,9 +1643,9 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
     for (m = 0; m < num_indices; m++)
     {
       im = indices[m];
-      result[m] = populations[population_index][individual_index][im] +
-                  shrink_factor * delta_AMS * distribution_multipliers[population_index][FOS_index] *
-                    mean_shift_vector[population_index][im];
+      result[m] =
+        populations[population_index][individual_index][im] +
+        delta_AMS * distribution_multipliers[population_index][FOS_index] * mean_shift_vector[population_index][im];
     }
     for (m = 0; m < num_indices; m++)
     {
@@ -1680,19 +1680,18 @@ GOMEAOptimizer::applyAMS(int population_index, int individual_index)
 {
   PROFILE_FUNCTION();
   short          out_of_range, improvement;
-  double         shrink_factor, delta_AMS, obj_val, cons_val{ 0.0 };
+  double         delta_AMS, obj_val, cons_val{ 0.0 };
   ParametersType solution_AMS;
   int            m, k;
 
   delta_AMS = 2;
-  shrink_factor = 2;
   improvement = 0;
   solution_AMS = ParametersType(m_NrOfParameters);
   for (m = 0; (unsigned)m < m_NrOfParameters; m++)
   {
-    solution_AMS[m] = populations[population_index][individual_index][m] +
-                      shrink_factor * delta_AMS *
-                        mean_shift_vector[population_index][m]; //*distribution_multipliers[population_index][FOS_index]
+    solution_AMS[m] =
+      populations[population_index][individual_index][m] +
+      delta_AMS * mean_shift_vector[population_index][m]; //*distribution_multipliers[population_index][FOS_index]
   }
 
   this->costFunctionEvaluation(solution_AMS, individual_index, obj_val, cons_val);
@@ -1894,12 +1893,13 @@ GOMEAOptimizer::generationalImprovementForOnePopulationForFOSElement(int      po
   number_of_improvements = 0;
   for (i = 0; i < population_sizes[population_index]; i++)
   {
-    if (betterFitness(objective_values[population_index][i],
-                      constraint_values[population_index][i],
-                      objective_values[population_index][index_best_population],
-                      constraint_values[population_index][index_best_population],
-                      m_UseConstraints))
-      index_best_population = i;
+    // Doesnt do anything?
+    // if (betterFitness(objective_values[population_index][i],
+    //                   constraint_values[population_index][i],
+    //                   objective_values[population_index][index_best_population],
+    //                   constraint_values[population_index][index_best_population],
+    //                   m_UseConstraints))
+    //   index_best_population = i;
 
     if (betterFitness(objective_values[population_index][i],
                       constraint_values[population_index][i],
@@ -1976,6 +1976,7 @@ GOMEAOptimizer::UpdatePosition()
   int best_solution;
   this->getBestInPopulation(0, &best_solution);
 
+  // this->ZeroParametersOutsideMask(populations[0][best_solution]);
   this->SetCurrentPosition(populations[0][best_solution]);
   this->costFunctionEvaluation(this->GetCurrentPosition(), best_solution, this->m_Value, this->m_ConstraintValue);
 

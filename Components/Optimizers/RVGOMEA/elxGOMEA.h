@@ -92,6 +92,9 @@ protected:
   void
   RepairFoldsInTransformParameters(ParametersType & parameters) override;
 
+  void
+  ZeroParametersOutsideMask(ParametersType & parameters) override;
+
 private:
   elxOverrideGetSelfMacro;
 
