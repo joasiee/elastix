@@ -23,6 +23,7 @@
 #include "itkAdvancedTransform.h"
 #include "itkImage.h"
 #include "itkImageRegion.h"
+#include "xoutmain.h"
 
 namespace itk
 {

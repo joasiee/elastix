@@ -28,6 +28,7 @@
 namespace xl = xoutlibrary;
 
 #define xout get_xout()
+#define elxout ::xl::xout["standard"]
 
 /** Typedefs for the most common use of xout */
 namespace xoutlibrary

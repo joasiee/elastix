@@ -514,6 +514,7 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::RepairFolds()
     bool foldsInGrid = true;
     int  maxNrPasses = 10;
     int  nrPasses = 0;
+    elxout << "Number of folds in grid: " << this->ComputeNumberOfFolds() << std::endl;
     while (foldsInGrid && nrPasses < maxNrPasses)
     {
       foldsInGrid = false;
@@ -521,8 +522,11 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::RepairFolds()
       {
         foldsInGrid |= this->RepairFold(i);
       }
-      nrPasses++;
+      nrPasses += foldsInGrid;
     }
+    elxout << "Number of passes to repair folds: " << nrPasses << std::endl;
+    if (nrPasses > 0)
+      elxout << "Number of folds: " << this->ComputeNumberOfFolds() << std::endl;
   }
 }
 
@@ -588,14 +592,14 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::RepairFold(int
         diff[dim] = diff[dim] * indexDiff[dim] * direction[dim][dim];
         if (diff[dim] >= 0 && indexDiff[dim] != 0)
         {
-          centerPoint[dim] = point[dim] - direction[dim][dim] * margin;
+          centerPoint[dim] = point[dim] - direction[dim][dim] * indexDiff[dim] * margin;
           folded = true;
         }
       }
-      this->SetPositionOfControlPoint(index, centerPoint);
     }
     ++wrappedImageIterator;
   }
+  this->SetPositionOfControlPoint(index, centerPoint);
   return folded;
 }
 

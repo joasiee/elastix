@@ -37,28 +37,28 @@ void
 GOMEAOptimizer::PrintSettings() const
 {
   Indent indent = *itk::Indent::New();
-  std::cout << indent << "Settings: \n";
-  std::cout << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n";
-  std::cout << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << "\n";
-  std::cout << indent.GetNextIndent() << "Tau: " << m_Tau << "\n";
-  std::cout << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n";
-  std::cout << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n";
-  std::cout << indent.GetNextIndent() << "Partial Evaluations: " << m_PartialEvaluations << "\n";
-  std::cout << indent.GetNextIndent() << "Constraints: " << m_UseConstraints << "\n";
-  std::cout << indent.GetNextIndent() << "Max. no. of iterations: " << m_MaximumNumberOfIterations << "\n";
+  elxout << indent << "Settings: \n";
+  elxout << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n";
+  elxout << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << "\n";
+  elxout << indent.GetNextIndent() << "Tau: " << m_Tau << "\n";
+  elxout << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n";
+  elxout << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n";
+  elxout << indent.GetNextIndent() << "Partial Evaluations: " << m_PartialEvaluations << "\n";
+  elxout << indent.GetNextIndent() << "Constraints: " << m_UseConstraints << "\n";
+  elxout << indent.GetNextIndent() << "Max. no. of iterations: " << m_MaximumNumberOfIterations << "\n";
 
   if (m_MaxNumberOfEvaluations > 0 || m_MaxNumberOfPixelEvaluations > 0)
   {
-    std::cout << indent.GetNextIndent() << "Max. no. of evaluations: " << m_MaxNumberOfEvaluations << "\n";
-    std::cout << indent.GetNextIndent() << "Max. no. of pixel evaluations: " << m_MaxNumberOfPixelEvaluations << "\n";
+    elxout << indent.GetNextIndent() << "Max. no. of evaluations: " << m_MaxNumberOfEvaluations << "\n";
+    elxout << indent.GetNextIndent() << "Max. no. of pixel evaluations: " << m_MaxNumberOfPixelEvaluations << "\n";
   }
 
   if (m_UseASGD)
   {
-    std::cout << indent.GetNextIndent() << "Tau-LS: " << m_TauASGD << "\n";
-    std::cout << indent.GetNextIndent() << "LS Iterations: " << m_NumberOfASGDIterations << "\n";
-    std::cout << indent.GetNextIndent() << "RedistributionMethod: " << m_RedistributionMethod << "\n";
-    std::cout << indent.GetNextIndent() << "IterationSchedule: " << m_ASGDIterationSchedule << "\n";
+    elxout << indent.GetNextIndent() << "Tau-LS: " << m_TauASGD << "\n";
+    elxout << indent.GetNextIndent() << "LS Iterations: " << m_NumberOfASGDIterations << "\n";
+    elxout << indent.GetNextIndent() << "RedistributionMethod: " << m_RedistributionMethod << "\n";
+    elxout << indent.GetNextIndent() << "IterationSchedule: " << m_ASGDIterationSchedule << "\n";
   }
 }
 
@@ -507,8 +507,7 @@ GOMEAOptimizer::initializeFOS(int population_index)
   {
     if (!b)
     {
-      std::cout << "ERROR: at least one parameter index was not found in FOS" << std::endl;
-      exit(1);
+      itkExceptionMacro("ERROR: at least one parameter index was not found in FOS");
     }
   }
 }

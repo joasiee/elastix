@@ -39,6 +39,7 @@
 #include "itkArray.h"
 #include "itkArray2D.h"
 #include "itkMatrix.h"
+#include "xoutmain.h"
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
