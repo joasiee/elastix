@@ -26,7 +26,7 @@
     "SYNTHETIC": {
         "folder": "synthetic",
         "extension": "mhd",
-        "masks": true,
+        "masks": false,
         "landmarks": true,
         "surface_points": true,
         "dvf": true,
