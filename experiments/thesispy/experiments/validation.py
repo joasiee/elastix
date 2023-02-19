@@ -643,10 +643,13 @@ def validation_metrics(result: RunResult):
         metrics.append({"validation/dvf_rmse": dvf_rmse(dvf_copy, result.instance.dvf)})
         hd_dists = hausdorff_distance(result.instance.surface_points, result.deformed_surface_points)
         md_dists = mean_surface_distance(result.instance.surface_points, result.deformed_surface_points)
+        dsc_sims = dice_similarity(result.deformed, result.instance.fixed, 3)
         metrics.append({"validation/hausdorff_cube": hd_dists[0]})
         metrics.append({"validation/hausdorff_sphere": hd_dists[1]})
         metrics.append({"validation/mean_surface_cube": md_dists[0]})
         metrics.append({"validation/mean_surface_sphere": md_dists[1]})
+        metrics.append({"validation/dice_similarity_cube": dsc_sims[0]})
+        metrics.append({"validation/dice_similarity_sphere": dsc_sims[1]})
 
     if result.instance.collection == Collection.LEARN:
         jac_det = jacobian_determinant(result.dvf, plot=False)[1]
