@@ -250,7 +250,7 @@ def asgd_sweep():
 def fair_comparison_final():
     for seed in range(2):
         seed += 1
-        for mesh_size in [6, 9]:
+        for mesh_size in [5]:
             for reg_weight in [0.0001, 0.001, 0.01, 0.1]:
                 peval_budget = 300000e6
                 base = (
@@ -261,13 +261,13 @@ def fair_comparison_final():
                         use_mask=True,
                     )
                     .regularize(reg_weight)
-                    .multi_resolution(3, r_sched=[5, 4, 3], s_sched=[6, 2, 0], g_sched=[2, 2, 1])
+                    .multi_resolution(3, r_sched=[4, 3, 2], s_sched=[6, 2, 0], g_sched=[2, 2, 1])
                 )
 
                 params_gomea = (
                     base()
                     .gomea(LinkageType.CP_MARGINAL)
-                    .stopping_criteria(iterations=[200, 200, 2000], pixel_evals=peval_budget)
+                    .stopping_criteria(iterations=[100, 100, 250], pixel_evals=peval_budget)
                 )
                 yield params_gomea
 
@@ -279,7 +279,7 @@ def fair_comparison_final():
                         redis_method=RedistributionMethod.BestN,
                         it_schedule=IterationSchedule.Logarithmic,
                     )
-                    .stopping_criteria(iterations=[200, 200, 2000], pixel_evals=peval_budget)
+                    .stopping_criteria(iterations=[100, 100, 250], pixel_evals=peval_budget)
                 )
                 yield params_gomea_ls
 
@@ -290,7 +290,7 @@ def fair_comparison_final():
                         use_constraints=True,
                         compute_folds_constraints=True,
                     )
-                    .stopping_criteria(iterations=[200, 200, 2000], pixel_evals=peval_budget)
+                    .stopping_criteria(iterations=[100, 100, 250], pixel_evals=peval_budget)
                 )
                 yield params_gomea_fc
 
@@ -300,9 +300,9 @@ def fair_comparison_final():
 
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    queue.clear()
+    # queue.clear()
     fn = fair_comparison_final
 
     # Collection + instance niet vergeten!
-    queue.bulk_push(list(yield_experiments(Collection.LEARN, 1, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.LEARN, 2, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

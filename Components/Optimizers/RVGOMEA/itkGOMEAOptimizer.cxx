@@ -95,6 +95,11 @@ void
 GOMEAOptimizer::StopOptimization()
 {
   itkDebugMacro("StopOptimization");
+
+  // ParametersType currentPosition = this->GetCurrentPosition();
+  // this->ZeroParametersOutsideMask(currentPosition);
+  // this->SetCurrentPosition(currentPosition);
+
   this->SetTransformParameters(this->GetCurrentPosition());
   this->saveVariancesForNextResolution();
   InvokeEvent(EndEvent());
@@ -1977,7 +1982,6 @@ GOMEAOptimizer::UpdatePosition()
   int best_solution;
   this->getBestInPopulation(0, &best_solution);
 
-  // this->ZeroParametersOutsideMask(populations[0][best_solution]);
   this->SetCurrentPosition(populations[0][best_solution]);
   this->costFunctionEvaluation(this->GetCurrentPosition(), best_solution, this->m_Value, this->m_ConstraintValue);
 

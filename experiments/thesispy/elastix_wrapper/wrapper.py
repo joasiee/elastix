@@ -241,16 +241,15 @@ def validation(params: Parameters, run_dir: Path):
 if __name__ == "__main__":
     params_main = (
         Parameters.from_base(
-            mesh_size=9,
+            mesh_size=5,
             seed=1,
             metric="AdvancedNormalizedCorrelation",
             use_mask=True,
         )
         .asgd()
-        .regularize(0.01)
-        .multi_resolution(3, r_sched=[5, 4, 3], s_sched=[6, 2, 0], g_sched=[2, 2, 1])
-        .stopping_criteria(iterations=[200, 400, 1000])
-        .instance(Collection.LEARN, 1)
+        # .multi_resolution(1, r_sched=[2], s_sched=[0], g_sched=[1])
+        .stopping_criteria(iterations=[0])
+        .instance(Collection.SYNTHETIC, 1)
     )
     run(
         [params_main],
