@@ -49,11 +49,6 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(const Para
 {
   MeasureType measure = NumericTraits<MeasureType>::Zero;
 
-  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
-  {
-    return measure;
-  }
-
   this->BeforeThreadedGetValueAndDerivative(parameters);
 
   /** Create and initialize some variables. */
@@ -124,11 +119,6 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValuePartial(con
                                                                              int                    fosIndex) const
 {
   IntermediateResults result{ 2 };
-
-  if (!this->m_AdvancedTransform->GetHasNonZeroSpatialHessian())
-  {
-    return result;
-  }
 
   this->BeforeThreadedGetValueAndDerivative(parameters);
   const std::vector<int> & fosPoints = this->m_BSplinePointsRegions[fosIndex + 1];
@@ -214,7 +204,6 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValue(Intermedia
 {
   return evaluation[1] > 0.0 ? evaluation[0] / evaluation[1] : NumericTraits<MeasureType>::max();
 }
-
 
 /**
  * ******************* GetDerivative *******************
