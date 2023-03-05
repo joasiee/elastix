@@ -492,7 +492,7 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=4):
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 8))
 
-    moving = run_result.instance.moving
+    fixed = run_result.instance.fixed
     dvf = run_result.dvf
     spacing = run_result.instance.spacing
     origin = run_result.instance.origin
@@ -500,7 +500,7 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=4):
     mask = run_result.instance.mask
     direction = run_result.instance.direction
 
-    image_slice = moving[slice_tuple]
+    image_slice = fixed[slice_tuple]
 
     indices_xy = get_indices_xy(slice_tuple)
     extent = (
@@ -550,7 +550,7 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=4):
         angles="xy",
         scale=1,
         minlength=0,
-        headaxislength=2.5,
+        headaxislength=4.0,
         width=0.002,
     )
 
