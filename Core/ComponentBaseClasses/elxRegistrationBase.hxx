@@ -235,8 +235,12 @@ RegistrationBase<TElastix>::FinalBendingEnergyEvaluation()
   metricBE->SetImageSampler(metric->GetImageSampler());
   metricBE->SetTransform(transform);
 
-  const ParametersType & parameters = this->GetAsITKBaseType()->GetOptimizer()->GetCurrentPosition();
-  return metricBE->GetValue(parameters);
+  auto nrVoxels = metricBE->GetImageSampler()->GetOutput()->Size();
+  std::cout << "Final bending energy calculation:" << std::endl;
+  std::cout << "  nrVoxels: " << nrVoxels << std::endl;
+  
+  const ParametersType & parameters = this->GetElastix()->GetElxOptimizerBase()->GetAsITKBaseType()->GetCurrentPosition();
+  return metricBE->GetValue(parameters) * nrVoxels;
 }
 
 template <class TElastix>
@@ -253,7 +257,7 @@ RegistrationBase<TElastix>::FinalFullEvaluation()
   metric->SetUseImageSampler(true);
   metric->SetImageSampler(fullSampler);
 
-  const ParametersType & parameters = this->GetAsITKBaseType()->GetOptimizer()->GetCurrentPosition();
+  const ParametersType & parameters = this->GetElastix()->GetElxOptimizerBase()->GetAsITKBaseType()->GetCurrentPosition();
   return metric->GetValue(parameters);
 }
 

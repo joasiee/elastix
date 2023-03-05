@@ -96,11 +96,7 @@ GOMEAOptimizer::StopOptimization()
 {
   itkDebugMacro("StopOptimization");
 
-  // ParametersType currentPosition = this->GetCurrentPosition();
-  // this->ZeroParametersOutsideMask(currentPosition);
-  // this->SetCurrentPosition(currentPosition);
-
-  this->SetTransformParameters(this->GetCurrentPosition());
+  this->UpdatePosition();
   this->saveVariancesForNextResolution();
   InvokeEvent(EndEvent());
 }
@@ -1984,9 +1980,6 @@ GOMEAOptimizer::UpdatePosition()
 
   this->SetCurrentPosition(populations[0][best_solution]);
   this->costFunctionEvaluation(this->GetCurrentPosition(), best_solution, this->m_Value, this->m_ConstraintValue);
-
-  m_CurrentIteration++;
-  this->InvokeEvent(IterationEvent());
 }
 
 void
@@ -2075,6 +2068,9 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
         number_of_generations[population_index]++;
         this->UpdatePosition();
+
+        m_CurrentIteration++;
+        this->InvokeEvent(IterationEvent());
 
         PROFILE_END_SESSION();
 
