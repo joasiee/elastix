@@ -248,8 +248,7 @@ def asgd_sweep():
 
 
 def fair_comparison_final():
-    for seed in range(2):
-        seed += 1
+    for seed in range(3, 11):
         for mesh_size in [5]:
             for reg_weight in [0.0001, 0.001, 0.01, 0.1]:
                 peval_budget = 300000e6
@@ -304,5 +303,5 @@ if __name__ == "__main__":
     fn = fair_comparison_final
 
     # Collection + instance niet vergeten!
-    queue.bulk_push(list(yield_experiments(Collection.LEARN, 2, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.LEARN, 3, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")

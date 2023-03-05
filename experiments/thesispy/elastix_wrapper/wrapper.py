@@ -221,11 +221,10 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
     _, spacing, origin = read_transform_params(transform_params)
     run_result.grid_spacing = spacing
     run_result.grid_origin = origin
-    final_evals = pd.read_csv(out_dir / "final_evals.txt", sep=",", index_col=0, header=None)
-    nr_voxels = (
-        np.sum(run_result.instance.mask) if run_result.instance.mask is not None else np.prod(run_result.deformed.shape)
-    )
-    run_result.bending_energy = final_evals.loc["bending_energy"].values[0] * nr_voxels
+
+    if (out_dir / "final_evals.txt").exists():
+        final_evals = pd.read_csv(out_dir / "final_evals.txt", sep=",", index_col=0, header=None)
+        run_result.bending_energy = final_evals.loc["bending_energy"].values[0]
 
     return run_result
 
@@ -246,10 +245,11 @@ if __name__ == "__main__":
             metric="AdvancedNormalizedCorrelation",
             use_mask=True,
         )
-        .asgd()
-        # .multi_resolution(1, r_sched=[2], s_sched=[0], g_sched=[1])
-        .stopping_criteria(iterations=[0])
-        .instance(Collection.SYNTHETIC, 1)
+        .gomea()
+        .regularize(0.01, analytic=False)
+        .multi_resolution(3, r_sched=[4,3,2])
+        .stopping_criteria(iterations=[1])
+        .instance(Collection.LEARN, 1)
     )
     run(
         [params_main],
