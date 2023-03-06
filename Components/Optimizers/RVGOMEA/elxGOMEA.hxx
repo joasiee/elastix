@@ -119,6 +119,24 @@ GOMEA<TElastix>::BeforeEachResolution(void)
     numberOfASGDIterations, "NumberOfASGDIterations", this->GetComponentLabel(), level, 0);
   this->SetNumberOfASGDIterations(numberOfASGDIterations);
 
+  /** Set MaxNumberOfASGDIterations.*/
+  int maxNumberOfASGDIterations = 200;
+  this->m_Configuration->ReadParameter(
+    maxNumberOfASGDIterations, "MaxNumberOfASGDIterations", this->GetComponentLabel(), level, 0);
+  this->SetMaxNumberOfASGDIterations(maxNumberOfASGDIterations);
+
+  /** Set MinNumberOfASGDIterations.*/
+  int minNumberOfASGDIterations = 20;
+  this->m_Configuration->ReadParameter(
+    minNumberOfASGDIterations, "MinNumberOfASGDIterations", this->GetComponentLabel(), level, 0);
+  this->SetMinNumberOfASGDIterations(minNumberOfASGDIterations);
+
+  /** Set NumberOfASGDIterationsOffset.*/
+  int numberOfASGDIterationsOffset = 20;
+  this->m_Configuration->ReadParameter(
+    numberOfASGDIterationsOffset, "NumberOfASGDIterationsOffset", this->GetComponentLabel(), level, 0);
+  this->SetNumberOfASGDIterationsOffset(numberOfASGDIterationsOffset);
+
   /** Set StaticLinkageMaxSetSize.*/
   int staticLinkageMaxSetSize = 12;
   this->m_Configuration->ReadParameter(
@@ -143,7 +161,7 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   this->SetMaxNumberOfPopulations(maxNumberOfPopulations);
 
   /** Set RedistributionMethod */
-  int redistributionMethod = 0;
+  int redistributionMethod = 1;
   this->m_Configuration->ReadParameter(
     redistributionMethod, "RedistributionMethod", this->GetComponentLabel(), level, 0);
   this->SetRedistributionMethod(static_cast<RedistributionMethod>(redistributionMethod));
@@ -163,6 +181,16 @@ GOMEA<TElastix>::BeforeEachResolution(void)
   double tauAsgd = 0.1;
   this->m_Configuration->ReadParameter(tauAsgd, "TauASGD", this->GetComponentLabel(), level, 0);
   this->SetTauASGD(tauAsgd);
+
+  /** Set AlphaASGD*/
+  double alphaAsgd = 0.08;
+  this->m_Configuration->ReadParameter(alphaAsgd, "AlphaASGD", this->GetComponentLabel(), level, 0);
+  this->SetAlphaASGD(alphaAsgd);
+
+  /** Set BetaASGD*/
+  double betaAsgd = 0.1;
+  this->m_Configuration->ReadParameter(betaAsgd, "BetaASGD", this->GetComponentLabel(), level, 0);
+  this->SetBetaASGD(betaAsgd);
 
   /** Set DistributionMultiplierDecrease*/
   double distributionMultiplierDecrease = 0.9;

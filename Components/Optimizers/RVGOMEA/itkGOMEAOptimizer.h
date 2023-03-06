@@ -133,6 +133,12 @@ public:
   itkGetConstMacro(TauASGD, double);
   itkSetMacro(TauASGD, double);
 
+  itkGetConstMacro(AlphaASGD, double);
+  itkSetMacro(AlphaASGD, double);
+
+  itkGetConstMacro(BetaASGD, double);
+  itkSetMacro(BetaASGD, double);
+
   itkGetConstMacro(ImageDimension, int);
   itkSetMacro(ImageDimension, int);
 
@@ -165,6 +171,15 @@ public:
 
   itkGetConstMacro(NumberOfASGDIterations, int);
   itkSetMacro(NumberOfASGDIterations, int);
+
+  itkGetConstMacro(MaxNumberOfASGDIterations, int);
+  itkSetMacro(MaxNumberOfASGDIterations, int);
+
+  itkGetConstMacro(MinNumberOfASGDIterations, int);
+  itkSetMacro(MinNumberOfASGDIterations, int);
+
+  itkGetConstMacro(NumberOfASGDIterationsOffset, int);
+  itkSetMacro(NumberOfASGDIterationsOffset, int);
 
   itkSetMacro(RedistributionMethod, RedistributionMethod);
   itkSetMacro(ASGDIterationSchedule, ASGDIterationSchedule);
@@ -397,7 +412,17 @@ private:
   int
   NumberOfASGDIterationsLog(int iteration_nr)
   {
-    return static_cast<int>(100 * std::log10(iteration_nr - 5) - 50.0);
+    if (iteration_nr < m_NumberOfASGDIterationsOffset)
+      return 0;
+    
+    double max_its = m_MaxNumberOfASGDIterations;
+    double min_its_delta = max_its - (double) m_MinNumberOfASGDIterations;
+    double its_offset = m_NumberOfASGDIterationsOffset;
+    
+    double alpha_x = m_AlphaASGD * ((double) iteration_nr - its_offset);
+    double denom = 1.0 - alpha_x / log(m_BetaASGD);
+
+    return static_cast<int>(max_its - min_its_delta / denom);
   }
 
   mutable std::ostringstream m_StopConditionDescription;
@@ -411,6 +436,8 @@ private:
   double m_StDevThreshold{ 1.0 };
   double m_FitnessVarianceTolerance{ 0.0 };
   double m_TauASGD{ 0.1 };
+  double m_AlphaASGD{ 0.08 };
+  double m_BetaASGD{ 0.1 };
   double distribution_multiplier_increase;
   double eta_ams{ 1.0 };
   double eta_cov{ 1.0 };
@@ -424,6 +451,9 @@ private:
   int m_StaticLinkageMinSetSize{ 3 };
   int m_StaticLinkageMaxSetSize{ 24 };
   int m_NumberOfASGDIterations{ 50 };
+  int m_MaxNumberOfASGDIterations{ 200 };
+  int m_MinNumberOfASGDIterations{ 20 };
+  int m_NumberOfASGDIterationsOffset{ 20 };
   int number_of_subgenerations_per_population_factor{ 8 };
   int number_of_populations{ 0 };
 
