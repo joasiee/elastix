@@ -128,11 +128,7 @@ def fair_comparison_hybrid():
             )
             yield params
 
-            params = (
-                Parameters.from_base(mesh_size=mesh_size, seed=seed)
-                .asgd()
-                .stopping_criteria(iterations=10000)
-            )
+            params = Parameters.from_base(mesh_size=mesh_size, seed=seed).asgd().stopping_criteria(iterations=10000)
             yield params
 
 
@@ -151,9 +147,7 @@ def constrained_selection():
             )
             yield params_constrained
         params_penalty = (
-            Parameters.from_base(
-                mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True
-            )
+            Parameters.from_base(mesh_size=4, metric="AdvancedMeanSquares", seed=seed, use_missedpixel_penalty=True)
             .gomea(LinkageType.CP_MARGINAL, use_constraints=False)
             .stopping_criteria(iterations=1000)
         )
@@ -173,17 +167,13 @@ def fold_constraints():
         for mesh_size in [4, 5, 6]:
             param_folds = (
                 Parameters.from_base(mesh_size=mesh_size, seed=seed)
-                .gomea(
-                    LinkageType.CP_MARGINAL, use_constraints=True, compute_folds_constraints=True
-                )
+                .gomea(LinkageType.CP_MARGINAL, use_constraints=True, compute_folds_constraints=True)
                 .stopping_criteria(iterations=1000)
             )
             yield param_folds
             param_no_folds = (
                 Parameters.from_base(mesh_size=mesh_size, seed=seed)
-                .gomea(
-                    LinkageType.CP_MARGINAL, use_constraints=False, compute_folds_constraints=False
-                )
+                .gomea(LinkageType.CP_MARGINAL, use_constraints=False, compute_folds_constraints=False)
                 .stopping_criteria(iterations=1000)
             )
             yield param_no_folds
@@ -239,9 +229,7 @@ def asgd_sweep():
                     use_mask=True,
                 )
                 .asgd()
-                .multi_resolution(
-                    nr_resolutions, p_sched=p_sched, g_sched=[1 for _ in range(nr_resolutions)]
-                )
+                .multi_resolution(nr_resolutions, p_sched=p_sched, g_sched=[1 for _ in range(nr_resolutions)])
                 .stopping_criteria(iterations=2000)
             )
             yield params
@@ -297,11 +285,27 @@ def fair_comparison_final():
                 yield params_asgd
 
 
+def zandbak():
+    params = (
+        Parameters.from_base(
+            mesh_size=5,
+            seed=1,
+            metric="AdvancedNormalizedCorrelation",
+            use_mask=True,
+        )
+        .regularize(0.1)
+        .multi_resolution(3, r_sched=[4, 3, 2], s_sched=[6, 2, 0], g_sched=[2, 2, 1])
+        .gomea(hybrid=True, asgd_iterations_offset=50, alpha_asgd=0.05)
+        .stopping_criteria(iterations=[100, 100, 250], pixel_evals=300000e6)
+    )
+    yield params
+
+
 if __name__ == "__main__":
     queue = ExperimentQueue()
-    # queue.clear()
-    fn = fair_comparison_final
+    queue.clear()
+    fn = zandbak
 
     # Collection + instance niet vergeten!
-    queue.bulk_push(list(yield_experiments(Collection.LEARN, 3, fn.__name__, fn)))
+    queue.bulk_push(list(yield_experiments(Collection.LEARN, 2, fn.__name__, fn)))
     print(f"Queue size: {queue.size()}")
