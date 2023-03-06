@@ -1,10 +1,15 @@
-from pathlib import Path
-import wandb
-import os
 from thesispy.definitions import ROOT_DIR, Collection
 import thesispy.elastix_wrapper.wrapper as wrapper
 from thesispy.experiments.dataset import Dataset, FinishedRun
+
 import pandas as pd
+import wandb
+
+from pathlib import Path
+import os
+import logging
+
+logger = logging.getLogger("WandbClient")
 
 DOWNLOAD_FOLDER = ROOT_DIR / "output" / "download"
 
@@ -19,6 +24,7 @@ def download_file(out_dir: Path, filename: str, run):
 
 
 def get_run_result(project: str, run_id: str):
+    logger.info(f"Retrieving run result of: {project}/{run_id}")
     run = api.run(f"{entity}/{project}/{run_id}")
     out_dir = DOWNLOAD_FOLDER / run_id
     out_dir.mkdir(parents=True, exist_ok=True)

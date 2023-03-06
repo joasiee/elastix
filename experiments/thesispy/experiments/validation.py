@@ -93,14 +93,17 @@ def bending_energy_point(dvf, p):
     return sum
 
 
-def bending_energy(dvf):
+def bending_energy(dvf, downscaling_f: int = 1, mask=None, use_tqdm: bool = True):
+    if mask is not None:
+        mask = mask[::downscaling_f, ::downscaling_f, ::downscaling_f]
+
+    dvf = dvf[::downscaling_f, ::downscaling_f, ::downscaling_f, :]
+    nr_points = np.prod(dvf.shape[:-1]) if mask is None else np.sum(mask)
+
     results = ProgressParallel(
-        n_jobs=N_CORES,
-        desc="computing bending energy",
-        backend="multiprocessing",
-        total=np.prod(dvf.shape[:-1]),
-    )(delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1]))
-    be = np.sum(results) / np.prod(dvf.shape[:-1])
+        n_jobs=N_CORES, desc="computing bending energy", backend="multiprocessing", total=nr_points, use_tqdm=use_tqdm
+    )(delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1]) if mask is None or mask[p])
+    be = np.sum(results) / nr_points
     logger.info(f"Bending Energy: {be}")
     return be
 
@@ -644,22 +647,28 @@ def validation_metrics(result: RunResult):
         hd_dists = hausdorff_distance(result.instance.surface_points, result.deformed_surface_points)
         md_dists = mean_surface_distance(result.instance.surface_points, result.deformed_surface_points)
         dsc_sims = dice_similarity(result.deformed, result.instance.fixed, 3)
+        bending_energy_crude = bending_energy(result.dvf)
         metrics.append({"validation/hausdorff_cube": hd_dists[0]})
         metrics.append({"validation/hausdorff_sphere": hd_dists[1]})
         metrics.append({"validation/mean_surface_cube": md_dists[0]})
         metrics.append({"validation/mean_surface_sphere": md_dists[1]})
         metrics.append({"validation/dice_similarity_cube": dsc_sims[0]})
         metrics.append({"validation/dice_similarity_sphere": dsc_sims[1]})
+        metrics.append({"validation/bending_energy_crude": bending_energy_crude})
 
     if result.instance.collection == Collection.LEARN:
         jac_det = jacobian_determinant(result.dvf, plot=False)[1]
         sdlogj = (np.log(jac_det) * result.instance.mask).std()
-        metrics.append({"validation/SDLogJ": sdlogj})
-        logger.info(f"SDLogJ: {sdlogj:.4f}")
-
         dsc = dice_similarity_(result.instance.mask, result.deformed_mask, 1.0)
+        bending_energy_crude = bending_energy(result.dvf, 3)
+
+        metrics.append({"validation/SDLogJ": sdlogj})
         metrics.append({"validation/dice_similarity": dsc})
+        metrics.append({"validation/bending_energy_crude": bending_energy_crude})
+
+        logger.info(f"SDLogJ: {sdlogj:.4f}")
         logger.info(f"Dice Similarity: {dsc:.4f}")
+        logger.info(f"Bending Energy (crude): {bending_energy_crude:.4f}")
 
     return metrics
 
