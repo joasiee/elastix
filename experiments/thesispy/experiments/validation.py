@@ -1,19 +1,23 @@
-from typing import Collection
+from pathlib import Path
+import logging
+import time
+import re
+
 from joblib import Parallel, delayed
 from tqdm import tqdm
 from scipy.spatial import distance
 from skimage.filters import threshold_multiotsu
 import numpy as np
 import SimpleITK as sitk
-from thesispy.experiments.instance import RunResult
-from thesispy.definitions import N_CORES, Collection
 import wandb
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.colors import Normalize, LinearSegmentedColormap
-import logging
-import time
+
+from thesispy.elastix_wrapper.wrapper import generate_transformed_points
+from thesispy.experiments.instance import RunResult
+from thesispy.definitions import N_CORES, Collection
 
 logger = logging.getLogger("Validation")
 VALIDATION_NAMES_NEW = [
@@ -229,7 +233,7 @@ def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
     min_y *= spacing[indices_xy[1]]
     max_y *= spacing[indices_xy[1]]
 
-    fixed_slice = fixed[slice_tuple]
+    fixed_slice = np.copy(fixed[slice_tuple])
     fixed_slice[mask_slice == 0] = np.nan
     gray_cmap = plt.cm.get_cmap("gray")
     gray_cmap.set_bad(alpha=0)
@@ -619,6 +623,113 @@ def plot_dvf_3d(run_result, zoom_f=6, ax=None):
     return ax.get_figure()
 
 
+def generate_mesh_lines_points(origin, spacing, size, direction, step_size, slice_tuple, nr_line_points=1000):
+    indices_xy = get_indices_xy(slice_tuple)
+    i_x, i_y = indices_xy[0], indices_xy[1]
+    i_slice = [i for i in range(3) if i not in indices_xy][0]
+    slice_val = [i for i in slice_tuple if not isinstance(i, slice)][0]
+
+    xs = np.arange(0, size[i_x], step_size)
+    ys = np.arange(0, size[i_y], step_size)
+
+    lines_x = []
+    lines_y = []
+
+    for x in xs:
+        y_vals = np.linspace(0, size[i_y], nr_line_points)
+        line = np.zeros((nr_line_points, 3))
+        line[:, i_x] = x * spacing[i_x] * direction[i_x][i_x] + origin[i_x]
+        line[:, i_y] = y_vals * spacing[i_y] * direction[i_y][i_y] + origin[i_y]
+        line[:, i_slice] = slice_val * spacing[i_slice] * direction[i_slice][i_slice] + origin[i_slice]
+
+        lines_x.append(line)
+
+    lines_x.pop(0)
+
+    for y in ys:
+        x_vals = np.linspace(0, size[i_x], nr_line_points)
+        line = np.zeros((nr_line_points, 3))
+        line[:, i_x] = x_vals * spacing[i_x] * direction[i_x][i_x] + origin[i_x]
+        line[:, i_y] = y * spacing[i_y] * direction[i_y][i_y] + origin[i_y]
+        line[:, i_slice] = slice_val * spacing[i_slice] * direction[i_slice][i_slice] + origin[i_slice]
+
+        lines_y.append(line)
+
+    lines_y.pop(0)
+
+    return lines_x + lines_y
+
+
+def write_line_as_points(line, filename: Path):
+    with open(filename, "w") as f:
+        f.write("point\n")
+        f.write(f"{len(line)}\n")
+        for point in line:
+            f.write(f"{point[0]} {point[1]} {point[2]}\n")
+
+
+def read_deformed_line(filename: Path):
+    with open(filename, "r") as f:
+        lines = f.readlines()
+        nr_points = len(lines)
+        points = np.zeros((nr_points, 3))
+        for i, line in enumerate(lines):
+            match = re.search(r"OutputPoint = \[ (.*) (.*) (.*) \]\t", line)
+            points[i, 0] = float(match.group(1))
+            points[i, 1] = float(match.group(2))
+            points[i, 2] = float(match.group(3))
+
+    return points
+
+
+def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_points=1000, ax=None, fix_axes=False):
+    if ax is None:
+        _, ax = plt.subplots(figsize=(7, 7))
+
+    origin = result.instance.origin
+    spacing = result.instance.spacing
+    size = result.instance.size
+    direction = result.instance.direction
+    transform_params = result.transform_params
+
+    out_dir = transform_params.parent / "deformed_mesh"
+    out_dir.mkdir(exist_ok=True)
+
+    lines = generate_mesh_lines_points(origin, spacing, size, direction, step_size, slice_tuple, nr_line_points)
+    deformed_lines = []
+    for _, line in enumerate(lines):
+        write_line_as_points(line, out_dir / f"line.txt")
+        generate_transformed_points(transform_params, out_dir, out_dir / f"line.txt")
+        deformed_lines.append(read_deformed_line(out_dir / f"outputpoints.txt"))
+
+    fixed_image = result.instance.fixed
+    fixed_image_slice = fixed_image[slice_tuple]
+    i_x, i_y = get_indices_xy(slice_tuple)
+    extent = [
+        origin[i_x],
+        origin[i_x] + size[i_x] * spacing[i_x] * direction[i_x][i_x],
+        origin[i_y] + size[i_y] * spacing[i_y] * direction[i_y][i_y],
+        origin[i_y],
+    ]
+
+    ax.imshow(fixed_image_slice, cmap="gray", extent=extent)
+
+    if fix_axes:
+        ax.invert_yaxis()
+        if slice_tuple[1] != slice(None, None, None) or slice_tuple[0] != slice(None, None, None):
+            ax.invert_xaxis()
+        if slice_tuple[2] != slice(None, None, None) or slice_tuple[1] != slice(None, None, None):
+            ax.set_ylim(80, 300)
+
+    for line in lines:
+        ax.plot(line[:, i_x], line[:, i_y], color="white", linewidth=1, linestyle="dotted")
+
+    for line in deformed_lines:
+        ax.plot(line[:, i_x], line[:, i_y], color="yellow", linewidth=0.5)
+
+    return ax.get_figure()
+
+
 def calc_validation(result: RunResult):
     logger.info(f"Calculating validation metrics for {result.instance.collection}:")
     start = time.perf_counter()
@@ -660,7 +771,7 @@ def validation_metrics(result: RunResult):
         jac_det = jacobian_determinant(result.dvf, plot=False)[1]
         sdlogj = (np.log(jac_det) * result.instance.mask).std()
         dsc = dice_similarity_(result.instance.mask, result.deformed_mask, 1.0)
-        bending_energy_crude = bending_energy(result.dvf, 3)
+        bending_energy_crude = bending_energy(result.dvf, 3, result.instance.mask)
 
         metrics.append({"validation/SDLogJ": sdlogj})
         metrics.append({"validation/dice_similarity": dsc})
@@ -706,9 +817,13 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         plot_color_diff(result, (slice(None), 50, slice(None)), ax=axes[0, 1])
         plot_color_diff(result, (120, slice(None), slice(None)), ax=axes[0, 2])
 
-        plot_dvf_masked(result, (slice(None), slice(None), 50), ax=axes[1, 0])
-        plot_dvf_masked(result, (slice(None), 50, slice(None)), ax=axes[1, 1])
-        plot_dvf_masked(result, (120, slice(None), slice(None)), ax=axes[1, 2])
+        # plot_dvf_masked(result, (slice(None), slice(None), 50), ax=axes[1, 0])
+        # plot_dvf_masked(result, (slice(None), 50, slice(None)), ax=axes[1, 1])
+        # plot_dvf_masked(result, (120, slice(None), slice(None)), ax=axes[1, 2])
+
+        plot_deformed_mesh(result, (slice(None), slice(None), 50), ax=axes[1, 0], fix_axes=True)
+        plot_deformed_mesh(result, (slice(None), 50, slice(None)), ax=axes[1, 1], fix_axes=True)
+        plot_deformed_mesh(result, (120, slice(None), slice(None)), ax=axes[1, 2], fix_axes=True)
 
         jacobian_determinant_masked(result, (slice(None), slice(None), 50), ax=axes[2, 0])
         jacobian_determinant_masked(result, (slice(None), 50, slice(None)), ax=axes[2, 1])
