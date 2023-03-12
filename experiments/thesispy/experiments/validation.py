@@ -14,10 +14,12 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from matplotlib.colors import Normalize, LinearSegmentedColormap
+from scipy.interpolate import RegularGridInterpolator
 
 from thesispy.elastix_wrapper.wrapper import generate_transformed_points
 from thesispy.experiments.instance import RunResult
 from thesispy.definitions import N_CORES, Collection
+from thesispy.colorline import colorline
 
 logger = logging.getLogger("Validation")
 VALIDATION_NAMES_NEW = [
@@ -94,10 +96,10 @@ def bending_energy_point(dvf, p):
     sum = 0.0
     for dim in range(len(dvf.shape) - 1):
         sum += np.square(np.linalg.norm(hessian(dvf[..., dim], p)))
-    return sum
+    return p, sum
 
 
-def bending_energy(dvf, downscaling_f: int = 1, mask=None, use_tqdm: bool = True):
+def bending_energy(dvf, downscaling_f: int = 1, mask=None, use_tqdm: bool = True, sum: bool = True):
     if mask is not None:
         mask = mask[::downscaling_f, ::downscaling_f, ::downscaling_f]
 
@@ -107,9 +109,12 @@ def bending_energy(dvf, downscaling_f: int = 1, mask=None, use_tqdm: bool = True
     results = ProgressParallel(
         n_jobs=N_CORES, desc="computing bending energy", backend="multiprocessing", total=nr_points, use_tqdm=use_tqdm
     )(delayed(bending_energy_point)(dvf, p) for p in np.ndindex(dvf.shape[:-1]) if mask is None or mask[p])
-    be = np.sum(results) / nr_points
-    logger.info(f"Bending Energy: {be}")
-    return be
+
+    be_map = np.zeros(dvf.shape[:-1])
+    for p, be in results:
+        be_map[p] = be
+
+    return be_map.sum() if sum else be_map
 
 
 def dice_similarity(moving_deformed, fixed, levels):
@@ -438,9 +443,6 @@ def plot_color_diff(result: RunResult, slice_tuple, ax=None):
     moving = result.deformed
     target = result.instance.fixed
 
-    invert_x = slice_tuple[1] != slice(None, None, None)
-    invert_y = slice_tuple[0] != slice(None, None, None)
-
     img1 = sitk.GetImageFromArray(moving[slice_tuple])
     img2 = sitk.GetImageFromArray(target[slice_tuple])
     img_min = np.min([img1, img2])
@@ -470,10 +472,11 @@ def plot_color_diff(result: RunResult, slice_tuple, ax=None):
     img3 = sitk.Cast(sitk.Compose(img1_255, img2_255, img1_255), sitk.sitkVectorUInt8)
     arr = sitk.GetArrayFromImage(img3)
 
-    indices_xy = get_indices_xy(slice_tuple)
+    spacing = result.instance.spacing
     origin = result.instance.origin
     size = result.instance.size
-    spacing = result.instance.spacing
+
+    indices_xy = get_indices_xy(slice_tuple)
     extent = (
         origin[indices_xy[0]],
         size[indices_xy[0]] * spacing[indices_xy[0]],
@@ -481,13 +484,27 @@ def plot_color_diff(result: RunResult, slice_tuple, ax=None):
         origin[indices_xy[1]],
     )
 
-    ax.imshow(arr, extent=extent)
+    invert_x = slice_tuple[1] != slice(None, None, None); invert_y = slice_tuple[0] != slice(None, None, None)
+    ylims = None
+    if slice_tuple[1] != slice(None, None, None) or slice_tuple[2] != slice(None, None, None):
+        ylims = (80, 300)
+
+    return plot_image(arr, extent=extent, inverts=(invert_x, invert_y), ylims=ylims, ax=ax, cmap=None)
+
+
+def plot_image(image: np.ndarray, extent=None, inverts=(False, False), ylims=None, ax=None, cmap="gray"):
+    if ax is None:
+        _, ax = plt.subplots(figsize=(8, 8))
+
+    ax.imshow(image, extent=extent, cmap=cmap)
+
+    invert_x, invert_y = inverts
     if invert_x or invert_y:
         ax.invert_xaxis()
     if invert_y:
         ax.invert_yaxis()
-    if slice_tuple[1] != slice(None, None, None) or slice_tuple[2] != slice(None, None, None):
-        ax.set_ylim(80, 300)
+    if ylims is not None:
+        ax.set_ylim(ylims[0], ylims[1])
 
     ax.set_xticks([])
     ax.set_yticks([])
@@ -495,7 +512,7 @@ def plot_color_diff(result: RunResult, slice_tuple, ax=None):
     return ax.get_figure()
 
 
-def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=4):
+def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=5):
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 8))
 
@@ -557,8 +574,8 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=4):
         angles="xy",
         scale=1,
         minlength=0,
-        headaxislength=4.0,
-        width=0.002,
+        headaxislength=5.0,
+        width=0.003,
     )
 
     ax.set_xticks([])
@@ -623,20 +640,35 @@ def plot_dvf_3d(run_result, zoom_f=6, ax=None):
     return ax.get_figure()
 
 
-def generate_mesh_lines_points(origin, spacing, size, direction, step_size, slice_tuple, nr_line_points=1000):
+def generate_mesh_lines_points(
+    origin, spacing, size, direction, step_size, slice_tuple, nr_line_points=1000, mask=None
+):
     indices_xy = get_indices_xy(slice_tuple)
     i_x, i_y = indices_xy[0], indices_xy[1]
     i_slice = [i for i in range(3) if i not in indices_xy][0]
     slice_val = [i for i in slice_tuple if not isinstance(i, slice)][0]
 
-    xs = np.arange(0, size[i_x], step_size)
-    ys = np.arange(0, size[i_y], step_size)
+    min_x = 0
+    max_x = size[i_x]
+    min_y = 0
+    max_y = size[i_y]
+
+    if mask is not None:
+        mask_slice = mask[slice_tuple]
+        margin = 10
+        min_x = max(np.min(np.where(np.any(mask_slice, axis=0))[0]) - margin, 0)
+        max_x = min(np.max(np.where(np.any(mask_slice, axis=0))[0]) + margin, size[i_x])
+        min_y = max(np.min(np.where(np.any(mask_slice, axis=1))[0]) - margin, 0)
+        max_y = min(np.max(np.where(np.any(mask_slice, axis=1))[0]) + margin, size[i_y])
+
+    xs = np.arange(min_x, max_x, step_size)
+    ys = np.arange(min_y, max_y, step_size)
 
     lines_x = []
     lines_y = []
 
     for x in xs:
-        y_vals = np.linspace(0, size[i_y], nr_line_points)
+        y_vals = np.linspace(min_y, max_y, nr_line_points)
         line = np.zeros((nr_line_points, 3))
         line[:, i_x] = x * spacing[i_x] * direction[i_x][i_x] + origin[i_x]
         line[:, i_y] = y_vals * spacing[i_y] * direction[i_y][i_y] + origin[i_y]
@@ -647,7 +679,7 @@ def generate_mesh_lines_points(origin, spacing, size, direction, step_size, slic
     lines_x.pop(0)
 
     for y in ys:
-        x_vals = np.linspace(0, size[i_x], nr_line_points)
+        x_vals = np.linspace(min_x, max_x, nr_line_points)
         line = np.zeros((nr_line_points, 3))
         line[:, i_x] = x_vals * spacing[i_x] * direction[i_x][i_x] + origin[i_x]
         line[:, i_y] = y * spacing[i_y] * direction[i_y][i_y] + origin[i_y]
@@ -695,7 +727,9 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
     out_dir = transform_params.parent / "deformed_mesh"
     out_dir.mkdir(exist_ok=True)
 
-    lines = generate_mesh_lines_points(origin, spacing, size, direction, step_size, slice_tuple, nr_line_points)
+    lines = generate_mesh_lines_points(
+        origin, spacing, size, direction, step_size, slice_tuple, nr_line_points, mask=result.instance.mask
+    )
     deformed_lines = []
     for _, line in enumerate(lines):
         write_line_as_points(line, out_dir / f"line.txt")
@@ -713,6 +747,7 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
     ]
 
     ax.imshow(fixed_image_slice, cmap="gray", extent=extent)
+    ax.set_xlim(extent[0], extent[1])
 
     if fix_axes:
         ax.invert_yaxis()
@@ -721,11 +756,32 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
         if slice_tuple[2] != slice(None, None, None) or slice_tuple[1] != slice(None, None, None):
             ax.set_ylim(80, 300)
 
-    for line in lines:
-        ax.plot(line[:, i_x], line[:, i_y], color="white", linewidth=1, linestyle="dotted")
+    voxel_to_physical = (spacing * np.identity(3)) @ direction
+    physical_to_voxel = np.linalg.inv(voxel_to_physical)
+    fn = RegularGridInterpolator(
+        (np.arange(0, size[2]), np.arange(0, size[1]), np.arange(0, size[0])),
+        result.dvf,
+        method="linear",
+        bounds_error=False,
+        fill_value=0,
+    )
+    color_lists = []
 
-    for line in deformed_lines:
-        ax.plot(line[:, i_x], line[:, i_y], color="yellow", linewidth=0.5)
+    for line in lines:
+        indices = np.flip(np.array([physical_to_voxel @ point for point in line]), axis=1)
+        displacements = fn(indices)
+        colors = np.sqrt(displacements[:, i_x] ** 2 + displacements[:, i_y] ** 2)
+        color_lists.append(colors)
+        ax.plot(line[:, i_x], line[:, i_y], color="white", linewidth=0.5, linestyle="dotted")
+
+    min_color = np.min([np.min(color_list) for color_list in color_lists])
+    max_color = np.max([np.max(color_list) for color_list in color_lists])
+    norm = plt.Normalize(min_color, max_color)
+
+    for i, line in enumerate(deformed_lines):
+        colorline(line[:, i_x], line[:, i_y], z=color_lists[i], norm=norm, ax=ax, cmap="jet", linewidth=0.75)
+
+    ax.axis("off")
 
     return ax.get_figure()
 

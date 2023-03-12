@@ -24,14 +24,17 @@ def download_file(out_dir: Path, filename: str, run):
 
 
 def get_run_result(project: str, run_id: str):
-    logger.info(f"Retrieving run result of: {project}/{run_id}")
     run = api.run(f"{entity}/{project}/{run_id}")
     out_dir = DOWNLOAD_FOLDER / run_id
-    out_dir.mkdir(parents=True, exist_ok=True)
-    download_file(out_dir, "TransformParameters.0.txt", run)
-    download_file(out_dir, "controlpoints.dat", run)
     collection = Collection(run.config["Collection"])
     instance = int(run.config["Instance"])
+
+    if not out_dir.exists():
+        logger.info(f"Retrieving run result from wandb: {project}/{run_id}")
+        out_dir.mkdir(parents=True, exist_ok=True)
+        download_file(out_dir, "TransformParameters.0.txt", run)
+        download_file(out_dir, "controlpoints.dat", run)
+
     return wrapper.get_run_result(collection, instance, out_dir / "TransformParameters.0.txt")
 
 
