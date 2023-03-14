@@ -714,7 +714,7 @@ def read_deformed_line(filename: Path):
     return points
 
 
-def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_points=1000, ax=None, fix_axes=False):
+def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_points=1000, ax=None, fix_axes=False, vmin=None, vmax=None):
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
 
@@ -774,16 +774,18 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
         color_lists.append(colors)
         ax.plot(line[:, i_x], line[:, i_y], color="white", linewidth=0.5, linestyle="dotted")
 
-    min_color = np.min([np.min(color_list) for color_list in color_lists])
-    max_color = np.max([np.max(color_list) for color_list in color_lists])
-    norm = plt.Normalize(min_color, max_color)
+    if vmin is None or vmax is None:
+        vmin = np.min([np.min(color_list) for color_list in color_lists])
+        vmax = np.max([np.max(color_list) for color_list in color_lists])
+    
+    norm = plt.Normalize(vmin, vmax)
 
     for i, line in enumerate(deformed_lines):
         colorline(line[:, i_x], line[:, i_y], z=color_lists[i], norm=norm, ax=ax, cmap="jet", linewidth=0.75)
 
     ax.axis("off")
 
-    return ax.get_figure()
+    return ax.get_figure(), (vmin, vmax)
 
 
 def calc_validation(result: RunResult):

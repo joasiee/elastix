@@ -1,6 +1,6 @@
 import matplotlib
-from matplotlib.backends.backend_pgf import FigureCanvasPgf
-matplotlib.backend_bases.register_backend('pdf', FigureCanvasPgf)
+# from matplotlib.backends.backend_pgf import FigureCanvasPgf
+# matplotlib.backend_bases.register_backend('pdf', FigureCanvasPgf)
 
 import matplotlib.pyplot as plt
 from thesispy.definitions import ROOT_DIR
