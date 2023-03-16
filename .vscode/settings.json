@@ -87,7 +87,10 @@
         "forward_list": "cpp",
         "cholesky": "cpp",
         "source_location": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "charconv": "cpp",
+        "span": "cpp",
+        "cassert": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

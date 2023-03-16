@@ -86,7 +86,6 @@ AdaptiveStochasticGradientDescent<TElastix>::BeforeRegistration()
   this->GetIterationInfoAt("4:||Gradient||") << std::showpoint << std::fixed;
 
   this->m_SettingsVector.clear();
-
 } // end BeforeRegistration()
 
 

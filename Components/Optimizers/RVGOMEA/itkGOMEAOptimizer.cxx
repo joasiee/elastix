@@ -38,29 +38,32 @@ void
 GOMEAOptimizer::PrintSettings() const
 {
   Indent indent = *itk::Indent::New();
-  elastix::log::info(std::ostringstream{} << indent << "Settings: \n");
-  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n");
-  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << "\n");
-  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Tau: " << m_Tau << "\n");
-  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n");
-  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n");
-  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Partial Evaluations: " << m_PartialEvaluations << "\n");
-  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Constraints: " << m_UseConstraints << "\n");
-  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Max. no. of iterations: " << m_MaximumNumberOfIterations << "\n");
+  std::ostringstream oss;
+  oss << indent << "Settings: \n";
+  oss << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n";
+  oss << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << "\n";
+  oss << indent.GetNextIndent() << "Tau: " << m_Tau << "\n";
+  oss << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n";
+  oss << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n";
+  oss << indent.GetNextIndent() << "Partial Evaluations: " << m_PartialEvaluations << "\n";
+  oss << indent.GetNextIndent() << "Constraints: " << m_UseConstraints << "\n";
+  oss << indent.GetNextIndent() << "Max. no. of iterations: " << m_MaximumNumberOfIterations << "\n";
 
   if (m_MaxNumberOfEvaluations > 0 || m_MaxNumberOfPixelEvaluations > 0)
   {
-    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Max. no. of evaluations: " << m_MaxNumberOfEvaluations << "\n");
-    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Max. no. of pixel evaluations: " << m_MaxNumberOfPixelEvaluations << "\n");
+    oss << indent.GetNextIndent() << "Max. no. of evaluations: " << m_MaxNumberOfEvaluations << "\n";
+    oss << indent.GetNextIndent() << "Max. no. of pixel evaluations: " << m_MaxNumberOfPixelEvaluations << "\n";
   }
 
   if (m_UseASGD)
   {
-    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Tau-LS: " << m_TauASGD << "\n");
-    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "LS Iterations: " << m_NumberOfASGDIterations << "\n");
-    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "RedistributionMethod: " << m_RedistributionMethod << "\n");
-    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "IterationSchedule: " << m_ASGDIterationSchedule << "\n");
+    oss << indent.GetNextIndent() << "Tau-LS: " << m_TauASGD << "\n";
+    oss << indent.GetNextIndent() << "LS Iterations: " << m_NumberOfASGDIterations << "\n";
+    oss << indent.GetNextIndent() << "RedistributionMethod: " << m_RedistributionMethod << "\n";
+    oss << indent.GetNextIndent() << "IterationSchedule: " << m_ASGDIterationSchedule << "\n";
   }
+
+  elastix::log::info(oss.str());
 }
 
 void

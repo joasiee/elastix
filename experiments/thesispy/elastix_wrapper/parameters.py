@@ -369,20 +369,9 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(
-            mesh_size=6,
-            seed=1,
-            metric="AdvancedNormalizedCorrelation",
-            use_mask=True,
-        )
-        .regularize(0.01)
-        .multi_resolution(3, p_sched=[6, 4, 2])
-        .gomea(
-            LinkageType.CP_MARGINAL,
-            use_constraints=True,
-            compute_folds_constraints=True,
-        )
-        .stopping_criteria(iterations=[1, 1, 1])
-        .instance(Collection.LEARN, 1)
+        Parameters.from_base(mesh_size=5, seed=1)
+        .asgd()
+        .stopping_criteria(iterations=10)
+        .instance(Collection.SYNTHETIC, 1)
     )
     params.write(Path())

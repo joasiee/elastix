@@ -80,22 +80,15 @@ def run(
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(
-            mesh_size=5,
-            seed=1,
-            metric="AdvancedNormalizedCorrelation",
-            use_mask=True,
-        )
-        .gomea()
-        .regularize(0.01, analytic=False)
-        .multi_resolution(3, r_sched=[4, 3, 2])
-        .stopping_criteria(iterations=[1])
-        .instance(Collection.LEARN, 1)
+        Parameters.from_base(mesh_size=5, seed=1)
+        .asgd()
+        .stopping_criteria(iterations=10)
+        .instance(Collection.SYNTHETIC, 1)
     )
     run(
         [params_main],
         Path("output/" + str(params_main)),
         suppress_stdout=False,
-        visualize=False,
+        visualize=True,
         validate=True,
     )

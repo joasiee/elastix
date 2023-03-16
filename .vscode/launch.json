@@ -121,7 +121,7 @@
             "name": "(gdb) sphereincube",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/bin/elastix",
+            "program": "${workspaceFolder}/build/Release/bin/elastix",
             "args": [
                 "-f",
                 "01_Fixed.mhd",

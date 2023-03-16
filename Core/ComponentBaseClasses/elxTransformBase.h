@@ -34,6 +34,7 @@
 #include <itkImage.h>
 #include <itkOptimizerParameters.h>
 #include <itkTransformMeshFilter.h>
+#include <itkContinuousIndex.h>
 
 
 namespace elastix

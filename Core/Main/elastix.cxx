@@ -102,22 +102,6 @@ main(int argc, char ** argv)
       std::string argument(argv[1]);
       if (argument == "-help" || argument == "--help" || argument == "-h")
       {
-        /** Make sure that last character of the output folder equals a '/' or '\'. */
-        const char last = value.back();
-        if (last != '/' && last != '\\')
-        {
-          value.append("/");
-        }
-        value = elx::Conversion::ToNativePathNameSeparators(value);
-
-        /** Save this information. */
-        outFolder = value;
-        std::filesystem::create_directory(outFolder);
-
-      } // end if key == "-out"
-
-      /** Attempt to save the arguments in the ArgumentMap. */
-      if (argMap.count(key) == 0)
         std::cout << elastixHelpText << std::endl;
         return 0;
       }
@@ -147,12 +131,6 @@ main(int argc, char ** argv)
     using ArgumentMapType = ElastixMainType::ArgumentMapType;
     using ArgumentMapEntryType = ArgumentMapType::value_type;
 
-  #ifdef ELASTIX_ENABLE_PROFILING
-    std::filesystem::create_directory(outFolder + "profiling_output");
-  #endif
-
-  /** The argv0 argument, required for finding the component.dll/so's. */
-  argMap.insert(ArgumentMapEntryType("-argv0", argv[0]));
     /** Support Mevis Dicom Tiff (if selected in cmake) */
     RegisterMevisDicomTiff();
 
@@ -239,21 +217,16 @@ main(int argc, char ** argv)
       /** Check if the output directory exists. */
       if (!itksys::SystemTools::FileIsDirectory(outFolder))
       {
-        std::cerr << "ERROR: the output directory \"" << outFolder << "\" does not exist.\n"
-                  << "You are responsible for creating it." << std::endl;
-        returndummy |= -2;
+        std::filesystem::create_directory(outFolder);
       }
-      else
-      {
-        /** Setup the log system. */
-        const std::string logFileName = outFolder + "elastix.log";
-        const int         returndummy2 = elx::log::setup(logFileName, true, true, level) ? 0 : 1;
 
-        if (returndummy2 != 0)
-        {
-          std::cerr << "ERROR while setting up the log system." << std::endl;
-        }
-        returndummy |= returndummy2;
+      /** Setup the log system. */
+      const std::string logFileName = outFolder + "elastix.log";
+      const int         returndummy2 = elx::log::setup(logFileName, true, true, level) ? 0 : 1;
+
+      if (returndummy2 != 0)
+      {
+        std::cerr << "ERROR while setting up the log system." << std::endl;
       }
     }
     else
