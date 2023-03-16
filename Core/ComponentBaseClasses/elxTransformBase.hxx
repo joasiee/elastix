@@ -676,6 +676,7 @@ TransformBase<TElastix>::TransformPointsSomePoints(const std::string & filename)
   /** Typedef's. */
   using FixedImageRegionType = typename FixedImageType::RegionType;
   using FixedImageIndexType = typename FixedImageType::IndexType;
+  using FixedImageContinuousIndexType = typename FixedImageType::ContinuousIndexType;
   using FixedImageIndexValueType = typename FixedImageIndexType::IndexValueType;
   using MovingImageIndexType = typename MovingImageType::IndexType;
   using MovingImageIndexValueType = typename MovingImageIndexType::IndexValueType;

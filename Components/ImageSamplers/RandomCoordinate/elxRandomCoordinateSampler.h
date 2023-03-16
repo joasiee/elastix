@@ -125,7 +125,6 @@ public:
   using typename Superclass1::CoordRepType;
   using typename Superclass1::InterpolatorType;
   using typename Superclass1::DefaultInterpolatorType;
-  using typename Superclass1::BSplineInterpolatorType;
 
   /** The input image dimension. */
   itkStaticConstMacro(InputImageDimension, unsigned int, Superclass1::InputImageDimension);

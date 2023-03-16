@@ -45,12 +45,13 @@ RandomCoordinateSampler<TElastix>::BeforeEachResolution()
     splineOrder, "FixedImageBSplineInterpolationOrder", this->GetComponentLabel(), level, 0);
   if (splineOrder == 1)
   {
-    auto fixedImageLinearInterpolator = DefaultInterpolatorType::New();
+    using LinearInterpolatorType = itk::LinearInterpolateImageFunction<InputImageType, CoordRepType>;
+    auto fixedImageLinearInterpolator = LinearInterpolatorType::New();
     this->SetInterpolator(fixedImageLinearInterpolator);
   }
   else
   {
-    auto fixedImageBSplineInterpolator = BSplineInterpolatorType::New();
+    auto fixedImageBSplineInterpolator = DefaultInterpolatorType::New();
     fixedImageBSplineInterpolator->SetSplineOrder(splineOrder);
     this->SetInterpolator(fixedImageBSplineInterpolator);
   }

@@ -23,7 +23,6 @@
 #include "itkAdvancedTransform.h"
 #include "itkImage.h"
 #include "itkImageRegion.h"
-#include "xoutmain.h"
 
 namespace itk
 {
@@ -445,10 +444,6 @@ protected:
   UpdateGridOffsetTable();
 
 private:
-  AdvancedBSplineDeformableTransformBase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   bool
   IsControlPointFolded(int offset) const;
 

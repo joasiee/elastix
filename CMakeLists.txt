@@ -10,7 +10,7 @@ if(USE_SUPERBUILD)
 endif()
 
 include(CMakeDefaultCache.txt)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/include")
 list(APPEND CMAKE_PREFIX_PATH ${Plastimatch_INCLUDE_DIR})

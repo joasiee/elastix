@@ -83,8 +83,7 @@ public:
   using CoordRepType = double;
   using InterpolatorType = InterpolateImageFunction<InputImageType, CoordRepType>;
   using InterpolatorPointer = typename InterpolatorType::Pointer;
-  using BSplineInterpolatorType = BSplineInterpolateImageFunction<InputImageType, CoordRepType, double>;
-  using DefaultInterpolatorType = LinearInterpolateImageFunction<InputImageType, CoordRepType>;
+  using DefaultInterpolatorType = BSplineInterpolateImageFunction<InputImageType, CoordRepType, double>;
 
   /** Set/Get the interpolator. A 3rd order B-spline interpolator is used by default. */
   itkSetObjectMacro(Interpolator, InterpolatorType);
@@ -136,7 +135,6 @@ protected:
     return interpolator;
   }();
 
-  RandomGeneratorPointer m_RandomGenerator{ RandomGeneratorType::GetInstance() };
   InputImageSpacingType  m_SampleRegionSize{ itk::MakeFilled<InputImageSpacingType>(1.0) };
 
   /** Generate the two corners of a sampling region, given the two corners

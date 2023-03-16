@@ -293,7 +293,7 @@ void
 PreconditionedStochasticGradientDescent<TElastix>::AfterEachIteration()
 {
   /** Print some information. */
-  this->GetIterationInfoAt("2:Metric") << this->m_Value;
+  this->GetIterationInfoAt("2:Metric") << this->GetValue();
   this->GetIterationInfoAt("3a:Time") << this->GetCurrentTime();
   this->GetIterationInfoAt("3b:StepSize") << this->GetLearningRate() * this->m_NoiseFactor;
 

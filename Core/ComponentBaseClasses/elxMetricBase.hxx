@@ -220,60 +220,6 @@ MetricBase<TElastix>::AfterEachIterationBase()
  */
 
 template <class TElastix>
-void
-MetricBase<TElastix>::WriteSamplesOfIteration() const
-{
-  const AdvancedMetricType * thisAsAdvanced = dynamic_cast<const AdvancedMetricType *>(this);
-  if (thisAsAdvanced->GetUseImageSampler())
-  {
-    const unsigned int itNr = this->m_Elastix->GetIterationCounter();
-    std::ofstream      outFile;
-    std::ostringstream makeFileName("");
-    makeFileName << this->m_SamplesOutDir << itNr << ".dat";
-    std::string fileName = makeFileName.str();
-    outFile.open(fileName.c_str());
-
-    thisAsAdvanced->WriteSamplesOfIteration(outFile);
-
-    outFile.close();
-  }
-}
-
-
-/**
- * ********************* SelectNewSamples ************************
- */
-
-template <class TElastix>
-void
-MetricBase<TElastix>::SelectNewSamples()
-{
-  if (this->GetAdvancedMetricImageSampler() && this->GetAdvancedMetricUseImageSampler())
-  {
-    /** Force the metric to base its computation on a new subset of image samples. */
-    this->GetAdvancedMetricImageSampler()->SelectNewSamplesOnUpdate();
-  }
-  else
-  {
-    /** Not every metric may have implemented this, so give a warning when this
-     * method is called for a metric without sampler support.
-     * To avoid the warning, this method may be overridden by a subclass.
-     */
-    log::warn(std::ostringstream{} << "WARNING: The NewSamplesEveryIteration option was set to \"true\", but "
-                                   << this->GetComponentLabel() << " does not use a sampler.");
-  }
-
-    AdvancedMetricType * thisAsMetricWithSampler = dynamic_cast<AdvancedMetricType *>(this);
-    thisAsMetricWithSampler->SelectNewSamplesSubfunctionSamplers();
-  }
-} // end SelectNewSamples()
-
-
-/**
- * ********************* GetExactValue ************************
- */
-
-template <class TElastix>
 auto
 MetricBase<TElastix>::GetExactValue(const ParametersType & parameters) -> MeasureType
 {
@@ -320,9 +266,55 @@ MetricBase<TElastix>::GetExactValue(const ParametersType & parameters) -> Measur
   this->SetAdvancedMetricImageSampler(currentSampler);
 
   return exactValue;
+}
 
-} // end GetExactValue()
+template <class TElastix>
+void
+MetricBase<TElastix>::WriteSamplesOfIteration() const
+{
+  const AdvancedMetricType * thisAsAdvanced = dynamic_cast<const AdvancedMetricType *>(this);
+  if (thisAsAdvanced->GetUseImageSampler())
+  {
+    const unsigned int itNr = this->m_Elastix->GetIterationCounter();
+    std::ofstream      outFile;
+    std::ostringstream makeFileName("");
+    makeFileName << this->m_SamplesOutDir << itNr << ".dat";
+    std::string fileName = makeFileName.str();
+    outFile.open(fileName.c_str());
 
+    thisAsAdvanced->WriteSamplesOfIteration(outFile);
+
+    outFile.close();
+  }
+}
+
+
+/**
+ * ********************* SelectNewSamples ************************
+ */
+
+template <class TElastix>
+void
+MetricBase<TElastix>::SelectNewSamples()
+{
+  if (this->GetAdvancedMetricImageSampler() && this->GetAdvancedMetricUseImageSampler())
+  {
+    /** Force the metric to base its computation on a new subset of image samples. */
+    this->GetAdvancedMetricImageSampler()->SelectNewSamplesOnUpdate();
+  }
+  else
+  {
+    /** Not every metric may have implemented this, so give a warning when this
+     * method is called for a metric without sampler support.
+     * To avoid the warning, this method may be overridden by a subclass.
+     */
+    log::warn(std::ostringstream{} << "WARNING: The NewSamplesEveryIteration option was set to \"true\", but "
+                                   << this->GetComponentLabel() << " does not use a sampler.");
+  }
+
+  AdvancedMetricType * thisAsMetricWithSampler = dynamic_cast<AdvancedMetricType *>(this);
+  thisAsMetricWithSampler->SelectNewSamplesSubfunctionSamplers();
+}
 
 /**
  * ******************* GetAdvancedMetricUseImageSampler ********************
@@ -402,7 +394,5 @@ MetricBase<TElastix>::GetAdvancedMetricImageSampler() const -> ImageSamplerBaseT
   return thisAsMetricWithSampler->GetImageSampler();
 
 } // end GetAdvancedMetricImageSampler()
-
-} // end namespace elastix
-
+} // namespace elastix
 #endif // end #ifndef elxMetricBase_hxx

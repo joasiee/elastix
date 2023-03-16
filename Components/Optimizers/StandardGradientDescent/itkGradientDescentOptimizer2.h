@@ -125,7 +125,7 @@ public:
   itkGetConstMacro(CurrentIteration, unsigned int);
 
   /** Get the current value. */
-  // itkGetConstReferenceMacro(Value, double);
+  itkGetConstReferenceMacro(Value, double);
 
   /** Get Stop condition. */
   itkGetConstReferenceMacro(StopCondition, StopConditionType);

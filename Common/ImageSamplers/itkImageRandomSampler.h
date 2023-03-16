@@ -88,6 +88,9 @@ protected:
 
   void
   ThreadedGenerateData(const InputImageRegionType & inputRegionForThread, ThreadIdType threadId) override;
+
+  void
+  GeneratePoint(InputImageIndexType & index, InputImagePointType & point);
 };
 
 } // end namespace itk

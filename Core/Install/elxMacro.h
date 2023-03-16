@@ -140,20 +140,6 @@
   auto GetSelf()->decltype(*this) override { return *this; }                                                           \
   static void                     GetSelf(const void *) = delete
 
-
-/**
- *  elxout
- *
- *  This macro replaces 'elxout' by 'xl::xout["standard"]'.
- *  This simplifies writing messages to screen and logfile.
- *
- *  NB: for error and warning messages, for writing to the
- *  transformparameterfile etc. do not use elxout, but
- *  xl::xout["{error, warning, etc}"].
- *
- */
-#define elxout ::xl::xout["standard"]
-
 /********************************************************************************
  *                    *
  *      Dll export    *

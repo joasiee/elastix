@@ -313,14 +313,14 @@ GOMEA<TElastix>::AfterEachResolution(void)
   }
 
   /** Print the stopping condition */
-  elxout << "Stopping condition: " << stopcondition << ".\n";
+  log::info(std::ostringstream{}  << "Stopping condition: " << stopcondition << ".\n");
 }
 
 template <class TElastix>
 void
 GOMEA<TElastix>::AfterRegistration(void)
 {
-  elxout << "\nFinal metric value = " << this->m_Value << "\n";
+  log::info(std::ostringstream{}  << "\nFinal metric value = " << this->m_Value << "\n");
 }
 
 template <class TElastix>

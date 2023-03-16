@@ -55,13 +55,8 @@ ImageRandomSampler<TInputImage>::GenerateData()
   {
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {
-      /** Get the index, transform it to the physical coordinates and put it in the sample. */
-      InputImageIndexType index = randIter.GetIndex();
-      inputImage->TransformIndexToPhysicalPoint(index, iter->Value().m_ImageCoordinates);
-      /** Get the value and put it in the sample. */
-      iter->Value().m_ImageValue = randIter.Get();
-      /** Jump to a random position. */
-      ++randIter;
+      InputImageIndexType positionIndex;
+      this->GeneratePoint(positionIndex, (*iter).Value().m_ImageCoordinates);
 
       /** Get the value and put it in the sample. */
       (*iter).Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
@@ -70,7 +65,10 @@ ImageRandomSampler<TInputImage>::GenerateData()
   else
   {
     /** Update the mask. */
-    mask->UpdateSource();
+    if (mask->GetSource())
+    {
+      mask->GetSource()->Update();
+    }
 
     /** Make sure we are not eternally trying to find samples: */
     const unsigned long maxSamples = 100 * this->GetNumberOfSamples();
@@ -105,8 +103,8 @@ ImageRandomSampler<TInputImage>::GenerateData()
       } while (!insideMask);
 
       /** Put the coordinates and the value in the sample. */
-      iter->Value().m_ImageCoordinates = inputPoint;
-      iter->Value().m_ImageValue = randIter.Get();
+      (*iter).Value().m_ImageCoordinates = inputPoint;
+      (*iter).Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
 
     } // end for loop
   }
@@ -154,6 +152,10 @@ ImageRandomSampler<TInputImage>::ThreadedGenerateData(const InputImageRegionType
   InputImageIndexType regionIndex = this->GetCroppedInputImageRegion().GetIndex();
   for (iter = sampleContainerThisThread->Begin(); iter != end; ++iter, sampleId++)
   {
+    unsigned long randomPosition = static_cast<unsigned long>(this->m_RandomNumberList[sampleId]);
+
+    /** Translate randomPosition to an index, copied from ImageRandomConstIteratorWithIndex. */
+    unsigned long       residual;
     InputImageIndexType positionIndex;
     for (unsigned int dim = 0; dim < InputImageDimension; ++dim)
     {

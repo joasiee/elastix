@@ -36,8 +36,8 @@ TransformBendingEnergyPenaltyAnalytic<TElastix>::Initialize()
   timer.Start();
   this->Superclass1::Initialize();
   timer.Stop();
-  elxout << "Initialization of TransformBendingEnergyAnalytic metric took: " << static_cast<long>(timer.GetMean() * 1000)
-         << " ms." << std::endl;
+  elastix::log::info(std::ostringstream{} << "Initialization of TransformBendingEnergyAnalytic metric took: " << static_cast<long>(timer.GetMean() * 1000)
+         << " ms." << std::endl);
 
 } // end Initialize()
 

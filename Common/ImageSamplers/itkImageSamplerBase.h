@@ -211,7 +211,7 @@ public:
 
 protected:
   /** The constructor. */
-  ImageSamplerBase() = default;
+  ImageSamplerBase();
 
   /** The destructor. */
   ~ImageSamplerBase() override = default;

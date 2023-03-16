@@ -86,7 +86,8 @@
         "strstream": "cpp",
         "forward_list": "cpp",
         "cholesky": "cpp",
-        "source_location": "cpp"
+        "source_location": "cpp",
+        "filesystem": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

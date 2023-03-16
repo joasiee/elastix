@@ -21,6 +21,7 @@
 namespace itk
 {
 using namespace GOMEA;
+using FOS = GOMEA::FOS;
 
 GOMEAOptimizer::GOMEAOptimizer()
 {
@@ -37,28 +38,28 @@ void
 GOMEAOptimizer::PrintSettings() const
 {
   Indent indent = *itk::Indent::New();
-  elxout << indent << "Settings: \n";
-  elxout << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n";
-  elxout << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << "\n";
-  elxout << indent.GetNextIndent() << "Tau: " << m_Tau << "\n";
-  elxout << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n";
-  elxout << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n";
-  elxout << indent.GetNextIndent() << "Partial Evaluations: " << m_PartialEvaluations << "\n";
-  elxout << indent.GetNextIndent() << "Constraints: " << m_UseConstraints << "\n";
-  elxout << indent.GetNextIndent() << "Max. no. of iterations: " << m_MaximumNumberOfIterations << "\n";
+  elastix::log::info(std::ostringstream{} << indent << "Settings: \n");
+  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n");
+  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Nr. of parameters: " << m_NrOfParameters << "\n");
+  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Tau: " << m_Tau << "\n");
+  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Number of populations: " << m_MaxNumberOfPopulations << "\n");
+  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Population size: " << m_BasePopulationSize << "\n");
+  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Partial Evaluations: " << m_PartialEvaluations << "\n");
+  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Constraints: " << m_UseConstraints << "\n");
+  elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Max. no. of iterations: " << m_MaximumNumberOfIterations << "\n");
 
   if (m_MaxNumberOfEvaluations > 0 || m_MaxNumberOfPixelEvaluations > 0)
   {
-    elxout << indent.GetNextIndent() << "Max. no. of evaluations: " << m_MaxNumberOfEvaluations << "\n";
-    elxout << indent.GetNextIndent() << "Max. no. of pixel evaluations: " << m_MaxNumberOfPixelEvaluations << "\n";
+    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Max. no. of evaluations: " << m_MaxNumberOfEvaluations << "\n");
+    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Max. no. of pixel evaluations: " << m_MaxNumberOfPixelEvaluations << "\n");
   }
 
   if (m_UseASGD)
   {
-    elxout << indent.GetNextIndent() << "Tau-LS: " << m_TauASGD << "\n";
-    elxout << indent.GetNextIndent() << "LS Iterations: " << m_NumberOfASGDIterations << "\n";
-    elxout << indent.GetNextIndent() << "RedistributionMethod: " << m_RedistributionMethod << "\n";
-    elxout << indent.GetNextIndent() << "IterationSchedule: " << m_ASGDIterationSchedule << "\n";
+    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "Tau-LS: " << m_TauASGD << "\n");
+    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "LS Iterations: " << m_NumberOfASGDIterations << "\n");
+    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "RedistributionMethod: " << m_RedistributionMethod << "\n");
+    elastix::log::info(std::ostringstream{} << indent.GetNextIndent() << "IterationSchedule: " << m_ASGDIterationSchedule << "\n");
   }
 }
 
@@ -163,7 +164,7 @@ GOMEAOptimizer::initialize(void)
   if (m_FosElementSize == Univariate)
     use_univariate_FOS = 1;
 
-  GOMEA::FOS_element_size = m_FosElementSize;
+  FOS_element_size = m_FosElementSize;
   GOMEA::grid_region_dimensions = std::move(m_BSplineGridRegionDimensions);
   GOMEA::static_linkage_type = static_cast<BSplineStaticLinkageType>(m_StaticLinkageType);
 
