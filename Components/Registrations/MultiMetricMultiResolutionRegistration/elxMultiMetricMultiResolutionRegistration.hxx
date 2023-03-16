@@ -68,7 +68,7 @@ MultiMetricMultiResolutionRegistration<TElastix>::BeforeRegistration()
       err_str += "\nError occurred while updating region info of the fixed image.\n";
       excp.SetDescription(err_str);
       /** Pass the exception to an higher level. */
-      throw excp;
+      throw;
     }
 
     /** Set the fixedImageRegion. */
@@ -82,7 +82,7 @@ MultiMetricMultiResolutionRegistration<TElastix>::BeforeRegistration()
   unsigned int       width = 0;
   for (unsigned int i = nrOfMetrics; i > 0; i /= 10)
   {
-    width++;
+    ++width;
   }
   for (unsigned int i = 0; i < nrOfMetrics; ++i)
   {
@@ -132,7 +132,7 @@ MultiMetricMultiResolutionRegistration<TElastix>::AfterEachIteration()
   unsigned int       width = 0;
   for (unsigned int i = nrOfMetrics; i > 0; i /= 10)
   {
-    width++;
+    ++width;
   }
   for (unsigned int i = 0; i < nrOfMetrics; ++i)
   {
@@ -326,7 +326,7 @@ MultiMetricMultiResolutionRegistration<TElastix>::SetComponents()
          */
         if (this->GetElastix()->GetElxFixedImagePyramidBase(i))
         {
-          xl::xout["error"] << "ERROR: An ImageSamper for metric " << i << " must be provided!" << std::endl;
+          log::error(std::ostringstream{} << "ERROR: An ImageSamper for metric " << i << " must be provided!");
           itkExceptionMacro(<< "Not enough ImageSamplers provided!\nProvide an ImageSampler for metric " << i
                             << ", like:\n  (ImageSampler \"Random\" ... \"Random\")");
         }
@@ -339,7 +339,7 @@ MultiMetricMultiResolutionRegistration<TElastix>::SetComponents()
         }
         else
         {
-          xl::xout["error"] << "ERROR: No ImageSampler has been specified." << std::endl;
+          log::error("ERROR: No ImageSampler has been specified.");
           itkExceptionMacro(<< "One of the metrics requires an ImageSampler, but it is not available!");
         }
       }
@@ -432,7 +432,8 @@ MultiMetricMultiResolutionRegistration<TElastix>::UpdateFixedMasks(unsigned int 
 
   /** Stop timer and print the elapsed time. */
   timer.Stop();
-  elxout << "Setting the fixed masks took: " << static_cast<long>(timer.GetMean() * 1000) << " ms." << std::endl;
+  log::info(std::ostringstream{} << "Setting the fixed masks took: " << static_cast<long>(timer.GetMean() * 1000)
+                                 << " ms.");
 
 } // end UpdateFixedMasks()
 
@@ -519,7 +520,8 @@ MultiMetricMultiResolutionRegistration<TElastix>::UpdateMovingMasks(unsigned int
 
   /** Stop timer and print the elapsed time. */
   timer.Stop();
-  elxout << "Setting the moving masks took: " << static_cast<long>(timer.GetMean() * 1000) << " ms." << std::endl;
+  log::info(std::ostringstream{} << "Setting the moving masks took: " << static_cast<long>(timer.GetMean() * 1000)
+                                 << " ms.");
 
 } // end UpdateMovingMasks()
 

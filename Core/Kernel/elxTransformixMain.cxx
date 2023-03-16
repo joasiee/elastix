@@ -25,6 +25,7 @@
 #endif
 
 #include "elxTransformixMain.h"
+#include "elxDeref.h"
 
 #include "elxMacro.h"
 
@@ -46,6 +47,19 @@ namespace elastix
 int
 TransformixMain::Run()
 {
+  return RunWithTransform(nullptr);
+}
+
+/**
+ * **************************** RunWithTransform *****************************
+ *
+ * Assuming EnterCommandLineParameters has already been invoked.
+ * or that m_Configuration is initialized in another way.
+ */
+
+int
+TransformixMain::RunWithTransform(itk::TransformBase * const transform)
+{
   /** Set process properties. */
   this->SetProcessPriority();
   this->SetMaximumNumberOfThreads();
@@ -63,22 +77,24 @@ TransformixMain::Run()
     /** Key "Elastix", see elxComponentLoader::InstallSupportedImageTypes(). */
     this->m_Elastix = this->CreateComponent("Elastix");
   }
-  catch (itk::ExceptionObject & excp)
+  catch (const itk::ExceptionObject & excp)
   {
     /** We just print the exception and let the program quit. */
-    xl::xout["error"] << excp << std::endl;
+    log::error(std::ostringstream{} << excp);
     errorCode = 1;
     return errorCode;
   }
+
+  const Configuration & configuration = Deref(MainBase::GetConfiguration());
 
   /** Create OpenCL context and logger here. */
 #ifdef ELASTIX_USE_OPENCL
   /** Check if user overrides OpenCL device selection. */
   std::string userSuppliedOpenCLDeviceType = "GPU";
-  this->m_Configuration->ReadParameter(userSuppliedOpenCLDeviceType, "OpenCLDeviceType", 0, false);
+  configuration.ReadParameter(userSuppliedOpenCLDeviceType, "OpenCLDeviceType", 0, false);
 
   int userSuppliedOpenCLDeviceID = -1;
-  this->m_Configuration->ReadParameter(userSuppliedOpenCLDeviceID, "OpenCLDeviceID", 0, false);
+  configuration.ReadParameter(userSuppliedOpenCLDeviceID, "OpenCLDeviceID", 0, false);
 
   std::string errorMessage = "";
   const bool  creatingContextSuccessful =
@@ -86,15 +102,14 @@ TransformixMain::Run()
   if (!creatingContextSuccessful)
   {
     /** Report and disable the GPU by releasing the context. */
-    elxout << errorMessage << std::endl;
-    elxout << "  OpenCL processing in transformix is disabled.\n" << std::endl;
+    log::info(std::ostringstream{} << errorMessage << '\n' << "  OpenCL processing in transformix is disabled.\n");
 
     itk::OpenCLContext::Pointer context = itk::OpenCLContext::GetInstance();
     context->Release();
   }
 
   /** Create a log file. */
-  itk::CreateOpenCLLogger("transformix", this->m_Configuration->GetCommandLineArgument("-out"));
+  itk::CreateOpenCLLogger("transformix", configuration.GetCommandLineArgument("-out"));
 #endif
   auto & elastixBase = this->GetElastixBase();
 
@@ -104,7 +119,7 @@ TransformixMain::Run()
   }
 
   /** Set some information in the ElastixBase. */
-  elastixBase.SetConfiguration(this->m_Configuration);
+  elastixBase.SetConfiguration(MainBase::GetConfiguration());
   elastixBase.SetDBIndex(this->m_DBIndex);
 
   /** Populate the component containers. No default is specified for the Transform. */
@@ -113,13 +128,21 @@ TransformixMain::Run()
 
   elastixBase.SetResamplerContainer(this->CreateComponents("Resampler", "DefaultResampler", errorCode));
 
-  elastixBase.SetTransformContainer(this->CreateComponents("Transform", "", errorCode));
+  if (transform)
+  {
+    const auto transformContainer = elx::ElastixBase::ObjectContainerType::New();
+    transformContainer->push_back(transform);
+    elastixBase.SetTransformContainer(transformContainer);
+  }
+  else
+  {
+    elastixBase.SetTransformContainer(this->CreateComponents("Transform", "", errorCode));
+  }
 
   /** Check if all components could be created. */
   if (errorCode != 0)
   {
-    xl::xout["error"] << "ERROR:" << std::endl;
-    xl::xout["error"] << "One or more components could not be created." << std::endl;
+    log::error("ERROR: One or more components could not be created.");
     return 1;
   }
 
@@ -128,22 +151,15 @@ TransformixMain::Run()
    */
   elastixBase.SetMovingImageContainer(this->GetModifiableMovingImageContainer());
 
-  /** Set the initial transform, if it happens to be there
-   * \todo: Does this make sense for transformix?
-   */
-  elastixBase.SetInitialTransform(this->GetModifiableInitialTransform());
-
   /** ApplyTransform! */
   try
   {
-    errorCode = elastixBase.ApplyTransform();
+    errorCode = elastixBase.ApplyTransform(transform == nullptr);
   }
-  catch (itk::ExceptionObject & excp)
+  catch (const itk::ExceptionObject & excp)
   {
     /** We just print the exception and let the program quit. */
-    xl::xout["error"] << '\n'
-                      << "--------------- Exception ---------------\n"
-                      << excp << "-----------------------------------------" << std::endl;
+    log::error(std::ostringstream{} << "Exception while trying to apply a tranformation:\n" << excp);
     errorCode = 1;
   }
 
@@ -186,10 +202,12 @@ TransformixMain::Run(const ArgumentMapType & argmap, const ParameterMapType & in
  */
 
 int
-TransformixMain::Run(const ArgumentMapType & argmap, const std::vector<ParameterMapType> & inputMaps)
+TransformixMain::Run(const ArgumentMapType &               argmap,
+                     const std::vector<ParameterMapType> & inputMaps,
+                     itk::TransformBase * const            transform)
 {
   this->EnterCommandLineArguments(argmap, inputMaps);
-  return this->Run();
+  return this->RunWithTransform(transform);
 } // end Run()
 
 
@@ -229,27 +247,28 @@ TransformixMain::~TransformixMain()
 int
 TransformixMain::InitDBIndex()
 {
+  const Configuration & configuration = Deref(MainBase::GetConfiguration());
+
   /** Check if configuration object was already initialized. */
-  if (this->m_Configuration->IsInitialized())
+  if (configuration.IsInitialized())
   {
     /** Try to read MovingImagePixelType from the parameter file. */
     this->m_MovingImagePixelType = "float"; // \note: this assumes elastix was compiled for float
-    this->m_Configuration->ReadParameter(this->m_MovingImagePixelType, "MovingInternalImagePixelType", 0);
+    configuration.ReadParameter(this->m_MovingImagePixelType, "MovingInternalImagePixelType", 0);
 
     /** Try to read FixedImagePixelType from the parameter file. */
     this->m_FixedImagePixelType = "float"; // \note: this assumes elastix was compiled for float
-    this->m_Configuration->ReadParameter(this->m_FixedImagePixelType, "FixedInternalImagePixelType", 0);
+    configuration.ReadParameter(this->m_FixedImagePixelType, "FixedInternalImagePixelType", 0);
 
     /** MovingImageDimension. */
     if (this->m_MovingImageDimension == 0)
     {
       /** Try to read it from the transform parameter file. */
-      this->m_Configuration->ReadParameter(this->m_MovingImageDimension, "MovingImageDimension", 0);
+      configuration.ReadParameter(this->m_MovingImageDimension, "MovingImageDimension", 0);
 
       if (this->m_MovingImageDimension == 0)
       {
-        xl::xout["error"] << "ERROR:" << std::endl;
-        xl::xout["error"] << "The MovingImageDimension is not given." << std::endl;
+        log::error("ERROR: The MovingImageDimension is not given.");
         return 1;
       }
     }
@@ -258,12 +277,11 @@ TransformixMain::InitDBIndex()
     if (this->m_FixedImageDimension == 0)
     {
       /** Try to read it from the transform parameter file. */
-      this->m_Configuration->ReadParameter(this->m_FixedImageDimension, "FixedImageDimension", 0);
+      configuration.ReadParameter(this->m_FixedImageDimension, "FixedImageDimension", 0);
 
       if (this->m_FixedImageDimension == 0)
       {
-        xl::xout["error"] << "ERROR:" << std::endl;
-        xl::xout["error"] << "The FixedImageDimension is not given." << std::endl;
+        log::error("ERROR: The FixedImageDimension is not given.");
         return 1;
       }
     }
@@ -275,16 +293,14 @@ TransformixMain::InitDBIndex()
                                                             this->m_MovingImageDimension);
     if (this->m_DBIndex == 0)
     {
-      xl::xout["error"] << "ERROR:" << std::endl;
-      xl::xout["error"] << "Something went wrong in the ComponentDatabase." << std::endl;
+      log::error("ERROR: Something went wrong in the ComponentDatabase.");
       return 1;
     }
 
-  } // end if m_Configuration->Initialized();
+  } // end if configuration.Initialized();
   else
   {
-    xl::xout["error"] << "ERROR:" << std::endl;
-    xl::xout["error"] << "The configuration object has not been initialized." << std::endl;
+    log::error("ERROR: The configuration object has not been initialized.");
     return 1;
   }
 

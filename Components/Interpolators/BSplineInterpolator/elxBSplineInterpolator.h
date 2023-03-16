@@ -55,6 +55,8 @@ class ITK_TEMPLATE_EXPORT BSplineInterpolator
     public InterpolatorBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(BSplineInterpolator);
+
   /** Standard ITK-stuff. */
   using Self = BSplineInterpolator;
   using Superclass1 = itk::BSplineInterpolateImageFunction<typename InterpolatorBase<TElastix>::InputImageType,
@@ -111,12 +113,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  BSplineInterpolator(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

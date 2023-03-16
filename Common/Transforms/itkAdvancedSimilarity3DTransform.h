@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedSimilarity3DTransform.h,v $
-  Language:  C++
   Date:      $Date: 2006-08-09 04:35:32 $
   Version:   $Revision: 1.3 $
 
@@ -64,6 +63,8 @@ template <class TScalarType = double>
 class ITK_TEMPLATE_EXPORT AdvancedSimilarity3DTransform : public AdvancedVersorRigid3DTransform<TScalarType>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedSimilarity3DTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedSimilarity3DTransform;
   using Superclass = AdvancedVersorRigid3DTransform<TScalarType>;
@@ -165,11 +166,7 @@ protected:
   PrecomputeJacobianOfSpatialJacobian();
 
 private:
-  AdvancedSimilarity3DTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  ScaleType m_Scale;
+  ScaleType m_Scale{};
 };
 
 // class AdvancedSimilarity3DTransform

@@ -40,14 +40,12 @@
 std::string
 GetHelpString()
 {
-  std::stringstream ss;
-  ss << "Usage:\n"
-     << "elxImageCompare\n"
-     << "  -test      image filename to test against baseline\n"
-     << "  -base      baseline image filename\n"
-     << "  [-t]       intensity difference threshold, default 0\n"
-     << "  [-a]       allowable tolerance (# voxels different), default 0";
-  return ss.str();
+  return "Usage:\n"
+         "elxImageCompare\n"
+         "  -test      image filename to test against baseline\n"
+         "  -base      baseline image filename\n"
+         "  [-t]       intensity difference threshold, default 0\n"
+         "  [-a]       allowable tolerance (# voxels different), default 0";
 
 } // end GetHelpString()
 
@@ -100,7 +98,7 @@ main(int argc, char ** argv)
   {
     baselineReader->Update();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
     std::cerr << "Error during reading baseline image: " << err << std::endl;
     return EXIT_FAILURE;
@@ -113,7 +111,7 @@ main(int argc, char ** argv)
   {
     testReader->Update();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
     std::cerr << "Error during reading test image: " << err << std::endl;
     return EXIT_FAILURE;
@@ -143,7 +141,7 @@ main(int argc, char ** argv)
   {
     comparisonFilter->Update();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
     std::cerr << "Error during comparing image: " << err << std::endl;
     return EXIT_FAILURE;
@@ -164,15 +162,11 @@ main(int argc, char ** argv)
     diffImageFileName += "_DIFF";
     diffImageFileName += itksys::SystemTools::GetFilenameLastExtension(testImageFileName);
 
-    using WriterType = itk::ImageFileWriter<ImageType>;
-    auto writer = WriterType::New();
-    writer->SetFileName(diffImageFileName);
-    writer->SetInput(comparisonFilter->GetOutput());
     try
     {
-      writer->Write();
+      itk::WriteImage(comparisonFilter->GetOutput(), diffImageFileName);
     }
-    catch (itk::ExceptionObject & err)
+    catch (const itk::ExceptionObject & err)
     {
       std::cerr << "Error during writing difference image: " << err << std::endl;
       return EXIT_FAILURE;

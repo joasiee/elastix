@@ -40,6 +40,8 @@ template <class TInputImage>
 class ITK_TEMPLATE_EXPORT MultiInputImageRandomCoordinateSampler : public ImageRandomSamplerBase<TInputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiInputImageRandomCoordinateSampler);
+
   /** Standard ITK-stuff. */
   using Self = MultiInputImageRandomCoordinateSampler;
   using Superclass = ImageRandomSamplerBase<TInputImage>;
@@ -105,7 +107,7 @@ protected:
   using InputImageContinuousIndexType = typename InterpolatorType::ContinuousIndexType;
 
   /** The constructor. */
-  MultiInputImageRandomCoordinateSampler();
+  MultiInputImageRandomCoordinateSampler() = default;
 
   /** The destructor. */
   ~MultiInputImageRandomCoordinateSampler() override = default;
@@ -125,9 +127,14 @@ protected:
                            const InputImageContinuousIndexType & largestContIndex,
                            InputImageContinuousIndexType &       randomContIndex);
 
-  InterpolatorPointer    m_Interpolator;
-  RandomGeneratorPointer m_RandomGenerator;
-  InputImageSpacingType  m_SampleRegionSize;
+  InterpolatorPointer m_Interpolator = [] {
+    const auto interpolator = DefaultInterpolatorType::New();
+    interpolator->SetSplineOrder(3);
+    return interpolator;
+  }();
+
+  RandomGeneratorPointer m_RandomGenerator{ RandomGeneratorType::GetInstance() };
+  InputImageSpacingType  m_SampleRegionSize{ itk::MakeFilled<InputImageSpacingType>(1.0) };
 
   /** Generate the two corners of a sampling region. */
   virtual void
@@ -135,13 +142,7 @@ protected:
                        InputImageContinuousIndexType & largestContIndex);
 
 private:
-  /** The deleted copy constructor. */
-  MultiInputImageRandomCoordinateSampler(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
-  bool m_UseRandomSampleRegion;
+  bool m_UseRandomSampleRegion{ false };
 };
 
 } // end namespace itk

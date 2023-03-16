@@ -15,12 +15,10 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-
 /*=========================================================================
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAffineDTI3DTransform.h,v $
-  Language:  C++
   Date:      $Date: 2008-10-13 15:36:31 $
   Version:   $Revision: 1.14 $
 
@@ -80,6 +78,8 @@ template <class TScalarType = double>
 class AffineDTI3DTransform : public AdvancedMatrixOffsetTransformBase<TScalarType, 3, 3>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AffineDTI3DTransform);
+
   /** Standard class typedefs. */
   using Self = AffineDTI3DTransform;
   using Superclass = AdvancedMatrixOffsetTransformBase<TScalarType, 3, 3>;
@@ -170,13 +170,9 @@ protected:
   PrecomputeJacobianOfSpatialJacobian();
 
 private:
-  AffineDTI3DTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  ScalarArrayType m_Angle;
-  ScalarArrayType m_Shear;
-  ScalarArrayType m_Scale;
+  ScalarArrayType m_Angle{};
+  ScalarArrayType m_Shear{};
+  ScalarArrayType m_Scale{};
 };
 
 } // namespace itk

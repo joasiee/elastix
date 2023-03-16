@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkMultiOrderBSplineDecompositionImageFilter.h,v $
-  Language:  C++
   Date:      $Date: 2010-03-19 07:06:01 $
   Version:   $Revision: 1.12 $
 
@@ -83,6 +82,8 @@ class ITK_TEMPLATE_EXPORT MultiOrderBSplineDecompositionImageFilter
   : public ImageToImageFilter<TInputImage, TOutputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiOrderBSplineDecompositionImageFilter);
+
   /** Standard class typedefs. */
   using Self = MultiOrderBSplineDecompositionImageFilter;
   using Superclass = ImageToImageFilter<TInputImage, TOutputImage>;
@@ -152,20 +153,17 @@ protected:
   EnlargeOutputRequestedRegion(DataObject * output) override;
 
   /** These are needed by the smoothing spline routine. */
-  std::vector<CoeffType>         m_Scratch;    // temp storage for processing of Coefficients
-  typename TInputImage::SizeType m_DataLength; // Image size
+  std::vector<CoeffType>         m_Scratch{};    // temp storage for processing of Coefficients
+  typename TInputImage::SizeType m_DataLength{}; // Image size
 
-  unsigned int m_SplineOrder[ImageDimension]; // User specified spline order per dimension (3rd or cubic is the default)
-  double       m_SplinePoles[3];              // Poles calculated for a given spline order
-  int          m_NumberOfPoles;               // number of poles
-  double       m_Tolerance;                   // Tolerance used for determining initial causal coefficient
-  unsigned int m_IteratorDirection;           // Direction for iterator incrementing
+  unsigned int
+               m_SplineOrder[ImageDimension]{}; // User specified spline order per dimension (3rd or cubic is the default)
+  double       m_SplinePoles[3]{};              // Poles calculated for a given spline order
+  int          m_NumberOfPoles{};               // number of poles
+  double       m_Tolerance{};                   // Tolerance used for determining initial causal coefficient
+  unsigned int m_IteratorDirection{};           // Direction for iterator incrementing
 
 private:
-  MultiOrderBSplineDecompositionImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Determines the poles for dimension given the Spline Order. */
   virtual void
   SetPoles(unsigned int dimension);

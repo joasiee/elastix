@@ -86,15 +86,12 @@ MultiBSplineTransformWithNormal<TElastix>::BeforeAll()
   this->m_LabelsPath = this->m_Configuration->GetCommandLineArgument("-labels");
   if (!this->m_LabelsPath.empty())
   {
-    typename itk::ImageFileReader<ImageLabelType>::Pointer reader = itk::ImageFileReader<ImageLabelType>::New();
-    reader->SetFileName(this->m_LabelsPath);
-    reader->Update();
-    this->m_Labels = reader->GetOutput();
+    m_Labels = itk::ReadImage<ImageLabelType>(m_LabelsPath);
   }
   else
   {
-    xl::xout["error"] << "ERROR: The MultiBSplineTransformWithNormal need a -labels command line option"
-                      << " that indicates where to find the sliding objects segmentation." << std::endl;
+    log::error(std::ostringstream{} << "ERROR: The MultiBSplineTransformWithNormal need a -labels command line option"
+                                    << " that indicates where to find the sliding objects segmentation.");
     itkExceptionMacro(<< "ERROR: Missing -labels argument!");
   }
 
@@ -305,9 +302,9 @@ MultiBSplineTransformWithNormal<TElastix>::PreComputeGridInformation()
   }
   else
   {
-    xl::xout["error"] << "ERROR: Invalid GridSpacingSchedule! The number of entries behind the GridSpacingSchedule "
-                         "option should equal the numberOfResolutions, or the numberOfResolutions * ImageDimension."
-                      << std::endl;
+    log::error(std::ostringstream{}
+               << "ERROR: Invalid GridSpacingSchedule! The number of entries behind the GridSpacingSchedule "
+                  "option should equal the numberOfResolutions, or the numberOfResolutions * ImageDimension.");
     itkExceptionMacro(<< "ERROR: Invalid GridSpacingSchedule!");
   }
 
@@ -567,10 +564,7 @@ MultiBSplineTransformWithNormal<TElastix>::ReadFromFile()
     this->m_LabelsPath, "MultiBSplineTransformWithNormalLabels", this->GetComponentLabel(), 0, 0);
   if (!this->m_LabelsPath.empty())
   {
-    typename itk::ImageFileReader<ImageLabelType>::Pointer reader = itk::ImageFileReader<ImageLabelType>::New();
-    reader->SetFileName(this->m_LabelsPath);
-    reader->Update();
-    this->m_Labels = reader->GetOutput();
+    this->m_Labels = itk::ReadImage<ImageLabelType>(m_LabelsPath);
   }
   this->m_MultiBSplineTransformWithNormal->SetLabels(this->m_Labels);
   this->m_MultiBSplineTransformWithNormal->UpdateLocalBases();
@@ -654,9 +648,9 @@ MultiBSplineTransformWithNormal<TElastix>::SetOptimizerScales(const unsigned int
     insetgridsize[i] = static_cast<unsigned int>(std::max(0, static_cast<int>(gridsize[i] - 2 * edgeWidth)));
     if (insetgridsize[i] == 0)
     {
-      xl::xout["error"] << "ERROR: you specified a PassiveEdgeWidth of " << edgeWidth
-                        << ", while the total grid size in dimension " << i << " is only " << gridsize[i] << "."
-                        << std::endl;
+      log::error(std::ostringstream{} << "ERROR: you specified a PassiveEdgeWidth of " << edgeWidth
+                                      << ", while the total grid size in dimension " << i << " is only " << gridsize[i]
+                                      << ".");
       itkExceptionMacro(<< "ERROR: the PassiveEdgeWidth is too large!");
     }
     insetgridindex[i] = gridindex[i] + edgeWidth;

@@ -19,6 +19,7 @@
 #define elxFullSearchOptimizer_hxx
 
 #include "elxFullSearchOptimizer.h"
+#include "elxDeref.h"
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -67,6 +68,8 @@ FullSearch<TElastix>::BeforeEachResolution()
   /** Get the current resolution level.*/
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
+  const Configuration & configuration = Deref(Superclass2::GetConfiguration());
+
   /** Read FullSearchRange from the parameter file. */
 
   /** declare variables */
@@ -80,7 +83,7 @@ FullSearch<TElastix>::BeforeEachResolution()
   unsigned int       nrOfSearchSpaceDimensions = 0;
   bool               found = true;
   bool               realGood = true;
-  std::ostringstream makeString("");
+  std::ostringstream makeString;
 
   /** Create fullFieldName, which is "FullSearchSpace0" at level 0. */
   makeString << "FullSearchSpace" << level;
@@ -94,33 +97,33 @@ FullSearch<TElastix>::BeforeEachResolution()
 
     if (realGood && found)
     {
-      found = this->GetConfiguration()->ReadParameter(name, fullFieldName, entry_nr, false);
+      found = configuration.ReadParameter(name, fullFieldName, entry_nr, false);
       realGood = this->CheckSearchSpaceRangeDefinition(fullFieldName, found, entry_nr);
-      entry_nr++;
+      ++entry_nr;
     }
     if (realGood && found)
     {
-      found = this->GetConfiguration()->ReadParameter(param_nr, fullFieldName, entry_nr, false);
+      found = configuration.ReadParameter(param_nr, fullFieldName, entry_nr, false);
       realGood = this->CheckSearchSpaceRangeDefinition(fullFieldName, found, entry_nr);
-      entry_nr++;
+      ++entry_nr;
     }
     if (realGood && found)
     {
-      found = this->GetConfiguration()->ReadParameter(minimum, fullFieldName, entry_nr, false);
+      found = configuration.ReadParameter(minimum, fullFieldName, entry_nr, false);
       realGood = this->CheckSearchSpaceRangeDefinition(fullFieldName, found, entry_nr);
-      entry_nr++;
+      ++entry_nr;
     }
     if (realGood && found)
     {
-      found = this->GetConfiguration()->ReadParameter(maximum, fullFieldName, entry_nr, false);
+      found = configuration.ReadParameter(maximum, fullFieldName, entry_nr, false);
       realGood = this->CheckSearchSpaceRangeDefinition(fullFieldName, found, entry_nr);
-      entry_nr++;
+      ++entry_nr;
     }
     if (realGood && found)
     {
-      found = this->GetConfiguration()->ReadParameter(stepsize, fullFieldName, entry_nr, false);
+      found = configuration.ReadParameter(stepsize, fullFieldName, entry_nr, false);
       realGood = this->CheckSearchSpaceRangeDefinition(fullFieldName, found, entry_nr);
-      entry_nr++;
+      ++entry_nr;
     }
 
     /** Setup this search range. */
@@ -159,14 +162,14 @@ FullSearch<TElastix>::BeforeEachResolution()
 
     /** Set the name of this image on disk. */
     std::string resultImageFormat = "mhd";
-    this->m_Configuration->ReadParameter(resultImageFormat, "ResultImageFormat", 0, false);
+    configuration.ReadParameter(resultImageFormat, "ResultImageFormat", 0, false);
     makeString.str("");
-    makeString << this->GetConfiguration()->GetCommandLineArgument("-out") << "OptimizationSurface."
-               << this->GetConfiguration()->GetElastixLevel() << ".R" << level << "." << resultImageFormat;
+    makeString << configuration.GetCommandLineArgument("-out") << "OptimizationSurface."
+               << configuration.GetElastixLevel() << ".R" << level << "." << resultImageFormat;
     this->m_OptimizationSurface->SetOutputFileName(makeString.str().c_str());
 
-    elxout << "Total number of iterations needed in this resolution: " << this->GetNumberOfIterations() << "."
-           << std::endl;
+    log::info(std::ostringstream{} << "Total number of iterations needed in this resolution: "
+                                   << this->GetNumberOfIterations() << ".");
   }
   else
   {
@@ -196,7 +199,7 @@ FullSearch<TElastix>::AfterEachIteration()
   for (unsigned int dim = 0; dim < nrOfSSDims; ++dim)
   {
     this->GetIterationInfoAt(name_it->second.c_str()) << currentPoint[dim];
-    name_it++;
+    ++name_it;
   }
 
 } // end AfterEachIteration()
@@ -210,6 +213,8 @@ template <class TElastix>
 void
 FullSearch<TElastix>::AfterEachResolution()
 {
+  const Configuration & configuration = Deref(Superclass2::GetConfiguration());
+
   // enum StopConditionType {FullRangeSearched,  MetricError };
   std::string stopcondition;
 
@@ -229,57 +234,59 @@ FullSearch<TElastix>::AfterEachResolution()
   }
 
   /** Print the stopping condition */
-  elxout << "Stopping condition: " << stopcondition << "." << std::endl;
+  log::info(std::ostringstream{} << "Stopping condition: " << stopcondition << ".");
 
   /** Write the optimization surface to disk */
   bool writeSurfaceEachResolution = false;
-  this->GetConfiguration()->ReadParameter(
-    writeSurfaceEachResolution, "WriteOptimizationSurfaceEachResolution", 0, false);
+  configuration.ReadParameter(writeSurfaceEachResolution, "WriteOptimizationSurfaceEachResolution", 0, false);
   if (writeSurfaceEachResolution)
   {
     try
     {
       this->m_OptimizationSurface->Write();
-      elxout << "\nThe scanned optimization surface is saved as: " << this->m_OptimizationSurface->GetOutputFileName()
-             << std::endl;
+      log::info(std::ostringstream{} << "\nThe scanned optimization surface is saved as: "
+                                     << this->m_OptimizationSurface->GetOutputFileName());
     }
-    catch (itk::ExceptionObject & err)
+    catch (const itk::ExceptionObject & err)
     {
-      xl::xout["error"] << "ERROR: Saving " << this->m_OptimizationSurface->GetOutputFileName() << " failed."
-                        << std::endl;
-      xl::xout["error"] << err << std::endl;
+      log::error(std::ostringstream{} << "ERROR: Saving " << this->m_OptimizationSurface->GetOutputFileName()
+                                      << " failed.\n"
+                                      << err);
       // do not throw an error, since we would like to go on.
     }
   }
 
   /** Print the best metric value */
-  elxout << '\n' << "Best metric value in this resolution = " << this->GetBestValue() << std::endl;
+  log::info(std::ostringstream{} << '\n' << "Best metric value in this resolution = " << this->GetBestValue());
 
   /** Print the best index and point */
   SearchSpaceIndexType bestIndex = this->GetBestIndexInSearchSpace();
   SearchSpacePointType bestPoint = this->GetBestPointInSearchSpace();
   unsigned int         nrOfSSDims = bestIndex.GetSize();
 
-  elxout << "Index of the point in the optimization surface image that has the best metric value: [ ";
-  for (unsigned int dim = 0; dim < nrOfSSDims; ++dim)
-  {
-    elxout << bestIndex[dim] << " ";
-  }
-  elxout << "]" << std::endl;
+  std::ostringstream outputStringStream;
 
-  elxout << "The corresponding parameter values: [ ";
+  outputStringStream << "Index of the point in the optimization surface image that has the best metric value: [ ";
   for (unsigned int dim = 0; dim < nrOfSSDims; ++dim)
   {
-    elxout << bestPoint[dim] << " ";
+    outputStringStream << bestIndex[dim] << " ";
   }
-  elxout << "]\n" << std::endl;
+  outputStringStream << "]\n"
+
+                     << "The corresponding parameter values: [ ";
+  for (unsigned int dim = 0; dim < nrOfSSDims; ++dim)
+  {
+    outputStringStream << bestPoint[dim] << " ";
+  }
+  outputStringStream << "]\n";
+  log::info(outputStringStream.str());
 
   /** Remove the columns from IterationInfo. */
   NameIteratorType name_it = this->m_SearchSpaceDimensionNames.begin();
   for (unsigned int dim = 0; dim < nrOfSSDims; ++dim)
   {
     this->RemoveTargetCellFromIterationInfo(name_it->second.c_str());
-    name_it++;
+    ++name_it;
   }
 
   /** Clear the dimension names of the previous resolution's search space. */
@@ -300,7 +307,7 @@ FullSearch<TElastix>::AfterRegistration()
 {
   /** Print the best metric value. */
   double bestValue = this->GetBestValue();
-  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
+  log::info(std::ostringstream{} << '\n' << "Final metric value  = " << bestValue);
 
 } // end AfterRegistration()
 
@@ -320,9 +327,9 @@ FullSearch<TElastix>::CheckSearchSpaceRangeDefinition(const std::string & fullFi
    */
   if (!found && (entry_nr == 0 || (entry_nr % 5 != 0)))
   {
-    xl::xout["error"] << "ERROR:\nNo (valid) range specified for the full search optimizer!\n"
-                      << "Please define the field (" << fullFieldName
-                      << " \"name\" parameter_nr min max stepsize) correctly in the parameter file" << std::endl;
+    log::error(std::ostringstream{} << "ERROR:\nNo (valid) range specified for the full search optimizer!\n"
+                                    << "Please define the field (" << fullFieldName
+                                    << " \"name\" parameter_nr min max stepsize) correctly in the parameter file");
     return false;
   }
 

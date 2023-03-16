@@ -43,6 +43,8 @@ template <unsigned int VSplineOrder = 3>
 class ITK_TEMPLATE_EXPORT BSplineSecondOrderDerivativeKernelFunction : public KernelFunctionBase<double>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(BSplineSecondOrderDerivativeKernelFunction);
+
   /** Standard class typedefs. */
   using Self = BSplineSecondOrderDerivativeKernelFunction;
   using Superclass = KernelFunctionBase<double>;
@@ -77,12 +79,6 @@ protected:
     Superclass::PrintSelf(os, indent);
     os << indent << "Spline Order: " << SplineOrder << std::endl;
   }
-
-
-private:
-  BSplineSecondOrderDerivativeKernelFunction(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

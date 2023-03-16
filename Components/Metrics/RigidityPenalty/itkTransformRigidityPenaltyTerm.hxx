@@ -262,7 +262,7 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::DilateRigidityImages()
         err_str += "\nError while dilating m_FixedRigidityImage.\n";
         excp.SetDescription(err_str);
         /** Pass the exception to an higher level. */
-        throw excp;
+        throw;
       }
     }
 
@@ -281,7 +281,7 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::DilateRigidityImages()
         err_str += "\nError while dilating m_MovingRigidityImage.\n";
         excp.SetDescription(err_str);
         /** Pass the exception to an higher level. */
-        throw excp;
+        throw;
       }
     }
 
@@ -345,8 +345,7 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::FillRigidityCoefficientI
 
   /** Fill m_RigidityCoefficientImage. */
   RigidityPixelType      fixedValue, movingValue, in;
-  RigidityImagePointType point;
-  point.Fill(0.0f);
+  RigidityImagePointType point{};
   RigidityImageIndexType index1, index2;
   index1.Fill(0);
   index2.Fill(0);
@@ -1903,7 +1902,7 @@ TransformRigidityPenaltyTerm<TFixedImage, TScalarType>::GetValueAndDerivative(co
     {
       derivative[j] = itDIs[i].Get() / rigidityCoefficientSum;
       ++itDIs[i];
-      j++;
+      ++j;
     } // end while
   }   // end for
 

@@ -66,6 +66,8 @@ class ITK_TEMPLATE_EXPORT SumOfPairwiseCorrelationCoefficientsMetric
   , public MetricBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(SumOfPairwiseCorrelationCoefficientsMetric);
+
   /** Standard ITK-stuff. */
   using Self = SumOfPairwiseCorrelationCoefficientsMetric;
   using Superclass1 = itk::SumOfPairwiseCorrelationCoefficientsMetric<typename MetricBase<TElastix>::FixedImageType,
@@ -170,13 +172,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  SumOfPairwiseCorrelationCoefficientsMetric(const Self &) = delete;
-
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

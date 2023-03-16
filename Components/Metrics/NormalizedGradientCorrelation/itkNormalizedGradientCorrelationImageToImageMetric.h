@@ -45,6 +45,8 @@ class ITK_TEMPLATE_EXPORT NormalizedGradientCorrelationImageToImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(NormalizedGradientCorrelationImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = NormalizedGradientCorrelationImageToImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -171,38 +173,34 @@ protected:
   using MovedSobelFilter = NeighborhoodOperatorImageFilter<MovedGradientImageType, MovedGradientImageType>;
 
 private:
-  NormalizedGradientCorrelationImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  ScalesType                  m_Scales;
-  double                      m_DerivativeDelta;
-  CombinationTransformPointer m_CombinationTransform;
+  ScalesType                  m_Scales{};
+  double                      m_DerivativeDelta{};
+  CombinationTransformPointer m_CombinationTransform{};
 
   /** The mean of the moving image gradients. */
-  mutable MovedGradientPixelType m_MeanMovedGradient[MovedImageDimension];
+  mutable MovedGradientPixelType m_MeanMovedGradient[MovedImageDimension]{};
 
   /** The mean of the fixed image gradients. */
-  mutable FixedGradientPixelType m_MeanFixedGradient[FixedImageDimension];
+  mutable FixedGradientPixelType m_MeanFixedGradient[FixedImageDimension]{};
 
   /** The filter for transforming the moving images. */
-  TransformMovingImageFilterPointer m_TransformMovingImageFilter;
+  TransformMovingImageFilterPointer m_TransformMovingImageFilter{};
 
   /** The Sobel gradients of the fixed image */
-  CastFixedImageFilterPointer m_CastFixedImageFilter;
+  CastFixedImageFilterPointer m_CastFixedImageFilter{};
 
-  SobelOperator<FixedGradientPixelType, Self::FixedImageDimension> m_FixedSobelOperators[FixedImageDimension];
+  SobelOperator<FixedGradientPixelType, Self::FixedImageDimension> m_FixedSobelOperators[FixedImageDimension]{};
 
-  typename FixedSobelFilter::Pointer m_FixedSobelFilters[Self::FixedImageDimension];
+  typename FixedSobelFilter::Pointer m_FixedSobelFilters[Self::FixedImageDimension]{};
 
-  ZeroFluxNeumannBoundaryCondition<MovedGradientImageType> m_MovedBoundCond;
-  ZeroFluxNeumannBoundaryCondition<FixedGradientImageType> m_FixedBoundCond;
+  ZeroFluxNeumannBoundaryCondition<MovedGradientImageType> m_MovedBoundCond{};
+  ZeroFluxNeumannBoundaryCondition<FixedGradientImageType> m_FixedBoundCond{};
 
   /** The Sobel gradients of the moving image */
-  CastMovedImageFilterPointer                                      m_CastMovedImageFilter;
-  SobelOperator<MovedGradientPixelType, Self::MovedImageDimension> m_MovedSobelOperators[MovedImageDimension];
+  CastMovedImageFilterPointer                                      m_CastMovedImageFilter{};
+  SobelOperator<MovedGradientPixelType, Self::MovedImageDimension> m_MovedSobelOperators[MovedImageDimension]{};
 
-  typename MovedSobelFilter::Pointer m_MovedSobelFilters[Self::MovedImageDimension];
+  typename MovedSobelFilter::Pointer m_MovedSobelFilters[Self::MovedImageDimension]{};
 };
 
 } // end namespace itk

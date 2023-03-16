@@ -21,7 +21,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkBSplineDeformableTransform.txx,v $
-  Language:  C++
   Date:      $Date: 2008-05-08 23:22:35 $
   Version:   $Revision: 1.41 $
 
@@ -41,7 +40,9 @@
 #include "itkImageScanlineConstIterator.h"
 #include "itkIdentityTransform.h"
 #include <vnl/vnl_math.h>
+
 #include <array>
+#include <numeric> // For iota.
 #include <vector>
 #include <algorithm> // For std::copy_n.
 
@@ -191,25 +192,11 @@ auto
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::TransformPoint(
   const InputPointType & point) const -> OutputPointType
 {
-  /** Allocate memory on the stack: */
-  const unsigned long                         numberOfWeights = WeightsFunctionType::NumberOfWeights;
-  typename ParameterIndexArrayType::ValueType indicesArray[numberOfWeights];
-  WeightsType                                 weights;
-  ParameterIndexArrayType                     indices(indicesArray, numberOfWeights, false);
-
-  OutputPointType outputPoint;
-
-  InputPointType transformedPoint = point;
-
   /** Check if the coefficient image has been set. */
   if (!this->m_CoefficientImages[0])
   {
     itkWarningMacro(<< "B-spline coefficients have not been set");
-    for (unsigned int j = 0; j < SpaceDimension; ++j)
-    {
-      outputPoint[j] = transformedPoint[j];
-    }
-    return outputPoint;
+    return point;
   }
 
   /***/
@@ -219,25 +206,24 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::Tran
   // we assume zero displacement and return the input point
   if (!this->InsideValidRegion(cindex))
   {
-    outputPoint = transformedPoint;
-    return outputPoint;
+    return point;
   }
 
   // Compute interpolation weights
-  IndexType supportIndex;
+  IndexType   supportIndex;
+  WeightsType weights;
   this->m_WeightsFunction->ComputeStartIndex(cindex, supportIndex);
   this->m_WeightsFunction->Evaluate(cindex, supportIndex, weights);
 
   // For each dimension, correlate coefficient with weights
   const RegionType supportRegion(supportIndex, Superclass::m_SupportSize);
 
-  outputPoint.Fill(NumericTraits<ScalarType>::ZeroValue());
+  OutputPointType outputPoint{};
 
   /** Create iterators over the coefficient images. */
   using IteratorType = ImageScanlineConstIterator<ImageType>;
-  IteratorType      iterators[SpaceDimension];
-  unsigned long     counter = 0;
-  const PixelType * basePointer = this->m_CoefficientImages[0]->GetBufferPointer();
+  IteratorType  iterators[SpaceDimension];
+  unsigned long counter = 0;
 
   for (unsigned int j = 0; j < SpaceDimension; ++j)
   {
@@ -249,9 +235,6 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::Tran
   {
     while (!iterators[0].IsAtEndOfLine())
     {
-      // populate the indices array
-      indices[counter] = &(iterators[0].Value()) - basePointer;
-
       // multiply weight with coefficient to compute displacement
       for (unsigned int j = 0; j < SpaceDimension; ++j)
       {
@@ -261,9 +244,9 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::Tran
       ++counter;
     } // end of scanline
 
-    for (unsigned int j = 0; j < SpaceDimension; ++j)
+    for (auto & iterator : iterators)
     {
-      iterators[j].NextLine();
+      iterator.NextLine();
     }
 
   } // end while
@@ -271,7 +254,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::Tran
   // The output point is the start point + displacement.
   for (unsigned int j = 0; j < SpaceDimension; ++j)
   {
-    outputPoint[j] += transformedPoint[j];
+    outputPoint[j] += point[j];
   }
 
   return outputPoint;
@@ -310,7 +293,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetN
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJacobian(
-  const InputPointType &       ipp,
+  const InputPointType &       inputPoint,
   JacobianType &               jacobian,
   NonZeroJacobianIndicesType & nonZeroJacobianIndices) const
 {
@@ -325,7 +308,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   /** Initialize. */
   const NumberOfParametersType nnzji = this->GetNumberOfNonZeroJacobianIndices();
@@ -341,10 +324,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
   if (!this->InsideValidRegion(cindex))
   {
     nonZeroJacobianIndices.resize(this->GetNumberOfNonZeroJacobianIndices());
-    for (NumberOfParametersType i = 0; i < this->GetNumberOfNonZeroJacobianIndices(); ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -385,7 +365,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::EvaluateJacobianWithImageGradientProduct(
-  const InputPointType &          ipp,
+  const InputPointType &          inputPoint,
   const MovingImageGradientType & movingImageGradient,
   DerivativeType &                imageJacobian,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
@@ -393,7 +373,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::Eval
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   /** Get sizes. */
   const NumberOfParametersType nnzji = this->GetNumberOfNonZeroJacobianIndices();
@@ -405,10 +385,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::Eval
   if (!this->InsideValidRegion(cindex))
   {
     nonZeroJacobianIndices.resize(nnzji);
-    for (NumberOfParametersType i = 0; i < nnzji; ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     imageJacobian.Fill(0.0);
     return;
   }
@@ -454,13 +431,13 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::Eval
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetSpatialJacobian(
-  const InputPointType & ipp,
+  const InputPointType & inputPoint,
   SpatialJacobianType &  sj) const
 {
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and identity spatial Jacobian
@@ -551,7 +528,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetS
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetSpatialHessian(
-  const InputPointType & ipp,
+  const InputPointType & inputPoint,
   SpatialHessianType &   sh) const
 {
   using WeightsValueType = typename WeightsType::ValueType;
@@ -559,7 +536,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetS
   /** Convert the physical point to a continuous index, which
    * is needed for the evaluate functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and zero spatial Hessian
@@ -660,7 +637,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetS
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJacobianOfSpatialJacobian(
-  const InputPointType &          ipp,
+  const InputPointType &          inputPoint,
   JacobianOfSpatialJacobianType & jsj,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
 {
@@ -676,7 +653,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and zero jsj.
@@ -687,10 +664,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
       jsj[i].Fill(0.0);
     }
     nonZeroJacobianIndices.resize(this->GetNumberOfNonZeroJacobianIndices());
-    for (NumberOfParametersType i = 0; i < this->GetNumberOfNonZeroJacobianIndices(); ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -756,7 +730,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJacobianOfSpatialJacobian(
-  const InputPointType &          ipp,
+  const InputPointType &          inputPoint,
   SpatialJacobianType &           sj,
   JacobianOfSpatialJacobianType & jsj,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
@@ -773,7 +747,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and identity sj and zero jsj.
@@ -785,10 +759,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
       jsj[i].Fill(0.0);
     }
     nonZeroJacobianIndices.resize(this->GetNumberOfNonZeroJacobianIndices());
-    for (NumberOfParametersType i = 0; i < this->GetNumberOfNonZeroJacobianIndices(); ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -910,7 +881,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJacobianOfSpatialHessian(
-  const InputPointType &         ipp,
+  const InputPointType &         inputPoint,
   JacobianOfSpatialHessianType & jsh,
   NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const
 {
@@ -926,7 +897,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and identity sj and zero jsj.
@@ -940,10 +911,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
       }
     }
     nonZeroJacobianIndices.resize(this->GetNumberOfNonZeroJacobianIndices());
-    for (NumberOfParametersType i = 0; i < this->GetNumberOfNonZeroJacobianIndices(); ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -1022,7 +990,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
 template <class TScalarType, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJacobianOfSpatialHessian(
-  const InputPointType &         ipp,
+  const InputPointType &         inputPoint,
   SpatialHessianType &           sh,
   JacobianOfSpatialHessianType & jsh,
   NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const
@@ -1041,7 +1009,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and identity sj and zero jsj.
@@ -1059,10 +1027,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
       sh[i].Fill(0.0);
     }
     nonZeroJacobianIndices.resize(this->GetNumberOfNonZeroJacobianIndices());
-    for (NumberOfParametersType i = 0; i < this->GetNumberOfNonZeroJacobianIndices(); ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -1118,7 +1083,7 @@ AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>::GetJ
 
       /** Remember the weights. */
       std::copy_n(weights.begin(), numberOfWeights, weightVector + count * numberOfWeights);
-      count++;
+      ++count;
 
       /** Reset coeffs iterator */
       auto itCoeffs = coeffs.cbegin();

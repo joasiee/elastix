@@ -185,30 +185,30 @@ ELASTIX::RegisterImages(ImagePointer                          fixedImage,
   {
     if (performCout)
     {
-      std::cerr << "ERROR: the output directory does not exist." << std::endl;
-      std::cerr << "You are responsible for creating it." << std::endl;
+      std::cerr << "ERROR: the output directory does not exist.\n"
+                << "You are responsible for creating it." << std::endl;
     }
     return -2;
   }
 
-  /** Setup xout. */
-  const std::string      logFileName = performLogging ? (outFolder + "elastix.log") : "";
-  const elx::xoutManager manager{};
-  int                    returndummy = elx::xoutSetup(logFileName.c_str(), performLogging, performCout);
+  /** Setup the log system. */
+  const std::string     logFileName = performLogging ? (outFolder + "elastix.log") : "";
+  const elx::log::guard logGuard{};
+  int                   returndummy = elx::log::setup(logFileName, performLogging, performCout) ? 0 : 1;
   if ((returndummy != 0) && performCout)
   {
     if (performCout)
     {
-      std::cerr << "ERROR while setting up xout." << std::endl;
+      std::cerr << "ERROR while setting up the log system." << std::endl;
     }
     return returndummy;
   }
-  elxout << std::endl;
+  elx::log::info("");
 
   /** Declare a timer, start it and print the start time. */
   itk::TimeProbe totaltimer;
   totaltimer.Start();
-  elxout << "elastix is started at " << GetCurrentDateAndTime() << ".\n" << std::endl;
+  elx::log::info(std::ostringstream{} << "elastix is started at " << GetCurrentDateAndTime() << ".\n");
 
   /************************************************************************
    *                                              *
@@ -270,13 +270,14 @@ ELASTIX::RegisterImages(ImagePointer                          fixedImage,
     elastixMain->SetTotalNumberOfElastixLevels(nrOfParameterFiles);
 
     /** Print a start message. */
-    elxout << "-------------------------------------------------------------------------\n" << std::endl;
-    elxout << "Running elastix with parameter map " << i << std::endl;
+    elx::log::info(std::ostringstream{} << "-------------------------------------------------------------------------\n"
+                                        << '\n'
+                                        << "Running elastix with parameter map " << i);
 
     /** Declare a timer, start it and print the start time. */
     itk::TimeProbe timer;
     timer.Start();
-    elxout << "Current time: " << GetCurrentDateAndTime() << "." << std::endl;
+    elx::log::info(std::ostringstream{} << "Current time: " << GetCurrentDateAndTime() << ".");
 
     /** Start registration. */
     returndummy = elastixMain->Run(argMap, parameterMaps[i]);
@@ -284,7 +285,7 @@ ELASTIX::RegisterImages(ImagePointer                          fixedImage,
     /** Check for errors. */
     if (returndummy != 0)
     {
-      xl::xout["error"] << "Errors occurred!" << std::endl;
+      elx::log::error("Errors occurred!");
       return returndummy;
     }
 
@@ -301,10 +302,9 @@ ELASTIX::RegisterImages(ImagePointer                          fixedImage,
 
     /** Stop timer and print it. */
     timer.Stop();
-    elxout << "\nCurrent time: " << GetCurrentDateAndTime() << "." << std::endl;
-    elxout << "Time used for running elastix with this parameter file: " << ConvertSecondsToDHMS(timer.GetMean(), 1)
-           << ".\n"
-           << std::endl;
+    elx::log::info(std::ostringstream{} << "\nCurrent time: " << GetCurrentDateAndTime() << ".\n"
+                                        << "Time used for running elastix with this parameter file: "
+                                        << ConvertSecondsToDHMS(timer.GetMean(), 1) << ".\n");
 
     /** Get the transformation parameter map. */
     this->m_TransformParametersList.push_back(elastixMain->GetTransformParametersMap());
@@ -312,17 +312,18 @@ ELASTIX::RegisterImages(ImagePointer                          fixedImage,
     /** Set initial transform to an index number instead of a parameter filename. */
     if (i > 0)
     {
-      std::stringstream toString;
+      std::ostringstream toString;
       toString << (i - 1);
       this->m_TransformParametersList[i]["InitialTransformParametersFileName"][0] = toString.str();
     }
   } // end loop over registrations
 
-  elxout << "-------------------------------------------------------------------------\n" << std::endl;
+  elx::log::info("-------------------------------------------------------------------------\n");
 
   /** Stop totaltimer and print it. */
   totaltimer.Stop();
-  elxout << "Total time elapsed: " << ConvertSecondsToDHMS(totaltimer.GetMean(), 1) << ".\n" << std::endl;
+  elx::log::info(std::ostringstream{} << "Total time elapsed: " << ConvertSecondsToDHMS(totaltimer.GetMean(), 1)
+                                      << ".\n");
 
   /************************************************************************
    *                                *

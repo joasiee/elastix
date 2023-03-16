@@ -46,6 +46,8 @@ namespace itk
 class FullSearchOptimizer : public SingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(FullSearchOptimizer);
+
   /** Standard class typedefs. */
   using Self = FullSearchOptimizer;
   using Superclass = SingleValuedNonLinearOptimizer;
@@ -227,11 +229,11 @@ protected:
   StopConditionType m_StopCondition{ FullRangeSearched };
 
   SearchSpacePointer   m_SearchSpace{ nullptr };
-  SearchSpacePointType m_CurrentPointInSearchSpace;
-  SearchSpaceIndexType m_CurrentIndexInSearchSpace;
-  SearchSpacePointType m_BestPointInSearchSpace;
-  SearchSpaceIndexType m_BestIndexInSearchSpace;
-  SearchSpaceSizeType  m_SearchSpaceSize;
+  SearchSpacePointType m_CurrentPointInSearchSpace{};
+  SearchSpaceIndexType m_CurrentIndexInSearchSpace{};
+  SearchSpacePointType m_BestPointInSearchSpace{};
+  SearchSpaceIndexType m_BestIndexInSearchSpace{};
+  SearchSpaceSizeType  m_SearchSpaceSize{};
   unsigned int         m_NumberOfSearchSpaceDimensions{ 0 };
 
   unsigned long m_LastSearchSpaceChanges{ 0 };
@@ -239,10 +241,6 @@ protected:
   ProcessSearchSpaceChanges();
 
 private:
-  FullSearchOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   unsigned long m_CurrentIteration{ 0 };
 };
 

@@ -202,11 +202,11 @@ PCAMetric2<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & 
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     unsigned int numSamplesOk = 0;
 
@@ -235,7 +235,7 @@ PCAMetric2<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & 
 
       if (sampleOk)
       {
-        numSamplesOk++;
+        ++numSamplesOk;
         datablock(pixelIndex, d) = movingImageValue;
       }
 
@@ -243,7 +243,7 @@ PCAMetric2<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & 
 
     if (numSamplesOk == G)
     {
-      pixelIndex++;
+      ++pixelIndex;
       this->m_NumberOfPixelsCounted++;
     }
 
@@ -407,11 +407,11 @@ PCAMetric2<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformPara
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     unsigned int numSamplesOk = 0;
 
@@ -440,7 +440,7 @@ PCAMetric2<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformPara
 
       if (sampleOk)
       {
-        numSamplesOk++;
+        ++numSamplesOk;
         datablock(pixelIndex, d) = movingImageValue;
       } // end if sampleOk
 
@@ -448,7 +448,7 @@ PCAMetric2<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformPara
     if (numSamplesOk == G)
     {
       SamplesOK.push_back(fixedPoint);
-      pixelIndex++;
+      ++pixelIndex;
       this->m_NumberOfPixelsCounted++;
     }
   }
@@ -543,11 +543,11 @@ PCAMetric2<TFixedImage, TMovingImage>::GetValueAndDerivative(const TransformPara
   {
     /** Read fixed coordinates. */
     FixedImagePointType fixedPoint = SamplesOK[startSamplesOK];
-    startSamplesOK++;
+    ++startSamplesOK;
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     const unsigned int G = lastDimPositions.size();
 

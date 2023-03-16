@@ -26,19 +26,6 @@ namespace itk
 {
 
 /**
- * ******************* Constructor *******************
- */
-
-template <class TInputImage>
-ImageGridSampler<TInputImage>::ImageGridSampler()
-{
-  this->m_SampleGridSpacing.Fill(1);
-  this->m_RequestedNumberOfSamples = 0;
-  this->m_SampleGridSpacing.Fill(static_cast<SampleGridSpacingValueType>(0.0));
-} // end Constructor
-
-
-/**
  * ******************* SetSampleGridSpacing *******************
  */
 
@@ -158,10 +145,8 @@ ImageGridSampler<TInputImage>::GenerateData()
   } // end if no mask
   else
   {
-    if (mask->GetSource())
-    {
-      mask->GetSource()->Update();
-    }
+    mask->UpdateSource();
+
     /* Ugly loop over the grid; checks also if a sample falls within the mask. */
     for (unsigned int t = 0; t < dim_t; ++t)
     {

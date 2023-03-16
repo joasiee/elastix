@@ -24,21 +24,6 @@ namespace itk
 {
 
 /**
- * ******************* Constructor *******************
- */
-
-template <class TInputImage>
-ImageRandomSamplerSparseMask<TInputImage>::ImageRandomSamplerSparseMask()
-{
-  /** Setup random generator. */
-  this->m_RandomGenerator = RandomGeneratorType::GetInstance();
-
-  this->m_InternalFullSampler = InternalFullSamplerType::New();
-
-} // end Constructor
-
-
-/**
  * ******************* GenerateData *******************
  */
 
@@ -179,7 +164,7 @@ ImageRandomSamplerSparseMask<TInputImage>::ThreadedGenerateData(const InputImage
   for (iter = sampleContainerThisThread->Begin(); iter != end; ++iter, sampleId++)
   {
     unsigned long randomIndex = static_cast<unsigned long>(this->m_RandomNumberList[sampleId]);
-    (*iter).Value() = allValidSamples->ElementAt(randomIndex);
+    iter->Value() = allValidSamples->ElementAt(randomIndex);
   }
 
 } // end ThreadedGenerateData()

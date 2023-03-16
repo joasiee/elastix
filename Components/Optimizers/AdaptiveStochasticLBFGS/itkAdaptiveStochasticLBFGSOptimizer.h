@@ -69,6 +69,8 @@ namespace itk
 class AdaptiveStochasticLBFGSOptimizer : public StandardStochasticGradientOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdaptiveStochasticLBFGSOptimizer);
+
   /** Standard ITK.*/
   using Self = AdaptiveStochasticLBFGSOptimizer;
   using Superclass = StandardStochasticGradientOptimizer;
@@ -132,17 +134,13 @@ protected:
   // m_previousGradient m_PrePreviousGradient are not used, where should I put them?
   // DerivativeType m_previousGradient;
   // DerivativeType m_PrePreviousGradient;
-  unsigned long m_UpdateFrequenceL;
-  bool          m_UseSearchDirForAdaptiveStepSize;
+  unsigned long m_UpdateFrequenceL{};
+  bool          m_UseSearchDirForAdaptiveStepSize{};
   bool          m_UseAdaptiveStepSizes{ true };
   double        m_SearchLengthScale{ 10 };
-  std::string   m_StepSizeStrategy;
+  std::string   m_StepSizeStrategy{};
 
 private:
-  AdaptiveStochasticLBFGSOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Settings */
 
   double m_SigmoidMax{ 1.0 };

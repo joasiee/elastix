@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedVersorRigid3DTransform.h,v $
-  Language:  C++
   Date:      $Date: 2006-08-09 04:35:32 $
   Version:   $Revision: 1.27 $
 
@@ -65,6 +64,8 @@ template <class TScalarType = double>
 class ITK_TEMPLATE_EXPORT AdvancedVersorRigid3DTransform : public AdvancedVersorTransform<TScalarType>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedVersorRigid3DTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedVersorRigid3DTransform;
   using Superclass = AdvancedVersorTransform<TScalarType>;
@@ -136,11 +137,6 @@ protected:
 
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
-
-private:
-  AdvancedVersorRigid3DTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 // class AdvancedVersorRigid3DTransform

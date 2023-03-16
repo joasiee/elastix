@@ -118,6 +118,8 @@ class ITK_TEMPLATE_EXPORT GenericMultiResolutionPyramidImageFilter
   : public MultiResolutionPyramidImageFilter<TInputImage, TOutputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GenericMultiResolutionPyramidImageFilter);
+
   /** Standard class typedefs. */
   using Self = GenericMultiResolutionPyramidImageFilter;
   using Superclass = MultiResolutionPyramidImageFilter<TInputImage, TOutputImage>;
@@ -268,10 +270,10 @@ protected:
   void
   ReleaseOutputs();
 
-  SmoothingScheduleType m_SmoothingSchedule;
-  unsigned int          m_CurrentLevel;
-  bool                  m_ComputeOnlyForCurrentLevel;
-  bool                  m_SmoothingScheduleDefined;
+  SmoothingScheduleType m_SmoothingSchedule{};
+  unsigned int          m_CurrentLevel{};
+  bool                  m_ComputeOnlyForCurrentLevel{};
+  bool                  m_SmoothingScheduleDefined{};
 
 private:
   /** Typedef for smoother. Smooth always happens first, then only from
@@ -358,11 +360,6 @@ private:
   /** Returns true if rescale has been used in pipeline, otherwise return false. */
   bool
   IsRescaleUsed() const;
-
-private:
-  GenericMultiResolutionPyramidImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // namespace itk

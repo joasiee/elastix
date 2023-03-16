@@ -65,6 +65,8 @@ template <typename TInputImage,
 class ITK_TEMPLATE_EXPORT ITKOpenCL_EXPORT GPUImageToImageFilter : public TParentImageFilter
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUImageToImageFilter);
+
   /** Standard class typedefs. */
   using Self = GPUImageToImageFilter;
   using Superclass = TParentImageFilter;
@@ -123,14 +125,10 @@ protected:
   {}
 
   // GPU kernel manager
-  typename OpenCLKernelManager::Pointer m_GPUKernelManager;
+  typename OpenCLKernelManager::Pointer m_GPUKernelManager{};
 
 private:
-  GPUImageToImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  bool m_GPUEnabled;
+  bool m_GPUEnabled{};
 };
 
 } // end namespace itk

@@ -112,6 +112,8 @@ class ITK_TEMPLATE_EXPORT TransformRigidityPenalty
   , public MetricBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(TransformRigidityPenalty);
+
   /** Standard ITK-stuff. */
   using Self = TransformRigidityPenalty;
   using Superclass1 = itk::TransformRigidityPenaltyTerm<typename MetricBase<TElastix>::FixedImageType, double>;
@@ -230,12 +232,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  TransformRigidityPenalty(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

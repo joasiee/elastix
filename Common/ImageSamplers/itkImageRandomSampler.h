@@ -39,6 +39,8 @@ template <class TInputImage>
 class ITK_TEMPLATE_EXPORT ImageRandomSampler : public ImageRandomSamplerBase<TInputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ImageRandomSampler);
+
   /** Standard ITK-stuff. */
   using Self = ImageRandomSampler;
   using Superclass = ImageRandomSamplerBase<TInputImage>;
@@ -86,16 +88,6 @@ protected:
 
   void
   ThreadedGenerateData(const InputImageRegionType & inputRegionForThread, ThreadIdType threadId) override;
-
-private:
-  /** The deleted copy constructor. */
-  ImageRandomSampler(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
-  void
-  GeneratePoint(InputImageIndexType & index, InputImagePointType & point);
 };
 
 } // end namespace itk

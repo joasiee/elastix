@@ -71,7 +71,7 @@ MultiResolutionRegistration<TElastix>::BeforeRegistration()
     err_str += "\nError occurred while updating region info of the fixed image.\n";
     excp.SetDescription(err_str);
     /** Pass the exception to an higher level. */
-    throw excp;
+    throw;
   }
 
   /** Set the fixedImageRegion. */
@@ -144,7 +144,7 @@ MultiResolutionRegistration<TElastix>::SetComponents()
     }
     else
     {
-      xl::xout["error"] << "No ImageSampler has been specified." << std::endl;
+      log::error("No ImageSampler has been specified.");
       itkExceptionMacro(<< "The metric requires an ImageSampler, but it is not available!");
     }
   }
@@ -194,7 +194,8 @@ MultiResolutionRegistration<TElastix>::UpdateMasks(unsigned int level)
 
   /** Stop timer and print the elapsed time. */
   timer.Stop();
-  elxout << "Setting the fixed masks took: " << static_cast<long>(timer.GetMean() * 1000) << " ms." << std::endl;
+  log::info(std::ostringstream{} << "Setting the fixed masks took: " << static_cast<long>(timer.GetMean() * 1000)
+                                 << " ms.");
 
   /** Start timer, to time the whole moving mask configuration procedure. */
   timer.Reset();
@@ -211,7 +212,8 @@ MultiResolutionRegistration<TElastix>::UpdateMasks(unsigned int level)
 
   /** Stop timer and print the elapsed time. */
   timer.Stop();
-  elxout << "Setting the moving masks took: " << static_cast<long>(timer.GetMean() * 1000) << " ms." << std::endl;
+  log::info(std::ostringstream{} << "Setting the moving masks took: " << static_cast<long>(timer.GetMean() * 1000)
+                                 << " ms.");
 
 } // end UpdateMasks()
 

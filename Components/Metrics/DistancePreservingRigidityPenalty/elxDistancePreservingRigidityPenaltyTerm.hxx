@@ -41,28 +41,18 @@ DistancePreservingRigidityPenalty<TElastix>::BeforeRegistration()
     segmentedImageName, "SegmentedImageName", this->GetComponentLabel(), 0, -1, false);
 
   using SegmentedImageType = typename Superclass1::SegmentedImageType;
-  using SegmentedImageReaderType = itk::ImageFileReader<SegmentedImageType>;
-  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<SegmentedImageType>;
-  using ChangeInfoFilterPointer = typename ChangeInfoFilterType::Pointer;
   using DirectionType = typename SegmentedImageType::DirectionType;
   using SizeValueType = typename SegmentedImageType::SizeType::SizeValueType;
 
-  /** Create the reader and set the filename. */
-  auto segmentedImageReader = SegmentedImageReaderType::New();
-  segmentedImageReader->SetFileName(segmentedImageName);
-  segmentedImageReader->Update();
-
   /** Possibly overrule the direction cosines. */
-  ChangeInfoFilterPointer infoChanger = ChangeInfoFilterType::New();
-  DirectionType           direction;
-  direction.SetIdentity();
-  infoChanger->SetOutputDirection(direction);
+  const auto infoChanger = itk::ChangeInformationImageFilter<SegmentedImageType>::New();
   infoChanger->SetChangeDirection(!this->GetElastix()->GetUseDirectionCosines());
-  infoChanger->SetInput(segmentedImageReader->GetOutput());
 
   /** Do the reading. */
   try
   {
+    const auto image = itk::ReadImage<SegmentedImageType>(segmentedImageName);
+    infoChanger->SetInput(image);
     infoChanger->Update();
   }
   catch (itk::ExceptionObject & excp)
@@ -73,7 +63,7 @@ DistancePreservingRigidityPenalty<TElastix>::BeforeRegistration()
     err_str += "\nError occurred while reading the segmented image.\n";
     excp.SetDescription(err_str);
     /** Pass the exception to an higher level. */
-    throw excp;
+    throw;
   }
 
   this->SetSegmentedImage(infoChanger->GetOutput());
@@ -140,8 +130,8 @@ DistancePreservingRigidityPenalty<TElastix>::Initialize()
 
   /** Stop and print the timer. */
   timer.Stop();
-  elxout << "Initialization of DistancePreservingRigidityPenalty term took: "
-         << static_cast<long>(timer.GetMean() * 1000) << " ms." << std::endl;
+  log::info(std::ostringstream{} << "Initialization of DistancePreservingRigidityPenalty term took: "
+                                 << static_cast<long>(timer.GetMean() * 1000) << " ms.");
 
 } // end Initialize()
 

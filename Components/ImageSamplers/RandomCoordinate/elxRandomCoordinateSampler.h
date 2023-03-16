@@ -80,6 +80,8 @@ class ITK_TEMPLATE_EXPORT RandomCoordinateSampler
   , public elx::ImageSamplerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(RandomCoordinateSampler);
+
   /** Standard ITK-stuff. */
   using Self = RandomCoordinateSampler;
   using Superclass1 = itk::ImageRandomCoordinateSampler<typename elx::ImageSamplerBase<TElastix>::InputImageType>;
@@ -149,12 +151,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  RandomCoordinateSampler(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

@@ -45,6 +45,8 @@ class ITK_EXPORT GPUShrinkImageFilter
   : public GPUImageToImageFilter<TInputImage, TOutputImage, ShrinkImageFilter<TInputImage, TOutputImage>>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUShrinkImageFilter);
+
   /** Standard class typedefs. */
   using Self = GPUShrinkImageFilter;
   using CPUSuperclass = ShrinkImageFilter<TInputImage, TOutputImage>;
@@ -88,12 +90,8 @@ protected:
   GPUGenerateData() override;
 
 private:
-  GPUShrinkImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  std::size_t m_FilterGPUKernelHandle;
-  std::size_t m_DeviceLocalMemorySize;
+  std::size_t m_FilterGPUKernelHandle{};
+  std::size_t m_DeviceLocalMemorySize{};
 };
 
 } // end namespace itk

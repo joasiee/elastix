@@ -44,9 +44,9 @@ ParameterObject::SetParameterMap(const ParameterMapType & parameterMap)
  */
 
 void
-ParameterObject::SetParameterMap(const unsigned int & index, const ParameterMapType & parameterMap)
+ParameterObject::SetParameterMap(const unsigned int index, const ParameterMapType & parameterMap)
 {
-  this->m_ParameterMap[index] = parameterMap;
+  m_ParameterMaps[index] = parameterMap;
 }
 
 
@@ -55,11 +55,11 @@ ParameterObject::SetParameterMap(const unsigned int & index, const ParameterMapT
  */
 
 void
-ParameterObject::SetParameterMap(const ParameterMapVectorType & parameterMap)
+ParameterObject::SetParameterMap(const ParameterMapVectorType & parameterMaps)
 {
-  if (this->m_ParameterMap != parameterMap)
+  if (m_ParameterMaps != parameterMaps)
   {
-    this->m_ParameterMap = parameterMap;
+    m_ParameterMaps = parameterMaps;
     this->Modified();
   }
 }
@@ -72,7 +72,7 @@ ParameterObject::SetParameterMap(const ParameterMapVectorType & parameterMap)
 void
 ParameterObject::AddParameterMap(const ParameterMapType & parameterMap)
 {
-  this->m_ParameterMap.push_back(parameterMap);
+  m_ParameterMaps.push_back(parameterMap);
   this->Modified();
 }
 
@@ -82,9 +82,9 @@ ParameterObject::AddParameterMap(const ParameterMapType & parameterMap)
  */
 
 const ParameterObject::ParameterMapType &
-ParameterObject::GetParameterMap(const unsigned int & index) const
+ParameterObject::GetParameterMap(const unsigned int index) const
 {
-  return this->m_ParameterMap[index];
+  return m_ParameterMaps[index];
 }
 
 
@@ -93,11 +93,9 @@ ParameterObject::GetParameterMap(const unsigned int & index) const
  */
 
 void
-ParameterObject::SetParameter(const unsigned int &       index,
-                              const ParameterKeyType &   key,
-                              const ParameterValueType & value)
+ParameterObject::SetParameter(const unsigned int index, const ParameterKeyType & key, const ParameterValueType & value)
 {
-  this->m_ParameterMap[index][key] = ParameterValueVectorType(1, value);
+  m_ParameterMaps[index][key] = ParameterValueVectorType(1, value);
 }
 
 
@@ -106,11 +104,11 @@ ParameterObject::SetParameter(const unsigned int &       index,
  */
 
 void
-ParameterObject::SetParameter(const unsigned int &             index,
+ParameterObject::SetParameter(const unsigned int               index,
                               const ParameterKeyType &         key,
                               const ParameterValueVectorType & value)
 {
-  this->m_ParameterMap[index][key] = value;
+  m_ParameterMaps[index][key] = value;
 }
 
 
@@ -121,9 +119,9 @@ ParameterObject::SetParameter(const unsigned int &             index,
 void
 ParameterObject::SetParameter(const ParameterKeyType & key, const ParameterValueType & value)
 {
-  for (unsigned int index = 0; index < this->GetNumberOfParameterMaps(); ++index)
+  for (auto & parameterMap : m_ParameterMaps)
   {
-    this->SetParameter(index, key, value);
+    parameterMap[key] = ParameterValueVectorType(1, value);
   }
 }
 
@@ -135,9 +133,9 @@ ParameterObject::SetParameter(const ParameterKeyType & key, const ParameterValue
 void
 ParameterObject::SetParameter(const ParameterKeyType & key, const ParameterValueVectorType & value)
 {
-  for (unsigned int index = 0; index < this->GetNumberOfParameterMaps(); ++index)
+  for (auto & parameterMap : m_ParameterMaps)
   {
-    this->SetParameter(index, key, value);
+    parameterMap[key] = value;
   }
 }
 
@@ -147,9 +145,9 @@ ParameterObject::SetParameter(const ParameterKeyType & key, const ParameterValue
  */
 
 const ParameterObject::ParameterValueVectorType &
-ParameterObject::GetParameter(const unsigned int & index, const ParameterKeyType & key)
+ParameterObject::GetParameter(const unsigned int index, const ParameterKeyType & key)
 {
-  return this->m_ParameterMap[index][key];
+  return m_ParameterMaps[index][key];
 }
 
 
@@ -158,9 +156,9 @@ ParameterObject::GetParameter(const unsigned int & index, const ParameterKeyType
  */
 
 void
-ParameterObject::RemoveParameter(const unsigned int & index, const ParameterKeyType & key)
+ParameterObject::RemoveParameter(const unsigned int index, const ParameterKeyType & key)
 {
-  this->m_ParameterMap[index].erase(key);
+  m_ParameterMaps[index].erase(key);
 }
 
 
@@ -201,16 +199,16 @@ ParameterObject::ReadParameterFile(const ParameterFileNameVectorType & parameter
     itkExceptionMacro("Parameter filename container is empty.");
   }
 
-  this->m_ParameterMap.clear();
+  m_ParameterMaps.clear();
 
-  for (unsigned int i = 0; i < parameterFileNameVector.size(); ++i)
+  for (const auto & parameterFileName : parameterFileNameVector)
   {
-    if (!itksys::SystemTools::FileExists(parameterFileNameVector[i]))
+    if (!itksys::SystemTools::FileExists(parameterFileName))
     {
-      itkExceptionMacro("Parameter file \"" << parameterFileNameVector[i] << "\" does not exist.")
+      itkExceptionMacro("Parameter file \"" << parameterFileName << "\" does not exist.")
     }
 
-    this->AddParameterFile(parameterFileNameVector[i]);
+    this->AddParameterFile(parameterFileName);
   }
 }
 
@@ -222,7 +220,7 @@ ParameterObject::ReadParameterFile(const ParameterFileNameVectorType & parameter
 void
 ParameterObject::AddParameterFile(const ParameterFileNameType & parameterFileName)
 {
-  this->m_ParameterMap.push_back(itk::ParameterFileParser::ReadParameterMap(parameterFileName));
+  m_ParameterMaps.push_back(itk::ParameterFileParser::ReadParameterMap(parameterFileName));
 }
 
 
@@ -232,15 +230,15 @@ ParameterObject::AddParameterFile(const ParameterFileNameType & parameterFileNam
 
 
 void
-ParameterObject::WriteParameterFile()
+ParameterObject::WriteParameterFile() const
 {
   ParameterFileNameVectorType parameterFileNameVector;
-  for (unsigned int i = 0; i < m_ParameterMap.size(); ++i)
+  for (unsigned int i = 0; i < m_ParameterMaps.size(); ++i)
   {
     parameterFileNameVector.push_back("ParametersFile." + std::to_string(i) + ".txt");
   }
 
-  this->WriteParameterFile(this->m_ParameterMap, parameterFileNameVector);
+  Self::WriteParameterFile(m_ParameterMaps, parameterFileNameVector);
 }
 
 
@@ -260,9 +258,9 @@ ParameterObject::WriteParameterFile(const ParameterMapType &      parameterMap,
   {
     parameterFile.open(parameterFileName.c_str(), std::ofstream::out);
   }
-  catch (std::ofstream::failure e)
+  catch (const std::ios_base::failure & e)
   {
-    itkExceptionMacro("Error opening parameter file: " << e.what());
+    itkGenericExceptionMacro("Error opening parameter file: " << e.what());
   }
 
   try
@@ -276,8 +274,8 @@ ParameterObject::WriteParameterFile(const ParameterMapType &      parameterMap,
       ParameterValueVectorType parameterMapValueVector = parameterMapIterator->second;
       for (unsigned int i = 0; i < parameterMapValueVector.size(); ++i)
       {
-        std::stringstream stream(parameterMapValueVector[i]);
-        float             number;
+        std::istringstream stream(parameterMapValueVector[i]);
+        float              number;
         stream >> number;
         if (stream.fail() || stream.bad())
         {
@@ -290,21 +288,21 @@ ParameterObject::WriteParameterFile(const ParameterMapType &      parameterMap,
       }
 
       parameterFile << ")" << std::endl;
-      parameterMapIterator++;
+      ++parameterMapIterator;
     }
   }
-  catch (std::stringstream::failure e)
+  catch (const std::ios_base::failure & e)
   {
-    itkExceptionMacro("Error writing to paramter file: " << e.what());
+    itkGenericExceptionMacro("Error writing to paramter file: " << e.what());
   }
 
   try
   {
     parameterFile.close();
   }
-  catch (std::ofstream::failure e)
+  catch (const std::ios_base::failure & e)
   {
-    itkExceptionMacro("Error closing parameter file:" << e.what());
+    itkGenericExceptionMacro("Error closing parameter file:" << e.what());
   }
 }
 
@@ -314,21 +312,21 @@ ParameterObject::WriteParameterFile(const ParameterMapType &      parameterMap,
  */
 
 void
-ParameterObject::WriteParameterFile(const ParameterFileNameType & parameterFileName)
+ParameterObject::WriteParameterFile(const ParameterFileNameType & parameterFileName) const
 {
-  if (this->m_ParameterMap.empty())
+  if (m_ParameterMaps.empty())
   {
     itkExceptionMacro("Error writing parameter map to disk: The parameter object is empty.");
   }
 
-  if (this->m_ParameterMap.size() > 1)
+  if (m_ParameterMaps.size() > 1)
   {
     itkExceptionMacro(
-      << "Error writing to disk: The number of parameter maps (" << this->m_ParameterMap.size()
+      << "Error writing to disk: The number of parameter maps (" << m_ParameterMaps.size()
       << ") does not match the number of provided filenames (1). Please provide a vector of filenames.");
   }
 
-  this->WriteParameterFile(this->m_ParameterMap[0], parameterFileName);
+  this->WriteParameterFile(m_ParameterMaps[0], parameterFileName);
 }
 
 
@@ -342,9 +340,9 @@ ParameterObject::WriteParameterFile(const ParameterMapVectorType &      paramete
 {
   if (parameterMapVector.size() != parameterFileNameVector.size())
   {
-    itkExceptionMacro(<< "Error writing to disk: The number of parameter maps (" << parameterMapVector.size()
-                      << ") does not match the number of provided filenames (" << parameterFileNameVector.size()
-                      << ").");
+    itkGenericExceptionMacro(<< "Error writing to disk: The number of parameter maps (" << parameterMapVector.size()
+                             << ") does not match the number of provided filenames (" << parameterFileNameVector.size()
+                             << ").");
   }
 
   // Add initial transform parameter file names. Do not touch the first one,
@@ -357,7 +355,7 @@ ParameterObject::WriteParameterFile(const ParameterMapVectorType &      paramete
       parameterMap["InitialTransformParameterFileName"][0] = parameterFileNameVector[i - 1];
     }
 
-    this->WriteParameterFile(parameterMap, parameterFileNameVector[i]);
+    Self::WriteParameterFile(parameterMap, parameterFileNameVector[i]);
   }
 }
 
@@ -368,9 +366,9 @@ ParameterObject::WriteParameterFile(const ParameterMapVectorType &      paramete
 
 
 void
-ParameterObject::WriteParameterFile(const ParameterFileNameVectorType & parameterFileNameVector)
+ParameterObject::WriteParameterFile(const ParameterFileNameVectorType & parameterFileNameVector) const
 {
-  this->WriteParameterFile(this->m_ParameterMap, parameterFileNameVector);
+  Self::WriteParameterFile(m_ParameterMaps, parameterFileNameVector);
 }
 
 
@@ -379,9 +377,9 @@ ParameterObject::WriteParameterFile(const ParameterFileNameVectorType & paramete
  */
 
 const ParameterObject::ParameterMapType
-ParameterObject::GetDefaultParameterMap(const std::string &  transformName,
-                                        const unsigned int & numberOfResolutions,
-                                        const double &       finalGridSpacingInPhysicalUnits)
+ParameterObject::GetDefaultParameterMap(const std::string & transformName,
+                                        const unsigned int  numberOfResolutions,
+                                        const double        finalGridSpacingInPhysicalUnits)
 {
   // Parameters that depend on size and number of resolutions
   ParameterMapType parameterMap = ParameterMapType();
@@ -497,11 +495,11 @@ ParameterObject::PrintSelf(std::ostream & os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
 
-  for (unsigned int i = 0; i < this->m_ParameterMap.size(); ++i)
+  for (unsigned int i = 0; i < m_ParameterMaps.size(); ++i)
   {
     os << "ParameterMap " << i << ": " << std::endl;
-    ParameterMapConstIterator parameterMapIterator = this->m_ParameterMap[i].begin();
-    ParameterMapConstIterator parameterMapIteratorEnd = this->m_ParameterMap[i].end();
+    ParameterMapConstIterator parameterMapIterator = m_ParameterMaps[i].begin();
+    ParameterMapConstIterator parameterMapIteratorEnd = m_ParameterMaps[i].end();
     while (parameterMapIterator != parameterMapIteratorEnd)
     {
       os << "  (" << parameterMapIterator->first;
@@ -509,8 +507,8 @@ ParameterObject::PrintSelf(std::ostream & os, itk::Indent indent) const
 
       for (unsigned int j = 0; j < parameterMapValueVector.size(); ++j)
       {
-        std::stringstream stream(parameterMapValueVector[j]);
-        float             number;
+        std::istringstream stream(parameterMapValueVector[j]);
+        float              number;
         stream >> number;
         if (stream.fail())
         {

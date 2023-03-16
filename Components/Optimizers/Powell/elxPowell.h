@@ -43,6 +43,8 @@ class ITK_TEMPLATE_EXPORT Powell
   , public OptimizerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(Powell);
+
   /** Standard ITK.*/
   using Self = Powell;
   using Superclass1 = PowellOptimizer;
@@ -104,10 +106,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  Powell(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

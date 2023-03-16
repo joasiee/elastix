@@ -50,6 +50,8 @@ template <class TInput, unsigned int NDimension>
 class ITK_TEMPLATE_EXPORT LimiterFunctionBase : public FunctionBase<TInput, typename NumericTraits<TInput>::RealType>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(LimiterFunctionBase);
+
   /** Standard class typedefs. */
   using Self = LimiterFunctionBase;
   using Superclass = FunctionBase<TInput, typename NumericTraits<TInput>::RealType>;
@@ -113,15 +115,10 @@ protected:
 
   ~LimiterFunctionBase() override = default;
 
-  OutputType m_UpperBound;
-  OutputType m_LowerBound;
-  InputType  m_UpperThreshold;
-  InputType  m_LowerThreshold;
-
-private:
-  LimiterFunctionBase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  OutputType m_UpperBound{};
+  OutputType m_LowerBound{};
+  InputType  m_UpperThreshold{};
+  InputType  m_LowerThreshold{};
 };
 
 } // end namespace itk

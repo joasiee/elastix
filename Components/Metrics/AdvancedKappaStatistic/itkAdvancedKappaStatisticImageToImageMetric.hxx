@@ -41,22 +41,7 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::AdvancedKap
   this->m_Epsilon = 1e-3;
   this->m_Complement = true;
 
-  // Multi-threading structs
-  this->m_KappaGetValueAndDerivativePerThreadVariables = nullptr;
-  this->m_KappaGetValueAndDerivativePerThreadVariablesSize = 0;
-
 } // end Constructor
-
-
-/**
- * ******************* Destructor *******************
- */
-
-template <class TFixedImage, class TMovingImage>
-AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::~AdvancedKappaStatisticImageToImageMetric()
-{
-  delete[] this->m_KappaGetValueAndDerivativePerThreadVariables;
-} // end Destructor
 
 
 /**
@@ -77,26 +62,20 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::InitializeT
   const ThreadIdType numberOfThreads = Self::GetNumberOfWorkUnits();
 
   /** Only resize the array of structs when needed. */
-  if (this->m_KappaGetValueAndDerivativePerThreadVariablesSize != numberOfThreads)
-  {
-    delete[] this->m_KappaGetValueAndDerivativePerThreadVariables;
-    this->m_KappaGetValueAndDerivativePerThreadVariables =
-      new AlignedKappaGetValueAndDerivativePerThreadStruct[numberOfThreads];
-    this->m_KappaGetValueAndDerivativePerThreadVariablesSize = numberOfThreads;
-  }
+  m_KappaGetValueAndDerivativePerThreadVariables.resize(numberOfThreads);
 
   /** Some initialization. */
   const SizeValueType       zero1 = NumericTraits<SizeValueType>::Zero;
   const DerivativeValueType zero2 = NumericTraits<DerivativeValueType>::Zero;
-  for (ThreadIdType i = 0; i < numberOfThreads; ++i)
+  for (auto & perThreadVariable : m_KappaGetValueAndDerivativePerThreadVariables)
   {
-    this->m_KappaGetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted = zero1;
-    this->m_KappaGetValueAndDerivativePerThreadVariables[i].st_AreaSum = zero1;
-    this->m_KappaGetValueAndDerivativePerThreadVariables[i].st_AreaIntersection = zero1;
-    this->m_KappaGetValueAndDerivativePerThreadVariables[i].st_DerivativeSum1.SetSize(this->GetNumberOfParameters());
-    this->m_KappaGetValueAndDerivativePerThreadVariables[i].st_DerivativeSum2.SetSize(this->GetNumberOfParameters());
-    this->m_KappaGetValueAndDerivativePerThreadVariables[i].st_DerivativeSum1.Fill(zero2);
-    this->m_KappaGetValueAndDerivativePerThreadVariables[i].st_DerivativeSum2.Fill(zero2);
+    perThreadVariable.st_NumberOfPixelsCounted = zero1;
+    perThreadVariable.st_AreaSum = zero1;
+    perThreadVariable.st_AreaIntersection = zero1;
+    perThreadVariable.st_DerivativeSum1.SetSize(this->GetNumberOfParameters());
+    perThreadVariable.st_DerivativeSum2.SetSize(this->GetNumberOfParameters());
+    perThreadVariable.st_DerivativeSum1.Fill(zero2);
+    perThreadVariable.st_DerivativeSum2.Fill(zero2);
   }
 
 } // end InitializeThreadingParameters()
@@ -168,7 +147,7 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform point. */
     const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
@@ -190,7 +169,7 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
       this->m_NumberOfPixelsCounted++;
 
       /** Get the fixed image value. */
-      const RealType & fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      const RealType & fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
 
       /** Update the intermediate values. */
       if (this->m_UseForegroundValue)
@@ -199,30 +178,30 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValue(
         const RealType diffMoving = std::abs(movingImageValue - this->m_ForegroundValue);
         if (diffFixed < this->m_Epsilon)
         {
-          fixedForegroundArea++;
+          ++fixedForegroundArea;
         }
         if (diffMoving < this->m_Epsilon)
         {
-          movingForegroundArea++;
+          ++movingForegroundArea;
         }
         if (diffFixed < this->m_Epsilon && diffMoving < this->m_Epsilon)
         {
-          intersection++;
+          ++intersection;
         }
       }
       else
       {
         if (fixedImageValue > this->m_Epsilon)
         {
-          fixedForegroundArea++;
+          ++fixedForegroundArea;
         }
         if (movingImageValue > this->m_Epsilon)
         {
-          movingForegroundArea++;
+          ++movingForegroundArea;
         }
         if (fixedImageValue > this->m_Epsilon && movingImageValue > this->m_Epsilon)
         {
-          intersection++;
+          ++intersection;
         }
       }
 
@@ -336,7 +315,7 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValueAnd
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform point. */
     const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
@@ -360,7 +339,7 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::GetValueAnd
       this->m_NumberOfPixelsCounted++;
 
       /** Get the fixed image value. */
-      const RealType & fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      const RealType & fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
 
       /** Get the TransformJacobian dT/dmu. */
       this->EvaluateTransformJacobian(fixedPoint, jacobian, nzji);
@@ -516,7 +495,7 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGet
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform point. */
     const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
@@ -537,10 +516,10 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGet
     /** Do the actual calculation of the metric value. */
     if (sampleOk)
     {
-      numberOfPixelsCounted++;
+      ++numberOfPixelsCounted;
 
       /** Get the fixed image value. */
-      const RealType & fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      const RealType & fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
 
 #if 0
       /** Get the TransformJacobian dT/dmu. */
@@ -698,14 +677,14 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::AccumulateD
   for (unsigned int j = jmin; j < jmax; ++j)
   {
     sum1 = sum2 = zero;
-    for (ThreadIdType i = 0; i < nrOfThreads; ++i)
+    for (auto & perThreadVariable : temp->st_Metric->m_KappaGetValueAndDerivativePerThreadVariables)
     {
-      sum1 += temp->st_Metric->m_KappaGetValueAndDerivativePerThreadVariables[i].st_DerivativeSum1[j];
-      sum2 += temp->st_Metric->m_KappaGetValueAndDerivativePerThreadVariables[i].st_DerivativeSum2[j];
+      sum1 += perThreadVariable.st_DerivativeSum1[j];
+      sum2 += perThreadVariable.st_DerivativeSum2[j];
 
       /** Reset these variables for the next iteration. */
-      temp->st_Metric->m_KappaGetValueAndDerivativePerThreadVariables[i].st_DerivativeSum1[j] = zero;
-      temp->st_Metric->m_KappaGetValueAndDerivativePerThreadVariables[i].st_DerivativeSum2[j] = zero;
+      perThreadVariable.st_DerivativeSum1[j] = zero;
+      perThreadVariable.st_DerivativeSum2[j] = zero;
     }
     temp->st_DerivativePointer[j] = temp->st_Coefficient1 * sum1 - temp->st_Coefficient2 * sum2;
   }
@@ -740,32 +719,32 @@ AdvancedKappaStatisticImageToImageMetric<TFixedImage, TMovingImage>::UpdateValue
     const RealType diffMoving = std::abs(movingImageValue - this->m_ForegroundValue);
     if (diffFixed < this->m_Epsilon)
     {
-      fixedForegroundArea++;
+      ++fixedForegroundArea;
       usableFixedSample = true;
     }
     if (diffMoving < this->m_Epsilon)
     {
-      movingForegroundArea++;
+      ++movingForegroundArea;
     }
     if (diffFixed < this->m_Epsilon && diffMoving < this->m_Epsilon)
     {
-      intersection++;
+      ++intersection;
     }
   }
   else
   {
     if (fixedImageValue > this->m_Epsilon)
     {
-      fixedForegroundArea++;
+      ++fixedForegroundArea;
       usableFixedSample = true;
     }
     if (movingImageValue > this->m_Epsilon)
     {
-      movingForegroundArea++;
+      ++movingForegroundArea;
     }
     if (fixedImageValue > this->m_Epsilon && movingImageValue > this->m_Epsilon)
     {
-      intersection++;
+      ++intersection;
     }
   }
 

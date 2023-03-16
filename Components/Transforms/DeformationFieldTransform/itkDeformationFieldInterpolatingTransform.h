@@ -47,6 +47,8 @@ class ITK_TEMPLATE_EXPORT DeformationFieldInterpolatingTransform
   : public AdvancedTransform<TScalarType, NDimensions, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(DeformationFieldInterpolatingTransform);
+
   /** Standard class typedefs. */
   using Self = DeformationFieldInterpolatingTransform;
   using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
@@ -180,7 +182,7 @@ public:
 
   /** Must be provided. */
   void
-  GetJacobian(const InputPointType &       ipp,
+  GetJacobian(const InputPointType &       inputPoint,
               JacobianType &               j,
               NonZeroJacobianIndicesType & nonZeroJacobianIndices) const override
   {
@@ -189,21 +191,21 @@ public:
 
 
   void
-  GetSpatialJacobian(const InputPointType & ipp, SpatialJacobianType & sj) const override
+  GetSpatialJacobian(const InputPointType & inputPoint, SpatialJacobianType & sj) const override
   {
     itkExceptionMacro(<< "Not implemented for DeformationFieldInterpolatingTransform");
   }
 
 
   void
-  GetSpatialHessian(const InputPointType & ipp, SpatialHessianType & sh) const override
+  GetSpatialHessian(const InputPointType & inputPoint, SpatialHessianType & sh) const override
   {
     itkExceptionMacro(<< "Not implemented for DeformationFieldInterpolatingTransform");
   }
 
 
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override
   {
@@ -212,7 +214,7 @@ public:
 
 
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                SpatialJacobianType &           sj,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override
@@ -222,7 +224,7 @@ public:
 
 
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override
   {
@@ -231,7 +233,7 @@ public:
 
 
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               SpatialHessianType &           sh,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override
@@ -252,14 +254,9 @@ protected:
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
 
-  DeformationFieldPointer             m_DeformationField;
-  DeformationFieldPointer             m_ZeroDeformationField;
-  DeformationFieldInterpolatorPointer m_DeformationFieldInterpolator;
-
-private:
-  DeformationFieldInterpolatingTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  DeformationFieldPointer             m_DeformationField{};
+  DeformationFieldPointer             m_ZeroDeformationField{};
+  DeformationFieldInterpolatorPointer m_DeformationFieldInterpolator{};
 };
 
 } // namespace itk

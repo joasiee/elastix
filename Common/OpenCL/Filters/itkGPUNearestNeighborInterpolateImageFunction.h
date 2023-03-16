@@ -47,6 +47,8 @@ class ITK_TEMPLATE_EXPORT GPUNearestNeighborInterpolateImageFunction
                                        NearestNeighborInterpolateImageFunction<TInputImage, TCoordRep>>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUNearestNeighborInterpolateImageFunction);
+
   /** Standard class typedefs. */
   using Self = GPUNearestNeighborInterpolateImageFunction;
   using CPUSuperclass = NearestNeighborInterpolateImageFunction<TInputImage, TCoordRep>;
@@ -72,11 +74,7 @@ protected:
   GetSourceCode(std::string & source) const override;
 
 private:
-  GPUNearestNeighborInterpolateImageFunction(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  std::vector<std::string> m_Sources;
+  std::vector<std::string> m_Sources{};
 };
 
 } // end namespace itk

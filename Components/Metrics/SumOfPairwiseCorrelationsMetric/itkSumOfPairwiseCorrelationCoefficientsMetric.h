@@ -32,6 +32,8 @@ class ITK_TEMPLATE_EXPORT SumOfPairwiseCorrelationCoefficientsMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(SumOfPairwiseCorrelationCoefficientsMetric);
+
   /** Standard class typedefs. */
   using Self = SumOfPairwiseCorrelationCoefficientsMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -152,23 +154,19 @@ protected:
                                         DerivativeType &                  imageJacobian) const override;
 
 private:
-  SumOfPairwiseCorrelationCoefficientsMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Sample n random numbers from 0..m and add them to the vector. */
   void
   SampleRandom(const int n, const int m, std::vector<int> & numbers) const;
 
   /** Variables to control random sampling in last dimension. */
-  unsigned int m_NumAdditionalSamplesFixed;
-  unsigned int m_ReducedDimensionIndex;
+  unsigned int m_NumAdditionalSamplesFixed{};
+  unsigned int m_ReducedDimensionIndex{};
 
   /** Bool to determine if we want to subtract the mean derivate from the derivative elements. */
   bool m_SubtractMean{ true };
 
   /** GridSize of B-spline transform. */
-  FixedImageSizeType m_GridSize;
+  FixedImageSizeType m_GridSize{};
 
   /** Bool to indicate if the transform used is a stacktransform. Set by elx files. */
   bool m_TransformIsStackTransform{ true };

@@ -58,6 +58,8 @@ class ITK_TEMPLATE_EXPORT ImageSamplerBase
   : public ImageToVectorContainerFilter<TInputImage, VectorDataContainer<std::size_t, ImageSample<TInputImage>>>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ImageSamplerBase);
+
   /** Standard ITK-stuff. */
   using Self = ImageSamplerBase;
   using Superclass =
@@ -209,7 +211,7 @@ public:
 
 protected:
   /** The constructor. */
-  ImageSamplerBase();
+  ImageSamplerBase() = default;
 
   /** The destructor. */
   ~ImageSamplerBase() override = default;
@@ -248,8 +250,8 @@ protected:
   AfterThreadedGenerateData() override;
 
   /***/
-  unsigned long                            m_NumberOfSamples;
-  std::vector<ImageSampleContainerPointer> m_ThreaderSampleContainer;
+  unsigned long                            m_NumberOfSamples{ 0 };
+  std::vector<ImageSampleContainerPointer> m_ThreaderSampleContainer{};
 
   // tmp?
   bool                 m_UseMultiThread;
@@ -257,24 +259,17 @@ protected:
   int                  m_PreviousSeed;
   boost::random::sobol m_RandomGenerator{ Self::InputImageDimension };
 
-
 private:
-  /** The deleted copy constructor. */
-  ImageSamplerBase(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
   /** Member variables. */
-  MaskConstPointer           m_Mask;
-  MaskVectorType             m_MaskVector;
-  unsigned int               m_NumberOfMasks;
-  InputImageRegionType       m_InputImageRegion;
-  InputImageRegionVectorType m_InputImageRegionVector;
-  unsigned int               m_NumberOfInputImageRegions;
+  MaskConstPointer           m_Mask{ nullptr };
+  MaskVectorType             m_MaskVector{};
+  unsigned int               m_NumberOfMasks{ 0 };
+  InputImageRegionType       m_InputImageRegion{};
+  InputImageRegionVectorType m_InputImageRegionVector{};
+  unsigned int               m_NumberOfInputImageRegions{ 0 };
 
-  InputImageRegionType m_CroppedInputImageRegion;
-  InputImageRegionType m_DummyInputImageRegion;
+  InputImageRegionType m_CroppedInputImageRegion{};
+  InputImageRegionType m_DummyInputImageRegion{};
 };
 
 } // end namespace itk

@@ -260,7 +260,6 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Pr
       using CoordRepType = typename PointType::CoordRepType;
       using IndexValueType = typename IndexType::IndexValueType;
       using SizeValueType = typename SizeType::SizeValueType;
-      using CIndexType = ContinuousIndex<CoordRepType, TFixedImage::ImageDimension>;
 
       PointType inputStartPoint;
       PointType inputEndPoint;
@@ -271,8 +270,6 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Pr
       {
         SizeType         size;
         IndexType        start;
-        CIndexType       startcindex;
-        CIndexType       endcindex;
         FixedImageType * fixedImageAtLevel = fixpyr->GetOutput(level);
         /** map the original fixed image region to the image resulting from the
          * FixedImagePyramid at level l.
@@ -280,8 +277,10 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Pr
          * is floored. To see why, consider an image of 4 by 4, and its
          * downsampled version of 2 by 2.
          */
-        fixedImageAtLevel->TransformPhysicalPointToContinuousIndex(inputStartPoint, startcindex);
-        fixedImageAtLevel->TransformPhysicalPointToContinuousIndex(inputEndPoint, endcindex);
+        const auto startcindex =
+          fixedImageAtLevel->template TransformPhysicalPointToContinuousIndex<CoordRepType>(inputStartPoint);
+        const auto endcindex =
+          fixedImageAtLevel->template TransformPhysicalPointToContinuousIndex<CoordRepType>(inputEndPoint);
         for (unsigned int dim = 0; dim < TFixedImage::ImageDimension; ++dim)
         {
           start[dim] = static_cast<IndexValueType>(std::ceil(startcindex[dim]));
@@ -382,13 +381,13 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Ge
       // initialize the interconnects between components
       this->Initialize();
     }
-    catch (ExceptionObject & err)
+    catch (const ExceptionObject &)
     {
       this->m_LastTransformParameters = ParametersType(1);
       this->m_LastTransformParameters.Fill(0.0f);
 
       // pass exception to caller
-      throw err;
+      throw;
     }
 
     try
@@ -396,14 +395,14 @@ MultiMetricMultiResolutionImageRegistrationMethod<TFixedImage, TMovingImage>::Ge
       // do the optimization
       this->GetModifiableOptimizer()->StartOptimization();
     }
-    catch (ExceptionObject & err)
+    catch (const ExceptionObject &)
     {
       // An error has occurred in the optimization.
       // Update the parameters
       this->m_LastTransformParameters = this->GetOptimizer()->GetCurrentPosition();
 
       // Pass exception to caller
-      throw err;
+      throw;
     }
 
     // get the results

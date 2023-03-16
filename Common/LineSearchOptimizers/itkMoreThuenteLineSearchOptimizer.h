@@ -71,6 +71,8 @@ namespace itk
 class MoreThuenteLineSearchOptimizer : public LineSearchOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MoreThuenteLineSearchOptimizer);
+
   using Self = MoreThuenteLineSearchOptimizer;
   using Superclass = LineSearchOptimizer;
   using Pointer = SmartPointer<Self>;
@@ -179,13 +181,13 @@ protected:
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
 
-  unsigned long     m_CurrentIteration;
-  bool              m_InitialDerivativeProvided;
-  bool              m_InitialValueProvided;
-  StopConditionType m_StopCondition;
-  bool              m_Stop;
-  bool              m_SufficientDecreaseConditionSatisfied;
-  bool              m_CurvatureConditionSatisfied;
+  unsigned long     m_CurrentIteration{};
+  bool              m_InitialDerivativeProvided{};
+  bool              m_InitialValueProvided{};
+  StopConditionType m_StopCondition{};
+  bool              m_Stop{};
+  bool              m_SufficientDecreaseConditionSatisfied{};
+  bool              m_CurvatureConditionSatisfied{};
 
   /** Load the initial value and derivative into m_f and m_g. */
   virtual void
@@ -233,53 +235,49 @@ protected:
    * the interval of uncertainty.
    */
   virtual int
-  SafeGuardedStep(double &       stx,
-                  double &       fx,
-                  double &       dx,
-                  double &       sty,
-                  double &       fy,
-                  double &       dy,
-                  double &       stp,
-                  const double & fp,
-                  const double & dp,
-                  bool &         brackt,
-                  const double & stpmin,
-                  const double & stpmax) const;
+  SafeGuardedStep(double &     stx,
+                  double &     fx,
+                  double &     dx,
+                  double &     sty,
+                  double &     fy,
+                  double &     dy,
+                  double &     stp,
+                  const double fp,
+                  const double dp,
+                  bool &       brackt,
+                  const double stpmin,
+                  const double stpmax) const;
 
-  double m_step;
-  double m_stepx;
-  double m_stepy;
-  double m_stepmin;
-  double m_stepmax;
+  double m_step{};
+  double m_stepx{};
+  double m_stepy{};
+  double m_stepmin{};
+  double m_stepmax{};
 
-  MeasureType m_f; // CurrentValue
-  MeasureType m_fx;
-  MeasureType m_fy;
-  MeasureType m_finit;
+  MeasureType m_f{}; // CurrentValue
+  MeasureType m_fx{};
+  MeasureType m_fy{};
+  MeasureType m_finit{};
 
-  DerivativeType m_g;  // CurrentDerivative
-  double         m_dg; // CurrentDirectionalDerivative
-  double         m_dginit;
-  double         m_dgx;
-  double         m_dgy;
-  double         m_dgtest;
+  DerivativeType m_g{};  // CurrentDerivative
+  double         m_dg{}; // CurrentDirectionalDerivative
+  double         m_dginit{};
+  double         m_dgx{};
+  double         m_dgy{};
+  double         m_dgtest{};
 
-  double m_width;
-  double m_width1;
+  double m_width{};
+  double m_width1{};
 
-  bool m_brackt;
-  bool m_stage1;
-  bool m_SafeGuardedStepFailed;
+  bool m_brackt{};
+  bool m_stage1{};
+  bool m_SafeGuardedStepFailed{};
 
 private:
-  MoreThuenteLineSearchOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  unsigned long m_MaximumNumberOfIterations;
-  double        m_ValueTolerance;
-  double        m_GradientTolerance;
-  double        m_IntervalTolerance;
+  unsigned long m_MaximumNumberOfIterations{};
+  double        m_ValueTolerance{};
+  double        m_GradientTolerance{};
+  double        m_IntervalTolerance{};
 };
 
 } // end namespace itk

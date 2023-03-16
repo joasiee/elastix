@@ -70,6 +70,8 @@ class ITK_TEMPLATE_EXPORT ITKOpenCL_EXPORT GPUImageDataManager : public GPUDataM
   friend class GPUImage<typename ImageType::PixelType, ImageType::ImageDimension>;
 
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUImageDataManager);
+
   using Self = GPUImageDataManager;
   using Superclass = GPUDataManager;
   using Pointer = SmartPointer<Self>;
@@ -98,11 +100,7 @@ protected:
   ~GPUImageDataManager() override = default;
 
 private:
-  GPUImageDataManager(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  typename ImageType::Pointer m_Image;
+  typename ImageType::Pointer m_Image{};
 };
 
 } // namespace itk

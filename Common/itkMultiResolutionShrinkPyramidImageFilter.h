@@ -40,6 +40,8 @@ class ITK_TEMPLATE_EXPORT MultiResolutionShrinkPyramidImageFilter
   : public MultiResolutionPyramidImageFilter<TInputImage, TOutputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiResolutionShrinkPyramidImageFilter);
+
   /** Standard class typedefs. */
   using Self = MultiResolutionShrinkPyramidImageFilter;
   using Superclass = MultiResolutionPyramidImageFilter<TInputImage, TOutputImage>;
@@ -82,11 +84,6 @@ protected:
   /** Generate the output data. */
   void
   GenerateData() override;
-
-private:
-  MultiResolutionShrinkPyramidImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // namespace itk

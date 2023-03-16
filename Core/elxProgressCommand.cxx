@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 #include "elxProgressCommand.h"
-#include "xoutmain.h"
+#include "elxlog.h"
 #include "itkMath.h" // itk::Math::Round
 
 namespace elastix
@@ -28,22 +28,13 @@ namespace elastix
 
 ProgressCommand::ProgressCommand()
 {
-  this->m_StartString = "Progress: ";
-  this->m_EndString = "%";
-  this->m_Tag = 0;
-  this->m_TagIsSet = false;
-  this->m_ObservedProcessObject = nullptr;
-  this->m_NumberOfVoxels = 0;
-  this->m_NumberOfUpdates = 0;
-
-  /** Check if the output of the stream is a console. */
-  this->m_StreamOutputIsConsole = false;
-  std::string streamOutput = "cout";
-  int         currentPos = xl::xout["coutonly"].GetCOutputs().find(streamOutput)->second->tellp();
-  if (currentPos == -1)
-  {
-    this->m_StreamOutputIsConsole = true;
-  }
+  m_StartString = "Progress: ";
+  m_EndString = "%";
+  m_Tag = 0;
+  m_TagIsSet = false;
+  m_ObservedProcessObject = nullptr;
+  m_NumberOfVoxels = 0;
+  m_NumberOfUpdates = 0;
 
 } // end Constructor()
 
@@ -54,7 +45,7 @@ ProgressCommand::ProgressCommand()
 
 ProgressCommand::~ProgressCommand()
 {
-  this->DisconnectObserver(this->m_ObservedProcessObject);
+  this->DisconnectObserver(m_ObservedProcessObject);
 
 } // end Destructor()
 
@@ -67,25 +58,25 @@ void
 ProgressCommand::SetUpdateFrequency(const unsigned long numberOfVoxels, const unsigned long numberOfUpdates)
 {
   /** Set the member variables. */
-  this->m_NumberOfVoxels = numberOfVoxels;
-  this->m_NumberOfUpdates = numberOfUpdates;
+  m_NumberOfVoxels = numberOfVoxels;
+  m_NumberOfUpdates = numberOfUpdates;
 
   /** Make sure we have at least one pixel. */
-  if (this->m_NumberOfVoxels < 1)
+  if (m_NumberOfVoxels < 1)
   {
-    this->m_NumberOfVoxels = 1;
+    m_NumberOfVoxels = 1;
   }
 
   /** We cannot update more times than there are pixels. */
-  if (this->m_NumberOfUpdates > this->m_NumberOfVoxels)
+  if (m_NumberOfUpdates > m_NumberOfVoxels)
   {
-    this->m_NumberOfUpdates = this->m_NumberOfVoxels;
+    m_NumberOfUpdates = m_NumberOfVoxels;
   }
 
   /** Make sure we update at least once. */
-  if (this->m_NumberOfUpdates < 1)
+  if (m_NumberOfUpdates < 1)
   {
-    this->m_NumberOfUpdates = 1;
+    m_NumberOfUpdates = 1;
   }
 
 } // end SetUpdateFrequency()
@@ -99,15 +90,12 @@ void
 ProgressCommand::ConnectObserver(itk::ProcessObject * filter)
 {
   /** Disconnect from old observed filters. */
-  this->DisconnectObserver(this->m_ObservedProcessObject);
+  this->DisconnectObserver(m_ObservedProcessObject);
 
   /** Connect to the new filter. */
-  if (this->m_StreamOutputIsConsole)
-  {
-    this->m_Tag = filter->AddObserver(itk::ProgressEvent(), this);
-    this->m_TagIsSet = true;
-    this->m_ObservedProcessObject = filter;
-  }
+  m_Tag = filter->AddObserver(itk::ProgressEvent(), this);
+  m_TagIsSet = true;
+  m_ObservedProcessObject = filter;
 
 } // end ConnectObserver()
 
@@ -119,14 +107,11 @@ ProgressCommand::ConnectObserver(itk::ProcessObject * filter)
 void
 ProgressCommand::DisconnectObserver(itk::ProcessObject * filter)
 {
-  if (this->m_StreamOutputIsConsole)
+  if (m_TagIsSet)
   {
-    if (this->m_TagIsSet)
-    {
-      filter->RemoveObserver(this->m_Tag);
-      this->m_TagIsSet = false;
-      this->m_ObservedProcessObject = nullptr;
-    }
+    filter->RemoveObserver(m_Tag);
+    m_TagIsSet = false;
+    m_ObservedProcessObject = nullptr;
   }
 
 } // end DisconnectObserver()
@@ -179,17 +164,19 @@ ProgressCommand::Execute(const itk::Object * caller, const itk::EventObject & ev
  */
 
 void
-ProgressCommand::PrintProgress(const float & progress) const
+ProgressCommand::PrintProgress(const float progress) const
 {
   /** Print the progress to the screen. */
   const int progressInt = itk::Math::Round<float>(100 * progress);
-  xl::xout["coutonly"] << "\r" << this->m_StartString << progressInt << this->m_EndString;
-  xl::xout["coutonly"] << std::flush;
+
+  // Pass the entire message at once, rather than having multiple `<<` insertions.
+  const std::string message = '\r' + m_StartString + std::to_string(progressInt) + m_EndString;
+  std::cout << message << std::flush;
 
   /** If the process is completed, print an end-of-line. *
   if ( progress > 0.99999 )
   {
-    xl::xout["coutonly"] << std::endl;
+    std::cout << std::endl;
   }*/
 
 } // end PrintProgress()
@@ -200,15 +187,12 @@ ProgressCommand::PrintProgress(const float & progress) const
  */
 
 void
-ProgressCommand::UpdateAndPrintProgress(const unsigned long & currentVoxelNumber) const
+ProgressCommand::UpdateAndPrintProgress(const unsigned long currentVoxelNumber) const
 {
-  if (this->m_StreamOutputIsConsole)
+  const unsigned long frac = static_cast<unsigned long>(m_NumberOfVoxels / m_NumberOfUpdates);
+  if (currentVoxelNumber % frac == 0)
   {
-    const unsigned long frac = static_cast<unsigned long>(this->m_NumberOfVoxels / this->m_NumberOfUpdates);
-    if (currentVoxelNumber % frac == 0)
-    {
-      this->PrintProgress(static_cast<float>(currentVoxelNumber) / static_cast<float>(this->m_NumberOfVoxels));
-    }
+    this->PrintProgress(static_cast<float>(currentVoxelNumber) / static_cast<float>(m_NumberOfVoxels));
   }
 
 } // end PrintProgress()

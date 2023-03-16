@@ -17,7 +17,7 @@
  *=========================================================================*/
 
 // First include the header files to be tested:
-#include "MyStandardResampler/elxMyStandardResampler.h"
+#include "DefaultResampler/elxDefaultResampler.h"
 #ifdef ELASTIX_USE_OPENCL
 #  include "OpenCLResampler/elxOpenCLResampler.h"
 #endif
@@ -97,7 +97,7 @@ struct WithDimension
   static void
   Test_CreateTransformParametersMap_for_default_resampler()
   {
-    WithResampler<elx::MyStandardResampler>::Test_CreateTransformParametersMap_for_default_resampler({});
+    WithResampler<elx::DefaultResampler>::Test_CreateTransformParametersMap_for_default_resampler({});
 #ifdef ELASTIX_USE_OPENCL
     WithResampler<elx::OpenCLResampler>::Test_CreateTransformParametersMap_for_default_resampler(
       { { "OpenCLResamplerUseOpenCL", { "true" } } });

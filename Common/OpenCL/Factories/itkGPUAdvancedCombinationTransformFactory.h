@@ -37,6 +37,8 @@ template <typename NDimensions>
 class ITK_TEMPLATE_EXPORT GPUAdvancedCombinationTransformFactory2 : public GPUObjectFactoryBase<NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUAdvancedCombinationTransformFactory2);
+
   using Self = GPUAdvancedCombinationTransformFactory2;
   using Superclass = GPUObjectFactoryBase<NDimensions>;
   using Pointer = SmartPointer<Self>;
@@ -90,11 +92,6 @@ protected:
   /** Register methods for 3D. */
   virtual void
   Register3D();
-
-private:
-  GPUAdvancedCombinationTransformFactory2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

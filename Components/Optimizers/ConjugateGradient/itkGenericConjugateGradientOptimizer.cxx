@@ -111,11 +111,11 @@ GenericConjugateGradientOptimizer::ResumeOptimization()
   {
     this->GetScaledValueAndDerivative(this->GetScaledCurrentPosition(), this->m_CurrentValue, this->m_CurrentGradient);
   }
-  catch (ExceptionObject & err)
+  catch (const ExceptionObject &)
   {
     this->m_StopCondition = MetricError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
 
   /** Test if not by chance we are already converged */
@@ -175,7 +175,7 @@ GenericConjugateGradientOptimizer::ResumeOptimization()
         // this->m_CurrentGradient[limitCount] = 1.0;
         // \todo gives errors (way to large gradient), should update
         // initial steplength estimate maybe
-        limitCount++;
+        ++limitCount;
       }
       else
       {
@@ -295,11 +295,11 @@ GenericConjugateGradientOptimizer::LineSearch(const ParametersType searchDir,
   {
     LSO->StartOptimization();
   }
-  catch (ExceptionObject & err)
+  catch (const ExceptionObject &)
   {
     this->m_StopCondition = LineSearchError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
   this->SetInLineSearch(false);
 
@@ -310,11 +310,11 @@ GenericConjugateGradientOptimizer::LineSearch(const ParametersType searchDir,
   {
     LSO->GetCurrentValueAndDerivative(f, g);
   }
-  catch (ExceptionObject & err)
+  catch (const ExceptionObject &)
   {
     this->m_StopCondition = MetricError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
 
   /** For the next iteration: */
@@ -335,7 +335,7 @@ GenericConjugateGradientOptimizer::ComputeBeta(const DerivativeType & previousGr
 
   ComputeBetaFunctionType betaComputer = this->m_BetaDefinitionMap[this->GetBetaDefinition()];
 
-  return ((*this).*betaComputer)(previousGradient, gradient, previousSearchDir);
+  return (this->*betaComputer)(previousGradient, gradient, previousSearchDir);
 
 } // end ComputeBeta
 

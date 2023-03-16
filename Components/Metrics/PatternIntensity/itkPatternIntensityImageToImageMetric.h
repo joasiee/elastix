@@ -46,6 +46,8 @@ class ITK_TEMPLATE_EXPORT PatternIntensityImageToImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(PatternIntensityImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = PatternIntensityImageToImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -175,23 +177,19 @@ protected:
   ComputePIDiff(const TransformParametersType & parameters, float scalingfactor) const;
 
 private:
-  PatternIntensityImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  TransformMovingImageFilterPointer  m_TransformMovingImageFilter;
-  DifferenceImageFilterPointer       m_DifferenceImageFilter;
-  RescaleIntensityImageFilterPointer m_RescaleImageFilter;
-  MultiplyImageFilterPointer         m_MultiplyImageFilter;
-  double                             m_NoiseConstant;
-  unsigned int                       m_NeighborhoodRadius;
-  double                             m_DerivativeDelta;
-  double                             m_NormalizationFactor;
-  double                             m_Rescalingfactor;
-  bool                               m_OptimizeNormalizationFactor;
-  ScalesType                         m_Scales;
-  MeasureType                        m_FixedMeasure;
-  CombinationTransformPointer        m_CombinationTransform;
+  TransformMovingImageFilterPointer  m_TransformMovingImageFilter{};
+  DifferenceImageFilterPointer       m_DifferenceImageFilter{};
+  RescaleIntensityImageFilterPointer m_RescaleImageFilter{};
+  MultiplyImageFilterPointer         m_MultiplyImageFilter{};
+  double                             m_NoiseConstant{};
+  unsigned int                       m_NeighborhoodRadius{};
+  double                             m_DerivativeDelta{};
+  double                             m_NormalizationFactor{};
+  double                             m_Rescalingfactor{};
+  bool                               m_OptimizeNormalizationFactor{};
+  ScalesType                         m_Scales{};
+  MeasureType                        m_FixedMeasure{};
+  CombinationTransformPointer        m_CombinationTransform{};
 };
 
 } // end namespace itk

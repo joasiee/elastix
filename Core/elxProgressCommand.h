@@ -38,7 +38,7 @@ namespace elastix
  * as follows:
  *
  * \code
- *   auto command = ProgressCommandType::New();
+ *   auto command = ProgressCommand::New();
  *   command->ConnectObserver( filterpointer );
  *   command->SetStartString( "  Progress: " );
  *   command->SetEndString( "%" );
@@ -56,11 +56,11 @@ namespace elastix
  * that the progress message should be printed with. For example
  *
  * \code
- *   auto command = ProgressCommandType::New();
+ *   auto command = ProgressCommand::New();
  *   command->SetUpdateFrequency( maxnrofvoxels, 100 );
  *   command->SetStartString( "  Progress: " );
  *   command->SetEndString( "%" );
- *   elxout << "Looping over voxels... " << std::endl;
+ *   log::info(std::ostringstream{}  << "Looping over voxels... ");
  *   for ( unsigned int i =0; i < maxnrofvoxels; ++i )
  *   {
  *     command->UpdateAndPrintProgress( i );
@@ -71,10 +71,10 @@ namespace elastix
  * \li The last possibility is to directly use the PrintProgress function:
  *
  * \code
- *   auto command = ProgressCommandType::New();
+ *   auto command = ProgressCommand::New();
  *   command->SetStartString( "  Progress: " );
  *   command->SetEndString( "%" );
- *   elxout << "Reading, casting, writing..."
+ *   // Reading, casting, writing...
  *   command->PrintProgress( 0.0 );
  *   reader->Update();
  *   command->PrintProgress( 0.33 );
@@ -126,16 +126,16 @@ public:
   /** Print the progress to screen. A float value between 0.0 and 1.0
    * is expected as input.
    */
-  virtual void
-  PrintProgress(const float & progress) const;
+  void
+  PrintProgress(const float progress) const;
 
   /** Update and possibly print the progress to screen.
    * The progress information on screen is refreshed according to the
    * UpdateFrequency, which is assumed being specified beforehand using the
    * SetUpdateFrequency function.
    */
-  virtual void
-  UpdateAndPrintProgress(const unsigned long & currentVoxelNumber) const;
+  void
+  UpdateAndPrintProgress(const unsigned long currentVoxelNumber) const;
 
   /** Set and get the string starting each progress report. */
   itkSetStringMacro(StartString);
@@ -144,9 +144,6 @@ public:
   /** Set and get the string ending each progress report. */
   itkSetStringMacro(EndString);
   itkGetStringMacro(EndString);
-
-  /** Get a boolean indicating if the output is a console. */
-  itkGetConstReferenceMacro(StreamOutputIsConsole, bool);
 
   static Pointer
   CreateAndSetUpdateFrequency(unsigned long numberOfVoxels);
@@ -167,7 +164,6 @@ private:
   std::string m_EndString;
 
   /** Member variables to keep track of what is set. */
-  bool                 m_StreamOutputIsConsole;
   unsigned long        m_Tag;
   bool                 m_TagIsSet;
   ProcessObjectPointer m_ObservedProcessObject;

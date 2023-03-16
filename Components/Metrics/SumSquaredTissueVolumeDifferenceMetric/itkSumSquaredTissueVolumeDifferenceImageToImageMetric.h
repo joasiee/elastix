@@ -62,6 +62,8 @@ class ITK_TEMPLATE_EXPORT SumSquaredTissueVolumeDifferenceImageToImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(SumSquaredTissueVolumeDifferenceImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = SumSquaredTissueVolumeDifferenceImageToImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -223,31 +225,27 @@ protected:
     DerivativeType &                      jacobianOfSpatialJacobianDeterminant) const;
 
   /** Get value for each thread. */
-  inline void
+  void
   ThreadedGetValue(ThreadIdType threadID) override;
 
   /** Gather the values from all threads. */
-  inline void
+  void
   AfterThreadedGetValue(MeasureType & value) const override;
 
   /** Get value and derivatives for each thread. */
-  inline void
+  void
   ThreadedGetValueAndDerivative(ThreadIdType threadId) override;
 
   /** Gather the values and derivatives from all threads */
-  inline void
+  void
   AfterThreadedGetValueAndDerivative(MeasureType & measure, DerivativeType & derivative) const override;
 
 private:
-  SumSquaredTissueVolumeDifferenceImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Intensity value to use for air.  Default is -1000 */
-  RealType m_AirValue;
+  RealType m_AirValue{};
 
   /** Intensity value to use for tissue.  Default is 55 */
-  RealType m_TissueValue;
+  RealType m_TissueValue{};
 
 }; // end class SumSquaredTissueVolumeDifferenceImageToImageMetric
 

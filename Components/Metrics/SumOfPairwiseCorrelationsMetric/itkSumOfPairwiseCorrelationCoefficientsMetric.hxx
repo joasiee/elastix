@@ -176,11 +176,11 @@ SumOfPairwiseCorrelationCoefficientsMetric<TFixedImage, TMovingImage>::GetValue(
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     unsigned int numSamplesOk = 0;
 
@@ -209,7 +209,7 @@ SumOfPairwiseCorrelationCoefficientsMetric<TFixedImage, TMovingImage>::GetValue(
 
       if (sampleOk)
       {
-        numSamplesOk++;
+        ++numSamplesOk;
         datablock(pixelIndex, d) = movingImageValue;
       }
 
@@ -217,7 +217,7 @@ SumOfPairwiseCorrelationCoefficientsMetric<TFixedImage, TMovingImage>::GetValue(
 
     if (numSamplesOk == G)
     {
-      pixelIndex++;
+      ++pixelIndex;
       this->m_NumberOfPixelsCounted++;
     }
 
@@ -353,11 +353,11 @@ SumOfPairwiseCorrelationCoefficientsMetric<TFixedImage, TMovingImage>::GetValueA
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     unsigned int numSamplesOk = 0;
 
@@ -386,7 +386,7 @@ SumOfPairwiseCorrelationCoefficientsMetric<TFixedImage, TMovingImage>::GetValueA
 
       if (sampleOk)
       {
-        numSamplesOk++;
+        ++numSamplesOk;
         datablock(pixelIndex, d) = movingImageValue;
 
       } // end if sampleOk
@@ -396,7 +396,7 @@ SumOfPairwiseCorrelationCoefficientsMetric<TFixedImage, TMovingImage>::GetValueA
     if (numSamplesOk == G)
     {
       SamplesOK.push_back(fixedPoint);
-      pixelIndex++;
+      ++pixelIndex;
       this->m_NumberOfPixelsCounted++;
     }
 
@@ -475,8 +475,8 @@ SumOfPairwiseCorrelationCoefficientsMetric<TFixedImage, TMovingImage>::GetValueA
     FixedImagePointType fixedPoint = SamplesOK[pixelIndex];
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     for (unsigned int d = 0; d < G; ++d)
     {

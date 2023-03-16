@@ -47,14 +47,14 @@ GenerateFileNameContainer(const Configuration & configuration,
   const auto fileNameContainer = ElastixBase::FileNameContainerType::New();
 
   /** Try optionkey0. */
-  std::ostringstream argusedss("");
+  std::ostringstream argusedss;
   argusedss << optionkey << 0;
   std::string argused = argusedss.str();
   std::string check = configuration.GetCommandLineArgument(argused);
   if (check.empty())
   {
     /** Try optionkey. */
-    std::ostringstream argusedss2("");
+    std::ostringstream argusedss2;
     argusedss2 << optionkey;
     argused = argusedss2.str();
     check = configuration.GetCommandLineArgument(argused);
@@ -63,8 +63,8 @@ GenerateFileNameContainer(const Configuration & configuration,
       /** Both failed; return an error message, if desired. */
       if (printerrors)
       {
-        xl::xout["error"] << "ERROR: No CommandLine option \"" << optionkey << "\" or \"" << optionkey << 0
-                          << "\" given!" << std::endl;
+        log::error(std::ostringstream{} << "ERROR: No CommandLine option \"" << optionkey << "\" or \"" << optionkey
+                                        << 0 << "\" given!");
       }
       errorcode |= 1;
 
@@ -83,7 +83,7 @@ GenerateFileNameContainer(const Configuration & configuration,
       unsigned int nrSpaces = nrSpaces0 > 1 ? nrSpaces0 : 1;
       std::string  spaces = "";
       spaces.resize(nrSpaces, ' ');
-      elxout << argused << spaces << check << std::endl;
+      log::info(std::ostringstream{} << argused << spaces << check);
     }
     fileNameContainer->CreateElementAt(0) = check;
 
@@ -92,7 +92,7 @@ GenerateFileNameContainer(const Configuration & configuration,
     bool         readsuccess = true;
     while (readsuccess)
     {
-      std::ostringstream argusedss2("");
+      std::ostringstream argusedss2;
       argusedss2 << optionkey << i;
       argused = argusedss2.str();
       check = configuration.GetCommandLineArgument(argused);
@@ -109,7 +109,7 @@ GenerateFileNameContainer(const Configuration & configuration,
           unsigned int nrSpaces = nrSpaces0 > 1 ? nrSpaces0 : 1;
           std::string  spaces = "";
           spaces.resize(nrSpaces, ' ');
-          elxout << argused << spaces << check << std::endl;
+          log::info(std::ostringstream{} << argused << spaces << check);
         }
         fileNameContainer->CreateElementAt(i) = check;
         ++i;
@@ -128,50 +128,7 @@ GenerateFileNameContainer(const Configuration & configuration,
  * ********************* Constructor ****************************
  */
 
-ElastixBase::ElastixBase()
-{
-  /** Initialize. */
-  this->m_Configuration = nullptr;
-  this->m_DBIndex = 0;
-
-  /** The default output precision of elxout is set to 6. */
-  this->m_DefaultOutputPrecision = 6;
-
-  /** Create the component containers. */
-  this->m_FixedImagePyramidContainer = ObjectContainerType::New();
-  this->m_MovingImagePyramidContainer = ObjectContainerType::New();
-  this->m_InterpolatorContainer = ObjectContainerType::New();
-  this->m_ImageSamplerContainer = ObjectContainerType::New();
-  this->m_MetricContainer = ObjectContainerType::New();
-  this->m_OptimizerContainer = ObjectContainerType::New();
-  this->m_RegistrationContainer = ObjectContainerType::New();
-  this->m_ResamplerContainer = ObjectContainerType::New();
-  this->m_ResampleInterpolatorContainer = ObjectContainerType::New();
-  this->m_TransformContainer = ObjectContainerType::New();
-
-  /** Create image and mask containers. */
-  this->m_FixedImageContainer = DataObjectContainerType::New();
-  this->m_MovingImageContainer = DataObjectContainerType::New();
-  this->m_FixedImageFileNameContainer = FileNameContainerType::New();
-  this->m_MovingImageFileNameContainer = FileNameContainerType::New();
-
-  this->m_FixedMaskContainer = DataObjectContainerType::New();
-  this->m_MovingMaskContainer = DataObjectContainerType::New();
-  this->m_FixedMaskFileNameContainer = FileNameContainerType::New();
-  this->m_MovingMaskFileNameContainer = FileNameContainerType::New();
-
-  this->m_ResultImageContainer = DataObjectContainerType::New();
-
-  /** Initialize initialTransform and final transform. */
-  this->m_InitialTransform = nullptr;
-  this->m_FinalTransform = nullptr;
-
-  /** From Elastix 4.3 to 4.7: Ignore direction cosines by default, for
-   * backward compatability. From Elastix 4.8: set it to true by default.*/
-  this->m_UseDirectionCosines = true;
-
-} // end Constructor
-
+ElastixBase::ElastixBase() = default;
 
 /**
  * ********************* GenerateDataObjectContainer ***********************
@@ -199,9 +156,9 @@ void
 ElastixBase::SetDBIndex(DBIndexType _arg)
 {
   /** If m_DBIndex is not set, set it. */
-  if (this->m_DBIndex != _arg)
+  if (m_DBIndex != _arg)
   {
-    this->m_DBIndex = _arg;
+    m_DBIndex = _arg;
     this->itk::Object::Modified();
   }
 
@@ -218,15 +175,8 @@ ElastixBase::BeforeAllBase()
   /** Declare the return value and initialize it. */
   int returndummy = 0;
 
-  /** Set the default precision of floating values in the output. */
-  this->m_Configuration->ReadParameter(this->m_DefaultOutputPrecision, "DefaultOutputPrecision", 0, false);
-  elxout << std::setprecision(this->m_DefaultOutputPrecision);
-
-  /** Print to log file. */
-  elxout << "ELASTIX version: " ELASTIX_VERSION_STRING "\n";
-
   /** Check Command line options and print them to the logfile. */
-  elxout << "Command line options from ElastixBase:" << std::endl;
+  log::info("ELASTIX version: " ELASTIX_VERSION_STRING "\nCommand line options from ElastixBase:");
   std::string check = "";
 
   /** Read the fixed and moving image filenames. These are obliged options,
@@ -235,38 +185,34 @@ ElastixBase::BeforeAllBase()
    */
   if (!BaseComponent::IsElastixLibrary())
   {
-    this->m_FixedImageFileNameContainer =
-      GenerateFileNameContainer(*(this->m_Configuration), "-f", returndummy, true, true);
-    this->m_MovingImageFileNameContainer =
-      GenerateFileNameContainer(*(this->m_Configuration), "-m", returndummy, true, true);
+    m_FixedImageFileNameContainer = GenerateFileNameContainer(*m_Configuration, "-f", returndummy, true, true);
+    m_MovingImageFileNameContainer = GenerateFileNameContainer(*m_Configuration, "-m", returndummy, true, true);
   }
   /** Read the fixed and moving mask filenames. These are not obliged options,
    * so do not print any errors if they are not present.
    * Do print some info (second boolean = true).
    */
   int maskreturndummy = 0;
-  this->m_FixedMaskFileNameContainer =
-    GenerateFileNameContainer(*(this->m_Configuration), "-fMask", maskreturndummy, false, true);
+  m_FixedMaskFileNameContainer = GenerateFileNameContainer(*m_Configuration, "-fMask", maskreturndummy, false, true);
   if (maskreturndummy != 0)
   {
-    elxout << "-fMask    unspecified, so no fixed mask used" << std::endl;
+    log::info("-fMask    unspecified, so no fixed mask used");
   }
   maskreturndummy = 0;
-  this->m_MovingMaskFileNameContainer =
-    GenerateFileNameContainer(*(this->m_Configuration), "-mMask", maskreturndummy, false, true);
+  m_MovingMaskFileNameContainer = GenerateFileNameContainer(*m_Configuration, "-mMask", maskreturndummy, false, true);
   if (maskreturndummy != 0)
   {
-    elxout << "-mMask    unspecified, so no moving mask used" << std::endl;
+    log::info("-mMask    unspecified, so no moving mask used");
   }
 
   /** Check for appearance of "-out".
    * This check has already been performed in elastix.cxx,
    * Here we do it again. MS: WHY?
    */
-  check = this->GetConfiguration()->GetCommandLineArgument("-out");
+  check = m_Configuration->GetCommandLineArgument("-out");
   if (check.empty())
   {
-    xl::xout["error"] << "ERROR: No CommandLine option \"-out\" given!" << std::endl;
+    log::error(std::ostringstream{} << "ERROR: No CommandLine option \"-out\" given!");
     returndummy |= 1;
   }
   else
@@ -279,9 +225,9 @@ ElastixBase::BeforeAllBase()
       folder.append("/");
       folder = Conversion::ToNativePathNameSeparators(folder);
 
-      this->GetConfiguration()->SetCommandLineArgument("-out", folder);
+      m_Configuration->SetCommandLineArgument("-out", folder);
     }
-    elxout << "-out      " << check << std::endl;
+    log::info(std::ostringstream{} << "-out      " << check);
   }
 
   /** Print all "-p". */
@@ -289,52 +235,52 @@ ElastixBase::BeforeAllBase()
   bool         loop = true;
   while (loop)
   {
-    std::ostringstream tempPname("");
+    std::ostringstream tempPname;
     tempPname << "-p(" << i << ")";
-    check = this->GetConfiguration()->GetCommandLineArgument(tempPname.str());
+    check = m_Configuration->GetCommandLineArgument(tempPname.str());
     if (check.empty())
     {
       loop = false;
     }
     else
     {
-      elxout << "-p        " << check << std::endl;
+      log::info(std::ostringstream{} << "-p        " << check);
     }
     ++i;
   }
 
   /** Check for appearance of "-priority", if this is a Windows station. */
 #ifdef _WIN32
-  check = this->GetConfiguration()->GetCommandLineArgument("-priority");
+  check = m_Configuration->GetCommandLineArgument("-priority");
   if (check.empty())
   {
-    elxout << "-priority unspecified, so NORMAL process priority" << std::endl;
+    log::info("-priority unspecified, so NORMAL process priority");
   }
   else
   {
-    elxout << "-priority " << check << std::endl;
+    log::info(std::ostringstream{} << "-priority " << check);
   }
 #endif
 
   /** Check for appearance of -threads, which specifies the maximum number of threads. */
-  check = this->GetConfiguration()->GetCommandLineArgument("-threads");
+  check = m_Configuration->GetCommandLineArgument("-threads");
   if (check.empty())
   {
-    elxout << "-threads  unspecified, so all available threads are used" << std::endl;
+    log::info("-threads  unspecified, so all available threads are used");
   }
   else
   {
-    elxout << "-threads  " << check << std::endl;
+    log::info(std::ostringstream{} << "-threads  " << check);
   }
 
   /** Check the very important UseDirectionCosines parameter. */
-  bool retudc = this->GetConfiguration()->ReadParameter(this->m_UseDirectionCosines, "UseDirectionCosines", 0);
+  bool retudc = m_Configuration->ReadParameter(m_UseDirectionCosines, "UseDirectionCosines", 0);
   if (!retudc)
   {
-    xl::xout["warning"] << "\nWARNING: The option \"UseDirectionCosines\" was not found in your parameter file.\n"
-                        << "  From elastix 4.8 it defaults to true!\n"
-                        << "This may change the behavior of your registrations considerably.\n"
-                        << std::endl;
+    log::warn(
+      std::ostringstream{} << "\nWARNING: The option \"UseDirectionCosines\" was not found in your parameter file.\n"
+                           << "  From elastix 4.8 it defaults to true!\n"
+                           << "This may change the behavior of your registrations considerably.\n");
   }
 
   // /** Set the random seed. Use 121212 as a default, which is the same as
@@ -368,11 +314,10 @@ ElastixBase::BeforeAllTransformixBase()
   int returndummy = 0;
 
   /** Print to log file. */
-  elxout << "ELASTIX version: " ELASTIX_VERSION_STRING "\n";
-  elxout << std::setprecision(this->GetDefaultOutputPrecision());
+  log::info("ELASTIX version: " ELASTIX_VERSION_STRING);
 
   /** Check Command line options and print them to the logfile. */
-  elxout << "Command line options from ElastixBase:" << std::endl;
+  log::info("Command line options from ElastixBase:");
   if (!BaseComponent::IsElastixLibrary())
   {
     /** Read the input image filenames. These are not obliged options,
@@ -381,18 +326,17 @@ ElastixBase::BeforeAllTransformixBase()
      * Save the result in the moving image file name container.
      */
     int inreturndummy = 0;
-    this->m_MovingImageFileNameContainer =
-      GenerateFileNameContainer(*(this->m_Configuration), "-in", inreturndummy, false, true);
+    m_MovingImageFileNameContainer = GenerateFileNameContainer(*m_Configuration, "-in", inreturndummy, false, true);
     if (inreturndummy != 0)
     {
-      elxout << "-in       unspecified, so no input image specified" << std::endl;
+      log::info("-in       unspecified, so no input image specified");
     }
   }
   /** Check for appearance of "-out". */
-  std::string check = this->GetConfiguration()->GetCommandLineArgument("-out");
+  std::string check = m_Configuration->GetCommandLineArgument("-out");
   if (check.empty())
   {
-    xl::xout["error"] << "ERROR: No CommandLine option \"-out\" given!" << std::endl;
+    log::error(std::ostringstream{} << "ERROR: No CommandLine option \"-out\" given!");
     returndummy |= 1;
   }
   else
@@ -400,54 +344,39 @@ ElastixBase::BeforeAllTransformixBase()
     /** Make sure that last character of -out equals a '/'. */
     if (check.back() != '/')
     {
-      this->GetConfiguration()->SetCommandLineArgument("-out", check + '/');
+      m_Configuration->SetCommandLineArgument("-out", check + '/');
     }
-    elxout << "-out      " << check << std::endl;
+    log::info(std::ostringstream{} << "-out      " << check);
   }
 
   /** Check for appearance of -threads, which specifies the maximum number of threads. */
-  check = this->GetConfiguration()->GetCommandLineArgument("-threads");
+  check = m_Configuration->GetCommandLineArgument("-threads");
   if (check.empty())
   {
-    elxout << "-threads  unspecified, so all available threads are used" << std::endl;
+    log::info("-threads  unspecified, so all available threads are used");
   }
   else
   {
-    elxout << "-threads  " << check << std::endl;
+    log::info(std::ostringstream{} << "-threads  " << check);
   }
   if (!BaseComponent::IsElastixLibrary())
   {
     /** Print "-tp". */
-    check = this->GetConfiguration()->GetCommandLineArgument("-tp");
-    elxout << "-tp       " << check << std::endl;
+    check = m_Configuration->GetCommandLineArgument("-tp");
+    log::info(std::ostringstream{} << "-tp       " << check);
   }
   /** Check the very important UseDirectionCosines parameter. */
-  bool retudc = this->GetConfiguration()->ReadParameter(this->m_UseDirectionCosines, "UseDirectionCosines", 0);
+  bool retudc = m_Configuration->ReadParameter(m_UseDirectionCosines, "UseDirectionCosines", 0);
   if (!retudc)
   {
-    xl::xout["warning"] << "\nWARNING: From elastix 4.3 it is highly recommended to add\n"
-                        << "the UseDirectionCosines option to your parameter file! See\n"
-                        << "http://elastix.lumc.nl/whatsnew_04_3.php for more information.\n"
-                        << std::endl;
+    log::warn(std::ostringstream{} << "\nWARNING: From elastix 4.3 it is highly recommended to add\n"
+                                   << "the UseDirectionCosines option to your parameter file! See\n"
+                                   << "http://elastix.lumc.nl/whatsnew_04_3.php for more information.\n");
   }
 
   return returndummy;
 
 } // end BeforeAllTransformixBase()
-
-
-/**
- * ************************ BeforeRegistrationBase ******************
- */
-
-void
-ElastixBase::BeforeRegistrationBase()
-{
-  /** Set up the "iteration" writing field. */
-  this->m_IterationInfo.SetOutputs(xl::xout.GetCOutputs());
-  this->m_IterationInfo.SetOutputs(xl::xout.GetXOutputs());
-
-} // end BeforeRegistrationBase()
 
 
 /**
@@ -459,7 +388,7 @@ ElastixBase::GetResultImage(const unsigned int idx) const
 {
   if (idx < this->GetNumberOfResultImages())
   {
-    return this->m_ResultImageContainer->ElementAt(idx).GetPointer();
+    return m_ResultImageContainer->ElementAt(idx).GetPointer();
   }
 
   return nullptr;
@@ -487,7 +416,7 @@ ElastixBase::GetResultDeformationField(unsigned int idx) const
 {
   if (idx < this->GetNumberOfResultDeformationFields())
   {
-    return this->m_ResultDeformationFieldContainer->ElementAt(idx).GetPointer();
+    return m_ResultDeformationFieldContainer->ElementAt(idx).GetPointer();
   }
 
   return nullptr;
@@ -511,7 +440,7 @@ ElastixBase::SetResultDeformationField(DataObjectPointer result_deformationfield
 bool
 ElastixBase::GetUseDirectionCosines() const
 {
-  return this->m_UseDirectionCosines;
+  return m_UseDirectionCosines;
 }
 
 
@@ -522,7 +451,7 @@ ElastixBase::GetUseDirectionCosines() const
 void
 ElastixBase::SetOriginalFixedImageDirectionFlat(const FlatDirectionCosinesType & arg)
 {
-  this->m_OriginalFixedImageDirection = arg;
+  m_OriginalFixedImageDirection = arg;
 }
 
 
@@ -533,7 +462,7 @@ ElastixBase::SetOriginalFixedImageDirectionFlat(const FlatDirectionCosinesType &
 const ElastixBase::FlatDirectionCosinesType &
 ElastixBase::GetOriginalFixedImageDirectionFlat() const
 {
-  return this->m_OriginalFixedImageDirection;
+  return m_OriginalFixedImageDirection;
 }
 
 
@@ -544,7 +473,7 @@ ElastixBase::GetOriginalFixedImageDirectionFlat() const
 itk::ParameterMapInterface::ParameterMapType
 ElastixBase::GetTransformParametersMap() const
 {
-  return this->m_TransformParametersMap;
+  return m_TransformParametersMap;
 } // end GetTransformParametersMap()
 
 
@@ -553,9 +482,9 @@ ElastixBase::GetTransformParametersMap() const
  */
 
 void
-ElastixBase::SetConfigurations(const std::vector<ConfigurationPointer> & configurations)
+ElastixBase::SetConfigurations(const std::vector<Configuration::ConstPointer> & configurations)
 {
-  this->m_Configurations = configurations;
+  m_Configurations = configurations;
 }
 
 
@@ -563,10 +492,10 @@ ElastixBase::SetConfigurations(const std::vector<ConfigurationPointer> & configu
  * ************** GetConfiguration *********************
  */
 
-ElastixBase::ConfigurationPointer
+Configuration::ConstPointer
 ElastixBase::GetConfiguration(const size_t index) const
 {
-  return this->m_Configurations[index];
+  return m_Configurations[index];
 }
 
 

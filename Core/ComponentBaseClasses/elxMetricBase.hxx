@@ -24,23 +24,6 @@ namespace elastix
 {
 
 /**
- * ********************* Constructor ****************************
- */
-
-template <class TElastix>
-MetricBase<TElastix>::MetricBase()
-{
-  /** Initialize. */
-  this->m_ShowExactMetricValue = false;
-  this->m_ExactMetricSampler = nullptr;
-  this->m_CurrentExactMetricValue = 0.0;
-  this->m_ExactMetricSampleGridSpacing.Fill(1);
-  this->m_ExactMetricEachXNumberOfIterations = 1;
-
-} // end Constructor
-
-
-/**
  * ******************* BeforeEachResolutionBase ******************
  */
 
@@ -50,6 +33,8 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
 {
   /** Get the current resolution level. */
   unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
+
+  const Configuration & configuration = Deref(Superclass::GetConfiguration());
 
   /** Check if the exact metric value, computed on all pixels, should be shown. */
 
@@ -62,8 +47,7 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
 
   /** Read the parameter file: Show the exact metric in every iteration? */
   bool showExactMetricValue = false;
-  this->GetConfiguration()->ReadParameter(
-    showExactMetricValue, "ShowExactMetricValue", this->GetComponentLabel(), level, 0);
+  configuration.ReadParameter(showExactMetricValue, "ShowExactMetricValue", this->GetComponentLabel(), level, 0);
   this->m_ShowExactMetricValue = showExactMetricValue;
   if (showExactMetricValue)
   {
@@ -83,14 +67,14 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
     for (unsigned int dim = 0; dim < FixedImageDimension; ++dim)
     {
       spacing_dim = this->m_ExactMetricSampleGridSpacing[dim];
-      this->GetConfiguration()->ReadParameter(
+      configuration.ReadParameter(
         spacing_dim, "ExactMetricSampleGridSpacing", this->GetComponentLabel(), level * FixedImageDimension + dim, -1);
       this->m_ExactMetricSampleGridSpacing[dim] = static_cast<SampleGridSpacingValueType>(spacing_dim);
     }
 
     /** Read the requested frequency of exact metric evaluation. */
     unsigned int eachXNumberOfIterations = 1;
-    this->GetConfiguration()->ReadParameter(
+    configuration.ReadParameter(
       eachXNumberOfIterations, "ExactMetricEveryXIterations", this->GetComponentLabel(), level, 0);
     this->m_ExactMetricEachXNumberOfIterations = eachXNumberOfIterations;
   }
@@ -103,13 +87,11 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
   {
     /** Should the metric check for enough samples? */
     bool checkNumberOfSamples = true;
-    this->GetConfiguration()->ReadParameter(
-      checkNumberOfSamples, "CheckNumberOfSamples", this->GetComponentLabel(), level, 0);
+    configuration.ReadParameter(checkNumberOfSamples, "CheckNumberOfSamples", this->GetComponentLabel(), level, 0);
 
     /** Get the required ratio. */
     float ratio = 0.25;
-    this->GetConfiguration()->ReadParameter(
-      ratio, "RequiredRatioOfValidSamples", this->GetComponentLabel(), level, 0, false);
+    configuration.ReadParameter(ratio, "RequiredRatioOfValidSamples", this->GetComponentLabel(), level, 0, false);
 
     /** Set it. */
     if (!checkNumberOfSamples)
@@ -122,7 +104,7 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
     }
 
     /** Set moving image derivative scales. */
-    std::size_t usescales = this->GetConfiguration()->CountNumberOfParameterEntries("MovingImageDerivativeScales");
+    std::size_t usescales = configuration.CountNumberOfParameterEntries("MovingImageDerivativeScales");
     if (usescales == 0)
     {
       thisAsAdvanced->SetUseMovingImageDerivativeScales(false);
@@ -137,30 +119,29 @@ MetricBase<TElastix>::BeforeEachResolutionBase()
       movingImageDerivativeScales.Fill(1.0);
       for (unsigned int i = 0; i < MovingImageDimension; ++i)
       {
-        this->GetConfiguration()->ReadParameter(
+        configuration.ReadParameter(
           movingImageDerivativeScales[i], "MovingImageDerivativeScales", this->GetComponentLabel(), i, -1, false);
       }
 
       /** Set and report. */
       thisAsAdvanced->SetMovingImageDerivativeScales(movingImageDerivativeScales);
-      elxout << "Multiplying moving image derivatives by: " << movingImageDerivativeScales << std::endl;
+      log::info(std::ostringstream{} << "Multiplying moving image derivatives by: " << movingImageDerivativeScales);
 
       /** Check if the scales are applied taking into account the moving image orientation. */
       bool wrtMoving = false;
-      this->GetConfiguration()->ReadParameter(
+      configuration.ReadParameter(
         wrtMoving, "ScaleGradientWithRespectToMovingImageOrientation", this->GetComponentLabel(), level, false);
       thisAsAdvanced->SetScaleGradientWithRespectToMovingImageOrientation(wrtMoving);
     }
 
     /** Should the metric use multi-threading? */
     bool useMultiThreading = true;
-    this->GetConfiguration()->ReadParameter(
-      useMultiThreading, "UseMultiThreadingForMetrics", this->GetComponentLabel(), level, 0);
+    configuration.ReadParameter(useMultiThreading, "UseMultiThreadingForMetrics", this->GetComponentLabel(), level, 0);
 
     thisAsAdvanced->SetUseMultiThread(useMultiThreading);
     if (useMultiThreading)
     {
-      std::string tmp = this->m_Configuration->GetCommandLineArgument("-threads");
+      std::string tmp = configuration.GetCommandLineArgument("-threads");
       if (!tmp.empty())
       {
         const unsigned int nrOfThreads = atoi(tmp.c_str());
@@ -271,6 +252,16 @@ MetricBase<TElastix>::SelectNewSamples()
   {
     /** Force the metric to base its computation on a new subset of image samples. */
     this->GetAdvancedMetricImageSampler()->SelectNewSamplesOnUpdate();
+  }
+  else
+  {
+    /** Not every metric may have implemented this, so give a warning when this
+     * method is called for a metric without sampler support.
+     * To avoid the warning, this method may be overridden by a subclass.
+     */
+    log::warn(std::ostringstream{} << "WARNING: The NewSamplesEveryIteration option was set to \"true\", but "
+                                   << this->GetComponentLabel() << " does not use a sampler.");
+  }
 
     AdvancedMetricType * thisAsMetricWithSampler = dynamic_cast<AdvancedMetricType *>(this);
     thisAsMetricWithSampler->SelectNewSamplesSubfunctionSamplers();

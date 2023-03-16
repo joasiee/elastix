@@ -61,6 +61,8 @@ template <class TTransform, class TFixedImage, class TMovingImage>
 class ITK_TEMPLATE_EXPORT TranslationTransformInitializer : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(TranslationTransformInitializer);
+
   /** Standard class typedefs. */
   using Self = TranslationTransformInitializer;
   using Superclass = Object;
@@ -149,19 +151,15 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
-  TranslationTransformInitializer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  TransformPointer   m_Transform{};
+  FixedImagePointer  m_FixedImage{};
+  MovingImagePointer m_MovingImage{};
+  FixedMaskPointer   m_FixedMask{};
+  MovingMaskPointer  m_MovingMask{};
+  bool               m_UseMoments{};
 
-  TransformPointer   m_Transform;
-  FixedImagePointer  m_FixedImage;
-  MovingImagePointer m_MovingImage;
-  FixedMaskPointer   m_FixedMask;
-  MovingMaskPointer  m_MovingMask;
-  bool               m_UseMoments;
-
-  FixedImageCalculatorPointer  m_FixedCalculator;
-  MovingImageCalculatorPointer m_MovingCalculator;
+  FixedImageCalculatorPointer  m_FixedCalculator{};
+  MovingImageCalculatorPointer m_MovingCalculator{};
 };
 
 } // namespace itk

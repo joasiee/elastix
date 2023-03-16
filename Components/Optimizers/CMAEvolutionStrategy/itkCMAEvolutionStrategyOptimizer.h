@@ -49,6 +49,8 @@ namespace itk
 class CMAEvolutionStrategyOptimizer : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(CMAEvolutionStrategyOptimizer);
+
   using Self = CMAEvolutionStrategyOptimizer;
   using Superclass = ScaledSingleValuedNonLinearOptimizer;
   using Pointer = SmartPointer<Self>;
@@ -273,7 +275,7 @@ protected:
   /** \f$chiN  = E( \|N(0,I)\|\f$ */
   double m_ExpectationNormNormalDistribution{ 0.0 };
   /** array of \f$w_i\f$ */
-  RecombinationWeightsType m_RecombinationWeights;
+  RecombinationWeightsType m_RecombinationWeights{};
   /** Length of the MeasureHistory deque */
   unsigned long m_HistoryLength{ 0 };
 
@@ -289,29 +291,29 @@ protected:
   bool m_Heaviside{ false };
 
   /** \f$d_i = x_i - m\f$ */
-  ParameterContainerType m_SearchDirs;
+  ParameterContainerType m_SearchDirs{};
   /** realisations of \f$N(0,I)\f$ */
-  ParameterContainerType m_NormalizedSearchDirs;
+  ParameterContainerType m_NormalizedSearchDirs{};
   /** cost function values for each \f$x_i = m + d_i\f$ */
-  MeasureContainerType m_CostFunctionValues;
+  MeasureContainerType m_CostFunctionValues{};
   /** \f$m(g+1) - m(g)\f$ */
-  ParametersType m_CurrentScaledStep;
+  ParametersType m_CurrentScaledStep{};
   /** \f$1/\sigma * D^{-1} * B' * m_CurrentScaledStep, needed for p_{\sigma}\f$ */
-  ParametersType m_CurrentNormalizedStep;
+  ParametersType m_CurrentNormalizedStep{};
   /** \f$p_c\f$ */
-  ParametersType m_EvolutionPath;
+  ParametersType m_EvolutionPath{};
   /** \f$p_\sigma\f$ */
-  ParametersType m_ConjugateEvolutionPath;
+  ParametersType m_ConjugateEvolutionPath{};
 
   /** History of best measure values */
-  MeasureHistoryType m_MeasureHistory;
+  MeasureHistoryType m_MeasureHistory{};
 
   /** C: covariance matrix */
-  CovarianceMatrixType m_C;
+  CovarianceMatrixType m_C{};
   /** B: eigen vector matrix */
-  CovarianceMatrixType m_B;
+  CovarianceMatrixType m_B{};
   /** D: sqrt(eigen values) */
-  EigenValueMatrixType m_D;
+  EigenValueMatrixType m_D{};
 
   /** Constructor */
   CMAEvolutionStrategyOptimizer();
@@ -408,7 +410,7 @@ protected:
   virtual void
   FixNumericalErrors();
 
-  /** Check if convergence has occured:
+  /** Check if convergence has occurred:
    * \li Check if the maximum number of iterations will not be exceeded in the following iteration
    * \li Check if the step was not too large:
    *     if ( sigma * sqrt(C[i,i]) > PositionToleranceMax*sigma0   for any i )
@@ -422,10 +424,6 @@ protected:
   TestConvergence(bool firstCheck);
 
 private:
-  CMAEvolutionStrategyOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Settings that are only inspected/changed by the associated get/set member functions. */
   unsigned long m_MaximumNumberOfIterations{ 100 };
   bool          m_UseDecayingSigma{ false };

@@ -40,6 +40,8 @@ template <class TFixedPointSet, class TMovingPointSet>
 class ITK_TEMPLATE_EXPORT MeshPenalty : public SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MeshPenalty);
+
   /** Standard class typedefs. */
   using Self = MeshPenalty;
   using Superclass = SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>;
@@ -180,13 +182,8 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Member variables. */
-  mutable FixedMeshContainerConstPointer m_FixedMeshContainer;
-  mutable MappedMeshContainerPointer     m_MappedMeshContainer;
-
-private:
-  MeshPenalty(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  mutable FixedMeshContainerConstPointer m_FixedMeshContainer{};
+  mutable MappedMeshContainerPointer     m_MappedMeshContainer{};
 };
 
 } // end namespace itk

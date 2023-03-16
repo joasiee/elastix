@@ -115,7 +115,6 @@ main(int argc, char * argv[])
   using JacobianType = TransformType::JacobianType;
   using NonZeroJacobianIndicesType = TransformType::NonZeroJacobianIndicesType;
   using PointSetType = TransformType::PointSetType;
-  using IPPReaderType = itk::TransformixInputPointFileReader<PointSetType>;
 
   using PointsContainerType = PointSetType::PointsContainer;
   using PointsContainerPointer = PointsContainerType::Pointer;
@@ -129,13 +128,13 @@ main(int argc, char * argv[])
   kernelTransform->SetStiffness(0.0); // interpolating
 
   /** Read landmarks. */
-  auto ippReader = IPPReaderType::New();
+  auto ippReader = itk::TransformixInputPointFileReader<PointSetType>::New();
   ippReader->SetFileName(argv[1]);
   try
   {
     ippReader->Update();
   }
-  catch (itk::ExceptionObject & excp)
+  catch (const itk::ExceptionObject & excp)
   {
     std::cerr << "  Error while opening input point file." << std::endl;
     std::cerr << excp << std::endl;
@@ -181,7 +180,7 @@ main(int argc, char * argv[])
     }
     usedLandmarks->SetPoints(usedLandmarkPoints);
 
-    /** Set the ipp as source landmarks.
+    /** Set the input points as source landmarks.
      * 1) Compute L matrix
      * 2) Compute inverse of L
      */
@@ -279,7 +278,7 @@ main(int argc, char * argv[])
     // To do: Add SuiteSparse tests.
 
     // Write L Matrix to Matlab file. For inspection of matrix appearance.
-    std::ostringstream makeFileName("");
+    std::ostringstream makeFileName;
     makeFileName << argv[2] << "/LMatrix_N" << numberOfLandmarks << ".mat";
     vnl_matlab_filewrite matlabWriter(makeFileName.str().c_str());
     matlabWriter.write(lMatrix, "lMatrix");

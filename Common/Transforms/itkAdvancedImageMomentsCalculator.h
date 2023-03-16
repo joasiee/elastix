@@ -32,6 +32,8 @@
 
 #include "itkPlatformMultiThreader.h"
 
+#include <vector>
+
 namespace itk
 {
 /** \class AdvancedImageMomentsCalculator
@@ -250,14 +252,13 @@ public:
 
 protected:
   AdvancedImageMomentsCalculator();
-  ~AdvancedImageMomentsCalculator() override;
+  ~AdvancedImageMomentsCalculator() override = default;
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Typedefs for multi-threading. */
   using ThreaderType = itk::PlatformMultiThreader;
   using ThreadInfoType = ThreaderType::WorkUnitInfo;
-  ThreaderType::Pointer m_Threader;
 
   /** Launch MultiThread Compute. */
   void
@@ -268,7 +269,7 @@ protected:
   ComputeThreaderCallback(void * arg);
 
   /** The threaded implementation of Compute(). */
-  virtual inline void
+  virtual void
   ThreadedCompute(ThreadIdType threadID);
 
   /** Initialize some multi-threading related parameters. */
@@ -280,7 +281,6 @@ protected:
   {
     Self * st_Self;
   };
-  mutable MultiThreaderParameterType m_ThreaderParameters;
 
   struct ComputePerThreadStruct
   {
@@ -294,18 +294,9 @@ protected:
   };
   itkPadStruct(ITK_CACHE_LINE_ALIGNMENT, ComputePerThreadStruct, PaddedComputePerThreadStruct);
   itkAlignedTypedef(ITK_CACHE_LINE_ALIGNMENT, PaddedComputePerThreadStruct, AlignedComputePerThreadStruct);
-  mutable AlignedComputePerThreadStruct * m_ComputePerThreadVariables;
-  mutable ThreadIdType                    m_ComputePerThreadVariablesSize;
-  bool                                    m_UseMultiThread;
-  SizeValueType                           m_NumberOfPixelsCounted;
 
   /** The type of region used for multithreading */
   using ThreadRegionType = typename ImageType::RegionType;
-
-  SizeValueType               m_NumberOfSamplesForCenteredTransformInitialization;
-  InputPixelType              m_LowerThresholdForCenterGravity;
-  bool                        m_CenterOfGravityUsesLowerThreshold;
-  ImageSampleContainerPointer m_SampleContainer;
 
 private:
   /** Internal helper function. Does post processing at the end of
@@ -317,17 +308,30 @@ private:
   void
   operator=(const Self &);
 
-  bool       m_Valid; // Have moments been computed yet?
-  ScalarType m_M0;    // Zeroth moment
-  VectorType m_M1;    // First moments about origin
-  MatrixType m_M2;    // Second moments about origin
-  VectorType m_Cg;    // Center of gravity (physical units)
-  MatrixType m_Cm;    // Second central moments (physical)
-  VectorType m_Pm;    // Principal moments (physical)
-  MatrixType m_Pa;    // Principal axes (physical)
+  ThreaderType::Pointer m_Threader{};
 
-  ImageConstPointer         m_Image;
-  SpatialObjectConstPointer m_SpatialObjectMask;
+  mutable MultiThreaderParameterType m_ThreaderParameters{};
+
+  mutable std::vector<AlignedComputePerThreadStruct> m_ComputePerThreadVariables{};
+  bool                                               m_UseMultiThread{};
+  SizeValueType                                      m_NumberOfPixelsCounted{};
+
+  SizeValueType               m_NumberOfSamplesForCenteredTransformInitialization{};
+  InputPixelType              m_LowerThresholdForCenterGravity{};
+  bool                        m_CenterOfGravityUsesLowerThreshold{};
+  ImageSampleContainerPointer m_SampleContainer{};
+
+  bool       m_Valid{}; // Have moments been computed yet?
+  ScalarType m_M0{};    // Zeroth moment
+  VectorType m_M1{};    // First moments about origin
+  MatrixType m_M2{};    // Second moments about origin
+  VectorType m_Cg{};    // Center of gravity (physical units)
+  MatrixType m_Cm{};    // Second central moments (physical)
+  VectorType m_Pm{};    // Principal moments (physical)
+  MatrixType m_Pa{};    // Principal axes (physical)
+
+  ImageConstPointer         m_Image{};
+  SpatialObjectConstPointer m_SpatialObjectMask{};
 
 }; // class AdvancedImageMomentsCalculator
 } // end namespace itk

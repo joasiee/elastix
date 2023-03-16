@@ -26,6 +26,8 @@
 #include "itkImageFullSampler.h"
 #include "itkPlatformMultiThreader.h"
 
+#include <vector>
+
 namespace itk
 {
 /**\class ComputeDisplacementDistribution
@@ -46,6 +48,8 @@ template <class TFixedImage, class TTransform>
 class ITK_TEMPLATE_EXPORT ComputeDisplacementDistribution : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ComputeDisplacementDistribution);
+
   /** Standard ITK.*/
   using Self = ComputeDisplacementDistribution;
   using Superclass = ScaledSingleValuedNonLinearOptimizer;
@@ -132,21 +136,21 @@ public:
 
 protected:
   ComputeDisplacementDistribution();
-  ~ComputeDisplacementDistribution() override;
+  ~ComputeDisplacementDistribution() override = default;
 
   /** Typedefs for multi-threading. */
   using ThreaderType = itk::PlatformMultiThreader;
   using ThreadInfoType = ThreaderType::WorkUnitInfo;
 
-  typename FixedImageType::ConstPointer   m_FixedImage;
-  FixedImageRegionType                    m_FixedImageRegion;
-  FixedImageMaskConstPointer              m_FixedImageMask;
-  TransformPointer                        m_Transform;
-  ScaledSingleValuedCostFunction::Pointer m_CostFunction;
-  SizeValueType                           m_NumberOfJacobianMeasurements;
-  DerivativeType                          m_ExactGradient;
-  SizeValueType                           m_NumberOfParameters;
-  ThreaderType::Pointer                   m_Threader;
+  typename FixedImageType::ConstPointer   m_FixedImage{};
+  FixedImageRegionType                    m_FixedImageRegion{};
+  FixedImageMaskConstPointer              m_FixedImageMask{};
+  TransformPointer                        m_Transform{};
+  ScaledSingleValuedCostFunction::Pointer m_CostFunction{};
+  SizeValueType                           m_NumberOfJacobianMeasurements{};
+  DerivativeType                          m_ExactGradient{};
+  SizeValueType                           m_NumberOfParameters{};
+  ThreaderType::Pointer                   m_Threader{};
 
   using FixedImageIndexType = typename FixedImageType::IndexType;
   using FixedImagePointType = typename FixedImageType::PointType;
@@ -188,7 +192,7 @@ protected:
   ComputeThreaderCallback(void * arg);
 
   /** The threaded implementation of Compute(). */
-  virtual inline void
+  virtual void
   ThreadedCompute(ThreadIdType threadID);
 
   /** Initialize some multi-threading related parameters. */
@@ -200,8 +204,6 @@ protected:
   {
     Self * st_Self;
   };
-  mutable MultiThreaderParameterType m_ThreaderParameters;
-
   struct ComputePerThreadStruct
   {
     /**  Used for accumulating variables. */
@@ -212,17 +214,15 @@ protected:
   };
   itkPadStruct(ITK_CACHE_LINE_ALIGNMENT, ComputePerThreadStruct, PaddedComputePerThreadStruct);
   itkAlignedTypedef(ITK_CACHE_LINE_ALIGNMENT, PaddedComputePerThreadStruct, AlignedComputePerThreadStruct);
-  mutable AlignedComputePerThreadStruct * m_ComputePerThreadVariables;
-  mutable ThreadIdType                    m_ComputePerThreadVariablesSize;
-
-  SizeValueType               m_NumberOfPixelsCounted;
-  bool                        m_UseMultiThread;
-  ImageSampleContainerPointer m_SampleContainer;
 
 private:
-  ComputeDisplacementDistribution(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  mutable MultiThreaderParameterType m_ThreaderParameters{};
+
+  mutable std::vector<AlignedComputePerThreadStruct> m_ComputePerThreadVariables{};
+
+  SizeValueType               m_NumberOfPixelsCounted{};
+  bool                        m_UseMultiThread{};
+  ImageSampleContainerPointer m_SampleContainer{};
 };
 
 } // end namespace itk

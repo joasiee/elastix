@@ -45,6 +45,8 @@ class ITK_TEMPLATE_EXPORT AdvancedBSplineDeformableTransformBase
   : public AdvancedTransform<TScalarType, NDimensions, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedBSplineDeformableTransformBase);
+
   /** Standard class typedefs. */
   using Self = AdvancedBSplineDeformableTransformBase;
   using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
@@ -385,13 +387,13 @@ protected:
   InsideValidRegion(const ContinuousIndexType & index) const;
 
 private:
-  const unsigned m_SplineOrder;
+  const unsigned m_SplineOrder{};
 
 protected:
   /** Array of images representing the B-spline coefficients
    *  in each dimension.
    */
-  ImagePointer m_CoefficientImages[NDimensions];
+  ImagePointer m_CoefficientImages[NDimensions]{};
 
   /** Variables defining the coefficient grid extend. */
   RegionType     m_GridRegion{};
@@ -400,44 +402,44 @@ protected:
   OriginType     m_GridOrigin{};
   GridOffsetType m_GridOffsetTable{};
 
-  DirectionType                                     m_PointToIndexMatrix;
-  SpatialJacobianType                               m_PointToIndexMatrix2;
-  DirectionType                                     m_PointToIndexMatrixTransposed;
-  SpatialJacobianType                               m_PointToIndexMatrixTransposed2;
-  FixedArray<ScalarType, NDimensions>               m_PointToIndexMatrixDiagonal;
-  FixedArray<ScalarType, NDimensions * NDimensions> m_PointToIndexMatrixDiagonalProducts;
-  DirectionType                                     m_IndexToPoint;
-  bool                                              m_PointToIndexMatrixIsDiagonal;
+  DirectionType                                     m_PointToIndexMatrix{};
+  SpatialJacobianType                               m_PointToIndexMatrix2{};
+  DirectionType                                     m_PointToIndexMatrixTransposed{};
+  SpatialJacobianType                               m_PointToIndexMatrixTransposed2{};
+  FixedArray<ScalarType, NDimensions>               m_PointToIndexMatrixDiagonal{};
+  FixedArray<ScalarType, NDimensions * NDimensions> m_PointToIndexMatrixDiagonalProducts{};
+  DirectionType                                     m_IndexToPoint{};
+  bool                                              m_PointToIndexMatrixIsDiagonal{};
 
   bool m_ComputeControlPointFolds { false };
 
   RegionType m_ValidRegion;
 
   /** Variables defining the interpolation support region. */
-  unsigned long       m_Offset;
-  SizeType            m_SupportSize;
-  ContinuousIndexType m_ValidRegionBegin;
-  ContinuousIndexType m_ValidRegionEnd;
+  unsigned long       m_Offset{};
+  SizeType            m_SupportSize{};
+  ContinuousIndexType m_ValidRegionBegin{};
+  ContinuousIndexType m_ValidRegionEnd{};
 
   /** Keep a pointer to the input parameters. */
-  const ParametersType * m_InputParametersPointer;
+  const ParametersType * m_InputParametersPointer{};
 
   /** Jacobian as SpaceDimension number of images. */
   using JacobianPixelType = typename JacobianType::ValueType;
   using JacobianImageType = Image<JacobianPixelType, Self::SpaceDimension>;
 
-  typename JacobianImageType::Pointer m_JacobianImage[NDimensions];
+  typename JacobianImageType::Pointer m_JacobianImage[NDimensions]{};
 
   /** Keep track of last support region used in computing the Jacobian
    * for fast resetting of Jacobian to zero.
    */
-  mutable IndexType m_LastJacobianIndex;
+  mutable IndexType m_LastJacobianIndex{};
 
   /** Array holding images wrapped from the flat parameters. */
-  ImagePointer m_WrappedImage[NDimensions];
+  ImagePointer m_WrappedImage[NDimensions]{};
 
   /** Internal parameters buffer. */
-  ParametersType m_InternalParametersBuffer;
+  ParametersType m_InternalParametersBuffer{};
 
   void
   UpdateGridOffsetTable();

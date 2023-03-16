@@ -56,32 +56,38 @@ public:
   void
   SetParameterMap(const ParameterMapType & parameterMap);
   void
-  SetParameterMap(const unsigned int & index, const ParameterMapType & parameterMap);
+  SetParameterMap(const unsigned int index, const ParameterMapType & parameterMap);
   void
-  SetParameterMap(const ParameterMapVectorType & parameterMap);
+  SetParameterMap(const ParameterMapVectorType & parameterMaps);
   void
   AddParameterMap(const ParameterMapType & parameterMap);
   const ParameterMapType &
-  GetParameterMap(const unsigned int & index) const;
-  itkGetConstReferenceMacro(ParameterMap, ParameterMapVectorType);
+  GetParameterMap(const unsigned int index) const;
+
+  const ParameterMapVectorType &
+  GetParameterMap() const
+  {
+    return m_ParameterMaps;
+  }
+
   unsigned int
   GetNumberOfParameterMaps() const
   {
-    return static_cast<unsigned int>(this->m_ParameterMap.size());
+    return static_cast<unsigned int>(m_ParameterMaps.size());
   }
 
   void
-  SetParameter(const unsigned int & index, const ParameterKeyType & key, const ParameterValueType & value);
+  SetParameter(const unsigned int index, const ParameterKeyType & key, const ParameterValueType & value);
   void
-  SetParameter(const unsigned int & index, const ParameterKeyType & key, const ParameterValueVectorType & value);
+  SetParameter(const unsigned int index, const ParameterKeyType & key, const ParameterValueVectorType & value);
   void
   SetParameter(const ParameterKeyType & key, const ParameterValueType & value);
   void
   SetParameter(const ParameterKeyType & key, const ParameterValueVectorType & value);
   const ParameterValueVectorType &
-  GetParameter(const unsigned int & index, const ParameterKeyType & key);
+  GetParameter(const unsigned int index, const ParameterKeyType & key);
   void
-  RemoveParameter(const unsigned int & index, const ParameterKeyType & key);
+  RemoveParameter(const unsigned int index, const ParameterKeyType & key);
   void
   RemoveParameter(const ParameterKeyType & key);
 
@@ -93,29 +99,29 @@ public:
   void
   AddParameterFile(const ParameterFileNameType & parameterFileName);
   void
-  WriteParameterFile();
-  void
+  WriteParameterFile() const;
+  static void
   WriteParameterFile(const ParameterMapType & parameterMap, const ParameterFileNameType & parameterFileName);
   void
-  WriteParameterFile(const ParameterFileNameType & parameterFileName);
+  WriteParameterFile(const ParameterFileNameType & parameterFileName) const;
   void
-  WriteParameterFile(const ParameterFileNameVectorType & parameterFileNameVector);
-  void
+  WriteParameterFile(const ParameterFileNameVectorType & parameterFileNameVector) const;
+  static void
   WriteParameterFile(const ParameterMapVectorType &      parameterMapVector,
                      const ParameterFileNameVectorType & parameterFileNameVector);
 
   /* Get preconfigured parameter maps. */
   static const ParameterMapType
-  GetDefaultParameterMap(const std::string &  transformName,
-                         const unsigned int & numberOfResolutions = 4u,
-                         const double &       finalGridSpacingInPhysicalUnits = 10.0);
+  GetDefaultParameterMap(const std::string & transformName,
+                         const unsigned int  numberOfResolutions = 4u,
+                         const double        finalGridSpacingInPhysicalUnits = 10.0);
 
 protected:
   void
   PrintSelf(std::ostream & os, itk::Indent indent) const override;
 
 private:
-  ParameterMapVectorType m_ParameterMap;
+  ParameterMapVectorType m_ParameterMaps;
 };
 
 } // namespace elastix

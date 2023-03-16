@@ -39,6 +39,8 @@ namespace itk
 class ScaledSingleValuedCostFunction : public SingleValuedCostFunction
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ScaledSingleValuedCostFunction);
+
   /** Standard ITK-stuff. */
   using Self = ScaledSingleValuedCostFunction;
   using Superclass = SingleValuedCostFunction;
@@ -141,18 +143,12 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
-  /** The deleted copy constructor. */
-  ScaledSingleValuedCostFunction(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
   /** Member variables. */
-  ScalesType                      m_Scales;
-  ScalesType                      m_SquaredScales;
-  SingleValuedCostFunctionPointer m_UnscaledCostFunction;
-  bool                            m_UseScales;
-  bool                            m_NegateCostFunction;
+  ScalesType                      m_Scales{};
+  ScalesType                      m_SquaredScales{};
+  SingleValuedCostFunctionPointer m_UnscaledCostFunction{};
+  bool                            m_UseScales{};
+  bool                            m_NegateCostFunction{};
 };
 
 } // end namespace itk

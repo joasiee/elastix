@@ -53,6 +53,8 @@ template <class TElastix>
 class ITK_TEMPLATE_EXPORT OptimizerBase : public BaseComponentSE<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(OptimizerBase);
+
   /** Standard ITK-stuff. */
   using Self = OptimizerBase;
   using Superclass = BaseComponentSE<TElastix>;
@@ -110,7 +112,7 @@ public:
 
 protected:
   /** The constructor. */
-  OptimizerBase();
+  OptimizerBase() = default;
   /** The destructor. */
   ~OptimizerBase() override = default;
 
@@ -124,19 +126,23 @@ protected:
   virtual bool
   GetNewSamplesEveryIteration() const;
 
+  struct SettingsType
+  {
+    double a, A, alpha, fmax, fmin, omega;
+  };
+  using SettingsVectorType = typename std::vector<SettingsType>;
+
+  /** Print the contents of the settings vector to log::info. */
+  static void
+  PrintSettingsVector(const SettingsVectorType & settings);
+
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
-
-  /** The deleted copy constructor. */
-  OptimizerBase(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   /** Member variable to store the user preference for using new
    * samples each iteration.
    */
-  bool m_NewSamplesEveryIteration;
+  bool m_NewSamplesEveryIteration{ false };
 };
 
 } // end namespace elastix

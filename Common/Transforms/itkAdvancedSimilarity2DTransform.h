@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedSimilarity2DTransform.h,v $
-  Language:  C++
   Date:      $Date: 2006-06-07 16:06:32 $
   Version:   $Revision: 1.11 $
 
@@ -79,6 +78,8 @@ template <class TScalarType = double>
 class ITK_TEMPLATE_EXPORT AdvancedSimilarity2DTransform : public AdvancedRigid2DTransform<TScalarType>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedSimilarity2DTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedSimilarity2DTransform;
   using Superclass = AdvancedRigid2DTransform<TScalarType>;
@@ -227,11 +228,7 @@ protected:
   PrecomputeJacobianOfSpatialJacobian() override;
 
 private:
-  AdvancedSimilarity2DTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  ScaleType m_Scale;
+  ScaleType m_Scale{};
 };
 
 // class AdvancedSimilarity2DTransform

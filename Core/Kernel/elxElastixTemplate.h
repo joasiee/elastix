@@ -103,6 +103,8 @@ template <class TFixedImage, class TMovingImage>
 class ITK_TEMPLATE_EXPORT ElastixTemplate final : public ElastixBase
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ElastixTemplate);
+
   /** Standard itk. */
   using Self = ElastixTemplate;
   using Superclass = ElastixBase;
@@ -215,7 +217,7 @@ public:
   Run() override;
 
   int
-  ApplyTransform() override;
+  ApplyTransform(bool doReadTransform) override;
 
   /** The Callback functions. */
   int
@@ -302,11 +304,6 @@ private:
   /** Set the direction in the superclass' m_OriginalFixedImageDirection variable */
   void
   SetOriginalFixedImageDirection(const FixedImageDirectionType & arg);
-
-private:
-  ElastixTemplate(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

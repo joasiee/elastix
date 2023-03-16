@@ -59,6 +59,8 @@ class ITK_TEMPLATE_EXPORT AdvancedMeanSquaresImageToImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedMeanSquaresImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = AdvancedMeanSquaresImageToImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -222,7 +224,7 @@ protected:
     NearestNeighborInterpolateImageFunction<FixedImageType, CoordinateRepresentationType>;
   using SelfHessianSamplerType = ImageGridSampler<FixedImageType>;
 
-  double m_NormalizationFactor;
+  double m_NormalizationFactor{};
 
   /** Compute a pixel's contribution to the measure and derivatives;
    * Called by GetValueAndDerivative(). */
@@ -242,22 +244,18 @@ protected:
                          HessianType &                      H) const;
 
   /** Get value and derivatives for each thread. */
-  inline void
+  void
   ThreadedGetValueAndDerivative(ThreadIdType threadID) override;
 
   /** Gather the values and derivatives from all threads. */
-  inline void
+  void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
 
 private:
-  AdvancedMeanSquaresImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  bool           m_UseNormalization;
-  double         m_SelfHessianSmoothingSigma;
-  double         m_SelfHessianNoiseRange;
-  unsigned int   m_NumberOfSamplesForSelfHessian;
+  bool         m_UseNormalization{};
+  double       m_SelfHessianSmoothingSigma{};
+  double       m_SelfHessianNoiseRange{};
+  unsigned int m_NumberOfSamplesForSelfHessian{};
 };
 
 } // end namespace itk

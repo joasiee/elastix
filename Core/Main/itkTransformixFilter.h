@@ -35,8 +35,13 @@
 #ifndef itkTransformixFilter_h
 #define itkTransformixFilter_h
 
+#include "itkElastixLogLevel.h"
 #include "itkImageSource.h"
+#include "itkMesh.h"
+#include "itkTransformBase.h"
 
+#include "elxElastixTemplate.h"
+#include "elxTransformBase.h"
 #include "elxTransformixMain.h"
 #include "elxParameterObject.h"
 
@@ -54,6 +59,8 @@ template <typename TMovingImage>
 class ITK_TEMPLATE_EXPORT TransformixFilter : public ImageSource<TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(TransformixFilter);
+
   /** Standard ITK typedefs. */
   using Self = TransformixFilter;
   using Superclass = ImageSource<TMovingImage>;
@@ -67,7 +74,7 @@ public:
   itkTypeMacro(TransformixFilter, ImageSource);
 
   /** Typedefs. */
-  using TransformixMainType = elastix::TransformixMain;
+  using TransformixMainType = elx::TransformixMain;
   using TransformixMainPointer = TransformixMainType::Pointer;
   using ArgumentMapType = TransformixMainType::ArgumentMapType;
   using ArgumentMapEntryType = ArgumentMapType::value_type;
@@ -77,7 +84,7 @@ public:
   using DataObjectContainerType = TransformixMainType::DataObjectContainerType;
   using DataObjectContainerPointer = TransformixMainType::DataObjectContainerPointer;
 
-  using ParameterObjectType = elastix::ParameterObject;
+  using ParameterObjectType = elx::ParameterObject;
   using ParameterMapVectorType = ParameterObjectType::ParameterMapVectorType;
   using ParameterMapType = ParameterObjectType::ParameterMapType;
   using ParameterValueVectorType = ParameterObjectType::ParameterValueVectorType;
@@ -85,6 +92,8 @@ public:
   using ParameterObjectConstPointer = typename ParameterObjectType::ConstPointer;
 
   using typename Superclass::OutputImageType;
+  using typename Superclass::OutputImagePixelType;
+
   using OutputDeformationFieldType =
     typename itk::Image<itk::Vector<float, TMovingImage::ImageDimension>, TMovingImage::ImageDimension>;
 
@@ -92,6 +101,15 @@ public:
 
   using InputImageType = TMovingImage;
   itkStaticConstMacro(MovingImageDimension, unsigned int, TMovingImage::ImageDimension);
+
+  using MeshType = Mesh<OutputImagePixelType, MovingImageDimension>;
+
+  using TransformType = Transform<double, MovingImageDimension, MovingImageDimension>;
+
+  /** Typedefs for images of determinants of spatial Jacobian matrices, and images of spatial Jacobian matrices */
+  using SpatialJacobianDeterminantImageType = itk::Image<float, MovingImageDimension>;
+  using SpatialJacobianMatrixImageType =
+    itk::Image<itk::Matrix<float, MovingImageDimension, MovingImageDimension>, MovingImageDimension>;
 
   /** Set/Get/Add moving image. */
   virtual void
@@ -111,7 +129,7 @@ public:
   const DataObject *
   GetInput(DataObjectPointerArraySizeType index) const;
 
-  /** Set/Get/Remove moving point set filename. */
+  /** Set/Get/Remove fixed point set filename. */
   itkSetMacro(FixedPointSetFileName, std::string);
   itkGetConstMacro(FixedPointSetFileName, std::string);
   virtual void
@@ -188,6 +206,43 @@ public:
   itkGetConstMacro(LogToFile, bool);
   itkBooleanMacro(LogToFile);
 
+  /** Disables output to log and standard output. */
+  void
+  DisableOutput()
+  {
+    m_EnableOutput = false;
+  }
+
+  itkSetMacro(LogLevel, ElastixLogLevel);
+  itkGetConstMacro(LogLevel, ElastixLogLevel);
+
+  /** Sets an (optional) input mesh. An Update() will transform its points, and store them in the output mesh.  */
+  itkSetConstObjectMacro(InputMesh, MeshType);
+
+  /** Retrieves the output mesh, produced by an Update(), when an input mesh was specified.  */
+  const MeshType *
+  GetOutputMesh() const
+  {
+    return m_OutputMesh;
+  }
+
+  /** Sets the transformation. If null, the transformation is entirely specified by the transform
+   * parameter object that is set by SetTransformParameterObject. Otherwise, the transformation is specified by this
+   * transform object, with additional information from the specified transform parameter object. */
+  itkSetConstObjectMacro(Transform, TransformBase);
+
+  itkSetObjectMacro(CombinationTransform, TransformType);
+
+  /** Computes the spatial Jacobian determinant for each pixel, and returns an image of the computed values.
+  \note Before calling this member function, Update() must be called. */
+  SmartPointer<SpatialJacobianDeterminantImageType>
+  ComputeSpatialJacobianDeterminantImage() const;
+
+  /** Computes the spatial Jacobian matrix for each pixel, and returns an image of the computed matrices.
+  \note Before calling this member function, Update() must be called. */
+  SmartPointer<SpatialJacobianMatrixImageType>
+  ComputeSpatialJacobianMatrixImage() const;
+
 protected:
   TransformixFilter();
 
@@ -205,9 +260,9 @@ protected:
   GenerateData() override;
 
 private:
-  TransformixFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  /** Private using-declarations, just to avoid GCC compilation warnings: '...' was hidden [-Woverloaded-virtual] */
+  using Superclass::SetInput;
+  using Superclass::MakeOutput;
 
   /** IsEmpty. */
   static bool
@@ -218,16 +273,33 @@ private:
    */
   using ProcessObject::RemoveInput;
 
-  std::string m_FixedPointSetFileName;
-  bool        m_ComputeSpatialJacobian;
-  bool        m_ComputeDeterminantOfSpatialJacobian;
-  bool        m_ComputeDeformationField;
+  using ElastixTransformBaseType = elx::TransformBase<elx::ElastixTemplate<TMovingImage, TMovingImage>>;
 
-  std::string m_OutputDirectory;
-  std::string m_LogFileName;
+  const ElastixTransformBaseType *
+  GetFirstElastixTransformBase() const;
 
-  bool m_LogToConsole;
-  bool m_LogToFile;
+  SmartPointer<const elx::TransformixMain> m_TransformixMain{ nullptr };
+
+  std::string m_FixedPointSetFileName{};
+  bool        m_ComputeSpatialJacobian{ false };
+  bool        m_ComputeDeterminantOfSpatialJacobian{ false };
+  bool        m_ComputeDeformationField{ false };
+
+  std::string m_OutputDirectory{};
+  std::string m_LogFileName{};
+
+  bool m_EnableOutput{ true };
+  bool m_LogToConsole{ false };
+  bool m_LogToFile{ false };
+
+  ElastixLogLevel m_LogLevel{};
+
+  typename MeshType::ConstPointer m_InputMesh{ nullptr };
+  typename MeshType::Pointer      m_OutputMesh{ nullptr };
+
+  TransformBase::ConstPointer m_Transform{};
+
+  SmartPointer<TransformType> m_CombinationTransform;
 };
 
 } // namespace itk

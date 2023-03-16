@@ -65,6 +65,8 @@ namespace itk
 class StandardGradientDescentOptimizer : public GradientDescentOptimizer2
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(StandardGradientDescentOptimizer);
+
   /** Standard ITK.*/
   using Self = StandardGradientDescentOptimizer;
   using Superclass = GradientDescentOptimizer2;
@@ -154,10 +156,6 @@ protected:
   bool m_UseConstantStep{ false };
 
 private:
-  StandardGradientDescentOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /**Parameters, as described by Spall.*/
   double m_Param_a{ 1.0 };
   double m_Param_A{ 1.0 };

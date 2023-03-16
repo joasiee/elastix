@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkTransform.h,v $
-  Language:  C++
   Date:      $Date: 2008-06-29 12:58:58 $
   Version:   $Revision: 1.64 $
 
@@ -83,6 +82,8 @@ template <class TScalarType, unsigned int NInputDimensions = 3, unsigned int NOu
 class ITK_TEMPLATE_EXPORT AdvancedTransform : public Transform<TScalarType, NInputDimensions, NOutputDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedTransform;
   using Superclass = Transform<TScalarType, NInputDimensions, NOutputDimensions>;
@@ -180,7 +181,7 @@ public:
    * the dimension of the image.
    */
   virtual void
-  GetJacobian(const InputPointType &       ipp,
+  GetJacobian(const InputPointType &       inputPoint,
               JacobianType &               j,
               NonZeroJacobianIndicesType & nonZeroJacobianIndices) const = 0;
 
@@ -188,7 +189,7 @@ public:
    * The Jacobian is (partially) constructed inside this function, but not returned.
    */
   virtual void
-  EvaluateJacobianWithImageGradientProduct(const InputPointType &          ipp,
+  EvaluateJacobianWithImageGradientProduct(const InputPointType &          inputPoint,
                                            const MovingImageGradientType & movingImageGradient,
                                            DerivativeType &                imageJacobian,
                                            NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
@@ -220,7 +221,7 @@ public:
    * the dimension of the image.
    */
   virtual void
-  GetSpatialJacobian(const InputPointType & ipp, SpatialJacobianType & sj) const = 0;
+  GetSpatialJacobian(const InputPointType & inputPoint, SpatialJacobianType & sj) const = 0;
 
   /** Override some pure virtual ITK4 functions. */
   void
@@ -248,7 +249,7 @@ public:
    * with i the i-th component of the transformation.
    */
   virtual void
-  GetSpatialHessian(const InputPointType & ipp, SpatialHessianType & sh) const = 0;
+  GetSpatialHessian(const InputPointType & inputPoint, SpatialHessianType & sh) const = 0;
 
   /** Compute the Jacobian of the spatial Jacobian of the transformation.
    *
@@ -257,7 +258,7 @@ public:
    * a point \f$p\f$.
    */
   virtual void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const = 0;
 
@@ -265,7 +266,7 @@ public:
    * spatial Jacobian of the transformation.
    */
   virtual void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                SpatialJacobianType &           sj,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const = 0;
@@ -277,7 +278,7 @@ public:
    * a point \f$p\f$.
    */
   virtual void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const = 0;
 
@@ -285,23 +286,21 @@ public:
    * spatial Hessian of the transformation.
    */
   virtual void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               SpatialHessianType &           sh,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const = 0;
 
 protected:
-  AdvancedTransform();
-  explicit AdvancedTransform(NumberOfParametersType numberOfParameters);
+  AdvancedTransform() = default;
+
+  // Inherit the other (non-default) constructor from itk::Transform.
+  using Superclass::Superclass;
+
   ~AdvancedTransform() override = default;
 
-  bool m_HasNonZeroSpatialHessian;
-  bool m_HasNonZeroJacobianOfSpatialHessian;
-
-private:
-  AdvancedTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  bool m_HasNonZeroSpatialHessian{ true };
+  bool m_HasNonZeroJacobianOfSpatialHessian{ true };
 };
 
 } // end namespace itk

@@ -45,6 +45,8 @@ class ITK_TEMPLATE_EXPORT MissingVolumeMeshPenalty
   : public SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MissingVolumeMeshPenalty);
+
   /** Standard class typedefs. */
   using Self = MissingVolumeMeshPenalty;
   using Superclass = SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>;
@@ -162,18 +164,14 @@ protected:
   // void PrintSelf(std::ostream& os, Indent indent) const;
 
   /** Member variables. */
-  FixedMeshConstPointer m_FixedMesh;
+  FixedMeshConstPointer m_FixedMesh{};
 
-  mutable FixedMeshContainerConstPointer m_FixedMeshContainer;
-  mutable MappedMeshContainerPointer     m_MappedMeshContainer;
+  mutable FixedMeshContainerConstPointer m_FixedMeshContainer{};
+  mutable MappedMeshContainerPointer     m_MappedMeshContainer{};
 
 private:
   void
   SubVector(const VectorType & fullVector, SubVectorType & subVector, const unsigned int leaveOutIndex) const;
-
-  MissingVolumeMeshPenalty(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

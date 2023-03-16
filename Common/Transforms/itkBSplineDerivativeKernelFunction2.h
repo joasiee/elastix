@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkBSplineDerivativeKernelFunction2.h,v $
-  Language:  C++
   Date:      $Date: 2008-06-25 11:00:19 $
   Version:   $Revision: 1.7 $
 
@@ -59,6 +58,8 @@ template <unsigned int VSplineOrder = 3>
 class ITK_TEMPLATE_EXPORT BSplineDerivativeKernelFunction2 : public KernelFunctionBase2<double>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(BSplineDerivativeKernelFunction2);
+
   /** Standard class typedefs. */
   using Self = BSplineDerivativeKernelFunction2;
   using Superclass = KernelFunctionBase2<double>;
@@ -92,7 +93,7 @@ public:
 
 
   /** Evaluate the function. */
-  inline double
+  double
   Evaluate(const double & u) const override
   {
     return Self::FastEvaluate(u);
@@ -100,7 +101,7 @@ public:
 
 
   /** Evaluate the function. */
-  inline void
+  void
   Evaluate(const double & u, double * weights) const override
   {
     return Self::FastEvaluate(u, weights);
@@ -120,10 +121,6 @@ protected:
 
 
 private:
-  BSplineDerivativeKernelFunction2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Structures to control overloaded versions of Evaluate */
   template <unsigned int>
   struct ITK_TEMPLATE_EXPORT Dispatch
@@ -133,8 +130,8 @@ private:
   // Derivative not defined.
 
   /** First order spline */
-  inline static double
-  Evaluate(const Dispatch<1> &, const double & u)
+  static double
+  Evaluate(const Dispatch<1> &, const double u)
   {
     const double absValue = std::abs(u);
 
@@ -153,8 +150,8 @@ private:
   }
 
 
-  inline static void
-  Evaluate(const Dispatch<1> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<1> &, const double u, double * weights)
   {
     // MS \todo: check
     const double absValue = std::abs(u);
@@ -178,8 +175,8 @@ private:
 
 
   /** Second order spline. */
-  inline static double
-  Evaluate(const Dispatch<2> &, const double & u)
+  static double
+  Evaluate(const Dispatch<2> &, const double u)
   {
     double absValue = std::abs(u);
 
@@ -198,8 +195,8 @@ private:
   }
 
 
-  inline static void
-  Evaluate(const Dispatch<2> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<2> &, const double u, double * weights)
   {
     // MS \todo: check
     weights[0] = u - 1.5;
@@ -209,8 +206,8 @@ private:
 
 
   /**  Third order spline. */
-  inline static double
-  Evaluate(const Dispatch<3> &, const double & u)
+  static double
+  Evaluate(const Dispatch<3> &, const double u)
   {
     const double absValue = std::abs(u);
     const double sqrValue = u * u;
@@ -248,8 +245,8 @@ private:
   }
 
 
-  inline static void
-  Evaluate(const Dispatch<3> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<3> &, const double u, double * weights)
   {
     const double absValue = std::abs(u);
     const double sqrValue = u * u;

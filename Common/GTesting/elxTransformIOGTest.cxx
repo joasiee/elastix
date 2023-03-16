@@ -22,8 +22,7 @@
 #include "elxTransformIO.h"
 
 #include "elxConversion.h"
-#include "elxDefaultConstructibleSubclass.h"
-#include "elxElastixMain.h" // For xoutManager.
+#include "elxDefaultConstruct.h"
 #include "elxElastixTemplate.h"
 #include "elxGTestUtilities.h"
 #include "../Core/Main/GTesting/elxCoreMainGTestUtilities.h"
@@ -114,7 +113,7 @@ struct WithDimension
 
       EXPECT_EQ(elxTransform->elxGetClassName(),
                 elx::TransformIO::ConvertITKNameOfClassToElastixClassName(
-                  elx::DefaultConstructibleSubclass<TExpectedCorrespondingItkTransform>{}.GetNameOfClass()));
+                  elx::DefaultConstruct<TExpectedCorrespondingItkTransform>{}.GetNameOfClass()));
 
       const auto compositeTransform = elx::TransformIO::ConvertToItkCompositeTransform(*elxTransform);
       ASSERT_NE(compositeTransform, nullptr);
@@ -243,8 +242,6 @@ struct WithDimension
                      .append("\n  ElastixTransformType = ")
                      .append(typeid(ElastixTransformType).name()));
 
-      const elx::xoutManager manager("", false, false);
-
       const auto elxTransform = CheckNew<ElastixTransformType>();
       const auto elastixObject = CreateDefaultElastixObject<ElastixType<NDimension>>();
 
@@ -294,8 +291,6 @@ struct WithDimension
     static void
     Test_CreateTransformParametersMap_double_precision()
     {
-      const elx::xoutManager manager("", false, false);
-
       // Use 0.3333333333333333... as test value.
       constexpr auto testValue = 1.0 / 3.0;
       constexpr auto expectedPrecision = 16;
@@ -308,8 +303,8 @@ struct WithDimension
 
       const auto imageContainer = elx::ElastixBase::DataObjectContainerType::New();
       const auto image = itk::Image<float, NDimension>::New();
-      image->SetOrigin(testValue);
-      image->SetSpacing(testValue);
+      image->SetOrigin(itk::Point<double, NDimension>(testValue));
+      image->SetSpacing(itk::Vector<double, NDimension>(testValue));
       imageContainer->push_back(image);
 
       elastixObject->SetFixedImageContainer(imageContainer);
@@ -337,8 +332,6 @@ struct WithDimension
     static void
     Test_CreateTransformParametersMap_SetUseAddition()
     {
-      const elx::xoutManager manager("", false, false);
-
       const auto elxTransform = CheckNew<ElastixTransformType>();
 
       const auto elastixObject = CreateDefaultElastixObject<ElastixType<NDimension>>();
@@ -869,7 +862,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKTranslation2D)
 {
   constexpr auto Dimension = 2U;
 
-  elx::DefaultConstructibleSubclass<itk::TranslationTransform<double, Dimension>> itkTransform;
+  elx::DefaultConstruct<itk::TranslationTransform<double, Dimension>> itkTransform;
   itkTransform.SetOffset(itk::MakeVector(1.0, 2.0));
 
   Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::TranslationTransformElastix>(itkTransform);
@@ -880,7 +873,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKTranslation3D)
 {
   constexpr auto Dimension = 3U;
 
-  elx::DefaultConstructibleSubclass<itk::TranslationTransform<double, Dimension>> itkTransform;
+  elx::DefaultConstruct<itk::TranslationTransform<double, Dimension>> itkTransform;
   itkTransform.SetOffset(itk::MakeVector(1.0, 2.0, 3.0));
 
   Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::TranslationTransformElastix>(itkTransform);
@@ -891,7 +884,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKAffine2D)
 {
   constexpr auto Dimension = 2U;
 
-  elx::DefaultConstructibleSubclass<itk::AffineTransform<double, Dimension>> itkTransform;
+  elx::DefaultConstruct<itk::AffineTransform<double, Dimension>> itkTransform;
   itkTransform.SetTranslation(itk::MakeVector(1.0, 2.0));
   itkTransform.Scale(itk::MakeVector(1.5, 1.75));
   itkTransform.SetCenter(itk::MakePoint(0.5, 1.5));
@@ -905,7 +898,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKAffine3D)
 {
   constexpr auto Dimension = 3U;
 
-  elx::DefaultConstructibleSubclass<itk::AffineTransform<double, Dimension>> itkTransform;
+  elx::DefaultConstruct<itk::AffineTransform<double, Dimension>> itkTransform;
   itkTransform.SetTranslation(itk::MakeVector(1.0, 2.0, 3.0));
   itkTransform.SetCenter(itk::MakePoint(3.0, 2.0, 1.0));
   itkTransform.Scale(itk::MakeVector(1.25, 1.5, 1.75));
@@ -917,7 +910,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKAffine3D)
 
 GTEST_TEST(Transform, TransformedPointSameAsITKEuler2D)
 {
-  elx::DefaultConstructibleSubclass<itk::Euler2DTransform<double>> itkTransform;
+  elx::DefaultConstruct<itk::Euler2DTransform<double>> itkTransform;
   itkTransform.SetTranslation(itk::MakeVector(1.0, 2.0));
   itkTransform.SetCenter(itk::MakePoint(0.5, 1.5));
   itkTransform.SetAngle(M_PI_4);
@@ -928,7 +921,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKEuler2D)
 
 GTEST_TEST(Transform, TransformedPointSameAsITKEuler3D)
 {
-  elx::DefaultConstructibleSubclass<itk::Euler3DTransform<double>> itkTransform;
+  elx::DefaultConstruct<itk::Euler3DTransform<double>> itkTransform;
   itkTransform.SetTranslation(itk::MakeVector(1.0, 2.0, 3.0));
   itkTransform.SetCenter(itk::MakePoint(3.0, 2.0, 1.0));
   itkTransform.SetRotation(M_PI_2, M_PI_4, M_PI_4 / 2.0);
@@ -939,7 +932,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKEuler3D)
 
 GTEST_TEST(Transform, TransformedPointSameAsITKSimilarity2D)
 {
-  elx::DefaultConstructibleSubclass<itk::Similarity2DTransform<double>> itkTransform;
+  elx::DefaultConstruct<itk::Similarity2DTransform<double>> itkTransform;
   itkTransform.SetScale(0.75);
   itkTransform.SetTranslation(itk::MakeVector(1.0, 2.0));
   itkTransform.SetCenter(itk::MakePoint(0.5, 1.5));
@@ -951,7 +944,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKSimilarity2D)
 
 GTEST_TEST(Transform, TransformedPointSameAsITKSimilarity3D)
 {
-  elx::DefaultConstructibleSubclass<itk::Similarity3DTransform<double>> itkTransform;
+  elx::DefaultConstruct<itk::Similarity3DTransform<double>> itkTransform;
   itkTransform.SetScale(0.75);
   itkTransform.SetTranslation(itk::MakeVector(1.0, 2.0, 3.0));
   itkTransform.SetCenter(itk::MakePoint(3.0, 2.0, 1.0));
@@ -963,7 +956,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKSimilarity3D)
 
 GTEST_TEST(Transform, TransformedPointSameAsITKBSpline2D)
 {
-  elx::DefaultConstructibleSubclass<itk::BSplineTransform<double, 2>> itkTransform;
+  elx::DefaultConstruct<itk::BSplineTransform<double, 2>> itkTransform;
   itkTransform.SetParameters(GeneratePseudoRandomParameters(itkTransform.GetParameters().size(), -1.0));
 
   Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedBSplineTransform>(itkTransform);
@@ -972,7 +965,7 @@ GTEST_TEST(Transform, TransformedPointSameAsITKBSpline2D)
 
 GTEST_TEST(Transform, TransformedPointSameAsITKBSpline3D)
 {
-  elx::DefaultConstructibleSubclass<itk::BSplineTransform<double, 3>> itkTransform;
+  elx::DefaultConstruct<itk::BSplineTransform<double, 3>> itkTransform;
   itkTransform.SetParameters(GeneratePseudoRandomParameters(itkTransform.GetParameters().size(), -1.0));
 
   Expect_elx_TransformPoint_yields_same_point_as_ITK<elx::AdvancedBSplineTransform>(itkTransform);

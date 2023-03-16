@@ -86,7 +86,7 @@ SimilarityTransformElastix<TElastix>::ReadFromFile()
 
     if (!pointRead && !indexRead)
     {
-      xl::xout["error"] << "ERROR: No center of rotation is specified in the transform parameter file." << std::endl;
+      log::error("ERROR: No center of rotation is specified in the transform parameter file.");
       itkExceptionMacro(<< "Transform parameter file is corrupt.")
     }
 
@@ -174,13 +174,13 @@ SimilarityTransformElastix<TElastix>::InitializeTransform()
   /** Give a warning if necessary. */
   if (!CORIndexInImage && centerGivenAsIndex)
   {
-    xl::xout["warning"] << "WARNING: Center of Rotation (index) is not within image boundaries!" << std::endl;
+    log::warn("WARNING: Center of Rotation (index) is not within image boundaries!");
   }
 
   /** Give a warning if necessary. */
   if (!CORPointInImage && centerGivenAsPoint && !centerGivenAsIndex)
   {
-    xl::xout["warning"] << "WARNING: Center of Rotation (point) is not within image boundaries!" << std::endl;
+    log::warn("WARNING: Center of Rotation (point) is not within image boundaries!");
   }
 
   /** Check if user wants automatic transform initialization; false by default.
@@ -261,7 +261,7 @@ SimilarityTransformElastix<TElastix>::InitializeTransform()
 
   /** Give feedback. */
   // \todo: should perhaps also print fixed parameters
-  elxout << "Transform parameters are initialized as: " << this->GetParameters() << std::endl;
+  log::info(std::ostringstream{} << "Transform parameters are initialized as: " << this->GetParameters());
 
 } // end InitializeTransform()
 
@@ -285,7 +285,7 @@ SimilarityTransformElastix<TElastix>::SetScales()
 
   if (automaticScalesEstimation)
   {
-    elxout << "Scales are estimated automatically." << std::endl;
+    log::info("Scales are estimated automatically.");
     this->AutomaticScalesEstimation(newscales);
   }
   else
@@ -320,7 +320,7 @@ SimilarityTransformElastix<TElastix>::SetScales()
     }
   } // end else: no automatic parameter estimation
 
-  elxout << "Scales for transform parameters are: " << newscales << std::endl;
+  log::info(std::ostringstream{} << "Scales for transform parameters are: " << newscales);
 
   /** Set the scales into the optimizer. */
   this->m_Registration->GetAsITKBaseType()->GetModifiableOptimizer()->SetScales(newscales);
@@ -362,12 +362,11 @@ SimilarityTransformElastix<TElastix>::ReadCenterOfRotationIndex(InputPointType &
    * We put this in a dummy image, so that we can correctly
    * calculate the center of rotation in world coordinates.
    */
-  SpacingType   spacing;
-  IndexType     index;
-  PointType     origin;
-  SizeType      size;
-  DirectionType direction;
-  direction.SetIdentity();
+  SpacingType spacing;
+  IndexType   index;
+  PointType   origin;
+  SizeType    size;
+  auto        direction = DirectionType::GetIdentity();
   for (unsigned int i = 0; i < SpaceDimension; ++i)
   {
     /** Read size from the parameter file. Zero by default, which is illegal. */
@@ -405,7 +404,7 @@ SimilarityTransformElastix<TElastix>::ReadCenterOfRotationIndex(InputPointType &
 
   if (illegalSize)
   {
-    xl::xout["error"] << "ERROR: One or more image sizes are 0!" << std::endl;
+    log::error("ERROR: One or more image sizes are 0!");
     return false;
   }
 

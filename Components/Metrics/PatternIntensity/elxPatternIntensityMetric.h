@@ -40,6 +40,8 @@ class ITK_TEMPLATE_EXPORT PatternIntensityMetric
   , public MetricBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(PatternIntensityMetric);
+
   /** Standard ITK-stuff. */
   using Self = PatternIntensityMetric;
   using Superclass1 = itk::PatternIntensityImageToImageMetric<typename MetricBase<TElastix>::FixedImageType,
@@ -137,12 +139,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  PatternIntensityMetric(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkCenteredTransformInitializer2.txx,v $
-  Language:  C++
   Date:      $Date: 2009-08-15 23:42:49 $
   Version:   $Revision: 1.22 $
 
@@ -64,28 +63,19 @@ CenteredTransformInitializer2<TTransform, TFixedImage, TMovingImage>::Initialize
   if (!m_FixedImage)
   {
     itkExceptionMacro("Fixed Image has not been set");
-    return;
   }
   if (!m_MovingImage)
   {
     itkExceptionMacro("Moving Image has not been set");
-    return;
   }
   if (!m_Transform)
   {
     itkExceptionMacro("Transform has not been set");
-    return;
   }
 
   // If images come from filters, then update those filters.
-  if (m_FixedImage->GetSource())
-  {
-    m_FixedImage->GetSource()->Update();
-  }
-  if (m_MovingImage->GetSource())
-  {
-    m_MovingImage->GetSource()->Update();
-  }
+  m_FixedImage->UpdateSource();
+  m_MovingImage->UpdateSource();
 
   InputPointType   rotationCenter;
   OutputVectorType translationVector;

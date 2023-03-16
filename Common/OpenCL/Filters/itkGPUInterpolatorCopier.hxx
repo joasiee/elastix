@@ -30,8 +30,9 @@
 #include "itkGPULinearInterpolateImageFunction.h"
 #include "itkGPUBSplineInterpolateImageFunction.h"
 
-// GPU factory include
+// GPU factories include
 #include "itkGPUImageFactory.h"
+#include "itkGPUBSplineDecompositionImageFilterFactory.h"
 
 namespace itk
 {
@@ -55,7 +56,6 @@ GPUInterpolatorCopier<TTypeList, NDimensions, TInterpolator, TOutputCoordRep>::U
   if (!this->m_InputInterpolator)
   {
     itkExceptionMacro(<< "Input Interpolator has not been connected");
-    return;
   }
 
   // Update only if the input AdvancedCombinationTransform has been modified
@@ -72,8 +72,7 @@ GPUInterpolatorCopier<TTypeList, NDimensions, TInterpolator, TOutputCoordRep>::U
 
     // Try Nearest
     using NearestNeighborInterpolatorType = NearestNeighborInterpolateImageFunction<CPUInputImageType, CPUCoordRepType>;
-    const typename NearestNeighborInterpolatorType::ConstPointer nearest =
-      dynamic_cast<const NearestNeighborInterpolatorType *>(m_InputInterpolator.GetPointer());
+    const auto nearest = dynamic_cast<const NearestNeighborInterpolatorType *>(m_InputInterpolator.GetPointer());
 
     if (nearest)
     {
@@ -96,8 +95,7 @@ GPUInterpolatorCopier<TTypeList, NDimensions, TInterpolator, TOutputCoordRep>::U
 
     // Try Linear
     using LinearInterpolatorType = LinearInterpolateImageFunction<CPUInputImageType, CPUCoordRepType>;
-    const typename LinearInterpolatorType::ConstPointer linear =
-      dynamic_cast<const LinearInterpolatorType *>(m_InputInterpolator.GetPointer());
+    const auto linear = dynamic_cast<const LinearInterpolatorType *>(m_InputInterpolator.GetPointer());
 
     if (linear)
     {
@@ -117,30 +115,39 @@ GPUInterpolatorCopier<TTypeList, NDimensions, TInterpolator, TOutputCoordRep>::U
     }
 
     // Try BSpline
-    using BSplineInterpolatorType =
-      BSplineInterpolateImageFunction<CPUInputImageType, CPUCoordRepType, CPUCoordRepType>;
-    const typename BSplineInterpolatorType::ConstPointer bspline =
-      dynamic_cast<const BSplineInterpolatorType *>(m_InputInterpolator.GetPointer());
+    using BSplineInterpolatorType = BSplineInterpolateImageFunction<CPUInputImageType, CPUCoordRepType, double>;
+    const auto bspline = dynamic_cast<const BSplineInterpolatorType *>(m_InputInterpolator.GetPointer());
 
-    if (bspline)
+    using BSplineInterpolatorFloatType = BSplineInterpolateImageFunction<CPUInputImageType, CPUCoordRepType, float>;
+    const auto bsplineFloat = dynamic_cast<const BSplineInterpolatorFloatType *>(m_InputInterpolator.GetPointer());
+
+    if (bspline || bsplineFloat)
     {
+      const auto splineOrder = bspline ? bspline->GetSplineOrder() : bsplineFloat->GetSplineOrder();
+
       if (this->m_ExplicitMode)
       {
         // Register image factory because BSplineInterpolateImageFunction
-        // using m_Coefficients as ITK images inside the implementation
+        // using m_Coefficients as ITK images inside the implementation,
+        // and also BSplineDecompositionImageFilter for the calculations
         using GPUImageFactoryType = itk::GPUImageFactory2<TTypeList, NDimensions>;
-        using GPUImageFactoryPointer = typename GPUImageFactoryType::Pointer;
-        GPUImageFactoryPointer imageFactory = GPUImageFactoryType::New();
+        auto imageFactory = GPUImageFactoryType::New();
         itk::ObjectFactoryBase::RegisterFactory(imageFactory);
+
+        using GPUBSplineDecompositionImageFilterFactoryType =
+          itk::GPUBSplineDecompositionImageFilterFactory2<TTypeList, TTypeList, NDimensions>;
+        auto decompositionFactory = GPUBSplineDecompositionImageFilterFactoryType::New();
+        itk::ObjectFactoryBase::RegisterFactory(decompositionFactory);
 
         // Create GPU BSpline interpolator in explicit mode
         using GPUBSplineInterpolatorType =
           GPUBSplineInterpolateImageFunction<GPUInputImageType, GPUCoordRepType, GPUCoordRepType>;
         auto bsplineInterpolator = GPUBSplineInterpolatorType::New();
-        bsplineInterpolator->SetSplineOrder(bspline->GetSplineOrder());
+        bsplineInterpolator->SetSplineOrder(splineOrder);
 
-        // UnRegister image factory
+        // UnRegister factories
         itk::ObjectFactoryBase::UnRegisterFactory(imageFactory);
+        itk::ObjectFactoryBase::UnRegisterFactory(decompositionFactory);
 
         this->m_ExplicitOutput = bsplineInterpolator;
       }
@@ -150,7 +157,7 @@ GPUInterpolatorCopier<TTypeList, NDimensions, TInterpolator, TOutputCoordRep>::U
         using GPUBSplineInterpolatorType =
           BSplineInterpolateImageFunction<CPUInputImageType, GPUCoordRepType, GPUCoordRepType>;
         auto bsplineInterpolator = GPUBSplineInterpolatorType::New();
-        bsplineInterpolator->SetSplineOrder(bspline->GetSplineOrder());
+        bsplineInterpolator->SetSplineOrder(splineOrder);
         this->m_Output = bsplineInterpolator;
       }
       return;

@@ -74,6 +74,8 @@ class ITK_TEMPLATE_EXPORT MultiInputMultiResolutionImageRegistrationMethodBase
   : public MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiInputMultiResolutionImageRegistrationMethodBase);
+
   /** Standard class typedefs. */
   using Self = MultiInputMultiResolutionImageRegistrationMethodBase;
   using Superclass = MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>;
@@ -299,26 +301,22 @@ protected:
   CheckOnInitialize();
 
   /** Containers for the pointers supplied by the user */
-  FixedImageVectorType             m_FixedImages;
-  MovingImageVectorType            m_MovingImages;
-  FixedImageRegionVectorType       m_FixedImageRegions;
-  FixedImagePyramidVectorType      m_FixedImagePyramids;
-  MovingImagePyramidVectorType     m_MovingImagePyramids;
-  InterpolatorVectorType           m_Interpolators;
-  FixedImageInterpolatorVectorType m_FixedImageInterpolators;
+  FixedImageVectorType             m_FixedImages{};
+  MovingImageVectorType            m_MovingImages{};
+  FixedImageRegionVectorType       m_FixedImageRegions{};
+  FixedImagePyramidVectorType      m_FixedImagePyramids{};
+  MovingImagePyramidVectorType     m_MovingImagePyramids{};
+  InterpolatorVectorType           m_Interpolators{};
+  FixedImageInterpolatorVectorType m_FixedImageInterpolators{};
 
   /** This vector is filled by the PreparePyramids function. */
-  FixedImageRegionPyramidVectorType m_FixedImageRegionPyramids;
+  FixedImageRegionPyramidVectorType m_FixedImageRegionPyramids{};
 
   /** Dummy image region */
-  FixedImageRegionType m_NullFixedImageRegion;
+  FixedImageRegionType m_NullFixedImageRegion{};
 
 private:
-  MultiInputMultiResolutionImageRegistrationMethodBase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  MultiInputMetricPointer m_MultiInputMetric;
+  MultiInputMetricPointer m_MultiInputMetric{};
 };
 
 } // end namespace itk

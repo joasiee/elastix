@@ -44,6 +44,8 @@ template <class TInputImage>
 class ITK_TEMPLATE_EXPORT ImageGridSampler : public ImageSamplerBase<TInputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ImageGridSampler);
+
   /** Standard ITK-stuff. */
   using Self = ImageGridSampler;
   using Superclass = ImageSamplerBase<TInputImage>;
@@ -134,7 +136,7 @@ public:
 
 protected:
   /** The constructor. */
-  ImageGridSampler();
+  ImageGridSampler() = default;
 
   /** The destructor. */
   ~ImageGridSampler() override = default;
@@ -148,17 +150,10 @@ protected:
   GenerateData() override;
 
   /** An array of integer spacing factors */
-  SampleGridSpacingType m_SampleGridSpacing;
+  SampleGridSpacingType m_SampleGridSpacing{ itk::MakeFilled<SampleGridSpacingType>(1) };
 
   /** The number of samples entered in the SetNumberOfSamples method */
-  unsigned long m_RequestedNumberOfSamples;
-
-private:
-  /** The deleted copy constructor. */
-  ImageGridSampler(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
+  unsigned long m_RequestedNumberOfSamples{ 0 };
 };
 
 } // end namespace itk

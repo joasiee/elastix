@@ -19,6 +19,7 @@
 #define elxPreconditionedGradientDescent_hxx
 
 #include "elxPreconditionedGradientDescent.h"
+#include "elxDeref.h"
 
 #include "itkAdvancedImageToImageMetric.h"
 #include "itkTimeProbe.h"
@@ -85,50 +86,51 @@ PreconditionedGradientDescent<TElastix>::BeforeEachResolution()
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
+  const Configuration & configuration = Deref(Superclass2::GetConfiguration());
+
   /** Set the maximumNumberOfIterations. */
   unsigned int maximumNumberOfIterations = 500;
-  this->GetConfiguration()->ReadParameter(
+  configuration.ReadParameter(
     maximumNumberOfIterations, "MaximumNumberOfIterations", this->GetComponentLabel(), level, 0);
   this->SetNumberOfIterations(maximumNumberOfIterations);
 
   /** Set the gain parameter A. */
   double A = 20.0;
-  this->GetConfiguration()->ReadParameter(A, "SP_A", this->GetComponentLabel(), level, 0);
+  configuration.ReadParameter(A, "SP_A", this->GetComponentLabel(), level, 0);
   this->SetParam_A(A);
 
   /** Set the MaximumNumberOfSamplingAttempts. */
   unsigned int maximumNumberOfSamplingAttempts = 0;
-  this->GetConfiguration()->ReadParameter(
+  configuration.ReadParameter(
     maximumNumberOfSamplingAttempts, "MaximumNumberOfSamplingAttempts", this->GetComponentLabel(), level, 0);
   this->SetMaximumNumberOfSamplingAttempts(maximumNumberOfSamplingAttempts);
 
   /** Set/Get the initial time. Default: 0.0. Should be >=0. */
   double initialTime = 0.0;
-  this->GetConfiguration()->ReadParameter(initialTime, "SigmoidInitialTime", this->GetComponentLabel(), level, 0);
+  configuration.ReadParameter(initialTime, "SigmoidInitialTime", this->GetComponentLabel(), level, 0);
   this->SetInitialTime(initialTime);
 
   /** Set/Get whether the adaptive step size mechanism is desired. Default: true
    * NB: the setting is turned of in case of UseRandomSampleRegion=true.
    */
   bool useAdaptiveStepSizes = true;
-  this->GetConfiguration()->ReadParameter(
-    useAdaptiveStepSizes, "UseAdaptiveStepSizes", this->GetComponentLabel(), level, 0);
+  configuration.ReadParameter(useAdaptiveStepSizes, "UseAdaptiveStepSizes", this->GetComponentLabel(), level, 0);
   this->SetUseAdaptiveStepSizes(useAdaptiveStepSizes);
 
   /** Set the diagonal weight for the precondition matrix */
   double diagonalWeight = 1e-6;
-  this->GetConfiguration()->ReadParameter(diagonalWeight, "DiagonalWeight", this->GetComponentLabel(), level, 0);
+  configuration.ReadParameter(diagonalWeight, "DiagonalWeight", this->GetComponentLabel(), level, 0);
   this->SetDiagonalWeight(diagonalWeight);
 
   /** Set the minimum element magnitude for the gradient */
   double minimumGradientElementMagnitude = 1e-10;
-  this->GetConfiguration()->ReadParameter(
+  configuration.ReadParameter(
     minimumGradientElementMagnitude, "MinimumGradientElementMagnitude", this->GetComponentLabel(), level, 0);
   this->SetMinimumGradientElementMagnitude(minimumGradientElementMagnitude);
 
   /** Set whether automatic gain estimation is required; default: true. */
   this->m_AutomaticParameterEstimation = true;
-  this->GetConfiguration()->ReadParameter(
+  configuration.ReadParameter(
     this->m_AutomaticParameterEstimation, "AutomaticParameterEstimation", this->GetComponentLabel(), level, 0);
 
   if (this->m_AutomaticParameterEstimation)
@@ -138,7 +140,7 @@ PreconditionedGradientDescent<TElastix>::BeforeEachResolution()
      * A value of 0 (default) means automatic estimation.
      */
     this->m_NumberOfGradientMeasurements = 0;
-    this->GetConfiguration()->ReadParameter(
+    configuration.ReadParameter(
       this->m_NumberOfGradientMeasurements, "NumberOfGradientMeasurements", this->GetComponentLabel(), level, 0);
 
     /** Set the number of image samples used to compute the 'exact' gradient.
@@ -146,15 +148,14 @@ PreconditionedGradientDescent<TElastix>::BeforeEachResolution()
      * If the image is smaller, the number of samples is automatically reduced later.
      */
     this->m_NumberOfSamplesForExactGradient = 100000;
-    this->GetConfiguration()->ReadParameter(
+    configuration.ReadParameter(
       this->m_NumberOfSamplesForExactGradient, "NumberOfSamplesForExactGradient", this->GetComponentLabel(), level, 0);
 
     /** Set/Get the scaling factor zeta of the sigmoid width. Large values
      * cause a more wide sigmoid. Default: 0.1. Should be > 0.
      */
     double sigmoidScaleFactor = 0.1;
-    this->GetConfiguration()->ReadParameter(
-      sigmoidScaleFactor, "SigmoidScaleFactor", this->GetComponentLabel(), level, 0);
+    configuration.ReadParameter(sigmoidScaleFactor, "SigmoidScaleFactor", this->GetComponentLabel(), level, 0);
     this->m_SigmoidScaleFactor = sigmoidScaleFactor;
 
   } // end if automatic parameter estimation
@@ -166,28 +167,28 @@ PreconditionedGradientDescent<TElastix>::BeforeEachResolution()
     const double noisefactor = 0.2; // eta
 
     double alpha = 1.0;
-    this->GetConfiguration()->ReadParameter(alpha, "SP_alpha", this->GetComponentLabel(), level, 0);
+    configuration.ReadParameter(alpha, "SP_alpha", this->GetComponentLabel(), level, 0);
     this->SetParam_alpha(alpha);
 
     double a = 2.0 * noisefactor * std::pow(this->GetParam_A() + 1.0, alpha);
-    this->GetConfiguration()->ReadParameter(a, "SP_a", this->GetComponentLabel(), level, 0);
+    configuration.ReadParameter(a, "SP_a", this->GetComponentLabel(), level, 0);
     this->SetParam_a(a);
 
     /** Set/Get the maximum of the sigmoid. Should be >0. Default: 1.0. */
     double sigmoidMax = 1.0;
-    this->GetConfiguration()->ReadParameter(sigmoidMax, "SigmoidMax", this->GetComponentLabel(), level, 0);
+    configuration.ReadParameter(sigmoidMax, "SigmoidMax", this->GetComponentLabel(), level, 0);
     this->SetSigmoidMax(sigmoidMax);
 
     /** Set/Get the minimum of the sigmoid. Should be <0. Default ~ -0.8. */
     double sigmoidMin = -0.99 + 0.98 * noisefactor;
-    this->GetConfiguration()->ReadParameter(sigmoidMin, "SigmoidMin", this->GetComponentLabel(), level, 0);
+    configuration.ReadParameter(sigmoidMin, "SigmoidMin", this->GetComponentLabel(), level, 0);
     this->SetSigmoidMin(sigmoidMin);
 
     /** Set/Get the scaling of the sigmoid width. Large values
      * cause a more wide sigmoid. Default: 1e-8. Should be >0.
      */
     double sigmoidScale = 1e-8;
-    this->GetConfiguration()->ReadParameter(sigmoidScale, "SigmoidScale", this->GetComponentLabel(), level, 0);
+    configuration.ReadParameter(sigmoidScale, "SigmoidScale", this->GetComponentLabel(), level, 0);
     this->SetSigmoidScale(sigmoidScale);
 
   } // end else: no automatic parameter estimation
@@ -248,7 +249,7 @@ PreconditionedGradientDescent<TElastix>::AfterEachResolution()
   }
 
   /** Print the stopping condition */
-  elxout << "Stopping condition: " << stopcondition << "." << std::endl;
+  log::info(std::ostringstream{} << "Stopping condition: " << stopcondition << ".");
 
   /** Store the used parameters, for later printing to screen. */
   SettingsType settings;
@@ -263,8 +264,8 @@ PreconditionedGradientDescent<TElastix>::AfterEachResolution()
   /** Print settings that were used in this resolution. */
   SettingsVectorType tempSettingsVector;
   tempSettingsVector.push_back(settings);
-  elxout << "Settings of " << this->elxGetClassName() << " in resolution " << level << ":" << std::endl;
-  this->PrintSettingsVector(tempSettingsVector);
+  log::info(std::ostringstream{} << "Settings of " << this->elxGetClassName() << " in resolution " << level << ":");
+  Superclass2::PrintSettingsVector(tempSettingsVector);
 
 } // end AfterEachResolution()
 
@@ -279,10 +280,11 @@ PreconditionedGradientDescent<TElastix>::AfterRegistration()
 {
   /** Print the best metric value */
   double bestValue = this->GetValue();
-  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
+  log::info(std::ostringstream{} << '\n'
+                                 << "Final metric value  = " << bestValue << '\n'
 
-  elxout << "Settings of " << this->elxGetClassName() << " for all resolutions:" << std::endl;
-  this->PrintSettingsVector(this->m_SettingsVector);
+                                 << "Settings of " << this->elxGetClassName() << " for all resolutions:");
+  Superclass2::PrintSettingsVector(this->m_SettingsVector);
 
 } // end AfterRegistration()
 
@@ -383,30 +385,31 @@ PreconditionedGradientDescent<TElastix>::SetSelfHessian()
                          "the AdvancedImageToImage metric!");
   }
 
-  elxout << "Computing SelfHessian." << std::endl;
+  log::info("Computing SelfHessian.");
   try
   {
     metricWithSelfHessian->GetSelfHessian(this->GetCurrentPosition(), H);
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject &)
   {
     this->m_StopCondition = MetricError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
 
   timer.Stop();
-  elxout << "Computing SelfHessian took: " << Conversion::SecondsToDHMS(timer.GetMean(), 6) << std::endl;
+  log::info(std::ostringstream{} << "Computing SelfHessian took: " << Conversion::SecondsToDHMS(timer.GetMean(), 6));
 
   timer.Start();
-  elxout << "Computing Cholesky decomposition of SelfHessian." << std::endl;
+  log::info("Computing Cholesky decomposition of SelfHessian.");
   this->SetPreconditionMatrix(H);
-  elxout << "Sparsity: " << this->GetSparsity() << std::endl;
-  elxout << "Largest eigenvalue: " << this->GetLargestEigenValue() << std::endl;
-  elxout << "Condition number: " << this->GetConditionNumber() << std::endl;
+  log::info(std::ostringstream{} << "Sparsity: " << this->GetSparsity() << '\n'
+                                 << "Largest eigenvalue: " << this->GetLargestEigenValue() << '\n'
+                                 << "Condition number: " << this->GetConditionNumber());
   timer.Stop();
 
-  elxout << "Computing Cholesky decomposition took: " << Conversion::SecondsToDHMS(timer.GetMean(), 6) << std::endl;
+  log::info(std::ostringstream{} << "Computing Cholesky decomposition took: "
+                                 << Conversion::SecondsToDHMS(timer.GetMean(), 6));
 
 } // end SetSelfHessian()
 
@@ -454,7 +457,7 @@ PreconditionedGradientDescent<TElastix>::AutomaticParameterEstimation()
   /** Setup timer. */
   itk::TimeProbe timer;
   timer.Start();
-  elxout << "Starting automatic parameter estimation ..." << std::endl;
+  log::info("Starting automatic parameter estimation ...");
 
   const unsigned int P = this->GetScaledCostFunction()->GetNumberOfParameters();
   const double       Pd = static_cast<double>(P);
@@ -475,8 +478,8 @@ PreconditionedGradientDescent<TElastix>::AutomaticParameterEstimation()
     const double K = 1.5;
     this->m_NumberOfGradientMeasurements = static_cast<unsigned int>(std::ceil(8.0 / P / (K - 1) / (K - 1)));
     this->m_NumberOfGradientMeasurements = std::max(static_cast<unsigned int>(2), this->m_NumberOfGradientMeasurements);
-    elxout << "  NumberOfGradientMeasurements to estimate sigma_i: " << this->m_NumberOfGradientMeasurements
-           << std::endl;
+    log::info(std::ostringstream{} << "  NumberOfGradientMeasurements to estimate sigma_i: "
+                                   << this->m_NumberOfGradientMeasurements);
   }
 
   /** Measure sigma1 and sigma2
@@ -506,7 +509,8 @@ PreconditionedGradientDescent<TElastix>::AutomaticParameterEstimation()
 
   /** Print the elapsed time. */
   timer.Stop();
-  elxout << "Automatic parameter estimation took " << Conversion::SecondsToDHMS(timer.GetMean(), 6) << std::endl;
+  log::info(std::ostringstream{} << "Automatic parameter estimation took "
+                                 << Conversion::SecondsToDHMS(timer.GetMean(), 6));
 
 } // end AutomaticParameterEstimation()
 
@@ -563,9 +567,8 @@ PreconditionedGradientDescent<TElastix>::SampleGradients(const ParametersType & 
           {
             if (this->GetUseAdaptiveStepSizes())
             {
-              xl::xout["warning"]
-                << "WARNING: UseAdaptiveStepSizes is turned off, because UseRandomSampleRegion is set to \"true\"."
-                << std::endl;
+              log::warn(
+                "WARNING: UseAdaptiveStepSizes is turned off, because UseRandomSampleRegion is set to \"true\".");
               this->SetUseAdaptiveStepSizes(false);
             }
           }
@@ -589,7 +592,7 @@ PreconditionedGradientDescent<TElastix>::SampleGradients(const ParametersType & 
   }   // end if NewSamplesEveryIteration.
 
   /** Prepare for progress printing. */
-  elxout << "  Sampling exact gradient..." << std::endl;
+  log::info("  Sampling exact gradient...");
 
   /** Initialize some variables for storing gradients and their magnitudes. */
   DerivativeType gradient(P);
@@ -614,7 +617,7 @@ PreconditionedGradientDescent<TElastix>::SampleGradients(const ParametersType & 
   this->CholmodSolve(gradient, searchDirection);
   exactgg += inner_product(gradient, searchDirection); // gPg
   sigma1 = exactgg / Pd;
-  elxout << "sigma1 " << sigma1 << " exactgg: " << exactgg << std::endl;
+  log::info(std::ostringstream{} << "sigma1 " << sigma1 << " exactgg: " << exactgg);
 
   /** If all samplers are deterministic, simply set sigma2 to sigma1. */
   sigma2 = sigma1;
@@ -623,10 +626,10 @@ PreconditionedGradientDescent<TElastix>::SampleGradients(const ParametersType & 
   if (stochasticgradients)
   {
     /** Prepare for progress printing. */
-    ProgressCommandPointer progressObserver = ProgressCommandType::New();
+    const auto progressObserver = ProgressCommand::New();
     progressObserver->SetUpdateFrequency(this->m_NumberOfGradientMeasurements, this->m_NumberOfGradientMeasurements);
     progressObserver->SetStartString("  Progress: ");
-    elxout << "  Sampling approximate gradients..." << std::endl;
+    log::info("  Sampling approximate gradients...");
 
     /** Set random sampler(s). */
     for (unsigned int m = 0; m < M; ++m)
@@ -667,7 +670,7 @@ PreconditionedGradientDescent<TElastix>::SampleGradients(const ParametersType & 
       this->CholmodSolve(gradient, searchDirection);
       approxgg += inner_product(gradient, searchDirection); // gPg
 
-      elxout << "approxgg: " << approxgg << std::endl;
+      log::info(std::ostringstream{} << "approxgg: " << approxgg);
 
     } // end for loop over gradient measurements
 
@@ -682,7 +685,7 @@ PreconditionedGradientDescent<TElastix>::SampleGradients(const ParametersType & 
 
   } // end if stochastic gradient sampling
 
-  elxout << "sigma2 " << sigma2 << std::endl;
+  log::info(std::ostringstream{} << "sigma2 " << sigma2);
 
   /** Set back useRandomSampleRegion flag to what it was. */
   for (unsigned int m = 0; m < M; ++m)
@@ -694,64 +697,6 @@ PreconditionedGradientDescent<TElastix>::SampleGradients(const ParametersType & 
   }
 
 } // end SampleGradients()
-
-
-/**
- * **************** PrintSettingsVector **********************
- */
-
-template <class TElastix>
-void
-PreconditionedGradientDescent<TElastix>::PrintSettingsVector(const SettingsVectorType & settings) const
-{
-  const unsigned long nrofres = settings.size();
-
-  /** Print to log file */
-  elxout << "( SP_a ";
-  for (unsigned int i = 0; i < nrofres; ++i)
-  {
-    elxout << settings[i].a << " ";
-  }
-  elxout << ")\n";
-
-  elxout << "( SP_A ";
-  for (unsigned int i = 0; i < nrofres; ++i)
-  {
-    elxout << settings[i].A << " ";
-  }
-  elxout << ")\n";
-
-  elxout << "( SP_alpha ";
-  for (unsigned int i = 0; i < nrofres; ++i)
-  {
-    elxout << settings[i].alpha << " ";
-  }
-  elxout << ")\n";
-
-  elxout << "( SigmoidMax ";
-  for (unsigned int i = 0; i < nrofres; ++i)
-  {
-    elxout << settings[i].fmax << " ";
-  }
-  elxout << ")\n";
-
-  elxout << "( SigmoidMin ";
-  for (unsigned int i = 0; i < nrofres; ++i)
-  {
-    elxout << settings[i].fmin << " ";
-  }
-  elxout << ")\n";
-
-  elxout << "( SigmoidScale ";
-  for (unsigned int i = 0; i < nrofres; ++i)
-  {
-    elxout << settings[i].omega << " ";
-  }
-  elxout << ")\n";
-
-  elxout << std::endl;
-
-} // end PrintSettingsVector()
 
 
 /**
@@ -768,11 +713,11 @@ PreconditionedGradientDescent<TElastix>::GetScaledDerivativeWithExceptionHandlin
   {
     this->GetScaledValueAndDerivative(parameters, dummyvalue, derivative);
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject &)
   {
     this->m_StopCondition = MetricError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
 
 } // end GetScaledDerivativeWithExceptionHandling()

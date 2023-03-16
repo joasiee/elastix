@@ -286,7 +286,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetValueAndDerivati
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Although the mapped point is not needed to compute the penalty term,
      * we compute in order to check if it maps inside the support region of
@@ -516,7 +516,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValueAnd
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Although the mapped point is not needed to compute the penalty term,
      * we compute in order to check if it maps inside the support region of
@@ -531,7 +531,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::ThreadedGetValueAnd
 
     if (sampleOk)
     {
-      numberOfPixelsCounted++;
+      ++numberOfPixelsCounted;
 
       /** Get the spatial Hessian of the transformation at the current point.
        * This is needed to compute the bending energy.
@@ -767,7 +767,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Although the mapped point is not needed to compute the penalty term,
      * we compute in order to check if it maps inside the support region of
@@ -831,10 +831,11 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
             const double val = 2.0 * matrixProduct;
 
             /** Go to next element */
-            for (; (rowIt != rowVector.end()) && ((*rowIt).first < nmB); ++rowIt)
-            {}
+            for (; (rowIt != rowVector.end()) && (rowIt->first < nmB); ++rowIt)
+            {
+            }
 
-            if ((rowIt == rowVector.end()) || ((*rowIt).first != nmB))
+            if ((rowIt == rowVector.end()) || (rowIt->first != nmB))
             {
               /** Add new column to the row and set iterator to that column. */
               rowIt = rowVector.insert(rowIt, ElementType(nmB, val));
@@ -842,7 +843,7 @@ TransformBendingEnergyPenaltyTerm<TFixedImage, TScalarType>::GetSelfHessian(cons
             else
             {
               /** Add to existing value */
-              (*rowIt).second += val;
+              rowIt->second += val;
             }
           }
         }

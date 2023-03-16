@@ -96,6 +96,8 @@ template <class TFixedImage, class TMovingImage>
 class ITK_TEMPLATE_EXPORT AdvancedImageToImageMetric : public ImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = AdvancedImageToImageMetric;
   using Superclass = ImageToImageMetric<TFixedImage, TMovingImage>;
@@ -491,12 +493,12 @@ protected:
   /** Multi-threaded metric computation. */
 
   /** Multi-threaded version of GetValue(). */
-  virtual inline void
+  virtual void
   ThreadedGetValue(ThreadIdType threadID)
   {}
 
   /** Finalize multi-threaded metric computation. */
-  virtual inline void
+  virtual void
   AfterThreadedGetValue(MeasureType & value) const
   {}
 
@@ -509,12 +511,12 @@ protected:
   LaunchGetValueThreaderCallback() const;
 
   /** Multi-threaded version of GetValueAndDerivative(). */
-  virtual inline void
+  virtual void
   ThreadedGetValueAndDerivative(ThreadIdType threadID)
   {}
 
   /** Finalize multi-threaded metric computation. */
-  virtual inline void
+  virtual void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const
   {}
 
@@ -533,7 +535,7 @@ protected:
   /** Variables for multi-threading. */
   bool m_UseMetricSingleThreaded{ true };
   bool m_UseMultiThread{ false };
-  bool m_UseOpenMP;
+  bool m_UseOpenMP{};
 
   /** Helper structs that multi-threads the computation of
    * the metric derivative using ITK threads.
@@ -546,7 +548,7 @@ protected:
     DerivativeValueType * st_DerivativePointer;
     DerivativeValueType   st_NormalizationFactor;
   };
-  mutable MultiThreaderParameterType m_ThreaderMetricParameters;
+  mutable MultiThreaderParameterType m_ThreaderMetricParameters{};
 
   /** Most metrics will perform multi-threading by letting
    * each thread compute a part of the value and derivative.
@@ -721,10 +723,6 @@ protected:
   mutable MeanAccumulator                             m_MissedPixelsMean;
 
 private:
-  AdvancedImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   template <typename... TOptionalThreadId>
   bool
   EvaluateMovingImageValueAndDerivativeWithOptionalThreadId(const MovingImagePointType & mappedPoint,

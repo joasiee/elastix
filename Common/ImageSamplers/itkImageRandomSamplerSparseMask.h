@@ -38,6 +38,8 @@ template <class TInputImage>
 class ITK_TEMPLATE_EXPORT ImageRandomSamplerSparseMask : public ImageRandomSamplerBase<TInputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ImageRandomSamplerSparseMask);
+
   /** Standard ITK-stuff. */
   using Self = ImageRandomSamplerSparseMask;
   using Superclass = ImageRandomSamplerBase<TInputImage>;
@@ -80,7 +82,7 @@ protected:
   using InternalFullSamplerPointer = typename InternalFullSamplerType::Pointer;
 
   /** The constructor. */
-  ImageRandomSamplerSparseMask();
+  ImageRandomSamplerSparseMask() = default;
   /** The destructor. */
   ~ImageRandomSamplerSparseMask() override = default;
 
@@ -99,15 +101,8 @@ protected:
   void
   ThreadedGenerateData(const InputImageRegionType & inputRegionForThread, ThreadIdType threadId) override;
 
-  RandomGeneratorPointer     m_RandomGenerator;
-  InternalFullSamplerPointer m_InternalFullSampler;
-
-private:
-  /** The deleted copy constructor. */
-  ImageRandomSamplerSparseMask(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
+  RandomGeneratorPointer     m_RandomGenerator{ RandomGeneratorType::GetInstance() };
+  InternalFullSamplerPointer m_InternalFullSampler{ InternalFullSamplerType::New() };
 };
 
 } // end namespace itk

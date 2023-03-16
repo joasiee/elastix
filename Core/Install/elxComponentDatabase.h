@@ -52,6 +52,8 @@ namespace elastix
 class ComponentDatabase : public itk::Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ComponentDatabase);
+
   /** Standard.*/
   using Self = ComponentDatabase;
   using Superclass = itk::Object;
@@ -122,10 +124,6 @@ protected:
 private:
   CreatorMapType CreatorMap;
   IndexMapType   IndexMap;
-
-  ComponentDatabase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

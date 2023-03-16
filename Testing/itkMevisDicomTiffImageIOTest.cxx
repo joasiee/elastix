@@ -44,7 +44,6 @@ testMevis()
   using PixelType = unsigned char;
 
   using ImageType = itk::Image<PixelType, Dimension>;
-  using WriterType = itk::ImageFileWriter<ImageType>;
   using ReaderType = itk::ImageFileReader<ImageType>;
   using ComparisonFilterType = itk::Testing::ComparisonImageFilter<ImageType, ImageType>;
   using SizeType = typename ImageType::SizeType;
@@ -53,7 +52,6 @@ testMevis()
   using DirectionType = typename ImageType::DirectionType;
   using IteratorType = itk::ImageRegionIterator<ImageType>;
 
-  auto          writer = WriterType::New();
   auto          reader = ReaderType::New();
   auto          inputImage = ImageType::New();
   SizeType      size;
@@ -139,7 +137,7 @@ testMevis()
   {
     inputImage->Allocate();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
     std::cerr << "ERROR: Failed to allocate test image" << std::endl;
     std::cerr << err << std::endl;
@@ -160,19 +158,17 @@ testMevis()
   }
 
   std::string testfile("testimageMevisDicomTiff.tif");
-  writer->SetFileName(testfile);
-  writer->SetInput(inputImage);
   reader->SetFileName(testfile);
 
   std::string task("");
   try
   {
     task = "Writing";
-    writer->Update();
+    itk::WriteImage(inputImage, testfile);
     task = "Reading";
     reader->Update();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
     std::cerr << "ERROR: " << task << " mevis dicomtiff failed." << std::endl;
     std::cerr << err << std::endl;

@@ -36,6 +36,8 @@ PURPOSE.  See the above copyright notices for more information.
 
 #include "itkKernelTransform2.h"
 
+#include <numeric> // For iota.
+
 namespace itk
 {
 
@@ -117,10 +119,7 @@ KernelTransform2<TScalarType, NDimensions>::SetSourceLandmarks(PointSetType * la
     // Precompute the nonzerojacobianindices vector
     const NumberOfParametersType nrParams = this->GetNumberOfParameters();
     this->m_NonZeroJacobianIndices.resize(nrParams);
-    for (unsigned int i = 0; i < nrParams; ++i)
-    {
-      this->m_NonZeroJacobianIndices[i] = i;
-    }
+    std::iota(m_NonZeroJacobianIndices.begin(), m_NonZeroJacobianIndices.end(), 0u);
   }
 
 } // end SetSourceLandmarks()
@@ -227,9 +226,9 @@ KernelTransform2<TScalarType, NDimensions>::ComputeD()
   while (sp != end)
   {
     vt->Value() = tp->Value() - sp->Value();
-    vt++;
-    sp++;
-    tp++;
+    ++vt;
+    ++sp;
+    ++tp;
   }
 
 } // end ComputeD()
@@ -382,8 +381,8 @@ KernelTransform2<TScalarType, NDimensions>::ComputeK()
     // Can ignore GMatrix, since p1 - p1 = 0
     this->ComputeReflexiveG(p1, G);
     this->m_KMatrix.update(G_ref, i * NDimensions, i * NDimensions);
-    p2++;
-    j++;
+    ++p2;
+    ++j;
 
     // Compute the upper (and copy into lower) triangular part of K
     while (p2 != end)
@@ -393,11 +392,11 @@ KernelTransform2<TScalarType, NDimensions>::ComputeK()
       // write value in upper and lower triangle of matrix
       this->m_KMatrix.update(G_ref, i * NDimensions, j * NDimensions);
       this->m_KMatrix.update(G_ref, j * NDimensions, i * NDimensions);
-      p2++;
-      j++;
+      ++p2;
+      ++j;
     }
-    p1++;
-    i++;
+    ++p1;
+    ++i;
   }
 
 } // end ComputeK()
@@ -460,7 +459,7 @@ KernelTransform2<TScalarType, NDimensions>::ComputeY()
     {
       this->m_YMatrix.put(i * NDimensions + j, 0, displacement.Value()[j]);
     }
-    displacement++;
+    ++displacement;
   }
 
   for (unsigned int i = 0; i < NDimensions * (NDimensions + 1); ++i)
@@ -591,10 +590,10 @@ KernelTransform2<TScalarType, NDimensions>::SetParameters(const ParametersType &
     for (unsigned int dim = 0; dim < NDimensions; ++dim)
     {
       landMark[dim] = parameters[pcounter];
-      pcounter++;
+      ++pcounter;
     }
     itr.Value() = landMark;
-    itr++;
+    ++itr;
   }
 
   this->m_TargetLandmarks->SetPoints(landmarks);
@@ -636,10 +635,10 @@ KernelTransform2<TScalarType, NDimensions>::SetFixedParameters(const ParametersT
     for (unsigned int dim = 0; dim < NDimensions; ++dim)
     {
       landMark[dim] = parameters[pcounter];
-      pcounter++;
+      ++pcounter;
     }
     itr.Value() = landMark;
-    itr++;
+    ++itr;
   }
 
   this->m_SourceLandmarks->SetPoints(landmarks);
@@ -676,9 +675,9 @@ KernelTransform2<TScalarType, NDimensions>::UpdateParameters()
     for (unsigned int dim = 0; dim < NDimensions; ++dim)
     {
       this->m_Parameters[pcounter] = landmark[dim];
-      pcounter++;
+      ++pcounter;
     }
-    itr++;
+    ++itr;
   }
 
 } // end UpdateParameters()
@@ -714,9 +713,9 @@ KernelTransform2<TScalarType, NDimensions>::GetFixedParameters() const -> const 
     for (unsigned int dim = 0; dim < NDimensions; ++dim)
     {
       this->m_FixedParameters[pcounter] = landmark[dim];
-      pcounter++;
+      ++pcounter;
     }
-    itr++;
+    ++itr;
   }
 
   return this->m_FixedParameters;

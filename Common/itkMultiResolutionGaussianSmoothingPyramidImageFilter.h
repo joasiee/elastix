@@ -22,7 +22,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile$
-  Language:  C++
   Date:      $Date: 2008-04-15 19:54:41 +0200 (Tue, 15 Apr 2008) $
   Version:   $Revision: 1573 $
 
@@ -125,6 +124,8 @@ class ITK_TEMPLATE_EXPORT MultiResolutionGaussianSmoothingPyramidImageFilter
   : public MultiResolutionPyramidImageFilter<TInputImage, TOutputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiResolutionGaussianSmoothingPyramidImageFilter);
+
   /** Standard class typedefs. */
   using Self = MultiResolutionGaussianSmoothingPyramidImageFilter;
   using Superclass = MultiResolutionPyramidImageFilter<TInputImage, TOutputImage>;
@@ -199,11 +200,6 @@ protected:
    * because it uses internally a filter that does this. */
   void
   EnlargeOutputRequestedRegion(DataObject * output) override;
-
-private:
-  MultiResolutionGaussianSmoothingPyramidImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // namespace itk

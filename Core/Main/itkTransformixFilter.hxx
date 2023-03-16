@@ -36,7 +36,14 @@
 #define itkTransformixFilter_hxx
 
 #include "itkTransformixFilter.h"
-#include "elxPixelType.h"
+#include "elxPixelTypeToString.h"
+#include "elxTransformBase.h"
+#include "elxTransformIO.h"
+#include "elxDefaultConstruct.h"
+
+#include <itkCompositeTransform.h>
+
+#include <memory> // For unique_ptr.
 
 namespace itk
 {
@@ -48,17 +55,6 @@ TransformixFilter<TMovingImage>::TransformixFilter()
   this->AddRequiredInputName("TransformParameterObject", 1);
 
   this->SetOutput("ResultDeformationField", this->MakeOutput("ResultDeformationField"));
-
-  this->m_FixedPointSetFileName = "";
-  this->m_ComputeSpatialJacobian = false;
-  this->m_ComputeDeterminantOfSpatialJacobian = false;
-  this->m_ComputeDeformationField = false;
-
-  this->m_OutputDirectory = "";
-  this->m_LogFileName = "";
-
-  this->m_LogToConsole = false;
-  this->m_LogToFile = false;
 }
 
 
@@ -72,9 +68,8 @@ TransformixFilter<TMovingImage>::GenerateData()
   // on some platforms.
   const unsigned int movingImageDimension = MovingImageDimension;
 
-  if (this->IsEmpty(this->GetMovingImage()) && this->GetFixedPointSetFileName().empty() &&
-      !this->GetComputeSpatialJacobian() && !this->GetComputeDeterminantOfSpatialJacobian() &&
-      !this->GetComputeDeformationField())
+  if (this->IsEmpty(this->GetMovingImage()) && m_FixedPointSetFileName.empty() && !m_ComputeSpatialJacobian &&
+      !m_ComputeDeterminantOfSpatialJacobian && !m_ComputeDeformationField)
   {
     itkExceptionMacro(
       "Expected at least one of SetMovingImage(), SetFixedPointSetFileName() ComputeSpatialJacobianOn(), "
@@ -83,7 +78,7 @@ TransformixFilter<TMovingImage>::GenerateData()
 
   // TODO: Patch upstream transformix to split this into seperate arguments
   // Transformix uses "-def" for path to point sets AND as flag for writing deformation field
-  if (this->GetComputeDeformationField() && !this->GetFixedPointSetFileName().empty())
+  if (m_ComputeDeformationField && !m_FixedPointSetFileName.empty())
   {
     itkExceptionMacro(<< "For backwards compatibility, only one of ComputeDeformationFieldOn() or "
                          "SetFixedPointSetFileName() can be active at any one time.")
@@ -92,74 +87,67 @@ TransformixFilter<TMovingImage>::GenerateData()
   // Setup argument map which transformix uses internally ito figure out what needs to be done
   ArgumentMapType argumentMap;
 
-  if (this->GetComputeSpatialJacobian())
+  if (m_ComputeSpatialJacobian)
   {
     argumentMap.insert(ArgumentMapEntryType("-jacmat", "all"));
   }
 
-  if (this->GetComputeDeterminantOfSpatialJacobian())
+  if (m_ComputeDeterminantOfSpatialJacobian)
   {
     argumentMap.insert(ArgumentMapEntryType("-jac", "all"));
   }
 
-  if (this->GetComputeDeformationField())
+  if (m_ComputeDeformationField)
   {
     argumentMap.insert(ArgumentMapEntryType("-def", "all"));
   }
 
-  if (!this->GetFixedPointSetFileName().empty())
+  if (!m_FixedPointSetFileName.empty())
   {
-    argumentMap.insert(ArgumentMapEntryType("-def", this->GetFixedPointSetFileName()));
+    argumentMap.insert(ArgumentMapEntryType("-def", m_FixedPointSetFileName));
   }
 
   // Setup output directory
   // Only the input "MovingImage" does not require an output directory
-  if ((this->GetComputeSpatialJacobian() || this->GetComputeDeterminantOfSpatialJacobian() ||
-       this->GetComputeDeformationField() || !this->GetFixedPointSetFileName().empty() || this->GetLogToFile()) &&
-      this->GetOutputDirectory().empty())
+  if ((m_ComputeSpatialJacobian || m_ComputeDeterminantOfSpatialJacobian || m_ComputeDeformationField ||
+       !m_FixedPointSetFileName.empty() || m_LogToFile) &&
+      m_OutputDirectory.empty())
   {
     this->SetOutputDirectory(".");
   }
 
-  if (!this->GetOutputDirectory().empty() && !itksys::SystemTools::FileExists(this->GetOutputDirectory()))
+  if (!m_OutputDirectory.empty() && !itksys::SystemTools::FileExists(m_OutputDirectory))
   {
-    itkExceptionMacro("Output directory \"" << this->GetOutputDirectory() << "\" does not exist.")
+    itkExceptionMacro("Output directory \"" << m_OutputDirectory << "\" does not exist.")
   }
 
-  if (this->GetOutputDirectory().empty())
+  if (m_OutputDirectory.empty())
   {
     // There must be an "-out", this is checked later in the code
     argumentMap.insert(ArgumentMapEntryType("-out", "output_path_not_set"));
   }
   else
   {
-    if (this->GetOutputDirectory().back() != '/' && this->GetOutputDirectory().back() != '\\')
+    if (m_OutputDirectory.back() != '/' && m_OutputDirectory.back() != '\\')
     {
-      this->SetOutputDirectory(this->GetOutputDirectory() + "/");
+      this->SetOutputDirectory(m_OutputDirectory + "/");
     }
 
-    argumentMap.insert(ArgumentMapEntryType("-out", this->GetOutputDirectory()));
+    argumentMap.insert(ArgumentMapEntryType("-out", m_OutputDirectory));
   }
 
   // Setup log file
-  std::string logFileName;
-  if (this->GetLogToFile())
-  {
-    if (this->GetLogFileName().empty())
-    {
-      logFileName = this->GetOutputDirectory() + "transformix.log";
-    }
-    else
-    {
-      logFileName = this->GetOutputDirectory() + this->GetLogFileName();
-    }
-  }
+  const std::string logFileName = m_OutputDirectory + (m_LogFileName.empty() ? "transformix.log" : m_LogFileName);
 
-  // Setup xout
-  const elx::xoutManager manager(logFileName, this->GetLogToFile(), this->GetLogToConsole());
+  // Setup logging.
+  const elx::log::guard logGuard(logFileName,
+                                 m_EnableOutput && m_LogToFile,
+                                 m_EnableOutput && m_LogToConsole,
+                                 static_cast<elastix::log::level>(m_LogLevel));
 
   // Instantiate transformix
-  TransformixMainPointer transformix = TransformixMainType::New();
+  const auto transformixMain = elx::TransformixMain::New();
+  m_TransformixMain = transformixMain;
 
   // Setup transformix for warping input image if given
   DataObjectContainerPointer inputImageContainer = nullptr;
@@ -167,7 +155,7 @@ TransformixFilter<TMovingImage>::GenerateData()
   {
     inputImageContainer = DataObjectContainerType::New();
     inputImageContainer->InsertElement(0, const_cast<InputImageType *>(this->GetMovingImage()));
-    transformix->SetInputImageContainer(inputImageContainer);
+    transformixMain->SetInputImageContainer(inputImageContainer);
   }
 
   // Get ParameterMap
@@ -180,20 +168,86 @@ TransformixFilter<TMovingImage>::GenerateData()
     itkExceptionMacro("Empty parameter map in parameter object.");
   }
 
+  if (m_Transform)
+  {
+    // Adjust the local transformParameterMap according to this m_Transform.
+
+    const auto transformToMap = [](const itk::TransformBase & transform, auto & transformParameterMap) {
+      const auto convertToParameterValues = [](const itk::OptimizerParameters<double> & optimizerParameters) {
+        ParameterValueVectorType parameterValues(optimizerParameters.size());
+        std::transform(optimizerParameters.begin(),
+                       optimizerParameters.end(),
+                       parameterValues.begin(),
+                       itk::NumberToString<double>{});
+        return parameterValues;
+      };
+
+      transformParameterMap["ITKTransformFixedParameters"] = convertToParameterValues(transform.GetFixedParameters());
+      transformParameterMap["ITKTransformParameters"] = convertToParameterValues(transform.GetParameters());
+      transformParameterMap["ITKTransformType"] = { transform.GetTransformTypeAsString() };
+      transformParameterMap["Transform"] = { elx::TransformIO::ConvertITKNameOfClassToElastixClassName(
+        transform.GetNameOfClass()) };
+    };
+    const auto compositeTransform =
+      dynamic_cast<const CompositeTransform<double, MovingImageDimension> *>(&*m_Transform);
+
+    if (compositeTransform)
+    {
+      const auto & transformQueue = compositeTransform->GetTransformQueue();
+
+      const auto numberOfTransforms = transformQueue.size();
+
+      if (numberOfTransforms == 0)
+      {
+        itkExceptionMacro(
+          "The specified composite transform has no subtransforms! At least one subtransform is required!");
+      }
+
+      if (numberOfTransforms != transformParameterMapVector.size())
+      {
+        // The last TransformParameterMap is special, as it needs to be used for the final transformation.
+        auto lastTransformParameterMap = transformParameterMapVector.back();
+        transformParameterMapVector.resize(numberOfTransforms);
+        transformParameterMapVector.back() = std::move(lastTransformParameterMap);
+      }
+      for (unsigned int i = 0; i < numberOfTransforms; ++i)
+      {
+        auto &     transformParameterMap = transformParameterMapVector[numberOfTransforms - i - 1];
+        const auto transform = transformQueue[i];
+
+        if (transform == nullptr)
+        {
+          itkExceptionMacro("One of the subtransforms of the specified composite transform is null!");
+        }
+        transformToMap(*transform, transformParameterMap);
+      }
+    }
+    else
+    {
+      // Assume in this case that it is just a single transform.
+      assert((dynamic_cast<const MultiTransform<double, MovingImageDimension> *>(&*m_Transform)) == nullptr);
+
+      // For a single transform, there should be only a single transform parameter map.
+      auto transformParameterMap = std::move(transformParameterMapVector.back());
+      transformToMap(*m_Transform, transformParameterMap);
+      transformParameterMapVector.clear();
+      transformParameterMapVector.push_back(std::move(transformParameterMap));
+    }
+  }
+
   // Set pixel types from input image, override user settings
   for (unsigned int i = 0; i < transformParameterMapVector.size(); ++i)
   {
-    transformParameterMapVector[i]["FixedImageDimension"] =
-      ParameterValueVectorType(1, std::to_string(movingImageDimension));
-    transformParameterMapVector[i]["MovingImageDimension"] =
-      ParameterValueVectorType(1, std::to_string(movingImageDimension));
-    transformParameterMapVector[i]["ResultImagePixelType"] =
-      ParameterValueVectorType(1, elastix::PixelType<typename TMovingImage::PixelType>::ToString());
+    auto & transformParameterMap = transformParameterMapVector[i];
+
+    transformParameterMap["FixedImageDimension"] = ParameterValueVectorType(1, std::to_string(movingImageDimension));
+    transformParameterMap["MovingImageDimension"] = ParameterValueVectorType(1, std::to_string(movingImageDimension));
+    transformParameterMap["ResultImagePixelType"] =
+      ParameterValueVectorType(1, elx::PixelTypeToString<typename TMovingImage::PixelType>());
 
     if (i > 0)
     {
-      transformParameterMapVector[i]["InitialTransformParametersFileName"] =
-        ParameterValueVectorType(1, std::to_string(i - 1));
+      transformParameterMap["InitialTransformParametersFileName"] = ParameterValueVectorType(1, std::to_string(i - 1));
     }
   }
 
@@ -201,11 +255,29 @@ TransformixFilter<TMovingImage>::GenerateData()
   unsigned int isError = 0;
   try
   {
-    isError = transformix->Run(argumentMap, transformParameterMapVector);
+    isError = transformixMain->Run(argumentMap, transformParameterMapVector, m_CombinationTransform);
+
+    if (m_InputMesh)
+    {
+      m_OutputMesh = nullptr;
+
+      const auto * const transformContainer = transformixMain->GetElastixBase().GetTransformContainer();
+
+      if ((transformContainer != nullptr) && (!transformContainer->empty()))
+      {
+        const auto transformBase = dynamic_cast<elx::TransformBase<elx::ElastixTemplate<TMovingImage, TMovingImage>> *>(
+          transformContainer->front().GetPointer());
+
+        if (transformBase)
+        {
+          m_OutputMesh = transformBase->TransformMesh(*m_InputMesh);
+        }
+      }
+    }
   }
-  catch (itk::ExceptionObject & e)
+  catch (const itk::ExceptionObject & e)
   {
-    itkExceptionMacro("Errors occured during execution: " << e.what());
+    itkExceptionMacro("Errors occurred during execution: " << e.what());
   }
 
   if (isError != 0)
@@ -214,19 +286,39 @@ TransformixFilter<TMovingImage>::GenerateData()
   }
 
   // Save result image
-  DataObjectContainerPointer resultImageContainer = transformix->GetResultImageContainer();
+  DataObjectContainerPointer resultImageContainer = transformixMain->GetResultImageContainer();
   if (resultImageContainer.IsNotNull() && resultImageContainer->Size() > 0 &&
       resultImageContainer->ElementAt(0).IsNotNull())
   {
     this->GraftOutput(resultImageContainer->ElementAt(0));
   }
   // Optionally, save result deformation field
-  DataObjectContainerPointer resultDeformationFieldContainer = transformix->GetResultDeformationFieldContainer();
+  DataObjectContainerPointer resultDeformationFieldContainer = transformixMain->GetResultDeformationFieldContainer();
   if (resultDeformationFieldContainer.IsNotNull() && resultDeformationFieldContainer->Size() > 0 &&
       resultDeformationFieldContainer->ElementAt(0).IsNotNull())
   {
     this->GraftOutput("ResultDeformationField", resultDeformationFieldContainer->ElementAt(0));
   }
+}
+
+
+template <typename TMovingImage>
+auto
+TransformixFilter<TMovingImage>::ComputeSpatialJacobianDeterminantImage() const
+  -> SmartPointer<SpatialJacobianDeterminantImageType>
+{
+  const auto transformBase = GetFirstElastixTransformBase();
+  return transformBase ? transformBase->ComputeSpatialJacobianDeterminantImage() : nullptr;
+}
+
+
+template <typename TMovingImage>
+auto
+TransformixFilter<TMovingImage>::ComputeSpatialJacobianMatrixImage() const
+  -> SmartPointer<SpatialJacobianMatrixImageType>
+{
+  const auto transformBase = GetFirstElastixTransformBase();
+  return transformBase ? transformBase->ComputeSpatialJacobianMatrixImage() : nullptr;
 }
 
 
@@ -262,48 +354,28 @@ TransformixFilter<TMovingImage>::GenerateOutputInformation()
   OutputImageType *            outputPtr = this->GetOutput();
   OutputDeformationFieldType * outputOutputDeformationFieldPtr = this->GetOutputDeformationField();
 
-  itkAssertInDebugAndIgnoreInReleaseMacro(transformParameterObjectPtr != ITK_NULLPTR);
-  itkAssertInDebugAndIgnoreInReleaseMacro(outputPtr != ITK_NULLPTR);
-  itkAssertInDebugAndIgnoreInReleaseMacro(outputOutputDeformationFieldPtr != ITK_NULLPTR);
+  itkAssertInDebugAndIgnoreInReleaseMacro(transformParameterObjectPtr != nullptr);
+  itkAssertInDebugAndIgnoreInReleaseMacro(outputPtr != nullptr);
+  itkAssertInDebugAndIgnoreInReleaseMacro(outputOutputDeformationFieldPtr != nullptr);
 
   // Get world coordinate system from the last map
   const unsigned int     lastIndex = transformParameterObjectPtr->GetNumberOfParameterMaps() - 1;
   const ParameterMapType transformParameterMap = transformParameterObjectPtr->GetParameterMap(lastIndex);
 
-  ParameterMapType::const_iterator spacingMapIter = transformParameterMap.find("Spacing");
-  if (spacingMapIter == transformParameterMap.end())
-  {
-    itkExceptionMacro("No entry Spacing found in transformParameterMap");
-  }
-  const ParameterValueVectorType spacingStrings = spacingMapIter->second;
+  const auto getTransformParameter = [&transformParameterMap](const char * const parameterName) {
+    const auto it = transformParameterMap.find(parameterName);
+    if (it == transformParameterMap.end())
+    {
+      itkGenericExceptionMacro("No entry " << parameterName << " found in transformParameterMap");
+    }
+    return it->second;
+  };
 
-  ParameterMapType::const_iterator sizeMapIter = transformParameterMap.find("Size");
-  if (sizeMapIter == transformParameterMap.end())
-  {
-    itkExceptionMacro("No entry Size found in transformParameterMap");
-  }
-  const ParameterValueVectorType sizeStrings = sizeMapIter->second;
-
-  ParameterMapType::const_iterator indexMapIter = transformParameterMap.find("Index");
-  if (indexMapIter == transformParameterMap.end())
-  {
-    itkExceptionMacro("No entry Index found in transformParameterMap");
-  }
-  const ParameterValueVectorType indexStrings = indexMapIter->second;
-
-  ParameterMapType::const_iterator originMapIter = transformParameterMap.find("Origin");
-  if (originMapIter == transformParameterMap.end())
-  {
-    itkExceptionMacro("No entry Origin found in transformParameterMap");
-  }
-  const ParameterValueVectorType originStrings = originMapIter->second;
-
-  ParameterMapType::const_iterator directionMapIter = transformParameterMap.find("Direction");
-  if (directionMapIter == transformParameterMap.end())
-  {
-    itkExceptionMacro("No entry Direction found in transformParameterMap");
-  }
-  const ParameterValueVectorType directionStrings = directionMapIter->second;
+  const ParameterValueVectorType spacingStrings = getTransformParameter("Spacing");
+  const ParameterValueVectorType sizeStrings = getTransformParameter("Size");
+  const ParameterValueVectorType indexStrings = getTransformParameter("Index");
+  const ParameterValueVectorType originStrings = getTransformParameter("Origin");
+  const ParameterValueVectorType directionStrings = getTransformParameter("Direction");
 
   typename TMovingImage::SpacingType   outputSpacing;
   typename TMovingImage::SizeType      outputSize;
@@ -507,7 +579,7 @@ template <typename TMovingImage>
 void
 TransformixFilter<TMovingImage>::SetLogFileName(std::string logFileName)
 {
-  this->m_LogFileName = logFileName;
+  m_LogFileName = logFileName;
   this->LogToFileOn();
 }
 
@@ -516,8 +588,22 @@ template <typename TMovingImage>
 void
 TransformixFilter<TMovingImage>::RemoveLogFileName()
 {
-  this->m_LogFileName = "";
+  m_LogFileName = "";
   this->LogToFileOff();
+}
+
+
+template <typename TMovingImage>
+auto
+TransformixFilter<TMovingImage>::GetFirstElastixTransformBase() const -> const ElastixTransformBaseType *
+{
+  const auto * const transformContainer = m_TransformixMain->GetElastixBase().GetTransformContainer();
+
+  if ((transformContainer != nullptr) && (!transformContainer->empty()))
+  {
+    return dynamic_cast<ElastixTransformBaseType *>(transformContainer->front().GetPointer());
+  }
+  return nullptr;
 }
 
 

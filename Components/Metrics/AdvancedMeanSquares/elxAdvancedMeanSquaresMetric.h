@@ -48,6 +48,8 @@ class ITK_TEMPLATE_EXPORT AdvancedMeanSquaresMetric final
   , public MetricBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedMeanSquaresMetric);
+
   /** Standard ITK-stuff. */
   using Self = AdvancedMeanSquaresMetric;
   using Superclass1 = itk::AdvancedMeanSquaresImageToImageMetric<typename MetricBase<TElastix>::FixedImageType,
@@ -148,12 +150,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  AdvancedMeanSquaresMetric(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

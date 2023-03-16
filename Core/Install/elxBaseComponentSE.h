@@ -88,13 +88,13 @@ public:
     return this->m_Elastix.GetPointer();
   }
 
-  int
+  void
   RemoveTargetCellFromIterationInfo(const char * const name)
   {
-    return this->m_Elastix->GetIterationInfo().xl::xoutrow::RemoveTargetCell(name);
+    this->m_Elastix->GetIterationInfo().RemoveTargetCell(name);
   }
 
-  xl::xoutbase &
+  auto &
   GetIterationInfoAt(const char * const name)
   {
     return this->m_Elastix->GetIterationInfoAt(name);
@@ -110,7 +110,7 @@ public:
    * The configuration object provides functionality to
    * read parameters and command line arguments.
    */
-  Configuration *
+  const Configuration *
   GetConfiguration() const
   {
     return this->m_Configuration.GetPointer();
@@ -119,7 +119,7 @@ public:
 
   /** Set the configuration. Added for transformix. */
   void
-  SetConfiguration(Configuration * _arg);
+  SetConfiguration(const Configuration * _arg);
 
   /** Get a pointer to the Registration component.
    * This is a convenience function, since the registration
@@ -137,9 +137,9 @@ protected:
   BaseComponentSE() = default;
   ~BaseComponentSE() override = default;
 
-  itk::WeakPointer<TElastix> m_Elastix{};
-  ConfigurationPointer       m_Configuration{};
-  RegistrationType *         m_Registration{};
+  itk::WeakPointer<TElastix>  m_Elastix{};
+  Configuration::ConstPointer m_Configuration{};
+  RegistrationType *          m_Registration{};
 
 private:
   virtual const itk::Object &

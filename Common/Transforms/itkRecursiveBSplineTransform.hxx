@@ -20,6 +20,7 @@
 
 #include "itkRecursiveBSplineTransform.h"
 
+#include <numeric> // For iota.
 
 namespace itk
 {
@@ -33,17 +34,11 @@ auto
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(const InputPointType & point) const
   -> OutputPointType
 {
-  /** Initialize output point. */
-  OutputPointType outputPoint;
-
-  /** Allocate weights on the stack: */
-
   /** Check if the coefficient image has been set. */
   if (!this->m_CoefficientImages[0])
   {
     itkWarningMacro(<< "B-spline coefficients have not been set");
-    outputPoint = point;
-    return outputPoint;
+    return point;
   }
 
   /** Convert to continuous index. */
@@ -51,11 +46,9 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(co
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and return the input point
-  bool inside = this->InsideValidRegion(cindex);
-  if (!inside)
+  if (!this->InsideValidRegion(cindex))
   {
-    outputPoint = point;
-    return outputPoint;
+    return point;
   }
 
   // Compute interpolation weighs and store them in weights1D
@@ -80,6 +73,8 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(co
   ScalarType displacement[SpaceDimension];
   ImplementationType::TransformPoint(displacement, mu, bsplineOffsetTable, weights1D.data());
 
+  OutputPointType outputPoint;
+
   // The output point is the start point + displacement.
   for (unsigned int j = 0; j < SpaceDimension; ++j)
   {
@@ -97,14 +92,14 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::TransformPoint(co
 template <class TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobian(
-  const InputPointType &       ipp,
+  const InputPointType &       inputPoint,
   JacobianType &               jacobian,
   NonZeroJacobianIndicesType & nonZeroJacobianIndices) const
 {
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   /** Initialize. */
   const NumberOfParametersType nnzji = this->GetNumberOfNonZeroJacobianIndices();
@@ -120,10 +115,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobian(
   if (!this->InsideValidRegion(cindex))
   {
     nonZeroJacobianIndices.resize(this->GetNumberOfNonZeroJacobianIndices());
-    for (NumberOfParametersType i = 0; i < this->GetNumberOfNonZeroJacobianIndices(); ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -157,7 +149,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobian(
 template <class TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::EvaluateJacobianWithImageGradientProduct(
-  const InputPointType &          ipp,
+  const InputPointType &          inputPoint,
   const MovingImageGradientType & movingImageGradient,
   DerivativeType &                imageJacobian,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
@@ -165,7 +157,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::EvaluateJacobianW
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   /** NOTE: if the support region does not lie totally within the grid
    * we assume zero displacement and zero Jacobian.
@@ -174,10 +166,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::EvaluateJacobianW
   if (!this->InsideValidRegion(cindex))
   {
     nonZeroJacobianIndices.resize(nnzji);
-    for (NumberOfParametersType i = 0; i < nnzji; ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -217,13 +206,13 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::EvaluateJacobianW
 
 template <class TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
 void
-RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialJacobian(const InputPointType & ipp,
+RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialJacobian(const InputPointType & inputPoint,
                                                                                   SpatialJacobianType &  sj) const
 {
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and identity spatial Jacobian
@@ -292,13 +281,13 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialJacobia
 
 template <class TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
 void
-RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialHessian(const InputPointType & ipp,
+RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialHessian(const InputPointType & inputPoint,
                                                                                  SpatialHessianType &   sh) const
 {
   /** Convert the physical point to a continuous index, which
    * is needed for the evaluate functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and zero spatial Hessian
@@ -385,7 +374,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetSpatialHessian
 template <class TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpatialJacobian(
-  const InputPointType &          ipp,
+  const InputPointType &          inputPoint,
   JacobianOfSpatialJacobianType & jsj,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
 {
@@ -401,7 +390,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and zero jsj.
@@ -412,10 +401,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
       jsj[i].Fill(0.0);
     }
     nonZeroJacobianIndices.resize(this->GetNumberOfNonZeroJacobianIndices());
-    for (NumberOfParametersType i = 0; i < this->GetNumberOfNonZeroJacobianIndices(); ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -454,13 +440,13 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
 template <class TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpatialJacobian(
-  const InputPointType &          ipp,
+  const InputPointType &          inputPoint,
   SpatialJacobianType &           sj,
   JacobianOfSpatialJacobianType & jsj,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
 {
-  this->GetJacobianOfSpatialJacobian(ipp, jsj, nonZeroJacobianIndices);
-  this->GetSpatialJacobian(ipp, sj);
+  this->GetJacobianOfSpatialJacobian(inputPoint, jsj, nonZeroJacobianIndices);
+  this->GetSpatialJacobian(inputPoint, sj);
 } // end GetJacobianOfSpatialJacobian()
 
 
@@ -471,7 +457,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
 template <class TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpatialHessian(
-  const InputPointType &         ipp,
+  const InputPointType &         inputPoint,
   JacobianOfSpatialHessianType & jsh,
   NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const
 {
@@ -487,7 +473,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
   /** Convert the physical point to a continuous index, which
    * is needed for the 'Evaluate()' functions below.
    */
-  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(ipp);
+  const ContinuousIndexType cindex = this->TransformPointToContinuousGridIndex(inputPoint);
 
   // NOTE: if the support region does not lie totally within the grid
   // we assume zero displacement and identity sj and zero jsj.
@@ -501,10 +487,7 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
       }
     }
     nonZeroJacobianIndices.resize(this->GetNumberOfNonZeroJacobianIndices());
-    for (NumberOfParametersType i = 0; i < this->GetNumberOfNonZeroJacobianIndices(); ++i)
-    {
-      nonZeroJacobianIndices[i] = i;
-    }
+    std::iota(nonZeroJacobianIndices.begin(), nonZeroJacobianIndices.end(), 0u);
     return;
   }
 
@@ -547,13 +530,13 @@ RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpat
 template <class TScalar, unsigned int NDimensions, unsigned int VSplineOrder>
 void
 RecursiveBSplineTransform<TScalar, NDimensions, VSplineOrder>::GetJacobianOfSpatialHessian(
-  const InputPointType &         ipp,
+  const InputPointType &         inputPoint,
   SpatialHessianType &           sh,
   JacobianOfSpatialHessianType & jsh,
   NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const
 {
-  this->GetJacobianOfSpatialHessian(ipp, jsh, nonZeroJacobianIndices);
-  this->GetSpatialHessian(ipp, sh);
+  this->GetJacobianOfSpatialHessian(inputPoint, jsh, nonZeroJacobianIndices);
+  this->GetSpatialHessian(inputPoint, sh);
 } // end GetJacobianOfSpatialHessian()
 
 

@@ -53,6 +53,8 @@ namespace itk
 class StochasticGradientDescentOptimizer : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(StochasticGradientDescentOptimizer);
+
   /** Standard class typedefs. */
   using Self = StochasticGradientDescentOptimizer;
   using Superclass = ScaledSingleValuedNonLinearOptimizer;
@@ -181,30 +183,26 @@ protected:
 
   // made protected so subclass can access
   double                m_Value{ 0.0 };
-  DerivativeType        m_Gradient;
-  ParametersType        m_SearchDir;
-  ParametersType        m_PreviousSearchDir;
-  ParametersType        m_PrePreviousSearchDir;
-  ParametersType        m_MeanSearchDir;
+  DerivativeType        m_Gradient{};
+  ParametersType        m_SearchDir{};
+  ParametersType        m_PreviousSearchDir{};
+  ParametersType        m_PrePreviousSearchDir{};
+  ParametersType        m_MeanSearchDir{};
   double                m_LearningRate{ 1.0 };
   StopConditionType     m_StopCondition{ MaximumNumberOfIterations };
-  DerivativeType        m_PreviousGradient;
-  DerivativeType        m_PrePreviousGradient;
-  ParametersType        m_PreviousPosition;
+  DerivativeType        m_PreviousGradient{};
+  DerivativeType        m_PrePreviousGradient{};
+  ParametersType        m_PreviousPosition{};
   ThreaderType::Pointer m_Threader{ ThreaderType::New() };
 
   bool          m_Stop{ false };
   unsigned long m_NumberOfIterations{ 100 };
-  unsigned long m_NumberOfInnerIterations;
+  unsigned long m_NumberOfInnerIterations{};
   unsigned long m_CurrentIteration{ 0 };
-  unsigned long m_CurrentInnerIteration;
+  unsigned long m_CurrentInnerIteration{};
   unsigned long m_LBFGSMemory{ 0 };
 
 private:
-  StochasticGradientDescentOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   // multi-threaded AdvanceOneStep:
   bool m_UseMultiThread{ false };
   struct MultiThreaderParameterType

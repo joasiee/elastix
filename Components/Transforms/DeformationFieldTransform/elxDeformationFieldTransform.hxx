@@ -64,50 +64,39 @@ DeformationFieldTransform<TElastix>::ReadFromFile()
   /** Call the ReadFromFile from the TransformBase. */
   this->Superclass2::ReadFromFile();
 
-  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<DeformationFieldType>;
-  using ChangeInfoFilterPointer = typename ChangeInfoFilterType::Pointer;
-
-  /** Setup VectorImageReader. */
-  using VectorReaderType = itk::ImageFileReader<DeformationFieldType>;
-  auto vectorReader = VectorReaderType::New();
-
   /** Read deformationFieldImage-name from parameter-file. */
   std::string fileName = "";
   this->m_Configuration->ReadParameter(fileName, "DeformationFieldFileName", 0);
   if (fileName.empty())
   {
-    xl::xout["error"]
-      << "ERROR: the entry (DeformationFieldFileName \"...\") is missing in the transform parameter file!" << std::endl;
+    log::error("ERROR: the entry (DeformationFieldFileName \"...\") is missing in the transform parameter file!");
     itkExceptionMacro(<< "Error while reading transform parameter file!");
   }
 
   /** Possibly overrule the direction cosines. */
-  ChangeInfoFilterPointer infoChanger = ChangeInfoFilterType::New();
-  DirectionType           direction;
-  direction.SetIdentity();
-  infoChanger->SetOutputDirection(direction);
+  const auto infoChanger = itk::ChangeInformationImageFilter<DeformationFieldType>::New();
   infoChanger->SetChangeDirection(!this->GetElastix()->GetUseDirectionCosines());
-  infoChanger->SetInput(vectorReader->GetOutput());
 
-  /** Read deformationFieldImage from file. */
-  vectorReader->SetFileName(fileName);
   try
   {
+    const auto image = itk::ReadImage<DeformationFieldType>(fileName);
+    infoChanger->SetInput(image);
     infoChanger->Update();
+
+    /** Store the original direction for later use */
+    this->m_OriginalDeformationFieldDirection = image->GetDirection();
   }
   catch (itk::ExceptionObject & excp)
   {
     /** Add information to the exception. */
     excp.SetLocation("DeformationFieldTransform - ReadFromFile()");
     std::string err_str = excp.GetDescription();
-    err_str += "\nError occured while reading the deformationField image.\n";
+    err_str += "\nError occurred while reading the deformationField image.\n";
     excp.SetDescription(err_str);
     /** Pass the exception to an higher level. */
-    throw excp;
+    throw;
   }
 
-  /** Store the original direction for later use */
-  this->m_OriginalDeformationFieldDirection = vectorReader->GetOutput()->GetDirection();
 
   /** Set the deformationFieldImage in the
    * itkDeformationFieldInterpolatingTransform.
@@ -131,8 +120,9 @@ DeformationFieldTransform<TElastix>::ReadFromFile()
   }
   else
   {
-    xl::xout["error"] << "Error while reading DeformationFieldInterpolationOrder from the parameter file" << std::endl;
-    xl::xout["error"] << "DeformationFieldInterpolationOrder can only be 0 or 1!" << std::endl;
+    log::error(
+      std::ostringstream{} << "Error while reading DeformationFieldInterpolationOrder from the parameter file\n"
+                           << "DeformationFieldInterpolationOrder can only be 0 or 1!");
     itkExceptionMacro(<< "Invalid deformation field interpolation order selected!");
   }
   this->m_DeformationFieldInterpolatingTransform->SetDeformationFieldInterpolator(interpolator);
@@ -153,28 +143,20 @@ DeformationFieldTransform<TElastix>::WriteDerivedTransformDataToFile() const
 {
   // \todo Finish and Test this function.
 
-  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<DeformationFieldType>;
-
   /** Write the interpolation order to file */
   std::string interpolatorName =
     this->m_DeformationFieldInterpolatingTransform->GetDeformationFieldInterpolator()->GetNameOfClass();
 
   /** Possibly change the direction cosines to there original value */
-  auto infoChanger = ChangeInfoFilterType::New();
+  const auto infoChanger = itk::ChangeInformationImageFilter<DeformationFieldType>::New();
   infoChanger->SetOutputDirection(this->m_OriginalDeformationFieldDirection);
   infoChanger->SetChangeDirection(!this->GetElastix()->GetUseDirectionCosines());
   infoChanger->SetInput(this->m_DeformationFieldInterpolatingTransform->GetDeformationField());
 
   /** Write the deformation field image. */
-  using VectorWriterType = itk::ImageFileWriter<DeformationFieldType>;
-  auto writer = VectorWriterType::New();
-  writer->SetFileName(TransformIO::MakeDeformationFieldFileName(*this));
-  writer->SetInput(infoChanger->GetOutput());
-
-  /** Do the writing. */
   try
   {
-    writer->Update();
+    itk::WriteImage(infoChanger->GetOutput(), TransformIO::MakeDeformationFieldFileName(*this));
   }
   catch (itk::ExceptionObject & excp)
   {
@@ -184,7 +166,7 @@ DeformationFieldTransform<TElastix>::WriteDerivedTransformDataToFile() const
     err_str += "\nError while writing the deformationFieldImage.\n";
     excp.SetDescription(err_str);
     /** Print the exception. */
-    xl::xout["error"] << excp << std::endl;
+    log::error(std::ostringstream{} << excp);
   }
 
 } // end WriteDerivedTransformDataToFile()

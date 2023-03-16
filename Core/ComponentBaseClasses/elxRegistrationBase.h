@@ -77,6 +77,8 @@ template <class TElastix>
 class ITK_TEMPLATE_EXPORT RegistrationBase : public BaseComponentSE<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(RegistrationBase);
+
   /** Standard ITK stuff. */
   using Self = RegistrationBase;
   using Superclass = BaseComponentSE<TElastix>;
@@ -221,12 +223,6 @@ protected:
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
-
-  /** The deleted copy constructor. */
-  RegistrationBase(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   double
   FinalFullEvaluation();

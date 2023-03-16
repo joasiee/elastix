@@ -63,6 +63,8 @@ template <typename TPixel, unsigned int VImageDimension = 2>
 class ITK_TEMPLATE_EXPORT ITKOpenCL_EXPORT GPUImage : public Image<TPixel, VImageDimension>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUImage);
+
   using Self = GPUImage;
   using Superclass = Image<TPixel, VImageDimension>;
   using Pointer = SmartPointer<Self>;
@@ -93,6 +95,17 @@ public:
   using AccessorFunctorType = DefaultPixelAccessorFunctor<Self>;
 
   using NeighborhoodAccessorFunctorType = NeighborhoodAccessorFunctor<Self>;
+
+  /** Override Rebind and RebindImageType of itk::Image class */
+  template <typename UPixelType, unsigned int VUImageDimension = VImageDimension>
+  struct Rebind
+  {
+    using Type = itk::GPUImage<UPixelType, VUImageDimension>;
+  };
+
+  template <typename UPixelType, unsigned int VUImageDimension = VImageDimension>
+  using RebindImageType = itk::GPUImage<UPixelType, VUImageDimension>;
+
 
   /** Allocate CPU and GPU memory space */
   void
@@ -254,13 +267,9 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
-  GPUImage(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  bool m_Graft{};
 
-  bool m_Graft;
-
-  typename GPUImageDataManager<GPUImage>::Pointer m_DataManager;
+  typename GPUImageDataManager<GPUImage>::Pointer m_DataManager{};
 };
 
 //------------------------------------------------------------------------------

@@ -19,6 +19,7 @@
 #define elxStandardGradientDescent_hxx
 
 #include "elxStandardGradientDescent.h"
+#include "elxDeref.h"
 #include <iomanip>
 #include <string>
 
@@ -71,9 +72,11 @@ StandardGradientDescent<TElastix>::BeforeEachResolution()
   /** Get the current resolution level. */
   unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
 
+  const Configuration & configuration = Deref(Superclass2::GetConfiguration());
+
   /** Set the maximumNumberOfIterations. */
   unsigned int maximumNumberOfIterations = 500;
-  this->GetConfiguration()->ReadParameter(
+  configuration.ReadParameter(
     maximumNumberOfIterations, "MaximumNumberOfIterations", this->GetComponentLabel(), level, 0);
   this->SetNumberOfIterations(maximumNumberOfIterations);
 
@@ -82,9 +85,9 @@ StandardGradientDescent<TElastix>::BeforeEachResolution()
   double A = 50.0;
   double alpha = 0.602;
 
-  this->GetConfiguration()->ReadParameter(a, "SP_a", this->GetComponentLabel(), level, 0);
-  this->GetConfiguration()->ReadParameter(A, "SP_A", this->GetComponentLabel(), level, 0);
-  this->GetConfiguration()->ReadParameter(alpha, "SP_alpha", this->GetComponentLabel(), level, 0);
+  configuration.ReadParameter(a, "SP_a", this->GetComponentLabel(), level, 0);
+  configuration.ReadParameter(A, "SP_A", this->GetComponentLabel(), level, 0);
+  configuration.ReadParameter(alpha, "SP_alpha", this->GetComponentLabel(), level, 0);
 
   this->SetParam_a(a);
   this->SetParam_A(A);
@@ -92,17 +95,17 @@ StandardGradientDescent<TElastix>::BeforeEachResolution()
 
   /** Set the MaximumNumberOfSamplingAttempts. */
   unsigned int maximumNumberOfSamplingAttempts = 0;
-  this->GetConfiguration()->ReadParameter(
+  configuration.ReadParameter(
     maximumNumberOfSamplingAttempts, "MaximumNumberOfSamplingAttempts", this->GetComponentLabel(), level, 0);
   this->SetMaximumNumberOfSamplingAttempts(maximumNumberOfSamplingAttempts);
   if (maximumNumberOfSamplingAttempts > 5)
   {
-    elxout["warning"] << "\nWARNING: You have set MaximumNumberOfSamplingAttempts to "
-                      << maximumNumberOfSamplingAttempts << ".\n"
-                      << "  This functionality is known to cause problems (stack overflow) for large values.\n"
-                      << "  If elastix stops or segfaults for no obvious reason, reduce this value.\n"
-                      << "  You may select the RandomSparseMask image sampler to fix mask-related problems.\n"
-                      << std::endl;
+    log::warn(
+      std::ostringstream{} << "\nWARNING: You have set MaximumNumberOfSamplingAttempts to "
+                           << maximumNumberOfSamplingAttempts << ".\n"
+                           << "  This functionality is known to cause problems (stack overflow) for large values.\n"
+                           << "  If elastix stops or segfaults for no obvious reason, reduce this value.\n"
+                           << "  You may select the RandomSparseMask image sampler to fix mask-related problems.\n");
   }
 
 } // end BeforeEachResolution()
@@ -159,7 +162,7 @@ StandardGradientDescent<TElastix>::AfterEachResolution()
   }
 
   /** Print the stopping condition */
-  elxout << "Stopping condition: " << stopcondition << "." << std::endl;
+  log::info(std::ostringstream{} << "Stopping condition: " << stopcondition << ".");
 
 } // end AfterEachResolution()
 
@@ -174,7 +177,7 @@ StandardGradientDescent<TElastix>::AfterRegistration()
 {
   /** Print the best metric value */
   double bestValue = this->GetValue();
-  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
+  log::info(std::ostringstream{} << '\n' << "Final metric value  = " << bestValue);
 
 } // end AfterRegistration()
 

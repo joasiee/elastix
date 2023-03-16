@@ -19,6 +19,7 @@
 #define itkAdvancedNormalizedCorrelationImageToImageMetric_h
 
 #include "itkAdvancedImageToImageMetric.h"
+#include <vector>
 
 namespace itk
 {
@@ -91,6 +92,8 @@ class ITK_TEMPLATE_EXPORT AdvancedNormalizedCorrelationImageToImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedNormalizedCorrelationImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = AdvancedNormalizedCorrelationImageToImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -190,7 +193,7 @@ public:
 
 protected:
   AdvancedNormalizedCorrelationImageToImageMetric();
-  ~AdvancedNormalizedCorrelationImageToImageMetric() override;
+  ~AdvancedNormalizedCorrelationImageToImageMetric() override = default;
 
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
@@ -229,11 +232,11 @@ protected:
   InitializeThreadingParameters() const override;
 
   /** Get value and derivatives for each thread. */
-  inline void
+  void
   ThreadedGetValueAndDerivative(ThreadIdType threadID) override;
 
   /** Gather the values and derivatives from all threads */
-  inline void
+  void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
 
   /** AccumulateDerivatives threader callback function */
@@ -241,11 +244,7 @@ protected:
   AccumulateDerivativesThreaderCallback(void * arg);
 
 private:
-  AdvancedNormalizedCorrelationImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  mutable bool m_SubtractMean;
+  mutable bool m_SubtractMean{};
 
   using AccumulateType = typename NumericTraits<MeasureType>::AccumulateType;
 
@@ -282,7 +281,8 @@ private:
   itkAlignedTypedef(ITK_CACHE_LINE_ALIGNMENT,
                     PaddedCorrelationGetValueAndDerivativePerThreadStruct,
                     AlignedCorrelationGetValueAndDerivativePerThreadStruct);
-  mutable AlignedCorrelationGetValueAndDerivativePerThreadStruct * m_CorrelationGetValueAndDerivativePerThreadVariables;
+  mutable std::vector<AlignedCorrelationGetValueAndDerivativePerThreadStruct>
+                       m_CorrelationGetValueAndDerivativePerThreadVariables;
   mutable ThreadIdType m_CorrelationGetValueAndDerivativePerThreadVariablesSize;
 
   enum IntermediateResultNames

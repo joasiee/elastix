@@ -166,6 +166,8 @@ class ITK_TEMPLATE_EXPORT BSplineTransformWithDiffusion
     public TransformBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(BSplineTransformWithDiffusion);
+
   /** Standard ITK-stuff. */
   using Self = BSplineTransformWithDiffusion;
   using Superclass1 = itk::DeformationFieldRegulizer<
@@ -274,8 +276,6 @@ public:
   using InterpolatorPointer = typename InterpolatorType::Pointer;
   using GrayValueImageReaderType = itk::ImageFileReader<GrayValueImageType>;
   using GrayValueImageReaderPointer = typename GrayValueImageReaderType::Pointer;
-  using GrayValueImageWriterType = itk::ImageFileWriter<GrayValueImageType>;
-  using DeformationFieldWriterType = itk::ImageFileWriter<VectorImageType>;
 
   /** Execute stuff before the actual registration:
    * \li Create an initial B-spline grid.
@@ -362,12 +362,6 @@ private:
   /** Writes its deformation field to a file. */
   void
   WriteDerivedTransformDataToFile() const override;
-
-  /** The deleted copy constructor. */
-  BSplineTransformWithDiffusion(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   /** Member variables for diffusion. */
   DiffusionFilterPointer      m_Diffusion;

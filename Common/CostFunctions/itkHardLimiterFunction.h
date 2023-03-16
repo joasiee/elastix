@@ -39,6 +39,8 @@ template <class TInput, unsigned int NDimension>
 class ITK_TEMPLATE_EXPORT HardLimiterFunction : public LimiterFunctionBase<TInput, NDimension>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(HardLimiterFunction);
+
   /** Standard class typedefs. */
   using Self = HardLimiterFunction;
   using Superclass = LimiterFunctionBase<TInput, NDimension>;
@@ -71,11 +73,6 @@ public:
 protected:
   HardLimiterFunction() = default;
   ~HardLimiterFunction() override = default;
-
-private:
-  HardLimiterFunction(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

@@ -62,6 +62,8 @@ template <typename TTypeList, typename NDimensions, typename TTransform, typenam
 class ITK_TEMPLATE_EXPORT GPUTransformCopier : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUTransformCopier);
+
   /** Standard class typedefs. */
   using Self = GPUTransformCopier;
   using Superclass = Object;
@@ -221,14 +223,10 @@ private:
                             TransformSpaceDimensionToType<3>);
 
 private:
-  GPUTransformCopier(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  CPUTransformConstPointer m_InputTransform;
-  GPUTransformPointer      m_Output;
-  ModifiedTimeType         m_InternalTransformTime;
-  bool                     m_ExplicitMode;
+  CPUTransformConstPointer m_InputTransform{};
+  GPUTransformPointer      m_Output{};
+  ModifiedTimeType         m_InternalTransformTime{};
+  bool                     m_ExplicitMode{};
 };
 
 } // end namespace itk

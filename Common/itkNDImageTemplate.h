@@ -45,6 +45,8 @@ template <class TPixel, unsigned int VDimension>
 class ITK_TEMPLATE_EXPORT NDImageTemplate : public NDImageBase<TPixel>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(NDImageTemplate);
+
   /** Standard class typedefs.*/
   using Self = NDImageTemplate;
   using Superclass = NDImageBase<TPixel>;
@@ -63,7 +65,6 @@ public:
 
   itkStaticConstMacro(Dimension, unsigned int, VDimension);
 
-  using typename Superclass::DataObjectType;
   using typename Superclass::DataObjectPointer;
 
   /** Type definitions like normal itkImages, independent of the dimension */
@@ -226,20 +227,20 @@ public:
   GetInputFileName() override;
 
 protected:
-  NDImageTemplate();
+  NDImageTemplate() = default;
   ~NDImageTemplate() override = default;
 
   // virtual void PrintSelf(std::ostream& os, Indent indent) const;
 
-  ImagePointer  m_Image;
-  WriterPointer m_Writer;
-  ReaderPointer m_Reader;
+  ImagePointer  m_Image{ nullptr };
+  WriterPointer m_Writer{ nullptr };
+  ReaderPointer m_Reader{ nullptr };
 
   template <class TIn, class TOut>
   class ITK_TEMPLATE_EXPORT ConvertToDynamicArray
   {
   public:
-    inline static TOut
+    static TOut
     DO(const TIn & in)
     {
       TOut out(VDimension);
@@ -256,7 +257,7 @@ protected:
   class ITK_TEMPLATE_EXPORT ConvertToStaticArray
   {
   public:
-    inline static TOut
+    static TOut
     DO(const TIn & in)
     {
       TOut out;
@@ -268,11 +269,6 @@ protected:
       return out;
     }
   };
-
-private:
-  NDImageTemplate(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

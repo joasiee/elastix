@@ -41,6 +41,8 @@ template <class TFixedImage,
 class ITK_TEMPLATE_EXPORT ImageToImageMetricWithFeatures : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ImageToImageMetricWithFeatures);
+
   /** Standard class typedefs. */
   using Self = ImageToImageMetricWithFeatures;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -236,26 +238,21 @@ protected:
   using typename Superclass::MovingImageContinuousIndexType;
 
   /** Member variables. */
-  unsigned int                        m_NumberOfFixedFeatureImages;
-  unsigned int                        m_NumberOfMovingFeatureImages;
-  FixedFeatureImageVectorType         m_FixedFeatureImages;
-  MovingFeatureImageVectorType        m_MovingFeatureImages;
-  FixedFeatureInterpolatorVectorType  m_FixedFeatureInterpolators;
-  MovingFeatureInterpolatorVectorType m_MovingFeatureInterpolators;
+  unsigned int                        m_NumberOfFixedFeatureImages{};
+  unsigned int                        m_NumberOfMovingFeatureImages{};
+  FixedFeatureImageVectorType         m_FixedFeatureImages{};
+  MovingFeatureImageVectorType        m_MovingFeatureImages{};
+  FixedFeatureInterpolatorVectorType  m_FixedFeatureInterpolators{};
+  MovingFeatureInterpolatorVectorType m_MovingFeatureInterpolators{};
 
-  std::vector<bool>                    m_FeatureInterpolatorsIsBSpline;
-  BSplineFeatureInterpolatorVectorType m_MovingFeatureBSplineInterpolators;
+  std::vector<bool>                    m_FeatureInterpolatorsIsBSpline{};
+  BSplineFeatureInterpolatorVectorType m_MovingFeatureBSplineInterpolators{};
 
   /** Initialize variables for image derivative computation; this
    * method is called by Initialize.
    */
   virtual void
   CheckForBSplineFeatureInterpolators();
-
-private:
-  ImageToImageMetricWithFeatures(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

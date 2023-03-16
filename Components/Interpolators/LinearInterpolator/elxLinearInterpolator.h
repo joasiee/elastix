@@ -47,6 +47,8 @@ class ITK_TEMPLATE_EXPORT LinearInterpolator
   , public InterpolatorBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(LinearInterpolator);
+
   /** Standard ITK-stuff. */
   using Self = LinearInterpolator;
   using Superclass1 = itk::AdvancedLinearInterpolateImageFunction<typename InterpolatorBase<TElastix>::InputImageType,
@@ -90,12 +92,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  LinearInterpolator(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

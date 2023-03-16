@@ -47,6 +47,8 @@ class ITK_TEMPLATE_EXPORT NearestNeighborResampleInterpolator
   , public ResampleInterpolatorBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(NearestNeighborResampleInterpolator);
+
   /** Standard ITK-stuff. */
   using Self = NearestNeighborResampleInterpolator;
   using Superclass1 =
@@ -90,12 +92,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  NearestNeighborResampleInterpolator(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

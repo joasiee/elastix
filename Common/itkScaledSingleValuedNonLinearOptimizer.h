@@ -62,6 +62,8 @@ namespace itk
 class ScaledSingleValuedNonLinearOptimizer : public SingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ScaledSingleValuedNonLinearOptimizer);
+
   /** Standard ITK-stuff. */
   using Self = ScaledSingleValuedNonLinearOptimizer;
   using Superclass = SingleValuedNonLinearOptimizer;
@@ -140,8 +142,8 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Member variables. */
-  ParametersType            m_ScaledCurrentPosition;
-  ScaledCostFunctionPointer m_ScaledCostFunction;
+  ParametersType            m_ScaledCurrentPosition{};
+  ScaledCostFunctionPointer m_ScaledCostFunction{};
 
   /** Set m_ScaledCurrentPosition. */
   virtual void
@@ -181,18 +183,12 @@ protected:
                               DerivativeType &       derivative) const;
 
 private:
-  /** The deleted copy constructor. */
-  ScaledSingleValuedNonLinearOptimizer(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
   /** Variable to store the CurrentPosition, when the function
    * GetCurrentPosition is called. This method needs a member variable,
    * because the GetCurrentPosition return something by reference.
    */
-  mutable ParametersType m_UnscaledCurrentPosition;
-  bool                   m_Maximize;
+  mutable ParametersType m_UnscaledCurrentPosition{};
+  bool                   m_Maximize{};
 };
 
 } // end namespace itk

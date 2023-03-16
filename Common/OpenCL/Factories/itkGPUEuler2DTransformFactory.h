@@ -37,6 +37,8 @@ template <typename NDimensions>
 class ITK_TEMPLATE_EXPORT GPUEuler2DTransformFactory2 : public GPUObjectFactoryBase<NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUEuler2DTransformFactory2);
+
   using Self = GPUEuler2DTransformFactory2;
   using Superclass = GPUObjectFactoryBase<NDimensions>;
   using Pointer = SmartPointer<Self>;
@@ -82,11 +84,6 @@ protected:
   /** Register methods for 2D. */
   virtual void
   Register2D();
-
-private:
-  GPUEuler2DTransformFactory2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

@@ -40,6 +40,8 @@ template <typename TTransformScalarType, unsigned int VImageDimension>
 class ITK_TEMPLATE_EXPORT GridScheduleComputer : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GridScheduleComputer);
+
   /** Standard class typedefs. */
   using Self = GridScheduleComputer;
   using Superclass = Object;
@@ -148,12 +150,12 @@ protected:
   ~GridScheduleComputer() override = default;
 
   /** Declare member variables, needed for B-spline grid. */
-  VectorSpacingType           m_GridSpacings;
-  VectorOriginType            m_GridOrigins;
-  VectorDirectionType         m_GridDirections;
-  VectorRegionType            m_GridRegions;
-  TransformConstPointer       m_InitialTransform;
-  VectorGridSpacingFactorType m_GridSpacingFactors;
+  VectorSpacingType           m_GridSpacings{};
+  VectorOriginType            m_GridOrigins{};
+  VectorDirectionType         m_GridDirections{};
+  VectorRegionType            m_GridRegions{};
+  TransformConstPointer       m_InitialTransform{};
+  VectorGridSpacingFactorType m_GridSpacingFactors{};
 
   /** PrintSelf. */
   void
@@ -170,24 +172,20 @@ protected:
                         SpacingType &   finalGridSpacing) const;
 
 private:
-  GridScheduleComputer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Declare member variables, needed in functions. */
-  OriginType    m_ImageOrigin;
-  SpacingType   m_ImageSpacing;
-  RegionType    m_ImageRegion;
-  DirectionType m_ImageDirection;
-  unsigned int  m_BSplineOrder;
-  unsigned int  m_NumberOfLevels;
-  SpacingType   m_FinalGridSpacing;
+  OriginType    m_ImageOrigin{};
+  SpacingType   m_ImageSpacing{};
+  RegionType    m_ImageRegion{};
+  DirectionType m_ImageDirection{};
+  unsigned int  m_BSplineOrder{};
+  unsigned int  m_NumberOfLevels{};
+  SpacingType   m_FinalGridSpacing{};
 
   /** Clamp the upsampling factor. */
   itkSetClampMacro(UpsamplingFactor, float, 1.0, NumericTraits<float>::max());
 
   /** Declare member variables, needed internally. */
-  float m_UpsamplingFactor;
+  float m_UpsamplingFactor{};
 };
 
 } // end namespace itk

@@ -114,7 +114,7 @@ EulerStackTransform<TElastix>::ReadFromFile()
 
     if (!pointRead && !indexRead)
     {
-      xl::xout["error"] << "ERROR: No center of rotation is specified in the transform parameter file" << std::endl;
+      log::error("ERROR: No center of rotation is specified in the transform parameter file");
       itkExceptionMacro(<< "Transform parameter file is corrupt.")
     }
 
@@ -224,9 +224,9 @@ EulerStackTransform<TElastix>::InitializeTransform()
     this->m_Configuration->ReadParameter(UseDirectionCosines, "UseDirectionCosines", 0);
     if (!UseDirectionCosines)
     {
-      elxout << "warning: a wrong center of rotation could have been set,  please check the transform matrix in the "
-                "header file"
-             << std::endl;
+      log::info(std::ostringstream{}
+                << "warning: a wrong center of rotation could have been set,  please check the transform matrix in the "
+                   "header file");
     }
   }
 
@@ -271,15 +271,16 @@ EulerStackTransform<TElastix>::InitialTransformCenter(ReducedDimensionInputPoint
   if (this->GetUseComposition() && this->Superclass1::GetInitialTransform() != nullptr)
   {
     /** Transform point to voxel coordinates. */
-    InputPointType      fullDimensionCenterPoint;
-    ContinuousIndexType fullDimensionCenterIndex;
+    InputPointType fullDimensionCenterPoint;
     for (unsigned int i = 0; i < ReducedSpaceDimension; ++i)
     {
       fullDimensionCenterPoint[i] = point[i];
     }
     fullDimensionCenterPoint[SpaceDimension - 1] = 0;
-    this->m_Registration->GetAsITKBaseType()->GetFixedImage()->TransformPhysicalPointToContinuousIndex(
-      fullDimensionCenterPoint, fullDimensionCenterIndex);
+    auto fullDimensionCenterIndex =
+      this->m_Registration->GetAsITKBaseType()
+        ->GetFixedImage()
+        ->template TransformPhysicalPointToContinuousIndex<CoordRepType>(fullDimensionCenterPoint);
 
     /** Get size of image and number of time points. */
     const SizeType fixedImageSize =
@@ -340,17 +341,15 @@ EulerStackTransform<TElastix>::SetScales()
 
   if (automaticScalesEstimationStackTransform)
   {
-    xl::xout["warning"]
-      << "WARNING: AutomaticScalesEstimationStackTransform is deprecated, use AutomaticScalesEstimation instead."
-      << std::endl;
+    log::warn("WARNING: AutomaticScalesEstimationStackTransform is deprecated, use AutomaticScalesEstimation instead.");
     automaticScalesEstimation = automaticScalesEstimationStackTransform;
   }
 
   if (automaticScalesEstimation)
   {
-    elxout << "Scales are estimated automatically." << std::endl;
+    log::info("Scales are estimated automatically.");
     this->AutomaticScalesEstimationStackTransform(this->m_StackTransform->GetNumberOfSubTransforms(), newscales);
-    elxout << "finished setting scales" << std::endl;
+    log::info("finished setting scales");
   }
   else
   {
@@ -455,7 +454,7 @@ EulerStackTransform<TElastix>::SetScales()
 
   } // end else: no automaticScalesEstimation
 
-  elxout << "Scales for transform parameters are: " << newscales << std::endl;
+  log::info(std::ostringstream{} << "Scales for transform parameters are: " << newscales);
 
   /** And set the scales into the optimizer. */
   this->m_Registration->GetAsITKBaseType()->GetModifiableOptimizer()->SetScales(newscales);

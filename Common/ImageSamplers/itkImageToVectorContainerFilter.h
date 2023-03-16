@@ -34,6 +34,8 @@ template <class TInputImage, class TOutputVectorContainer>
 class ITK_TEMPLATE_EXPORT ImageToVectorContainerFilter : public VectorContainerSource<TOutputVectorContainer>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ImageToVectorContainerFilter);
+
   /** Standard ITK-stuff. */
   using Self = ImageToVectorContainerFilter;
   using Superclass = VectorContainerSource<TOutputVectorContainer>;
@@ -187,13 +189,6 @@ protected:
   /** PrintSelf. */
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
-
-private:
-  /** The deleted copy constructor. */
-  ImageToVectorContainerFilter(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

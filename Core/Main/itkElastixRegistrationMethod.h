@@ -36,8 +36,11 @@
 #define itkElastixRegistrationMethod_h
 
 #include "itkImageSource.h"
+#include "itkElastixLogLevel.h"
 
 #include "elxElastixMain.h"
+#include "elxElastixTemplate.h"
+#include "elxTransformBase.h"
 #include "elxParameterObject.h"
 
 /**
@@ -54,6 +57,8 @@ template <typename TFixedImage, typename TMovingImage>
 class ITK_TEMPLATE_EXPORT ElastixRegistrationMethod : public itk::ImageSource<TFixedImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ElastixRegistrationMethod);
+
   /** Standard ITK typedefs. */
   using Self = ElastixRegistrationMethod;
   using Superclass = ImageSource<TFixedImage>;
@@ -67,7 +72,7 @@ public:
   itkTypeMacro(ElastixRegistrationMethod, ImageSource);
 
   /** Typedefs. */
-  using ElastixMainType = elastix::ElastixMain;
+  using ElastixMainType = elx::ElastixMain;
   using ElastixMainPointer = ElastixMainType::Pointer;
   using ElastixMainVectorType = std::vector<ElastixMainPointer>;
   using ElastixMainObjectPointer = ElastixMainType::ObjectPointer;
@@ -82,7 +87,7 @@ public:
   using DataObjectPointerArraySizeType = ProcessObject::DataObjectPointerArraySizeType;
   using NameArrayType = ProcessObject::NameArray;
 
-  using ParameterObjectType = elastix::ParameterObject;
+  using ParameterObjectType = elx::ParameterObject;
   using ParameterMapType = ParameterObjectType::ParameterMapType;
   using ParameterMapVectorType = ParameterObjectType::ParameterMapVectorType;
   using ParameterValueVectorType = ParameterObjectType::ParameterValueVectorType;
@@ -94,6 +99,7 @@ public:
 
   using FixedMaskType = Image<unsigned char, FixedImageDimension>;
   using MovingMaskType = Image<unsigned char, MovingImageDimension>;
+  using TransformType = Transform<double, FixedImageDimension, MovingImageDimension>;
 
   using FixedImageType = TFixedImage;
   using MovingImageType = TMovingImage;
@@ -240,8 +246,35 @@ public:
   itkGetConstReferenceMacro(LogToFile, bool);
   itkBooleanMacro(LogToFile);
 
+  /** Disables output to log and standard output. */
+  void
+  DisableOutput()
+  {
+    m_EnableOutput = false;
+  }
+
+  itkSetMacro(LogLevel, ElastixLogLevel);
+  itkGetConstMacro(LogLevel, ElastixLogLevel);
+
   itkSetMacro(NumberOfThreads, int);
   itkGetConstMacro(NumberOfThreads, int);
+
+  /** Returns the number of transformations, produced during the last Update(). */
+  unsigned int
+  GetNumberOfTransforms() const;
+
+  /** Returns the nth transformation, produced during the last Update(). */
+  SmartPointer<TransformType>
+  GetNthTransform(const unsigned int n) const;
+
+  /** Returns the combination transformation, produced during the last Update(). */
+  SmartPointer<TransformType>
+  GetCombinationTransform() const;
+
+  /** Converts the specified elastix Transform object to the corresponding ITK Transform object. Returns null if there
+   * is no corresponding ITK Transform type. */
+  static SmartPointer<TransformType>
+  ConvertToItkTransform(const TransformType &);
 
 protected:
   ElastixRegistrationMethod();
@@ -255,10 +288,6 @@ protected:
   MakeOutput(DataObjectPointerArraySizeType idx) override;
 
 private:
-  ElastixRegistrationMethod(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** MakeUniqueName. */
   std::string
   MakeUniqueName(const DataObjectIdentifierType & key);
@@ -275,19 +304,29 @@ private:
   void
   RemoveInputsOfType(const DataObjectIdentifierType & inputName);
 
-  std::string m_InitialTransformParameterFileName;
-  std::string m_FixedPointSetFileName;
-  std::string m_MovingPointSetFileName;
+  /** Private using-declaration, just to avoid GCC compilation warnings: '...' was hidden [-Woverloaded-virtual] */
+  using Superclass::SetInput;
 
-  std::string m_OutputDirectory;
-  std::string m_LogFileName;
+  using ElastixTransformBaseType = elx::TransformBase<elx::ElastixTemplate<TFixedImage, TMovingImage>>;
 
-  bool m_LogToConsole;
-  bool m_LogToFile;
+  SmartPointer<const elx::ElastixMain> m_ElastixMain{ nullptr };
 
-  int m_NumberOfThreads;
+  std::string m_InitialTransformParameterFileName{};
+  std::string m_FixedPointSetFileName{};
+  std::string m_MovingPointSetFileName{};
 
-  unsigned int m_InputUID;
+  std::string m_OutputDirectory{};
+  std::string m_LogFileName{};
+
+  bool m_EnableOutput{ true };
+  bool m_LogToConsole{ false };
+  bool m_LogToFile{ false };
+
+  ElastixLogLevel m_LogLevel{};
+
+  int m_NumberOfThreads{ 0 };
+
+  unsigned int m_InputUID{ 0 };
 };
 
 } // namespace itk

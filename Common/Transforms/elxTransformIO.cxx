@@ -26,7 +26,7 @@
 #include "elxConfiguration.h"
 #include "elxSupportedImageDimensions.h"
 
-#include "xoutmain.h"
+#include "elxlog.h"
 
 #include "itkAdvancedBSplineDeformableTransformBase.h"
 
@@ -196,7 +196,7 @@ elastix::TransformIO::Write(const itk::TransformBase & itkTransform, const std::
   }
   catch (const std::exception & stdException)
   {
-    xl::xout["error"] << "Error trying to write " << fileName << ":\n" << stdException.what() << std::endl;
+    log::error(std::ostringstream{} << "Error trying to write " << fileName << ":\n" << stdException.what());
   }
 }
 
@@ -220,8 +220,8 @@ elastix::TransformIO::Read(const std::string & fileName)
 
 
 std::string
-elastix::TransformIO::MakeDeformationFieldFileName(Configuration &     configuration,
-                                                   const std::string & transformParameterFileName)
+elastix::TransformIO::MakeDeformationFieldFileName(const Configuration & configuration,
+                                                   const std::string &   transformParameterFileName)
 {
   // Get the last part of the filename of the transformParameter-file,
   // which is going to be part of the filename of the deformationField image.

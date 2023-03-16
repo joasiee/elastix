@@ -43,6 +43,8 @@ class ITK_TEMPLATE_EXPORT WeightedCombinationTransform
   : public AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(WeightedCombinationTransform);
+
   /** Standard class typedefs. */
   using Self = WeightedCombinationTransform;
   using Superclass = AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>;
@@ -86,7 +88,7 @@ public:
 
   /**  Method to transform a point. */
   OutputPointType
-  TransformPoint(const InputPointType & ipp) const override;
+  TransformPoint(const InputPointType & inputPoint) const override;
 
   /** These vector transforms are not implemented for this transform. */
   OutputVectorType
@@ -119,7 +121,7 @@ public:
    * by reference, which makes it thread-safe, unlike the normal
    * GetJacobian function. */
   void
-  GetJacobian(const InputPointType & ipp, JacobianType & jac, NonZeroJacobianIndicesType & nzji) const override;
+  GetJacobian(const InputPointType & inputPoint, JacobianType & jac, NonZeroJacobianIndicesType & nzji) const override;
 
   /** Set the parameters. Computes the sum of weights (which is
    * the normalization term). And checks if the number of parameters
@@ -184,21 +186,21 @@ public:
 
   /** Must be provided. */
   void
-  GetSpatialJacobian(const InputPointType & ipp, SpatialJacobianType & sj) const override
+  GetSpatialJacobian(const InputPointType & inputPoint, SpatialJacobianType & sj) const override
   {
     itkExceptionMacro(<< "Not implemented for WeightedCombinationTransform");
   }
 
 
   void
-  GetSpatialHessian(const InputPointType & ipp, SpatialHessianType & sh) const override
+  GetSpatialHessian(const InputPointType & inputPoint, SpatialHessianType & sh) const override
   {
     itkExceptionMacro(<< "Not implemented for WeightedCombinationTransform");
   }
 
 
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override
   {
@@ -207,7 +209,7 @@ public:
 
 
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                SpatialJacobianType &           sj,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override
@@ -217,7 +219,7 @@ public:
 
 
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override
   {
@@ -226,7 +228,7 @@ public:
 
 
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               SpatialHessianType &           sh,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override
@@ -239,18 +241,14 @@ protected:
   WeightedCombinationTransform();
   ~WeightedCombinationTransform() override = default;
 
-  TransformContainerType m_TransformContainer;
-  double                 m_SumOfWeights;
+  TransformContainerType m_TransformContainer{};
+  double                 m_SumOfWeights{};
 
   /** Precomputed nonzero Jacobian indices (simply all params) */
-  NonZeroJacobianIndicesType m_NonZeroJacobianIndices;
+  NonZeroJacobianIndicesType m_NonZeroJacobianIndices{};
 
 private:
-  WeightedCombinationTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  bool m_NormalizeWeights;
+  bool m_NormalizeWeights{};
 };
 
 } // end namespace itk

@@ -39,16 +39,14 @@
 std::string
 GetHelpString()
 {
-  std::stringstream ss;
-  ss << "Usage:\n"
-     << "elxTransformParametersCompare\n"
-     << "  -test      transform parameters file to test against baseline\n"
-     << "  -base      baseline transform parameters filename\n"
-     << "  [-mask]    mask image, only supported for the B-spline\n"
-     //<< "  [-t]       intensity difference threshold, default 0\n"
-     << "  [-a]       allowable tolerance (), default 1e-6\n"
-     << "Computes (test - base) / base.";
-  return ss.str();
+  return "Usage:\n"
+         "elxTransformParametersCompare\n"
+         "  -test      transform parameters file to test against baseline\n"
+         "  -base      baseline transform parameters filename\n"
+         "  [-mask]    mask image, only supported for the B-spline\n"
+         //<< "  [-t]       intensity difference threshold, default 0\n"
+         "  [-a]       allowable tolerance (), default 1e-6\n"
+         "Computes (test - base) / base.";
 
 } // end GetHelpString()
 
@@ -71,10 +69,8 @@ main(int argc, char ** argv)
   using OriginType = CoefficientImageType::PointType;
   using DirectionType = CoefficientImageType::DirectionType;
   using IteratorType = itk::ImageRegionIteratorWithIndex<CoefficientImageType>;
-  using WriterType = itk::ImageFileWriter<CoefficientImageType>;
 
   using MaskImageType = itk::Image<unsigned char, ITK_TEST_DIMENSION_MAX>;
-  using MaskReaderType = itk::ImageFileReader<MaskImageType>;
   using MaskIteratorType = itk::ImageRegionIteratorWithIndex<MaskImageType>;
 
   /** Create command line argument parser. */
@@ -133,7 +129,7 @@ main(int argc, char ** argv)
   {
     parameterFileParser->ReadParameterFile();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
     std::cerr << "Error during reading test transform parameters: " << err << std::endl;
     return EXIT_FAILURE;
@@ -152,7 +148,7 @@ main(int argc, char ** argv)
   {
     parameterFileParser->ReadParameterFile();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
     std::cerr << "Error during reading baseline transform parameters: " << err << std::endl;
     return EXIT_FAILURE;
@@ -218,8 +214,7 @@ main(int argc, char ** argv)
     gridSpacing.Fill(1.0);
     OriginType gridOrigin;
     gridOrigin.Fill(0.0);
-    DirectionType gridDirection;
-    gridDirection.SetIdentity();
+    auto gridDirection = DirectionType::GetIdentity();
     for (unsigned int i = 0; i < dimension; ++i)
     {
       config->ReadParameter(gridSize[i], "GridSize", i, true, dummyErrorMessage);
@@ -248,10 +243,7 @@ main(int argc, char ** argv)
     MaskIteratorType       itM;
     if (!maskFileName.empty())
     {
-      auto maskReader = MaskReaderType::New();
-      maskReader->SetFileName(maskFileName);
-      maskReader->Update();
-      maskImage = maskReader->GetOutput();
+      maskImage = itk::ReadImage<MaskImageType>(maskFileName);
 
       itM = MaskIteratorType(maskImage, maskImage->GetLargestPossibleRegion());
     }
@@ -325,14 +317,11 @@ main(int argc, char ** argv)
     /** Write the difference image. */
     if (diffNormNormalized > 1e-10)
     {
-      auto writer = WriterType::New();
-      writer->SetFileName(diffImageFileName);
-      writer->SetInput(coefImage);
       try
       {
-        writer->Write();
+        itk::WriteImage(coefImage, diffImageFileName);
       }
-      catch (itk::ExceptionObject & err)
+      catch (const itk::ExceptionObject & err)
       {
         std::cerr << "Error during writing difference image: " << err << std::endl;
         return EXIT_FAILURE;

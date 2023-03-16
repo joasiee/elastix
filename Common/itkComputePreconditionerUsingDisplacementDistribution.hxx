@@ -87,7 +87,7 @@ template <class TFixedImage, class TTransform>
 void
 ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::ComputeForBSplineOnly(
   const ParametersType & mu,
-  const double &         delta,
+  const double           delta,
   double &               maxJJ,
   ParametersType &       preconditioner)
 {
@@ -205,7 +205,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   for (iter = begin; iter != end; ++iter)
   {
     /** Read fixed coordinates and get Jacobian. */
-    const FixedImagePointType & point = (*iter).Value().m_ImageCoordinates;
+    const FixedImagePointType & point = iter->Value().m_ImageCoordinates;
     this->m_Transform->GetJacobian(point, jacj, jacind);
 
     /** Compute the product jac_j * gradient. */
@@ -317,14 +317,6 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
       ++counter_tmp;
     }
 
-#if 0
-    elxout << std::scientific;
-    elxout << "The preconditioner before interpolation: [ ";
-    //elxout << sigma << " ";
-    elxout << preconditioner[i] << " ";
-    elxout << "]" << std::endl;
-    elxout << std::fixed;
-#endif
   } // end loop over localStepSize vector
 
   if (counter_tmp > 0)
@@ -395,7 +387,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   for (iter = begin; iter != end; ++iter)
   {
     /** Read fixed coordinates and get Jacobian. */
-    const FixedImagePointType & point = (*iter).Value().m_ImageCoordinates;
+    const FixedImagePointType & point = iter->Value().m_ImageCoordinates;
     this->m_Transform->GetJacobian(point, jacj, jacind);
 
     /** Compute 1st part of JJ: ||J_j||_F^2. */
@@ -558,20 +550,6 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   /** Constrained the condition number into a given range, here we first try kappa = 2. */
   double conditionNumber = maxEigenvalue / minEigenvalue;
 
-#if 1
-  elxout << std::scientific;
-  elxout << "The max eigen value is: [ ";
-  elxout << maxEigenvalue << " ";
-  elxout << "]" << std::endl;
-  elxout << "The min eigen value is: [ ";
-  elxout << minEigenvalue << " ";
-  elxout << "]" << std::endl;
-  elxout << "The condition number before constraints is: [ ";
-  elxout << conditionNumber << " ";
-  elxout << "]" << std::endl;
-  elxout << std::fixed;
-#endif
-
   if (transformIsBSpline && conditionNumber > this->m_ConditionNumber)
   {
     minEigenvalue = maxEigenvalue / this->m_ConditionNumber;
@@ -636,7 +614,7 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
   for (iter = begin; iter != end; ++iter)
   {
     /** Read fixed coordinates and get Jacobian. */
-    const FixedImagePointType & point = (*iter).Value().m_ImageCoordinates;
+    const FixedImagePointType & point = iter->Value().m_ImageCoordinates;
     this->m_Transform->GetJacobian(point, jacj, jacind);
 
     /** Compute 1st part of JJ: ||J_j||_F^2. */
@@ -674,16 +652,6 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
     }
   }
 
-#if 0
-  elxout << std::scientific;
-  elxout << "The max eigen value is: [ ";
-  elxout << maxEigenvalue << " ";
-  elxout << "]" << std::endl;
-  elxout << "The min eigen value is: [ ";
-  elxout << minEigenvalue << " ";
-  elxout << "]" << std::endl;
-#endif
-
   /** Condition number check. */
   double conditionNumber = maxEigenvalue / minEigenvalue;
 
@@ -699,13 +667,6 @@ ComputePreconditionerUsingDisplacementDistribution<TFixedImage, TTransform>::Com
     }
   }
 
-#if 0
-  elxout << std::scientific;
-  elxout << "The condition number after constraints is: [ ";
-  elxout << maxEigenvalue / minEigenvalue << " ";
-  elxout << "]" << std::endl;
-  elxout << std::fixed;
-#endif
 } // end ComputeJacobiTypePreconditioner()
 
 

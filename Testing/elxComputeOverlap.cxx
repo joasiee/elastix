@@ -35,17 +35,15 @@
 std::string
 GetHelpString()
 {
-  std::stringstream ss;
-  ss << "Usage:\n"
-     << "elxComputeOverlap\n"
-     << "This program computes the overlap of two images.\n"
-     << "The results is computed as:\n"
-     << "    2 * L1( im1 AND im2 )\n"
-     << "  ------------------------\n"
-     << "    L1( im1 ) + L1( im2 )\n\n"
-     << "  -in      inputFilename1 inputFilename2"; // << std::endl
-                                                    //    << "Supported: 2D, 3D, (unsigned) char, (unsigned) short";
-  return ss.str();
+  return "Usage:\n"
+         "elxComputeOverlap\n"
+         "This program computes the overlap of two images.\n"
+         "The results is computed as:\n"
+         "    2 * L1( im1 AND im2 )\n"
+         "  ------------------------\n"
+         "    L1( im1 ) + L1( im2 )\n\n"
+         "  -in      inputFilename1 inputFilename2";
+  // "Supported: 2D, 3D, (unsigned) char, (unsigned) short";
 
 } // end GetHelpString()
 
@@ -92,29 +90,25 @@ main(int argc, char ** argv)
 
   /** Typedefs. */
   using ImageType = itk::Image<PixelType, Dimension>;
-  using ImageReaderType = itk::ImageFileReader<ImageType>;
-  using ImageReaderPointer = ImageReaderType::Pointer;
   using AndFilterType = itk::AndImageFilter<ImageType, ImageType, ImageType>;
   using AndFilterPointer = AndFilterType::Pointer;
   using IteratorType = itk::ImageRegionConstIterator<ImageType>;
 
-  /** Create readers and an AND filter. */
-  ImageReaderPointer reader1 = ImageReaderType::New();
-  reader1->SetFileName(inputFileNames[0]);
-  ImageReaderPointer reader2 = ImageReaderType::New();
-  reader2->SetFileName(inputFileNames[1]);
   AndFilterPointer ANDFilter = AndFilterType::New();
-  ANDFilter->SetInput1(reader2->GetOutput());
-  ANDFilter->SetInput2(reader1->GetOutput());
-  // finalANDFilter->SetCoordinateTolerance( tolerance );
-  // finalANDFilter->SetDirectionTolerance( tolerance );
 
   /** Do the AND operation. */
   try
   {
+    const auto image1 = itk::ReadImage<ImageType>(inputFileNames[0]);
+    const auto image2 = itk::ReadImage<ImageType>(inputFileNames[1]);
+    ANDFilter->SetInput1(image1);
+    ANDFilter->SetInput2(image2);
+    // finalANDFilter->SetCoordinateTolerance( tolerance );
+    // finalANDFilter->SetDirectionTolerance( tolerance );
+
     ANDFilter->Update();
   }
-  catch (itk::ExceptionObject & excp)
+  catch (const itk::ExceptionObject & excp)
   {
     std::cerr << excp << std::endl;
     return EXIT_FAILURE;

@@ -27,21 +27,18 @@ namespace ITKGPUMatrixOffsetTransformBase
 typedef struct
 {
   cl_float matrix;
-  cl_float inverse_matrix;
   cl_float offset;
 } GPUMatrixOffsetTransformBase1D;
 
 typedef struct
 {
   cl_float4 matrix;
-  cl_float4 inverse_matrix;
   cl_float2 offset;
 } GPUMatrixOffsetTransformBase2D;
 
 typedef struct
 {
-  cl_float16 matrix;         // OpenCL does not have float9
-  cl_float16 inverse_matrix; // OpenCL does not have float9
+  cl_float16 matrix; // OpenCL does not have float9
   cl_float3  offset;
 } GPUMatrixOffsetTransformBase3D;
 
@@ -235,7 +232,6 @@ GPUMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::
       GPUMatrixOffsetTransformBase1D transformBase;
       SetMatrix1<ScalarType>(GetCPUMatrix(), transformBase.matrix, odim, idim);
       SetOffset1<ScalarType>(GetCPUOffset(), transformBase.offset, odim);
-      SetMatrix1<ScalarType>(GetCPUInverseMatrix(), transformBase.inverse_matrix, idim, odim);
       this->m_ParametersDataManager->SetCPUBufferPointer(&transformBase);
     }
     break;
@@ -244,7 +240,6 @@ GPUMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::
       GPUMatrixOffsetTransformBase2D transformBase;
       SetMatrix2<ScalarType>(GetCPUMatrix(), transformBase.matrix, odim, idim);
       SetOffset2<ScalarType>(GetCPUOffset(), transformBase.offset, odim);
-      SetMatrix2<ScalarType>(GetCPUInverseMatrix(), transformBase.inverse_matrix, idim, odim);
       this->m_ParametersDataManager->SetCPUBufferPointer(&transformBase);
     }
     break;
@@ -253,7 +248,6 @@ GPUMatrixOffsetTransformBase<TScalarType, NInputDimensions, NOutputDimensions>::
       GPUMatrixOffsetTransformBase3D transformBase;
       SetMatrix3<ScalarType>(GetCPUMatrix(), transformBase.matrix, odim, idim);
       SetOffset3<ScalarType>(GetCPUOffset(), transformBase.offset, odim);
-      SetMatrix3<ScalarType>(GetCPUInverseMatrix(), transformBase.inverse_matrix, idim, odim);
       this->m_ParametersDataManager->SetCPUBufferPointer(&transformBase);
     }
     break;

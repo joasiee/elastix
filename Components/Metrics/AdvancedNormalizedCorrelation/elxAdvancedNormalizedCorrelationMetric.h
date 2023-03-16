@@ -47,6 +47,8 @@ class ITK_TEMPLATE_EXPORT AdvancedNormalizedCorrelationMetric final
   , public MetricBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedNormalizedCorrelationMetric);
+
   /** Standard ITK-stuff. */
   using Self = AdvancedNormalizedCorrelationMetric;
   using Superclass1 =
@@ -147,12 +149,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  AdvancedNormalizedCorrelationMetric(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

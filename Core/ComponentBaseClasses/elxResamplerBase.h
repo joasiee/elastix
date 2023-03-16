@@ -23,6 +23,7 @@
 
 #include "elxBaseComponentSE.h"
 #include "itkResampleImageFilter.h"
+#include "itkCastImageFilter.h"
 #include "elxProgressCommand.h"
 
 namespace elastix
@@ -76,6 +77,8 @@ template <class TElastix>
 class ITK_TEMPLATE_EXPORT ResamplerBase : public BaseComponentSE<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ResamplerBase);
+
   /** Standard ITK stuff. */
   using Self = ResamplerBase;
   using Superclass = BaseComponentSE<TElastix>;
@@ -109,9 +112,6 @@ public:
 
   /** Typedef that is used in the elastix dll version. */
   using ParameterMapType = typename ElastixType::ParameterMapType;
-
-  /** Typedef for the ProgressCommand. */
-  using ProgressCommandType = elx::ProgressCommand;
 
   /** Get the ImageDimension. */
   itkStaticConstMacro(ImageDimension, unsigned int, OutputImageType::ImageDimension);
@@ -174,19 +174,15 @@ public:
 
   /** Function to write transform-parameters to a file. */
   void
-  WriteToFile(xl::xoutsimple & transformationParameterInfo) const;
+  WriteToFile(std::ostream & transformationParameterInfo) const;
 
   /** Function to create transform-parameters map. */
   void
   CreateTransformParametersMap(ParameterMapType & parameterMap) const;
 
   /** Function to perform resample and write the result output image to a file. */
-  virtual void
-  ResampleAndWriteResultImage(const char * filename, const bool & showProgress = true);
-
-  /** Function to write the result output image to a file. */
-  virtual void
-  WriteResultImage(OutputImageType * imageimage, const char * filename, const bool & showProgress = true);
+  void
+  ResampleAndWriteResultImage(const char * filename, const bool showProgress);
 
   /** Function to create the result image in the format of an itk::Image. */
   virtual void
@@ -194,16 +190,13 @@ public:
 
 protected:
   /** The constructor. */
-  ResamplerBase();
+  ResamplerBase() = default;
   /** The destructor. */
   ~ResamplerBase() override = default;
 
   /** Method that sets the transform, the interpolator and the inputImage. */
   virtual void
   SetComponents();
-
-  /** Variable that defines to print the progress or not. */
-  bool m_ShowProgress;
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
@@ -214,11 +207,9 @@ private:
     return {};
   }
 
-  /** The deleted copy constructor. */
-  ResamplerBase(const Self &) = delete;
-  /** The deleted assignment operator. */
+  /** Function to write the result output image to a file. */
   void
-  operator=(const Self &) = delete;
+  WriteResultImage(OutputImageType * imageimage, const char * filename, const bool showProgress);
 
   /** Release memory. */
   void

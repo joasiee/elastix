@@ -41,6 +41,8 @@ class ITK_TEMPLATE_EXPORT ComputePreconditionerUsingDisplacementDistribution
   : public ComputeDisplacementDistribution<TFixedImage, TTransform>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ComputePreconditionerUsingDisplacementDistribution);
+
   /** Standard ITK.*/
   using Self = ComputePreconditionerUsingDisplacementDistribution;
   using Superclass = ComputeDisplacementDistribution<TFixedImage, TTransform>;
@@ -98,11 +100,8 @@ public:
   /** The main function that performs the computation.
    * B-spline specific thing we tried. Can be removed later.
    */
-  virtual void
-  ComputeForBSplineOnly(const ParametersType & mu,
-                        const double &         delta,
-                        double &               maxJJ,
-                        ParametersType &       preconditioner);
+  void
+  ComputeForBSplineOnly(const ParametersType & mu, const double delta, double & maxJJ, ParametersType & preconditioner);
 
   /** The main function that performs the computation.
    * The aims to be a generic function, working for all transformations.
@@ -139,14 +138,9 @@ protected:
   using typename Superclass::CoordinateRepresentationType;
   using typename Superclass::NumberOfParametersType;
 
-  double m_MaximumStepLength;
-  double m_RegularizationKappa;
-  double m_ConditionNumber;
-
-private:
-  ComputePreconditionerUsingDisplacementDistribution(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  double m_MaximumStepLength{};
+  double m_RegularizationKappa{};
+  double m_ConditionNumber{};
 };
 
 } // end namespace itk

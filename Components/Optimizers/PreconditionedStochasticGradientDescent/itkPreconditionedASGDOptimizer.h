@@ -70,6 +70,8 @@ namespace itk
 class PreconditionedASGDOptimizer : public StandardGradientDescentOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(PreconditionedASGDOptimizer);
+
   /** Standard ITK.*/
   using Self = PreconditionedASGDOptimizer;
   using Superclass = StandardGradientDescentOptimizer;
@@ -129,15 +131,11 @@ protected:
   UpdateCurrentTime() override;
 
   /** The PreviousGradient, necessary for the CruzAcceleration */
-  DerivativeType m_PreviousSearchDirection;
-  ParametersType m_PreconditionVector;
-  std::string    m_StepSizeStrategy;
+  DerivativeType m_PreviousSearchDirection{};
+  ParametersType m_PreconditionVector{};
+  std::string    m_StepSizeStrategy{};
 
 private:
-  PreconditionedASGDOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Settings */
   bool   m_UseAdaptiveStepSizes{ true };
   double m_SigmoidMax{ 1.0 };

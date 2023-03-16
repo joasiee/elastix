@@ -93,9 +93,8 @@ TRANSFORMIX::TransformImage(ImagePointer                    inputImage,
   using TransformixMainPointer = TransformixMainType::Pointer;
   using ArgumentMapType = TransformixMainType::ArgumentMapType;
   using ArgumentMapEntryType = ArgumentMapType::value_type;
-  using ElastixMainType = elx::ElastixMain;
-  using DataObjectContainerType = ElastixMainType::DataObjectContainerType;
-  using DataObjectContainerPointer = ElastixMainType::DataObjectContainerPointer;
+  using DataObjectContainerType = elx::MainBase::DataObjectContainerType;
+  using DataObjectContainerPointer = elx::MainBase::DataObjectContainerPointer;
 
   /** Declare an instance of the Transformix class. */
   TransformixMainPointer transformix;
@@ -146,9 +145,9 @@ TRANSFORMIX::TransformImage(ImagePointer                    inputImage,
   else if (performCout)
   {
     /** Duplicate arguments. */
-    std::cerr << "WARNING!" << std::endl;
-    std::cerr << "Argument " << key.c_str() << "is only required once." << std::endl;
-    std::cerr << "Arguments " << key.c_str() << " " << value.c_str() << "are ignored" << std::endl;
+    std::cerr << "WARNING!\n"
+              << "Argument " << key.c_str() << "is only required once.\n"
+              << "Arguments " << key.c_str() << " " << value.c_str() << "are ignored" << std::endl;
   }
 
   if (performLogging)
@@ -159,14 +158,13 @@ TRANSFORMIX::TransformImage(ImagePointer                    inputImage,
     {
       if (performCout)
       {
-        std::cerr << "ERROR: the output directory does not exist." << std::endl;
-        std::cerr << "You are responsible for creating it." << std::endl;
+        std::cerr << "ERROR: the output directory does not exist.\n"
+                  << "You are responsible for creating it." << std::endl;
       }
       return (-2);
     }
     else
     {
-      /** Setup xout. */
       if (performLogging)
       {
         logFileName = outFolder + "transformix.log";
@@ -177,23 +175,23 @@ TRANSFORMIX::TransformImage(ImagePointer                    inputImage,
   /** The argv0 argument, required for finding the component.dll/so's. */
   argMap.insert(ArgumentMapEntryType("-argv0", "transformix"));
 
-  /** Setup xout. */
-  const elx::xoutManager manager{};
-  int                    returndummy2 = elx::xoutSetup(logFileName.c_str(), performLogging, performCout);
+  /** Setup the log system. */
+  const elx::log::guard logGuard{};
+  int                   returndummy2 = elx::log::setup(logFileName, performLogging, performCout) ? 0 : 1;
   if (returndummy2 && performCout)
   {
     if (performCout)
     {
-      std::cerr << "ERROR while setting up xout." << std::endl;
+      std::cerr << "ERROR while setting up the log system." << std::endl;
     }
     return (returndummy2);
   }
-  elxout << std::endl;
+  elx::log::info("");
 
   /** Declare a timer, start it and print the start time. */
   itk::TimeProbe totaltimer;
   totaltimer.Start();
-  elxout << "transformix is started at " << GetCurrentDateAndTime() << ".\n" << std::endl;
+  elx::log::info(std::ostringstream{} << "transformix is started at " << GetCurrentDateAndTime() << ".\n");
 
   /**
    * ********************* START TRANSFORMATION *******************
@@ -214,7 +212,7 @@ TRANSFORMIX::TransformImage(ImagePointer                    inputImage,
   /** Check if transformix run without errors. */
   if (returndummy != 0)
   {
-    xl::xout["error"] << "Errors occurred" << std::endl;
+    elx::log::error("Errors occurred");
     return returndummy;
   }
 
@@ -223,8 +221,8 @@ TRANSFORMIX::TransformImage(ImagePointer                    inputImage,
 
   /** Stop timer and print it. */
   totaltimer.Stop();
-  elxout << "\nTransformix has finished at " << GetCurrentDateAndTime() << "." << std::endl;
-  elxout << "Elapsed time: " << ConvertSecondsToDHMS(totaltimer.GetMean(), 1) << ".\n" << std::endl;
+  elx::log::info(std::ostringstream{} << "\nTransformix has finished at " << GetCurrentDateAndTime() << ".\n"
+                                      << "Elapsed time: " << ConvertSecondsToDHMS(totaltimer.GetMean(), 1) << ".\n");
 
   this->m_ResultImage = resultImageContainer->ElementAt(0);
 

@@ -36,6 +36,8 @@ template <class TListSample>
 class ITK_TEMPLATE_EXPORT ANNkDTree : public BinaryANNTreeBase<TListSample>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ANNkDTree);
+
   /** Standard itk. */
   using Self = ANNkDTree;
   using Superclass = BinaryANNTreeBase<TListSample>;
@@ -103,14 +105,9 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Member variables. */
-  ANNkDTreeType *   m_ANNTree;
-  SplittingRuleType m_SplittingRule;
-  BucketSizeType    m_BucketSize;
-
-private:
-  ANNkDTree(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  ANNkDTreeType *   m_ANNTree{};
+  SplittingRuleType m_SplittingRule{};
+  BucketSizeType    m_BucketSize{};
 };
 
 } // end namespace itk

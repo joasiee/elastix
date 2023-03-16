@@ -35,10 +35,11 @@
 #ifndef itkElastixRegistrationMethod_hxx
 #define itkElastixRegistrationMethod_hxx
 
-#include "elxPixelType.h"
+#include "elxPixelTypeToString.h"
 #include "itkElastixRegistrationMethod.h"
 
 #include <algorithm> // For find.
+#include <memory>    // For unique_ptr.
 
 namespace itk
 {
@@ -52,22 +53,10 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::ElastixRegistrationMethod(
   this->AddRequiredInputName("MovingImage", 1);
   this->AddRequiredInputName("ParameterObject", 2);
 
-  this->m_InitialTransformParameterFileName = "";
-  this->m_FixedPointSetFileName = "";
-  this->m_MovingPointSetFileName = "";
-
-  this->m_OutputDirectory = "";
-  this->m_LogFileName = "";
-
-  this->m_LogToConsole = false;
-  this->m_LogToFile = false;
-
-  this->m_NumberOfThreads = 0;
-
-  ParameterObjectPointer defaultParameterObject = elastix::ParameterObject::New();
-  defaultParameterObject->AddParameterMap(elastix::ParameterObject::GetDefaultParameterMap("translation"));
-  defaultParameterObject->AddParameterMap(elastix::ParameterObject::GetDefaultParameterMap("affine"));
-  defaultParameterObject->AddParameterMap(elastix::ParameterObject::GetDefaultParameterMap("bspline"));
+  ParameterObjectPointer defaultParameterObject = elx::ParameterObject::New();
+  defaultParameterObject->AddParameterMap(elx::ParameterObject::GetDefaultParameterMap("translation"));
+  defaultParameterObject->AddParameterMap(elx::ParameterObject::GetDefaultParameterMap("affine"));
+  defaultParameterObject->AddParameterMap(elx::ParameterObject::GetDefaultParameterMap("bspline"));
   defaultParameterObject->SetParameter("FixedInternalImagePixelType", "float");
 #ifdef ELASTIX_USE_OPENCL
   defaultParameterObject->SetParameter("Resampler", "OpenCLResampler");
@@ -79,8 +68,6 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::ElastixRegistrationMethod(
   // defaultParameterObject->SetParameter( "OpenCLMovingGenericImagePyramidUseOpenCL", "true" );
 #endif
   this->SetParameterObject(defaultParameterObject);
-
-  this->m_InputUID = 0;
 }
 
 
@@ -90,7 +77,7 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::GenerateData()
 {
   // Force compiler to instantiate the image dimensions, otherwise we may get
   //   Undefined symbols for architecture x86_64:
-  //     "elastix::ElastixRegistrationMethod<itk::Image<float, 2u> >::FixedImageDimension"
+  //     "elx::ElastixRegistrationMethod<itk::Image<float, 2u> >::FixedImageDimension"
   // on some platforms.
   const unsigned int fixedImageDimension = FixedImageDimension;
   const unsigned int movingImageDimension = MovingImageDimension;
@@ -105,46 +92,45 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::GenerateData()
   FlatDirectionCosinesType   fixedImageOriginalDirection;
 
   // Split inputs into separate containers
-  const NameArrayType inputNames = this->GetInputNames();
-  for (unsigned int i = 0; i < inputNames.size(); ++i)
+  for (const auto & inputName : this->GetInputNames())
   {
-    if (this->IsInputOfType("FixedImage", inputNames[i]))
+    if (this->IsInputOfType("FixedImage", inputName))
     {
-      fixedImageContainer->push_back(this->ProcessObject::GetInput(inputNames[i]));
+      fixedImageContainer->push_back(this->ProcessObject::GetInput(inputName));
       continue;
     }
 
-    if (this->IsInputOfType("MovingImage", inputNames[i]))
+    if (this->IsInputOfType("MovingImage", inputName))
     {
-      movingImageContainer->push_back(this->ProcessObject::GetInput(inputNames[i]));
+      movingImageContainer->push_back(this->ProcessObject::GetInput(inputName));
       continue;
     }
 
-    if (this->IsInputOfType("FixedMask", inputNames[i]))
+    if (this->IsInputOfType("FixedMask", inputName))
     {
       if (fixedMaskContainer.IsNull())
       {
         fixedMaskContainer = DataObjectContainerType::New();
       }
 
-      fixedMaskContainer->push_back(this->ProcessObject::GetInput(inputNames[i]));
+      fixedMaskContainer->push_back(this->ProcessObject::GetInput(inputName));
       continue;
     }
 
-    if (this->IsInputOfType("MovingMask", inputNames[i]))
+    if (this->IsInputOfType("MovingMask", inputName))
     {
       if (movingMaskContainer.IsNull())
       {
         movingMaskContainer = DataObjectContainerType::New();
       }
 
-      movingMaskContainer->push_back(this->ProcessObject::GetInput(inputNames[i]));
+      movingMaskContainer->push_back(this->ProcessObject::GetInput(inputName));
     }
   }
 
   // Set ParameterMap
   ParameterObjectPointer parameterObject =
-    itkDynamicCastInDebugMode<elastix::ParameterObject *>(this->ProcessObject::GetInput("ParameterObject"));
+    itkDynamicCastInDebugMode<elx::ParameterObject *>(this->ProcessObject::GetInput("ParameterObject"));
   ParameterMapVectorType parameterMapVector = parameterObject->GetParameterMap();
 
   if (parameterMapVector.empty())
@@ -155,25 +141,21 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::GenerateData()
   // Setup argument map
   ArgumentMapType argumentMap;
 
-  if (!this->m_InitialTransformParameterFileName.empty())
-  {
-    argumentMap.insert(ArgumentMapEntryType("-t0", this->m_InitialTransformParameterFileName));
-  }
+  const auto insertIfNotEmpty = [&argumentMap](const char * const argument, const std::string & fileName) {
+    if (!fileName.empty())
+    {
+      argumentMap.insert(ArgumentMapEntryType(argument, fileName));
+    }
+  };
 
-  if (!this->m_FixedPointSetFileName.empty())
-  {
-    argumentMap.insert(ArgumentMapEntryType("-fp", this->m_FixedPointSetFileName));
-  }
-
-  if (!this->m_MovingPointSetFileName.empty())
-  {
-    argumentMap.insert(ArgumentMapEntryType("-mp", this->m_MovingPointSetFileName));
-  }
+  insertIfNotEmpty("-t0", m_InitialTransformParameterFileName);
+  insertIfNotEmpty("-fp", m_FixedPointSetFileName);
+  insertIfNotEmpty("-mp", m_MovingPointSetFileName);
 
   // Setup output directory
-  if (this->GetOutputDirectory().empty())
+  if (m_OutputDirectory.empty())
   {
-    if (this->GetLogToFile())
+    if (m_LogToFile)
     {
       itkExceptionMacro("LogToFileOn() requires an output directory to be specified.")
     }
@@ -183,81 +165,76 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::GenerateData()
   }
   else
   {
-    if (!itksys::SystemTools::FileExists(this->GetOutputDirectory()))
+    if (!itksys::SystemTools::FileExists(m_OutputDirectory))
     {
-      itkExceptionMacro("Output directory \"" << this->GetOutputDirectory() << "\" does not exist.");
+      itkExceptionMacro("Output directory \"" << m_OutputDirectory << "\" does not exist.");
     }
 
-    if (this->GetOutputDirectory().back() != '/' && this->GetOutputDirectory().back() != '\\')
+    if (m_OutputDirectory.back() != '/' && m_OutputDirectory.back() != '\\')
     {
-      this->SetOutputDirectory(this->GetOutputDirectory() + "/");
+      this->SetOutputDirectory(m_OutputDirectory + "/");
     }
 
-    argumentMap.insert(ArgumentMapEntryType("-out", this->GetOutputDirectory()));
+    argumentMap.insert(ArgumentMapEntryType("-out", m_OutputDirectory));
   }
 
   // Setup log file
-  std::string logFileName;
-  if (this->GetLogToFile())
-  {
-    if (this->GetLogFileName().empty())
-    {
-      logFileName = this->GetOutputDirectory() + "elastix.log";
-    }
-    else
-    {
-      logFileName = this->GetOutputDirectory() + this->GetLogFileName();
-    }
-  }
+  const std::string logFileName = m_OutputDirectory + (m_LogFileName.empty() ? "elastix.log" : m_LogFileName);
 
   // Set Number of threads
-  if (this->m_NumberOfThreads > 0)
+  if (m_NumberOfThreads > 0)
   {
-    argumentMap.insert(ArgumentMapEntryType("-threads", std::to_string(this->m_NumberOfThreads)));
+    argumentMap.insert(ArgumentMapEntryType("-threads", std::to_string(m_NumberOfThreads)));
   }
 
-  // Setup xout
-  const elastix::xoutManager manager(logFileName, this->GetLogToFile(), this->GetLogToConsole());
+  // Setup logging.
+  const elx::log::guard logGuard(logFileName,
+                                 m_EnableOutput && m_LogToFile,
+                                 m_EnableOutput && m_LogToConsole,
+                                 static_cast<elastix::log::level>(m_LogLevel));
 
   // Run the (possibly multiple) registration(s)
   for (unsigned int i = 0; i < parameterMapVector.size(); ++i)
   {
+    auto & parameterMap = parameterMapVector[i];
+
     // Set image dimension from input images (overrides user settings)
-    parameterMapVector[i]["FixedImageDimension"] = ParameterValueVectorType(1, std::to_string(fixedImageDimension));
-    parameterMapVector[i]["MovingImageDimension"] = ParameterValueVectorType(1, std::to_string(movingImageDimension));
-    parameterMapVector[i]["ResultImagePixelType"] =
-      ParameterValueVectorType(1, elastix::PixelType<typename TFixedImage::PixelType>::ToString());
+    parameterMap["FixedImageDimension"] = ParameterValueVectorType(1, std::to_string(fixedImageDimension));
+    parameterMap["MovingImageDimension"] = ParameterValueVectorType(1, std::to_string(movingImageDimension));
+    parameterMap["ResultImagePixelType"] =
+      ParameterValueVectorType(1, elx::PixelTypeToString<typename TFixedImage::PixelType>());
 
     // Initial transform parameter files are handled via arguments and enclosing loop, not
     // InitialTransformParametersFileName
-    if (parameterMapVector[i].find("InitialTransformParametersFileName") != parameterMapVector[i].end())
+    if (parameterMap.find("InitialTransformParametersFileName") != parameterMap.end())
     {
-      parameterMapVector[i]["InitialTransformParametersFileName"] = ParameterValueVectorType(1, "NoInitialTransform");
+      parameterMap["InitialTransformParametersFileName"] = ParameterValueVectorType(1, "NoInitialTransform");
     }
 
     // Create new instance of ElastixMain
-    ElastixMainPointer elastix = ElastixMainType::New();
+    const auto elastixMain = elx::ElastixMain::New();
+    m_ElastixMain = elastixMain;
 
     // Set elastix levels
-    elastix->SetElastixLevel(i);
-    elastix->SetTotalNumberOfElastixLevels(parameterMapVector.size());
+    elastixMain->SetElastixLevel(i);
+    elastixMain->SetTotalNumberOfElastixLevels(parameterMapVector.size());
 
     // Set stuff we get from a previous registration
-    elastix->SetInitialTransform(transform);
-    elastix->SetFixedImageContainer(fixedImageContainer);
-    elastix->SetMovingImageContainer(movingImageContainer);
-    elastix->SetFixedMaskContainer(fixedMaskContainer);
-    elastix->SetMovingMaskContainer(movingMaskContainer);
-    elastix->SetResultImageContainer(resultImageContainer);
-    elastix->SetOriginalFixedImageDirectionFlat(fixedImageOriginalDirection);
+    elastixMain->SetInitialTransform(transform);
+    elastixMain->SetFixedImageContainer(fixedImageContainer);
+    elastixMain->SetMovingImageContainer(movingImageContainer);
+    elastixMain->SetFixedMaskContainer(fixedMaskContainer);
+    elastixMain->SetMovingMaskContainer(movingMaskContainer);
+    elastixMain->SetResultImageContainer(resultImageContainer);
+    elastixMain->SetOriginalFixedImageDirectionFlat(fixedImageOriginalDirection);
 
     // Start registration
     unsigned int isError = 0;
     try
     {
-      isError = elastix->Run(argumentMap, parameterMapVector[i]);
+      isError = elastixMain->Run(argumentMap, parameterMap);
     }
-    catch (itk::ExceptionObject & e)
+    catch (const itk::ExceptionObject & e)
     {
       itkExceptionMacro(<< "Errors occurred during registration: " << e.what());
     }
@@ -268,15 +245,15 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::GenerateData()
     }
 
     // Get stuff in order to put it in the next registration
-    transform = elastix->GetFinalTransform();
-    fixedImageContainer = elastix->GetFixedImageContainer();
-    movingImageContainer = elastix->GetMovingImageContainer();
-    fixedMaskContainer = elastix->GetFixedMaskContainer();
-    movingMaskContainer = elastix->GetMovingMaskContainer();
-    resultImageContainer = elastix->GetResultImageContainer();
-    fixedImageOriginalDirection = elastix->GetOriginalFixedImageDirectionFlat();
+    transform = elastixMain->GetFinalTransform();
+    fixedImageContainer = elastixMain->GetFixedImageContainer();
+    movingImageContainer = elastixMain->GetMovingImageContainer();
+    fixedMaskContainer = elastixMain->GetFixedMaskContainer();
+    movingMaskContainer = elastixMain->GetMovingMaskContainer();
+    resultImageContainer = elastixMain->GetResultImageContainer();
+    fixedImageOriginalDirection = elastixMain->GetOriginalFixedImageDirectionFlat();
 
-    transformParameterMapVector.push_back(elastix->GetTransformParametersMap());
+    transformParameterMapVector.push_back(elastixMain->GetTransformParametersMap());
     if (i > 0)
     {
       transformParameterMapVector[i]["InitialTransformParametersFileName"] =
@@ -284,7 +261,7 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::GenerateData()
     }
 
     // TODO: Fix elastix corrupting default pixel value parameter
-    transformParameterMapVector.back()["DefaultPixelValue"] = parameterMapVector[i]["DefaultPixelValue"];
+    transformParameterMapVector.back()["DefaultPixelValue"] = parameterMap["DefaultPixelValue"];
   } // End loop over registrations
 
   // Save result image
@@ -304,12 +281,12 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::GenerateData()
 
     if (writeResultImage)
     {
-      itkExceptionMacro("Errors occured during registration: Could not read result image.");
+      itkExceptionMacro("Errors occurred during registration: Could not read result image.");
     }
   }
 
   // Save parameter map
-  elastix::ParameterObject::Pointer transformParameterObject = elastix::ParameterObject::New();
+  elx::ParameterObject::Pointer transformParameterObject = elx::ParameterObject::New();
   transformParameterObject->SetParameterMap(transformParameterMapVector);
   this->SetNthOutput(1, transformParameterObject);
 }
@@ -393,7 +370,7 @@ ElastixRegistrationMethod<TFixedImage, TMovingImage>::MakeOutput(DataObjectPoint
 {
   if (idx == 1)
   {
-    elastix::ParameterObject::Pointer transformParameterObject = elastix::ParameterObject::New();
+    elx::ParameterObject::Pointer transformParameterObject = elx::ParameterObject::New();
     return transformParameterObject.GetPointer();
   }
   return Superclass::MakeOutput(idx);
@@ -413,7 +390,7 @@ template <typename TFixedImage, typename TMovingImage>
 void
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::AddFixedImage(TFixedImage * fixedImage)
 {
-  if (this->ProcessObject::GetInput("FixedImage") == ITK_NULLPTR)
+  if (this->ProcessObject::GetInput("FixedImage") == nullptr)
   {
     this->SetFixedImage(fixedImage);
   }
@@ -442,18 +419,17 @@ auto
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::GetFixedImage(const unsigned int index) const
   -> const FixedImageType *
 {
-  unsigned int  n = 0;
-  NameArrayType inputNames = this->GetInputNames();
-  for (unsigned int i = 0; i < inputNames.size(); ++i)
+  unsigned int n = 0;
+  for (const auto & inputName : this->GetInputNames())
   {
-    if (this->IsInputOfType("FixedImage", inputNames[i]))
+    if (this->IsInputOfType("FixedImage", inputName))
     {
       if (index == n)
       {
-        return itkDynamicCastInDebugMode<const TFixedImage *>(this->ProcessObject::GetInput(inputNames[i]));
+        return itkDynamicCastInDebugMode<const TFixedImage *>(this->ProcessObject::GetInput(inputName));
       }
 
-      n++;
+      ++n;
     }
   }
 
@@ -483,7 +459,7 @@ template <typename TFixedImage, typename TMovingImage>
 void
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::AddMovingImage(TMovingImage * movingImage)
 {
-  if (this->ProcessObject::GetInput("MovingImage") == ITK_NULLPTR)
+  if (this->ProcessObject::GetInput("MovingImage") == nullptr)
   {
     this->SetMovingImage(movingImage);
   }
@@ -512,18 +488,17 @@ auto
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::GetMovingImage(const unsigned int index) const
   -> const MovingImageType *
 {
-  unsigned int  n = 0;
-  NameArrayType inputNames = this->GetInputNames();
-  for (unsigned int i = 0; i < inputNames.size(); ++i)
+  unsigned int n = 0;
+  for (const auto & inputName : this->GetInputNames())
   {
-    if (this->IsInputOfType("MovingImage", inputNames[i]))
+    if (this->IsInputOfType("MovingImage", inputName))
     {
       if (index == n)
       {
-        return itkDynamicCastInDebugMode<const TMovingImage *>(this->ProcessObject::GetInput(inputNames[i]));
+        return itkDynamicCastInDebugMode<const TMovingImage *>(this->ProcessObject::GetInput(inputName));
       }
 
-      n++;
+      ++n;
     }
   }
 
@@ -570,18 +545,17 @@ auto
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::GetFixedMask(const unsigned int index) const
   -> const FixedMaskType *
 {
-  unsigned int  n = 0;
-  NameArrayType inputNames = this->GetInputNames();
-  for (unsigned int i = 0; i < inputNames.size(); ++i)
+  unsigned int n = 0;
+  for (const auto & inputName : this->GetInputNames())
   {
-    if (this->IsInputOfType("FixedMask", inputNames[i]))
+    if (this->IsInputOfType("FixedMask", inputName))
     {
       if (index == n)
       {
-        return itkDynamicCastInDebugMode<const FixedMaskType *>(this->ProcessObject::GetInput(inputNames[i]));
+        return itkDynamicCastInDebugMode<const FixedMaskType *>(this->ProcessObject::GetInput(inputName));
       }
 
-      n++;
+      ++n;
     }
   }
 
@@ -636,18 +610,17 @@ auto
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::GetMovingMask(const unsigned int index) const
   -> const MovingMaskType *
 {
-  unsigned int  n = 0;
-  NameArrayType inputNames = this->GetInputNames();
-  for (unsigned int i = 0; i < inputNames.size(); ++i)
+  unsigned int n = 0;
+  for (const auto & inputName : this->GetInputNames())
   {
-    if (this->IsInputOfType("MovingMask", inputNames[i]))
+    if (this->IsInputOfType("MovingMask", inputName))
     {
       if (index == n)
       {
-        return itkDynamicCastInDebugMode<const MovingMaskType *>(this->ProcessObject::GetInput(inputNames[i]));
+        return itkDynamicCastInDebugMode<const MovingMaskType *>(this->ProcessObject::GetInput(inputName));
       }
 
-      n++;
+      ++n;
     }
   }
 
@@ -731,7 +704,7 @@ template <typename TFixedImage, typename TMovingImage>
 void
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::SetLogFileName(const std::string logFileName)
 {
-  this->m_LogFileName = logFileName;
+  m_LogFileName = logFileName;
   this->LogToFileOn();
 }
 
@@ -740,7 +713,7 @@ template <typename TFixedImage, typename TMovingImage>
 void
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::RemoveLogFileName()
 {
-  this->m_LogFileName = "";
+  m_LogFileName = "";
   this->LogToFileOff();
 }
 
@@ -749,7 +722,7 @@ template <typename TFixedImage, typename TMovingImage>
 std::string
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::MakeUniqueName(const DataObjectIdentifierType & inputName)
 {
-  return inputName + std::to_string(this->m_InputUID++);
+  return inputName + std::to_string(m_InputUID++);
 }
 
 
@@ -767,13 +740,12 @@ unsigned int
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::GetNumberOfInputsOfType(
   const DataObjectIdentifierType & inputType) const
 {
-  unsigned int  n = 0;
-  NameArrayType inputNames = this->GetInputNames();
-  for (unsigned int i = 0; i < inputNames.size(); ++i)
+  unsigned int n = 0;
+  for (const auto & inputName : this->GetInputNames())
   {
-    if (this->IsInputOfType(inputType, inputNames[i]))
+    if (this->IsInputOfType(inputType, inputName))
     {
-      n++;
+      ++n;
     }
   }
 
@@ -785,16 +757,95 @@ template <typename TFixedImage, typename TMovingImage>
 void
 ElastixRegistrationMethod<TFixedImage, TMovingImage>::RemoveInputsOfType(const DataObjectIdentifierType & inputType)
 {
-  NameArrayType inputNames = this->GetInputNames();
-  for (unsigned int i = 0; i < inputNames.size(); ++i)
+  for (const auto & inputName : this->GetInputNames())
   {
-    if (this->IsInputOfType(inputType, inputNames[i]))
+    if (this->IsInputOfType(inputType, inputName))
     {
-      this->RemoveInput(inputNames[i]);
+      this->RemoveInput(inputName);
     }
   }
 }
 
+
+template <typename TFixedImage, typename TMovingImage>
+unsigned int
+ElastixRegistrationMethod<TFixedImage, TMovingImage>::GetNumberOfTransforms() const
+{
+  const auto * const transformContainer = m_ElastixMain->GetElastixBase().GetTransformContainer();
+
+  if ((transformContainer == nullptr) || transformContainer->empty())
+  {
+    return 0;
+  }
+
+  const auto * const elxTransformBase =
+    dynamic_cast<ElastixTransformBaseType *>(transformContainer->front().GetPointer());
+
+  return (elxTransformBase == nullptr) ? 0 : elxTransformBase->GetAsITKBaseType()->GetNumberOfTransforms();
+}
+
+
+template <typename TFixedImage, typename TMovingImage>
+auto
+ElastixRegistrationMethod<TFixedImage, TMovingImage>::GetNthTransform(const unsigned int n) const
+  -> SmartPointer<TransformType>
+{
+  const auto * const transformContainer = m_ElastixMain->GetElastixBase().GetTransformContainer();
+
+  if ((transformContainer == nullptr) || transformContainer->empty())
+  {
+    return nullptr;
+  }
+
+  const auto * const elxTransformBase =
+    dynamic_cast<ElastixTransformBaseType *>(transformContainer->front().GetPointer());
+
+  if (elxTransformBase == nullptr)
+  {
+    return nullptr;
+  }
+  return elxTransformBase->GetAsITKBaseType()->GetNthTransform(n);
+}
+
+
+template <typename TFixedImage, typename TMovingImage>
+auto
+ElastixRegistrationMethod<TFixedImage, TMovingImage>::GetCombinationTransform() const -> SmartPointer<TransformType>
+{
+  const auto * const transformContainer = m_ElastixMain->GetElastixBase().GetTransformContainer();
+
+  if ((transformContainer == nullptr) || transformContainer->empty())
+  {
+    return nullptr;
+  }
+
+  auto * const elxTransformBase = dynamic_cast<ElastixTransformBaseType *>(transformContainer->front().GetPointer());
+
+  if (elxTransformBase == nullptr)
+  {
+    return nullptr;
+  }
+  return elxTransformBase->GetAsITKBaseType();
+}
+
+
+template <typename TFixedImage, typename TMovingImage>
+auto
+ElastixRegistrationMethod<TFixedImage, TMovingImage>::ConvertToItkTransform(const TransformType & elxTransform)
+  -> SmartPointer<TransformType>
+{
+  const auto * const combinationTransform =
+    dynamic_cast<const itk::AdvancedCombinationTransform<double, FixedImageDimension> *>(&elxTransform);
+
+  const auto itkTransform = combinationTransform
+                              ? elx::TransformIO::ConvertToCompositionOfItkTransforms(*combinationTransform)
+                              : elx::TransformIO::ConvertToSingleItkTransform(elxTransform);
+  if (itkTransform)
+  {
+    return itkTransform;
+  }
+  itkGenericExceptionMacro("Failed to convert transform object " << elxTransform);
+}
 
 } // namespace itk
 

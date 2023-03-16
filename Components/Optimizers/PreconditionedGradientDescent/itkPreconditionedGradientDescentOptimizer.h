@@ -55,6 +55,8 @@ namespace itk
 class PreconditionedGradientDescentOptimizer : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(PreconditionedGradientDescentOptimizer);
+
   /** Standard class typedefs. */
   using Self = PreconditionedGradientDescentOptimizer;
   using Superclass = ScaledSingleValuedNonLinearOptimizer;
@@ -200,15 +202,15 @@ protected:
   using cholmod_l = int CInt; // change to UF_long if using;
 
   // made protected so subclass can access
-  DerivativeType    m_Gradient;
+  DerivativeType    m_Gradient{};
   double            m_LearningRate{ 1.0 };
   StopConditionType m_StopCondition{ MaximumNumberOfIterations };
-  DerivativeType    m_SearchDirection;
+  DerivativeType    m_SearchDirection{};
   double            m_LargestEigenValue{ 1.0 };
   double            m_ConditionNumber{ 1.0 };
   double            m_Sparsity{ 1.0 };
 
-  cholmod_common * m_CholmodCommon;
+  cholmod_common * m_CholmodCommon{};
   cholmod_factor * m_CholmodFactor{ nullptr };
   cholmod_sparse * m_CholmodGradient{ nullptr };
 
@@ -220,10 +222,6 @@ protected:
   CholmodSolve(const DerivativeType & gradient, DerivativeType & searchDirection, int solveType = CHOLMOD_A);
 
 private:
-  PreconditionedGradientDescentOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   bool   m_Stop{ false };
   double m_Value{ 0.0 };
 

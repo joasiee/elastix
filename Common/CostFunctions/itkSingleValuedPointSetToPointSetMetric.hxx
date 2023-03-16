@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkSingleValuedPointSetToPointSetMetric.txx,v $
-  Language:  C++
   Date:      $Date: 2009-01-26 21:45:56 $
   Version:   $Revision: 1.2 $
 
@@ -38,26 +37,6 @@
 
 namespace itk
 {
-
-/**
- * ******************* Constructor ***********************
- */
-
-template <class TFixedPointSet, class TMovingPointSet>
-SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::SingleValuedPointSetToPointSetMetric()
-{
-  this->m_FixedPointSet = nullptr;  // has to be provided by the user.
-  this->m_MovingPointSet = nullptr; // has to be provided by the user.
-  this->m_Transform = nullptr;      // has to be provided by the user.
-  this->m_FixedImageMask = nullptr;
-  this->m_MovingImageMask = nullptr;
-
-  this->m_NumberOfPointsCounted = 0;
-
-  this->m_UseMetricSingleThreaded = true;
-
-} // end Constructor
-
 
 /**
  * ******************* SetTransformParameters ***********************
@@ -101,16 +80,10 @@ SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>::Initializ
   }
 
   // If the PointSet is provided by a source, update the source.
-  if (this->m_MovingPointSet->GetSource())
-  {
-    this->m_MovingPointSet->GetSource()->Update();
-  }
+  this->m_MovingPointSet->UpdateSource();
 
   // If the point set is provided by a source, update the source.
-  if (this->m_FixedPointSet->GetSource())
-  {
-    this->m_FixedPointSet->GetSource()->Update();
-  }
+  this->m_FixedPointSet->UpdateSource();
 
 } // end Initialize()
 

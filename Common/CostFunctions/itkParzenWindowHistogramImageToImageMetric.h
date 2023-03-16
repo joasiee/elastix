@@ -20,6 +20,7 @@
 
 #include "itkAdvancedImageToImageMetric.h"
 #include "itkKernelFunctionBase2.h"
+#include <vector>
 
 
 namespace itk
@@ -75,6 +76,8 @@ class ITK_TEMPLATE_EXPORT ParzenWindowHistogramImageToImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ParzenWindowHistogramImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = ParzenWindowHistogramImageToImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -217,7 +220,7 @@ protected:
   ParzenWindowHistogramImageToImageMetric();
 
   /** The destructor. */
-  ~ParzenWindowHistogramImageToImageMetric() override;
+  ~ParzenWindowHistogramImageToImageMetric() override = default;
 
   /** Print Self. */
   void
@@ -266,71 +269,44 @@ protected:
   /** Protected variables **************************** */
 
   /** Variables for Alpha (the normalization factor of the histogram). */
-  mutable double         m_Alpha;
-  mutable DerivativeType m_PerturbedAlphaRight;
-  mutable DerivativeType m_PerturbedAlphaLeft;
+  mutable double         m_Alpha{};
+  mutable DerivativeType m_PerturbedAlphaRight{};
+  mutable DerivativeType m_PerturbedAlphaLeft{};
 
   /** Variables for the pdfs (actually: histograms). */
-  mutable MarginalPDFType       m_FixedImageMarginalPDF;
-  mutable MarginalPDFType       m_MovingImageMarginalPDF;
-  JointPDFPointer               m_JointPDF;
-  JointPDFDerivativesPointer    m_JointPDFDerivatives;
-  JointPDFDerivativesPointer    m_IncrementalJointPDFRight;
-  JointPDFDerivativesPointer    m_IncrementalJointPDFLeft;
-  IncrementalMarginalPDFPointer m_FixedIncrementalMarginalPDFRight;
-  IncrementalMarginalPDFPointer m_MovingIncrementalMarginalPDFRight;
-  IncrementalMarginalPDFPointer m_FixedIncrementalMarginalPDFLeft;
-  IncrementalMarginalPDFPointer m_MovingIncrementalMarginalPDFLeft;
-  mutable JointPDFRegionType    m_JointPDFWindow; // no need for mutable anymore?
-  double                        m_MovingImageNormalizedMin;
-  double                        m_FixedImageNormalizedMin;
-  double                        m_FixedImageBinSize;
-  double                        m_MovingImageBinSize;
-  double                        m_FixedParzenTermToIndexOffset;
-  double                        m_MovingParzenTermToIndexOffset;
+  mutable MarginalPDFType       m_FixedImageMarginalPDF{};
+  mutable MarginalPDFType       m_MovingImageMarginalPDF{};
+  JointPDFPointer               m_JointPDF{};
+  JointPDFDerivativesPointer    m_JointPDFDerivatives{};
+  JointPDFDerivativesPointer    m_IncrementalJointPDFRight{};
+  JointPDFDerivativesPointer    m_IncrementalJointPDFLeft{};
+  IncrementalMarginalPDFPointer m_FixedIncrementalMarginalPDFRight{};
+  IncrementalMarginalPDFPointer m_MovingIncrementalMarginalPDFRight{};
+  IncrementalMarginalPDFPointer m_FixedIncrementalMarginalPDFLeft{};
+  IncrementalMarginalPDFPointer m_MovingIncrementalMarginalPDFLeft{};
+  mutable JointPDFRegionType    m_JointPDFWindow{}; // no need for mutable anymore?
+  double                        m_MovingImageNormalizedMin{};
+  double                        m_FixedImageNormalizedMin{};
+  double                        m_FixedImageBinSize{};
+  double                        m_MovingImageBinSize{};
+  double                        m_FixedParzenTermToIndexOffset{};
+  double                        m_MovingParzenTermToIndexOffset{};
 
   /** Kernels for computing Parzen histograms and derivatives. */
-  KernelFunctionPointer m_FixedKernel;
-  KernelFunctionPointer m_MovingKernel;
-  KernelFunctionPointer m_DerivativeMovingKernel;
-
-  /** Threading related parameters. */
-  mutable std::vector<JointPDFPointer> m_ThreaderJointPDFs;
-
-  /** Helper structs that multi-threads the computation of
-   * the metric derivative using ITK threads.
-   */
-  struct ParzenWindowHistogramMultiThreaderParameterType // can't we use the one from AdvancedImageToImageMetric ?
-  {
-    Self * m_Metric;
-  };
-  ParzenWindowHistogramMultiThreaderParameterType m_ParzenWindowHistogramThreaderParameters;
-
-  struct ParzenWindowHistogramGetValueAndDerivativePerThreadStruct
-  {
-    SizeValueType   st_NumberOfPixelsCounted;
-    JointPDFPointer st_JointPDF;
-  };
-  itkPadStruct(ITK_CACHE_LINE_ALIGNMENT,
-               ParzenWindowHistogramGetValueAndDerivativePerThreadStruct,
-               PaddedParzenWindowHistogramGetValueAndDerivativePerThreadStruct);
-  itkAlignedTypedef(ITK_CACHE_LINE_ALIGNMENT,
-                    PaddedParzenWindowHistogramGetValueAndDerivativePerThreadStruct,
-                    AlignedParzenWindowHistogramGetValueAndDerivativePerThreadStruct);
-  mutable AlignedParzenWindowHistogramGetValueAndDerivativePerThreadStruct *
-                       m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables;
-  mutable ThreadIdType m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariablesSize;
+  KernelFunctionPointer m_FixedKernel{};
+  KernelFunctionPointer m_MovingKernel{};
+  KernelFunctionPointer m_DerivativeMovingKernel{};
 
   /** Initialize threading related parameters. */
   void
   InitializeThreadingParameters() const override;
 
   /** Multi-threaded versions of the ComputePDF function. */
-  inline void
+  void
   ThreadedComputePDFs(ThreadIdType threadId);
 
   /** Single-threadedly accumulate results. */
-  inline void
+  void
   AfterThreadedComputePDFs() const;
 
   /** Helper function to launch the threads. */
@@ -395,21 +371,19 @@ protected:
                             const NonZeroJacobianIndicesType & nzji) const;
 
   /** Multiply the pdf entries by the given normalization factor. */
-  virtual void
-  NormalizeJointPDF(JointPDFType * pdf, const double & factor) const;
+  void
+  NormalizeJointPDF(JointPDFType * pdf, const double factor) const;
 
   /** Multiply the pdf derivatives entries by the given normalization factor. */
-  virtual void
-  NormalizeJointPDFDerivatives(JointPDFDerivativesType * pdf, const double & factor) const;
+  void
+  NormalizeJointPDFDerivatives(JointPDFDerivativesType * pdf, const double factor) const;
 
   /** Compute marginal pdfs by summing over the joint pdf
    * direction = 0: fixed marginal pdf
    * direction = 1: moving marginal pdf
    */
-  virtual void
-  ComputeMarginalPDF(const JointPDFType * jointPDF,
-                     MarginalPDFType &    marginalPDF,
-                     const unsigned int & direction) const;
+  void
+  ComputeMarginalPDF(const JointPDFType * jointPDF, MarginalPDFType & marginalPDF, const unsigned int direction) const;
 
   /** Compute incremental marginal pdfs. Integrates the incremental PDF
    * to obtain the fixed and moving marginal pdfs at once.
@@ -499,21 +473,41 @@ protected:
   {}
 
 private:
-  /** The deleted copy constructor. */
-  ParzenWindowHistogramImageToImageMetric(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
+  /** Threading related parameters. */
+  mutable std::vector<JointPDFPointer> m_ThreaderJointPDFs{};
+
+  /** Helper structs that multi-threads the computation of
+   * the metric derivative using ITK threads.
+   */
+  struct ParzenWindowHistogramMultiThreaderParameterType // can't we use the one from AdvancedImageToImageMetric ?
+  {
+    Self * m_Metric;
+  };
+  ParzenWindowHistogramMultiThreaderParameterType m_ParzenWindowHistogramThreaderParameters{};
+
+  struct ParzenWindowHistogramGetValueAndDerivativePerThreadStruct
+  {
+    SizeValueType   st_NumberOfPixelsCounted;
+    JointPDFPointer st_JointPDF;
+  };
+  itkPadStruct(ITK_CACHE_LINE_ALIGNMENT,
+               ParzenWindowHistogramGetValueAndDerivativePerThreadStruct,
+               PaddedParzenWindowHistogramGetValueAndDerivativePerThreadStruct);
+  itkAlignedTypedef(ITK_CACHE_LINE_ALIGNMENT,
+                    PaddedParzenWindowHistogramGetValueAndDerivativePerThreadStruct,
+                    AlignedParzenWindowHistogramGetValueAndDerivativePerThreadStruct);
+  mutable std::vector<AlignedParzenWindowHistogramGetValueAndDerivativePerThreadStruct>
+    m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables;
 
   /** Variables that can/should be accessed by their Set/Get functions. */
-  unsigned long m_NumberOfFixedHistogramBins;
-  unsigned long m_NumberOfMovingHistogramBins;
-  unsigned int  m_FixedKernelBSplineOrder;
-  unsigned int  m_MovingKernelBSplineOrder;
-  bool          m_UseDerivative;
-  bool          m_UseExplicitPDFDerivatives;
-  bool          m_UseFiniteDifferenceDerivative;
-  double        m_FiniteDifferencePerturbation;
+  unsigned long m_NumberOfFixedHistogramBins{};
+  unsigned long m_NumberOfMovingHistogramBins{};
+  unsigned int  m_FixedKernelBSplineOrder{};
+  unsigned int  m_MovingKernelBSplineOrder{};
+  bool          m_UseDerivative{};
+  bool          m_UseExplicitPDFDerivatives{};
+  bool          m_UseFiniteDifferenceDerivative{};
+  double        m_FiniteDifferencePerturbation{};
 };
 
 } // end namespace itk

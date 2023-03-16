@@ -55,8 +55,13 @@ ImageRandomSampler<TInputImage>::GenerateData()
   {
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {
-      InputImageIndexType positionIndex;
-      this->GeneratePoint(positionIndex, (*iter).Value().m_ImageCoordinates);
+      /** Get the index, transform it to the physical coordinates and put it in the sample. */
+      InputImageIndexType index = randIter.GetIndex();
+      inputImage->TransformIndexToPhysicalPoint(index, iter->Value().m_ImageCoordinates);
+      /** Get the value and put it in the sample. */
+      iter->Value().m_ImageValue = randIter.Get();
+      /** Jump to a random position. */
+      ++randIter;
 
       /** Get the value and put it in the sample. */
       (*iter).Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
@@ -65,10 +70,7 @@ ImageRandomSampler<TInputImage>::GenerateData()
   else
   {
     /** Update the mask. */
-    if (mask->GetSource())
-    {
-      mask->GetSource()->Update();
-    }
+    mask->UpdateSource();
 
     /** Make sure we are not eternally trying to find samples: */
     const unsigned long maxSamples = 100 * this->GetNumberOfSamples();
@@ -103,8 +105,8 @@ ImageRandomSampler<TInputImage>::GenerateData()
       } while (!insideMask);
 
       /** Put the coordinates and the value in the sample. */
-      (*iter).Value().m_ImageCoordinates = inputPoint;
-      (*iter).Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
+      iter->Value().m_ImageCoordinates = inputPoint;
+      iter->Value().m_ImageValue = randIter.Get();
 
     } // end for loop
   }
@@ -153,10 +155,20 @@ ImageRandomSampler<TInputImage>::ThreadedGenerateData(const InputImageRegionType
   for (iter = sampleContainerThisThread->Begin(); iter != end; ++iter, sampleId++)
   {
     InputImageIndexType positionIndex;
-    this->GeneratePoint(positionIndex, (*iter).Value().m_ImageCoordinates);
+    for (unsigned int dim = 0; dim < InputImageDimension; ++dim)
+    {
+      const unsigned long sizeInThisDimension = regionSize[dim];
+      residual = randomPosition % sizeInThisDimension;
+      positionIndex[dim] = residual + regionIndex[dim];
+      randomPosition -= residual;
+      randomPosition /= sizeInThisDimension;
+    }
+
+    /** Transform index to the physical coordinates and put it in the sample. */
+    inputImage->TransformIndexToPhysicalPoint(positionIndex, iter->Value().m_ImageCoordinates);
 
     /** Get the value and put it in the sample. */
-    (*iter).Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
+    iter->Value().m_ImageValue = static_cast<ImageSampleValueType>(inputImage->GetPixel(positionIndex));
 
   } // end for loop
 

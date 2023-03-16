@@ -39,6 +39,8 @@ template <class TArray, class TImage>
 class ITK_TEMPLATE_EXPORT UpsampleBSplineParametersFilter : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(UpsampleBSplineParametersFilter);
+
   /** Standard class typedefs. */
   using Self = UpsampleBSplineParametersFilter;
   using Superclass = Object;
@@ -112,20 +114,16 @@ protected:
   DoUpsampling();
 
 private:
-  UpsampleBSplineParametersFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Private member variables. */
-  OriginType    m_CurrentGridOrigin;
-  SpacingType   m_CurrentGridSpacing;
-  DirectionType m_CurrentGridDirection;
-  RegionType    m_CurrentGridRegion;
-  OriginType    m_RequiredGridOrigin;
-  SpacingType   m_RequiredGridSpacing;
-  DirectionType m_RequiredGridDirection;
-  RegionType    m_RequiredGridRegion;
-  unsigned int  m_BSplineOrder;
+  OriginType    m_CurrentGridOrigin{};
+  SpacingType   m_CurrentGridSpacing{};
+  DirectionType m_CurrentGridDirection{};
+  RegionType    m_CurrentGridRegion{};
+  OriginType    m_RequiredGridOrigin{};
+  SpacingType   m_RequiredGridSpacing{};
+  DirectionType m_RequiredGridDirection{};
+  RegionType    m_RequiredGridRegion{};
+  unsigned int  m_BSplineOrder{};
 };
 
 } // end namespace itk

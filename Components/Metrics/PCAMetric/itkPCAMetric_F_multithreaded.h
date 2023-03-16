@@ -24,6 +24,7 @@
 #include "itkImageRandomCoordinateSampler.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itkExtractImageFilter.h"
+#include <vector>
 
 namespace itk
 {
@@ -31,6 +32,8 @@ template <class TFixedImage, class TMovingImage>
 class ITK_TEMPLATE_EXPORT PCAMetric : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(PCAMetric);
+
   /** Standard class typedefs. */
   using Self = PCAMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -135,7 +138,7 @@ public:
 
 protected:
   PCAMetric();
-  ~PCAMetric() override;
+  ~PCAMetric() override = default;
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
 
@@ -163,42 +166,18 @@ protected:
                                         const MovingImageDerivativeType & movingImageDerivative,
                                         DerivativeType &                  imageJacobian) const override;
 
-  struct PCAMetricMultiThreaderParameterType
-  {
-    Self * m_Metric;
-  };
-
-  PCAMetricMultiThreaderParameterType m_PCAMetricThreaderParameters;
-
-  struct PCAMetricGetSamplesPerThreadStruct
-  {
-    SizeValueType                    st_NumberOfPixelsCounted;
-    MatrixType                       st_DataBlock;
-    std::vector<FixedImagePointType> st_ApprovedSamples;
-    DerivativeType                   st_Derivative;
-  };
-
-  itkPadStruct(ITK_CACHE_LINE_ALIGNMENT, PCAMetricGetSamplesPerThreadStruct, PaddedPCAMetricGetSamplesPerThreadStruct);
-
-  itkAlignedTypedef(ITK_CACHE_LINE_ALIGNMENT,
-                    PaddedPCAMetricGetSamplesPerThreadStruct,
-                    AlignedPCAMetricGetSamplesPerThreadStruct);
-
-  mutable AlignedPCAMetricGetSamplesPerThreadStruct * m_PCAMetricGetSamplesPerThreadVariables;
-  mutable ThreadIdType                                m_PCAMetricGetSamplesPerThreadVariablesSize;
-
   /** Get value and derivatives for each thread. */
-  inline void
+  void
   ThreadedGetSamples(ThreadIdType threadID);
 
-  inline void
+  void
   ThreadedComputeDerivative(ThreadIdType threadID);
 
   /** Gather the values and derivatives from all threads */
-  inline void
+  void
   AfterThreadedGetSamples(MeasureType & value) const;
 
-  inline void
+  void
   AfterThreadedComputeDerivative(DerivativeType & derivative) const;
 
   /** Helper function to launch the threads. */
@@ -220,18 +199,37 @@ protected:
   InitializeThreadingParameters() const override;
 
 private:
-  PCAMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  struct PCAMetricMultiThreaderParameterType
+  {
+    Self * m_Metric;
+  };
 
-  unsigned int m_G;
-  unsigned int m_LastDimIndex;
+  PCAMetricMultiThreaderParameterType m_PCAMetricThreaderParameters{};
+
+  struct PCAMetricGetSamplesPerThreadStruct
+  {
+    SizeValueType                    st_NumberOfPixelsCounted;
+    MatrixType                       st_DataBlock;
+    std::vector<FixedImagePointType> st_ApprovedSamples;
+    DerivativeType                   st_Derivative;
+  };
+
+  itkPadStruct(ITK_CACHE_LINE_ALIGNMENT, PCAMetricGetSamplesPerThreadStruct, PaddedPCAMetricGetSamplesPerThreadStruct);
+
+  itkAlignedTypedef(ITK_CACHE_LINE_ALIGNMENT,
+                    PaddedPCAMetricGetSamplesPerThreadStruct,
+                    AlignedPCAMetricGetSamplesPerThreadStruct);
+
+  mutable std::vector<AlignedPCAMetricGetSamplesPerThreadStruct> m_PCAMetricGetSamplesPerThreadVariables{};
+
+  unsigned int m_G{};
+  unsigned int m_LastDimIndex{};
 
   /** Bool to determine if we want to subtract the mean derivate from the derivative elements. */
   bool m_SubtractMean{ false };
 
   /** GridSize of B-spline transform. */
-  FixedImageSizeType m_GridSize;
+  FixedImageSizeType m_GridSize{};
 
   /** Bool to indicate if the transform used is a stacktransform. Set by elx files. */
   bool m_TransformIsStackTransform{ false };
@@ -240,12 +238,12 @@ private:
   unsigned int m_NumEigenValues{ 6 };
 
   /** Matrices, needed for derivative calculation */
-  mutable std::vector<unsigned int> m_PixelStartIndex;
-  mutable MatrixType                m_Atmm;
-  mutable DerivativeMatrixType      m_vSAtmm;
-  mutable DerivativeMatrixType      m_CSv;
-  mutable DerivativeMatrixType      m_Sv;
-  mutable DerivativeMatrixType      m_vdSdmu_part1;
+  mutable std::vector<unsigned int> m_PixelStartIndex{};
+  mutable MatrixType                m_Atmm{};
+  mutable DerivativeMatrixType      m_vSAtmm{};
+  mutable DerivativeMatrixType      m_CSv{};
+  mutable DerivativeMatrixType      m_Sv{};
+  mutable DerivativeMatrixType      m_vdSdmu_part1{};
 };
 
 } // end namespace itk

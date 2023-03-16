@@ -22,6 +22,8 @@
 #include "elxMacro.h"
 
 #include "elxBaseComponentSE.h"
+#include "elxDefaultConstruct.h"
+#include "elxDeref.h"
 #include "elxElastixBase.h"
 #include "itkAdvancedTransform.h"
 #include "itkAdvancedCombinationTransform.h"
@@ -31,6 +33,8 @@
 // ITK header files:
 #include <itkImage.h>
 #include <itkOptimizerParameters.h>
+#include <itkTransformMeshFilter.h>
+
 
 namespace elastix
 {
@@ -155,9 +159,6 @@ public:
   using ComponentDescriptionType = ComponentDatabase::ComponentDescriptionType;
   using PtrToCreator = ComponentDatabase::PtrToCreator;
 
-  /** Typedef for the ProgressCommand. */
-  using ProgressCommandType = elx::ProgressCommand;
-
   /** Get the dimension of the fixed image. */
   itkStaticConstMacro(FixedImageDimension, unsigned int, FixedImageType::ImageDimension);
 
@@ -185,6 +186,12 @@ public:
   using ITKRegistrationType = typename RegistrationType::ITKBaseType;
   using OptimizerType = typename ITKRegistrationType::OptimizerType;
   using ScalesType = typename OptimizerType::ScalesType;
+
+  /** Typedefs for images of determinants of spatial Jacobian matrices, and images of spatial Jacobian matrices */
+  using SpatialJacobianDeterminantImageType = itk::Image<float, FixedImageDimension>;
+  using SpatialJacobianMatrixImageType =
+    itk::Image<itk::Matrix<float, MovingImageDimension, FixedImageDimension>, FixedImageDimension>;
+
 
   /** Typedef that is used in the elastix dll version. */
   using ParameterMapType = typename TElastix::ParameterMapType;
@@ -230,7 +237,7 @@ public:
 
   /** Function to write transform-parameters to a file. */
   void
-  WriteToFile(xl::xoutsimple & transformationParameterInfo, const ParametersType & param) const;
+  WriteToFile(std::ostream & transformationParameterInfo, const ParametersType & param) const;
 
   /** Macro for reading and writing the transform parameters in WriteToFile or not. */
   void
@@ -244,19 +251,40 @@ public:
   void
   TransformPoints() const;
 
-  /** Function to compute the determinant of the spatial Jacobian. */
-  void
-  ComputeDeterminantOfSpatialJacobian() const;
+  /** Computes the spatial Jacobian determinant for each pixel, and returns the image. */
+  typename SpatialJacobianDeterminantImageType::Pointer
+  ComputeSpatialJacobianDeterminantImage() const;
 
-  /** Function to compute the determinant of the spatial Jacobian. */
+  /** Computes the spatial Jacobian matrix for each pixel, and returns the image. */
+  typename SpatialJacobianMatrixImageType::Pointer
+  ComputeSpatialJacobianMatrixImage() const;
+
+  /** Computes the determinant of the spatial Jacobian and writes it to file. */
   void
-  ComputeSpatialJacobian() const;
+  ComputeAndWriteSpatialJacobianDeterminantImage() const;
+
+  /** Computes the spatial Jacobian and writes it to file. */
+  void
+  ComputeAndWriteSpatialJacobianMatrixImage() const;
 
   /** Makes sure that the final parameters from the registration components
    * are copied, set, and stored.
    */
   void
   SetFinalParameters();
+
+  /** Transforms the specified mesh.
+   */
+  template <typename TMesh>
+  typename TMesh::Pointer
+  TransformMesh(const TMesh & mesh) const
+  {
+    DefaultConstruct<itk::TransformMeshFilter<TMesh, TMesh, CombinationTransformType>> transformMeshFilter;
+    transformMeshFilter.SetTransform(&const_cast<CombinationTransformType &>(this->GetSelf()));
+    transformMeshFilter.SetInput(&mesh);
+    transformMeshFilter.Update();
+    return transformMeshFilter.GetOutput();
+  }
 
 protected:
   /** The default-constructor. */
@@ -268,7 +296,8 @@ protected:
   bool
   HasITKTransformParameters() const
   {
-    return this->BaseComponentSE<TElastix>::m_Configuration->HasParameter("ITKTransformParameters");
+    const Configuration & configuration = Deref(Superclass::GetConfiguration());
+    return configuration.HasParameter("ITKTransformParameters");
   }
 
   /** Estimate a scales vector
@@ -288,15 +317,58 @@ protected:
    * \li Scales_i = 1/N sum_x || dT / dmu_i ||^2
    */
   void
-  AutomaticScalesEstimationStackTransform(const unsigned int & numSubTransforms, ScalesType & scales) const;
+  AutomaticScalesEstimationStackTransform(const unsigned int numSubTransforms, ScalesType & scales) const;
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
 
+  /** Supports either TransformToDeterminantOfSpatialJacobianSource or TransformToSpatialJacobianSource as TSource. */
+  template <template <typename, typename> class TSource, typename TOutputImage>
+  auto
+  CreateJacobianSource() const
+  {
+    const auto & resampleImageFilter = *(this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType());
+
+    /** Create an setup Jacobian generator. */
+    const auto jacGenerator = TSource<TOutputImage, CoordRepType>::New();
+
+    jacGenerator->SetTransform(this->GetAsITKBaseType());
+    jacGenerator->SetOutputSize(resampleImageFilter.GetSize());
+    jacGenerator->SetOutputSpacing(resampleImageFilter.GetOutputSpacing());
+    jacGenerator->SetOutputOrigin(resampleImageFilter.GetOutputOrigin());
+    jacGenerator->SetOutputIndex(resampleImageFilter.GetOutputStartIndex());
+    jacGenerator->SetOutputDirection(resampleImageFilter.GetOutputDirection());
+    // NOTE: We can not use the following, since the fixed image does not exist in transformix
+    //   jacGenerator->SetOutputParametersFromImage(
+    //     this->GetRegistration()->GetAsITKBaseType()->GetFixedImage() );
+
+    return jacGenerator;
+  }
+
+
+  /** Creates an info changer that may change the direction of the image to the original value. */
+  template <typename TImage>
+  auto
+  CreateChangeInformationImageFilter(TImage * image) const
+  {
+    /** Possibly change direction cosines to their original value, as specified
+     * in the tp-file, or by the fixed image. This is only necessary when
+     * the UseDirectionCosines flag was set to false. */
+    const auto                             infoChanger = itk::ChangeInformationImageFilter<TImage>::New();
+    typename FixedImageType::DirectionType originalDirection;
+    const bool                             retdc = this->m_Elastix->GetOriginalFixedImageDirection(originalDirection);
+    infoChanger->SetOutputDirection(originalDirection);
+    infoChanger->SetChangeDirection(retdc & !this->m_Elastix->GetUseDirectionCosines());
+    infoChanger->SetInput(image);
+
+    return infoChanger;
+  }
+
+
   /** Function to read the initial transform parameters from the specified configuration object.
    */
   void
-  ReadInitialTransformFromConfiguration(const Configuration::Pointer);
+  ReadInitialTransformFromConfiguration(const Configuration::ConstPointer);
 
   /** Execute stuff before everything else:
    * \li Check the appearance of an initial transform.

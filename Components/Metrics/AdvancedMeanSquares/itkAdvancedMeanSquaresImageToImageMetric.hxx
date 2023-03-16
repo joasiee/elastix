@@ -384,7 +384,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDer
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
     RealType                    movingImageValue;
     MovingImageDerivativeType   movingImageDerivative;
 
@@ -408,7 +408,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetValueAndDer
       this->m_NumberOfPixelsCounted++;
 
       /** Get the fixed image value. */
-      const RealType & fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      const RealType & fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
 
 #if 0
       /** Get the TransformJacobian dT/dmu. */
@@ -539,7 +539,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
   for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = threader_fiter->Value().m_ImageCoordinates;
     RealType                    movingImageValue;
     MovingImageDerivativeType   movingImageDerivative;
 
@@ -560,10 +560,10 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::ThreadedGetVal
 
     if (sampleOk)
     {
-      numberOfPixelsCounted++;
+      ++numberOfPixelsCounted;
 
       /** Get the fixed image value. */
-      const RealType & fixedImageValue = static_cast<RealType>((*threader_fiter).Value().m_ImageValue);
+      const RealType & fixedImageValue = static_cast<RealType>(threader_fiter->Value().m_ImageValue);
 
 #if 0
       /** Get the TransformJacobian dT/dmu. */
@@ -810,7 +810,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::GetSelfHessian
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
     MovingImageDerivativeType   movingImageDerivative;
 
     /** Transform point. */
@@ -930,10 +930,11 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateSelfHess
        */
 
       /** Go to next element */
-      for (; (rowIt != rowVector.end()) && ((*rowIt).first < col); ++rowIt)
-      {}
+      for (; (rowIt != rowVector.end()) && (rowIt->first < col); ++rowIt)
+      {
+      }
 
-      if ((rowIt == rowVector.end()) || ((*rowIt).first != col))
+      if ((rowIt == rowVector.end()) || (rowIt->first != col))
       {
         /** Add new column to the row and set iterator to that column. */
         rowIt = rowVector.insert(rowIt, ElementType(col, val));
@@ -941,7 +942,7 @@ AdvancedMeanSquaresImageToImageMetric<TFixedImage, TMovingImage>::UpdateSelfHess
       else
       {
         /** Add to existing value */
-        (*rowIt).second += val;
+        rowIt->second += val;
       }
     }
   }

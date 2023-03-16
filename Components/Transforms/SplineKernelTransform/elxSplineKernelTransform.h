@@ -118,6 +118,8 @@ class ITK_TEMPLATE_EXPORT SplineKernelTransform
   , public elx::TransformBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(SplineKernelTransform);
+
   /** Standard ITK-stuff. */
   using Self = SplineKernelTransform;
   using Superclass1 = itk::AdvancedCombinationTransform<typename elx::TransformBase<TElastix>::CoordRepType,
@@ -228,10 +230,8 @@ protected:
   DetermineTargetLandmarks();
 
   /** General function to read all landmarks. */
-  virtual void
-  ReadLandmarkFile(const std::string & filename,
-                   PointSetPointer &   landmarkPointSet,
-                   const bool &        landmarksInFixedImage);
+  void
+  ReadLandmarkFile(const std::string & filename, PointSetPointer & landmarkPointSet, const bool landmarksInFixedImage);
 
   /** The itk kernel transform. */
   KernelTransformPointer m_KernelTransform;
@@ -242,12 +242,6 @@ private:
   /** Creates a map of the parameters specific for this (derived) transform type. */
   ParameterMapType
   CreateDerivedTransformParametersMap() const override;
-
-  /** The deleted copy constructor. */
-  SplineKernelTransform(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   std::string m_SplineKernelType;
 };

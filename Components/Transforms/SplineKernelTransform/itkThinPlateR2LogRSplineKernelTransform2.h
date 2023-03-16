@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkThinPlateR2LogRSplineKernelTransform2.h,v $
-  Language:  C++
   Date:      $Date: 2006/03/19 04:36:59 $
   Version:   $Revision: 1.7 $
 
@@ -54,6 +53,8 @@ template <class TScalarType, // Data type for scalars (float or double)
 class ITK_TEMPLATE_EXPORT ThinPlateR2LogRSplineKernelTransform2 : public KernelTransform2<TScalarType, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ThinPlateR2LogRSplineKernelTransform2);
+
   /** Standard class typedefs. */
   using Self = ThinPlateR2LogRSplineKernelTransform2;
   using Superclass = KernelTransform2<TScalarType, NDimensions>;
@@ -113,11 +114,6 @@ protected:
       to the global deformation of the space  */
   void
   ComputeDeformationContribution(const InputPointType & inputPoint, OutputPointType & result) const override;
-
-private:
-  ThinPlateR2LogRSplineKernelTransform2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // namespace itk

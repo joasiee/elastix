@@ -20,7 +20,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedMatrixOffsetTransformBase.h,v $
-  Language:  C++
   Date:      $Date: 2008-06-29 12:58:58 $
   Version:   $Revision: 1.20 $
 
@@ -364,7 +363,7 @@ public:
   /** Compute both the spatial Hessian and the Jacobian of the
    * spatial Hessian of the transformation. */
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               SpatialHessianType &           sh,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override;
@@ -412,13 +411,25 @@ protected:
   virtual void
   ComputeOffset();
 
+  /** Get offset of an AdvancedMatrixOffsetTransformBase
+   *
+   * This method returns the offset value of the AdvancedMatrixOffsetTransformBase.
+   * To define an affine transform, you must set the matrix,
+   * center, and translation OR the matrix and offset.
+   */
+  const OutputVectorType &
+  GetOffset() const
+  {
+    return this->m_Offset;
+  }
+
   /** (spatial) Jacobians and Hessians can mostly be precomputed by this transform.
    * Store them in these member variables.
    * SpatialJacobian is simply m_Matrix */
-  NonZeroJacobianIndicesType    m_NonZeroJacobianIndices;
-  SpatialHessianType            m_SpatialHessian;
-  JacobianOfSpatialJacobianType m_JacobianOfSpatialJacobian;
-  JacobianOfSpatialHessianType  m_JacobianOfSpatialHessian;
+  NonZeroJacobianIndicesType    m_NonZeroJacobianIndices{};
+  SpatialHessianType            m_SpatialHessian{};
+  JacobianOfSpatialJacobianType m_JacobianOfSpatialJacobian{};
+  JacobianOfSpatialHessianType  m_JacobianOfSpatialHessian{};
 
 private:
   AdvancedMatrixOffsetTransformBase(const Self & other);
@@ -443,8 +454,8 @@ private:
   OutputVectorType m_Translation{};
 
   /** To avoid recomputation of the inverse if not needed. */
-  TimeStamp         m_MatrixMTime;
-  mutable TimeStamp m_InverseMatrixMTime;
+  TimeStamp         m_MatrixMTime{};
+  mutable TimeStamp m_InverseMatrixMTime{};
 };
 
 } // namespace itk

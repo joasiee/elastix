@@ -51,7 +51,6 @@ main(int argc, char * argv[])
   using PointSetType = TransformType::PointSetType;
   using InputPointType = TransformType::InputPointType;
 
-  using IPPReaderType = itk::TransformixInputPointFileReader<PointSetType>;
   using PointsContainerType = PointSetType::PointsContainer;
   using PointsContainerPointer = PointsContainerType::Pointer;
   using PointType = PointSetType::PointType;
@@ -62,13 +61,13 @@ main(int argc, char * argv[])
   auto kernelTransform = TransformType::New();
 
   /** Read landmarks. */
-  auto landmarkReader = IPPReaderType::New();
+  auto landmarkReader = itk::TransformixInputPointFileReader<PointSetType>::New();
   landmarkReader->SetFileName(argv[1]);
   try
   {
     landmarkReader->Update();
   }
-  catch (itk::ExceptionObject & excp)
+  catch (const itk::ExceptionObject & excp)
   {
     std::cerr << "  Error while opening landmark file." << std::endl;
     std::cerr << excp << std::endl;
@@ -126,21 +125,21 @@ main(int argc, char * argv[])
   kernelTransform->SetTargetLandmarks(newTargetLandmarks);
   std::cerr << "Setting source landmarks took " << clock() - startClock << " ms." << std::endl;
 
-  InputPointType ipp;
-  ipp[0] = 10.0;
-  ipp[1] = 20.0;
-  ipp[2] = 30.0;
+  InputPointType inputPoint;
+  inputPoint[0] = 10.0;
+  inputPoint[1] = 20.0;
+  inputPoint[2] = 30.0;
 
   /** Test TransformPoint(). */
   startClock = clock();
-  kernelTransform->TransformPoint(ipp);
+  kernelTransform->TransformPoint(inputPoint);
   std::cerr << "TransformPoint() computation took: " << clock() - startClock << " ms." << std::endl;
 
   /** Test GetJacobian(). */
   startClock = clock();
   JacobianType               jac;
   NonZeroJacobianIndicesType nzji;
-  kernelTransform->GetJacobian(ipp, jac, nzji);
+  kernelTransform->GetJacobian(inputPoint, jac, nzji);
   std::cerr << "GetJacobian() computation took: " << clock() - startClock << " ms." << std::endl;
 
   /** Additional checks. */

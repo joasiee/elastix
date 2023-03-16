@@ -60,6 +60,8 @@ class ITK_TEMPLATE_EXPORT ReducedDimensionBSplineResampleInterpolator
     public ResampleInterpolatorBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ReducedDimensionBSplineResampleInterpolator);
+
   /** Standard ITK-stuff. */
   using Self = ReducedDimensionBSplineResampleInterpolator;
   using Superclass1 =
@@ -125,12 +127,6 @@ private:
   /** Creates a map of the parameters specific for this (derived) interpolator type. */
   ParameterMapType
   CreateDerivedTransformParametersMap() const override;
-
-  /** The deleted copy constructor. */
-  ReducedDimensionBSplineResampleInterpolator(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

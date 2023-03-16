@@ -37,6 +37,8 @@ template <class TInputImage>
 class ITK_TEMPLATE_EXPORT ImageRandomSamplerBase : public ImageSamplerBase<TInputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ImageRandomSamplerBase);
+
   /** Standard ITK-stuff. */
   using Self = ImageRandomSamplerBase;
   using Superclass = ImageSamplerBase<TInputImage>;
@@ -82,14 +84,7 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Member variable used when threading. */
-  std::vector<double> m_RandomNumberList;
-
-private:
-  /** The deleted copy constructor. */
-  ImageRandomSamplerBase(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
+  std::vector<double> m_RandomNumberList{};
 };
 
 } // end namespace itk

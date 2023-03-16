@@ -24,7 +24,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile$
-  Language:  C++
   Date:      $Date: 2008-06-27 17:50:36 +0200 (Fri, 27 Jun 2008) $
   Version:   $Revision: 1728 $
 
@@ -98,6 +97,8 @@ template <typename TFixedImage, typename TMovingImage>
 class ITK_TEMPLATE_EXPORT MultiResolutionImageRegistrationMethod2 : public ProcessObject
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiResolutionImageRegistrationMethod2);
+
   /** Standard class typedefs. */
   using Self = MultiResolutionImageRegistrationMethod2;
   using Superclass = ProcessObject;
@@ -276,33 +277,29 @@ protected:
    * itk::MultiResolutionImageRegistrationMethod these member variables
    * are made protected, so they can be accessed by children classes.
    */
-  ParametersType m_LastTransformParameters;
-  bool           m_Stop;
+  ParametersType m_LastTransformParameters{};
+  bool           m_Stop{};
 
 private:
-  MultiResolutionImageRegistrationMethod2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Member variables. */
-  MetricPointer          m_Metric;
-  OptimizerType::Pointer m_Optimizer;
-  TransformPointer       m_Transform;
-  InterpolatorPointer    m_Interpolator;
+  MetricPointer          m_Metric{};
+  OptimizerType::Pointer m_Optimizer{};
+  TransformPointer       m_Transform{};
+  InterpolatorPointer    m_Interpolator{};
 
-  ParametersType m_InitialTransformParameters;
-  ParametersType m_InitialTransformParametersOfNextLevel;
+  ParametersType m_InitialTransformParameters{};
+  ParametersType m_InitialTransformParametersOfNextLevel{};
 
-  MovingImageConstPointer   m_MovingImage;
-  FixedImageConstPointer    m_FixedImage;
-  MovingImagePyramidPointer m_MovingImagePyramid;
-  FixedImagePyramidPointer  m_FixedImagePyramid;
+  MovingImageConstPointer   m_MovingImage{};
+  FixedImageConstPointer    m_FixedImage{};
+  MovingImagePyramidPointer m_MovingImagePyramid{};
+  FixedImagePyramidPointer  m_FixedImagePyramid{};
 
-  FixedImageRegionType        m_FixedImageRegion;
-  FixedImageRegionPyramidType m_FixedImageRegionPyramid;
+  FixedImageRegionType        m_FixedImageRegion{};
+  FixedImageRegionPyramidType m_FixedImageRegionPyramid{};
 
-  unsigned long m_NumberOfLevels;
-  unsigned long m_CurrentLevel;
+  unsigned long m_NumberOfLevels{};
+  unsigned long m_CurrentLevel{};
 };
 
 } // end namespace itk

@@ -40,10 +40,6 @@ TransformRigidityPenalty<TElastix>::BeforeRegistration()
     fixedRigidityImageName, "FixedRigidityImageName", this->GetComponentLabel(), 0, -1, false);
 
   using RigidityImageType = typename Superclass1::RigidityImageType;
-  using RigidityImageReaderType = itk::ImageFileReader<RigidityImageType>;
-  typename RigidityImageReaderType::Pointer fixedRigidityReader;
-  using ChangeInfoFilterType = itk::ChangeInformationImageFilter<RigidityImageType>;
-  using ChangeInfoFilterPointer = typename ChangeInfoFilterType::Pointer;
   using DirectionType = typename RigidityImageType::DirectionType;
 
   if (!fixedRigidityImageName.empty())
@@ -51,21 +47,15 @@ TransformRigidityPenalty<TElastix>::BeforeRegistration()
     /** Use the FixedRigidityImage. */
     this->SetUseFixedRigidityImage(true);
 
-    /** Create the reader and set the filename. */
-    fixedRigidityReader = RigidityImageReaderType::New();
-    fixedRigidityReader->SetFileName(fixedRigidityImageName);
-
     /** Possibly overrule the direction cosines. */
-    ChangeInfoFilterPointer infoChanger = ChangeInfoFilterType::New();
-    DirectionType           direction;
-    direction.SetIdentity();
-    infoChanger->SetOutputDirection(direction);
+    const auto infoChanger = itk::ChangeInformationImageFilter<RigidityImageType>::New();
     infoChanger->SetChangeDirection(!this->GetElastix()->GetUseDirectionCosines());
-    infoChanger->SetInput(fixedRigidityReader->GetOutput());
 
     /** Do the reading. */
     try
     {
+      const auto image = itk::ReadImage<RigidityImageType>(fixedRigidityImageName);
+      infoChanger->SetInput(image);
       infoChanger->Update();
     }
     catch (itk::ExceptionObject & excp)
@@ -76,7 +66,7 @@ TransformRigidityPenalty<TElastix>::BeforeRegistration()
       err_str += "\nError occurred while reading the fixed rigidity image.\n";
       excp.SetDescription(err_str);
       /** Pass the exception to an higher level. */
-      throw excp;
+      throw;
     }
 
     /** Set the fixed rigidity image into the superclass. */
@@ -92,27 +82,20 @@ TransformRigidityPenalty<TElastix>::BeforeRegistration()
   this->GetConfiguration()->ReadParameter(
     movingRigidityImageName, "MovingRigidityImageName", this->GetComponentLabel(), 0, -1, false);
 
-  typename RigidityImageReaderType::Pointer movingRigidityReader;
   if (!movingRigidityImageName.empty())
   {
     /** Use the movingRigidityImage. */
     this->SetUseMovingRigidityImage(true);
 
-    /** Create the reader and set the filename. */
-    movingRigidityReader = RigidityImageReaderType::New();
-    movingRigidityReader->SetFileName(movingRigidityImageName);
-
     /** Possibly overrule the direction cosines. */
-    ChangeInfoFilterPointer infoChanger = ChangeInfoFilterType::New();
-    DirectionType           direction;
-    direction.SetIdentity();
-    infoChanger->SetOutputDirection(direction);
+    const auto infoChanger = itk::ChangeInformationImageFilter<RigidityImageType>::New();
     infoChanger->SetChangeDirection(!this->GetElastix()->GetUseDirectionCosines());
-    infoChanger->SetInput(movingRigidityReader->GetOutput());
 
     /** Do the reading. */
     try
     {
+      const auto image = itk::ReadImage<RigidityImageType>(movingRigidityImageName);
+      infoChanger->SetInput(image);
       infoChanger->Update();
     }
     catch (itk::ExceptionObject & excp)
@@ -123,7 +106,7 @@ TransformRigidityPenalty<TElastix>::BeforeRegistration()
       err_str += "\nError occurred while reading the moving rigidity image.\n";
       excp.SetDescription(err_str);
       /** Pass the exception to an higher level. */
-      throw excp;
+      throw;
     }
 
     /** Set the moving rigidity image into the superclass. */
@@ -137,8 +120,8 @@ TransformRigidityPenalty<TElastix>::BeforeRegistration()
   /** Important check: at least one rigidity image must be given. */
   if (fixedRigidityImageName.empty() && movingRigidityImageName.empty())
   {
-    xl::xout["warning"] << "WARNING: FixedRigidityImageName and MovingRigidityImage are both not supplied.\n"
-                        << "  The rigidity penalty term is evaluated on entire input transform domain." << std::endl;
+    log::warn(std::ostringstream{} << "WARNING: FixedRigidityImageName and MovingRigidityImage are both not supplied.\n"
+                                   << "  The rigidity penalty term is evaluated on entire input transform domain.");
   }
 
   /** Add target cells to IterationInfo. */
@@ -172,8 +155,8 @@ TransformRigidityPenalty<TElastix>::Initialize()
   timer.Start();
   this->Superclass1::Initialize();
   timer.Stop();
-  elxout << "Initialization of TransformRigidityPenalty metric took: " << static_cast<long>(timer.GetMean() * 1000)
-         << " ms." << std::endl;
+  log::info(std::ostringstream{} << "Initialization of TransformRigidityPenalty metric took: "
+                                 << static_cast<long>(timer.GetMean() * 1000) << " ms.");
 
   /** Check stuff. */
   this->CheckUseAndCalculationBooleans();

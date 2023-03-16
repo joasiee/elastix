@@ -57,6 +57,8 @@ class ITK_TEMPLATE_EXPORT AdvancedRayCastInterpolateImageFunction
   : public InterpolateImageFunction<TInputImage, TCoordRep>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedRayCastInterpolateImageFunction);
+
   /** Standard class typedefs. */
   using Self = AdvancedRayCastInterpolateImageFunction;
   using Superclass = InterpolateImageFunction<TInputImage, TCoordRep>;
@@ -166,7 +168,7 @@ public:
   /** Check if a point is inside the image buffer.
    * \warning For efficiency, no validity checking of
    * the input image pointer is done. */
-  inline bool
+  bool
   IsInsideBuffer(const PointType &) const override
   {
     return true;
@@ -189,7 +191,7 @@ public:
 
 protected:
   /// Constructor
-  AdvancedRayCastInterpolateImageFunction();
+  AdvancedRayCastInterpolateImageFunction() = default;
 
   /// Destructor
   ~AdvancedRayCastInterpolateImageFunction() override = default;
@@ -199,22 +201,18 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /// Transformation used to calculate the new focal point position
-  TransformPointer m_Transform;
+  TransformPointer m_Transform{};
 
   /// The focal point or position of the ray source
-  InputPointType m_FocalPoint;
+  InputPointType m_FocalPoint{};
 
   /// The threshold above which voxels along the ray path are integrated.
-  double m_Threshold;
+  double m_Threshold{ 0.0 };
 
   /// Pointer to the interpolator
-  InterpolatorPointer m_Interpolator;
+  InterpolatorPointer m_Interpolator{};
 
 private:
-  AdvancedRayCastInterpolateImageFunction(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   SizeType
   GetRadius() const override
   {
@@ -225,6 +223,8 @@ private:
     }
     return input->GetLargestPossibleRegion().GetSize();
   }
+
+  class RayCastHelper;
 };
 
 } // namespace itk

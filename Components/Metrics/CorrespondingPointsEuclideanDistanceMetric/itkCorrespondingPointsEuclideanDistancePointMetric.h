@@ -40,6 +40,8 @@ class ITK_TEMPLATE_EXPORT CorrespondingPointsEuclideanDistancePointMetric
   : public SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(CorrespondingPointsEuclideanDistancePointMetric);
+
   /** Standard class typedefs. */
   using Self = CorrespondingPointsEuclideanDistancePointMetric;
   using Superclass = SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>;
@@ -93,11 +95,6 @@ public:
 protected:
   CorrespondingPointsEuclideanDistancePointMetric();
   ~CorrespondingPointsEuclideanDistancePointMetric() override = default;
-
-private:
-  CorrespondingPointsEuclideanDistancePointMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

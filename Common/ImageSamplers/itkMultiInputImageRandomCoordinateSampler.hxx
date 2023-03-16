@@ -26,27 +26,6 @@ namespace itk
 {
 
 /**
- * ******************* Constructor ********************
- */
-
-template <class TInputImage>
-MultiInputImageRandomCoordinateSampler<TInputImage>::MultiInputImageRandomCoordinateSampler()
-{
-  /** Set the default interpolator. */
-  auto bsplineInterpolator = DefaultInterpolatorType::New();
-  bsplineInterpolator->SetSplineOrder(3);
-  this->m_Interpolator = bsplineInterpolator;
-
-  /** Setup the random generator. */
-  this->m_RandomGenerator = RandomGeneratorType::GetInstance();
-
-  this->m_UseRandomSampleRegion = false;
-  this->m_SampleRegionSize.Fill(1.0);
-
-} // end Constructor()
-
-
-/**
  * ******************* GenerateData *******************
  */
 
@@ -90,8 +69,8 @@ MultiInputImageRandomCoordinateSampler<TInputImage>::GenerateData()
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {
       /** Make a reference to the current sample in the container. */
-      InputImagePointType &  samplePoint = (*iter).Value().m_ImageCoordinates;
-      ImageSampleValueType & sampleValue = (*iter).Value().m_ImageValue;
+      InputImagePointType &  samplePoint = iter->Value().m_ImageCoordinates;
+      ImageSampleValueType & sampleValue = iter->Value().m_ImageValue;
 
       /** Generate a point in the input image region. */
       this->GenerateRandomCoordinate(smallestContIndex, largestContIndex, sampleContIndex);
@@ -119,8 +98,8 @@ MultiInputImageRandomCoordinateSampler<TInputImage>::GenerateData()
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {
       /** Make a reference to the current sample in the container. */
-      InputImagePointType &  samplePoint = (*iter).Value().m_ImageCoordinates;
-      ImageSampleValueType & sampleValue = (*iter).Value().m_ImageValue;
+      InputImagePointType &  samplePoint = iter->Value().m_ImageCoordinates;
+      ImageSampleValueType & sampleValue = iter->Value().m_ImageValue;
 
       /** Walk over the image until we find a valid point. */
       do
@@ -227,8 +206,8 @@ MultiInputImageRandomCoordinateSampler<TInputImage>::GenerateSampleRegion(
   /** Convert to continuous index in input image 0. */
   smallestPoint = dir0 * smallestPoint;
   largestPoint = dir0 * largestPoint;
-  this->GetInput(0)->TransformPhysicalPointToContinuousIndex(smallestPoint, smallestContIndex);
-  this->GetInput(0)->TransformPhysicalPointToContinuousIndex(largestPoint, largestContIndex);
+  smallestContIndex = this->GetInput(0)->template TransformPhysicalPointToContinuousIndex<CoordRepType>(smallestPoint);
+  largestContIndex = this->GetInput(0)->template TransformPhysicalPointToContinuousIndex<CoordRepType>(largestPoint);
 
   /** Support for localised mutual information. */
   if (this->GetUseRandomSampleRegion())

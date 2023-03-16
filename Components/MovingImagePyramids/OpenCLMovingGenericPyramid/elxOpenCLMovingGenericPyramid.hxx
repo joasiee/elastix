@@ -54,8 +54,9 @@ OpenCLMovingGenericPyramid<TElastix>::OpenCLMovingGenericPyramid()
   // To avoid it, we simply run it on CPU for 2D images.
   if (ImageDimension <= 2)
   {
-    xl::xout["warning"] << "WARNING: Creating the moving pyramid with OpenCL for 2D images is not beneficial.\n";
-    xl::xout["warning"] << "  The OpenCLMovingGenericPyramid is switching back to CPU mode." << std::endl;
+    log::warn(
+      std::ostringstream{} << "WARNING: Creating the moving pyramid with OpenCL for 2D images is not beneficial.\n"
+                           << "  The OpenCLMovingGenericPyramid is switching back to CPU mode.");
     return;
   }
 
@@ -70,7 +71,7 @@ OpenCLMovingGenericPyramid<TElastix>::OpenCLMovingGenericPyramid()
     }
     catch (itk::ExceptionObject & e)
     {
-      xl::xout["error"] << "ERROR: Exception during GPU moving generic pyramid creation: " << e << std::endl;
+      log::error(std::ostringstream{} << "ERROR: Exception during GPU moving generic pyramid creation: " << e);
       this->SwitchingToCPUAndReport(true);
       this->m_GPUPyramidCreated = false;
     }
@@ -107,8 +108,8 @@ OpenCLMovingGenericPyramid<TElastix>::BeforeGenerateData()
     }
     catch (itk::ExceptionObject & e)
     {
-      xl::xout["error"] << "ERROR: Exception during creating GPU input image for moving generic pyramid: " << e
-                        << std::endl;
+      log::error(std::ostringstream{} << "ERROR: Exception during creating GPU input image for moving generic pyramid: "
+                                      << e);
       this->SwitchingToCPUAndReport(true);
     }
   }
@@ -131,7 +132,7 @@ OpenCLMovingGenericPyramid<TElastix>::BeforeGenerateData()
     }
     catch (itk::ExceptionObject & e)
     {
-      xl::xout["error"] << "ERROR: Exception during setting GPU moving generic pyramid: " << e << std::endl;
+      log::error(std::ostringstream{} << "ERROR: Exception during setting GPU moving generic pyramid: " << e);
       this->SwitchingToCPUAndReport(true);
     }
   }
@@ -176,18 +177,19 @@ OpenCLMovingGenericPyramid<TElastix>::GenerateData()
     itk::OpenCLLogger::Pointer logger = itk::OpenCLLogger::GetInstance();
     logger->Write(itk::LoggerBase::PriorityLevelEnum::CRITICAL, e.GetDescription());
 
-    xl::xout["error"] << "ERROR: OpenCL program has not been compiled during updating GPU moving pyramid calculation.\n"
-                      << "  Please check the '" << logger->GetLogFileName() << "' in output directory." << std::endl;
+    log::error(std::ostringstream{}
+               << "ERROR: OpenCL program has not been compiled during updating GPU moving pyramid calculation.\n"
+               << "  Please check the '" << logger->GetLogFileName() << "' in output directory.");
     computedUsingOpenCL = false;
   }
   catch (itk::ExceptionObject & e)
   {
-    xl::xout["error"] << "ERROR: Exception during updating GPU moving pyramid calculation: " << e << std::endl;
+    log::error(std::ostringstream{} << "ERROR: Exception during updating GPU moving pyramid calculation: " << e);
     computedUsingOpenCL = false;
   }
   catch (...)
   {
-    xl::xout["error"] << "ERROR: Unknown exception during updating GPU moving pyramid calculation." << std::endl;
+    log::error("ERROR: Unknown exception during updating GPU moving pyramid calculation.");
     computedUsingOpenCL = false;
   }
 
@@ -196,16 +198,20 @@ OpenCLMovingGenericPyramid<TElastix>::GenerateData()
 
   if (computedUsingOpenCL)
   {
-    // Graft output
-    this->GraftOutput(this->m_GPUPyramid->GetOutput());
+    // Graft outputs
+    const auto numberOfLevels = this->GetNumberOfLevels();
+    for (unsigned int i = 0; i < numberOfLevels; i++)
+    {
+      this->GraftNthOutput(i, this->m_GPUPyramid->GetOutput(i));
+    }
 
     // Report OpenCL device to the log
     this->ReportToLog();
   }
   else
   {
-    xl::xout["warning"] << "WARNING: The moving pyramid computation with OpenCL failed due to the error.\n";
-    xl::xout["warning"] << "  The OpenCLMovingGenericPyramid is switching back to CPU mode." << std::endl;
+    log::warn(std::ostringstream{} << "WARNING: The moving pyramid computation with OpenCL failed due to the error.\n"
+                                   << "  The OpenCLMovingGenericPyramid is switching back to CPU mode.");
     Superclass1::GenerateData();
   }
 } // end GenerateData()
@@ -318,13 +324,13 @@ OpenCLMovingGenericPyramid<TElastix>::SwitchingToCPUAndReport(const bool configE
 {
   if (!configError)
   {
-    xl::xout["warning"] << "WARNING: The OpenCL context could not be created.\n";
-    xl::xout["warning"] << "  The OpenCLMovingGenericImagePyramid is switching back to CPU mode." << std::endl;
+    log::warn(std::ostringstream{} << "WARNING: The OpenCL context could not be created.\n"
+                                   << "  The OpenCLMovingGenericImagePyramid is switching back to CPU mode.");
   }
   else
   {
-    xl::xout["warning"] << "WARNING: Unable to configure the GPU.\n";
-    xl::xout["warning"] << "  The OpenCLMovingGenericImagePyramid is switching back to CPU mode." << std::endl;
+    log::warn(std::ostringstream{} << "WARNING: Unable to configure the GPU.\n"
+                                   << "  The OpenCLMovingGenericImagePyramid is switching back to CPU mode.");
   }
   this->m_GPUPyramidReady = false;
 
@@ -341,7 +347,8 @@ OpenCLMovingGenericPyramid<TElastix>::ReportToLog()
 {
   itk::OpenCLContext::Pointer context = itk::OpenCLContext::GetInstance();
   itk::OpenCLDevice           device = context->GetDefaultDevice();
-  elxout << "  Moving pyramid was computed by " << device.GetName() << " from " << device.GetVendor() << ".";
+  log::info(std::ostringstream{} << "  Moving pyramid was computed by " << device.GetName() << " from "
+                                 << device.GetVendor() << ".");
 } // end ReportToLog()
 
 

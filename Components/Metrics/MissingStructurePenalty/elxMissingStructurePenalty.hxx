@@ -47,8 +47,8 @@ MissingStructurePenalty<TElastix>::Initialize()
   timer.Start();
   this->Superclass1::Initialize();
   timer.Stop();
-  elxout << "Initialization of MissingStructurePenalty metric took: " << static_cast<long>(timer.GetMean() * 1000)
-         << " ms." << std::endl;
+  log::info(std::ostringstream{} << "Initialization of MissingStructurePenalty metric took: "
+                                 << static_cast<long>(timer.GetMean() * 1000) << " ms.");
 } // end Initialize()
 
 
@@ -70,7 +70,7 @@ MissingStructurePenalty<TElastix>::BeforeAllBase()
     this->m_Configuration->ReadParameter(metricName, "Metric", i);
     if (metricName == "MissingStructurePenalty")
     {
-      count++;
+      ++count;
     }
   }
   if (count == 0)
@@ -85,7 +85,7 @@ MissingStructurePenalty<TElastix>::BeforeAllBase()
   //  check = this->m_Configuration->GetCommandLineArgument( fmeshArgument );
   //  if ( check.empty() )
   //  {
-  //  elxout << "-fmesh       " << check << std::endl;
+  //  log::info(std::ostringstream{}  << "-fmesh       " << check);
   //  m_NumberOfMeshes = 1;
   //  return 0;
   //  }
@@ -95,7 +95,7 @@ MissingStructurePenalty<TElastix>::BeforeAllBase()
   std::string metricNumber = componentLabel.substr(6, 2); // strip "Metric" keep number
 
   /** Check Command line options and print them to the log file. */
-  elxout << "Command line options from MissingStructurePenalty (" << componentLabel << "):" << std::endl;
+  log::info(std::ostringstream{} << "Command line options from MissingStructurePenalty (" << componentLabel << "):");
   std::string check("");
 
   this->m_NumberOfMeshes = 0;
@@ -111,7 +111,7 @@ MissingStructurePenalty<TElastix>::BeforeAllBase()
     }
     else
     {
-      elxout << fmeshArgument.str() << "\t" << check << std::endl;
+      log::info(std::ostringstream{} << fmeshArgument.str() << "\t" << check);
       this->m_NumberOfMeshes++;
     }
   }
@@ -132,7 +132,7 @@ MissingStructurePenalty<TElastix>::BeforeRegistration()
   std::string componentLabel(this->GetComponentLabel());
   std::string metricNumber = componentLabel.substr(6, 2); // strip "Metric" keep number
 
-  elxout << "MissingStructurePenalty" << metricNumber << " BeforeRegistration " << std::endl;
+  log::info(std::ostringstream{} << "MissingStructurePenalty" << metricNumber << " BeforeRegistration ");
 
   FixedMeshContainerPointer meshPointerContainer = FixedMeshContainerType::New();
   meshPointerContainer->Reserve(this->m_NumberOfMeshes);
@@ -203,7 +203,7 @@ MissingStructurePenalty<TElastix>::AfterEachIteration()
     for (MeshIdType meshId = 0; meshId < this->m_NumberOfMeshes; ++meshId, ++ch)
     {
 
-      std::ostringstream makeFileName("");
+      std::ostringstream makeFileName;
       makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "resultmesh" << ch << metricNumber << "."
                    << this->m_Configuration->GetElastixLevel() << ".R" << level << ".It" << std::setfill('0')
                    << std::setw(7) << iter << "." << resultMeshFormat;
@@ -212,10 +212,9 @@ MissingStructurePenalty<TElastix>::AfterEachIteration()
       {
         this->WriteResultMesh(makeFileName.str().c_str(), meshId);
       }
-      catch (itk::ExceptionObject & excp)
+      catch (const itk::ExceptionObject & excp)
       {
-        xl::xout["error"] << "Exception caught: " << std::endl;
-        xl::xout["error"] << excp << "Resuming elastix." << std::endl;
+        log::error(std::ostringstream{} << "Exception caught: \n" << excp << "Resuming elastix.");
       }
     } // end for
   }   // end if
@@ -252,7 +251,7 @@ MissingStructurePenalty<TElastix>::AfterEachResolution()
     for (MeshIdType meshId = 0; meshId < this->m_NumberOfMeshes; ++meshId, ++ch)
     {
 
-      std::ostringstream makeFileName("");
+      std::ostringstream makeFileName;
       makeFileName << this->m_Configuration->GetCommandLineArgument("-out") << "resultmesh" << ch << metricNumber << "."
                    << this->m_Configuration->GetElastixLevel() << ".R" << level << "." << resultMeshFormat;
 
@@ -260,10 +259,9 @@ MissingStructurePenalty<TElastix>::AfterEachResolution()
       {
         this->WriteResultMesh(makeFileName.str().c_str(), meshId);
       }
-      catch (itk::ExceptionObject & excp)
+      catch (const itk::ExceptionObject & excp)
       {
-        xl::xout["error"] << "Exception caught: " << std::endl;
-        xl::xout["error"] << excp << "Resuming elastix." << std::endl;
+        log::error(std::ostringstream{} << "Exception caught: \n" << excp << "Resuming elastix.");
       }
     } // end for
   }   // end if
@@ -279,26 +277,23 @@ template <class TElastix>
 unsigned int
 MissingStructurePenalty<TElastix>::ReadMesh(const std::string & meshFileName, typename FixedMeshType::Pointer & mesh)
 {
-  using MeshReaderType = itk::MeshFileReader<MeshType>;
-
   /** Read the input mesh. */
-  auto meshReader = MeshReaderType::New();
+  auto meshReader = itk::MeshFileReader<MeshType>::New();
   meshReader->SetFileName(meshFileName.c_str());
-  elxout << "  Reading input mesh file: " << meshFileName << std::endl;
+  log::info(std::ostringstream{} << "  Reading input mesh file: " << meshFileName);
   try
   {
     meshReader->UpdateLargestPossibleRegion();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
-    xl::xout["error"] << "  Error while opening input mesh file." << std::endl;
-    xl::xout["error"] << err << std::endl;
+    log::error(std::ostringstream{} << "  Error while opening input mesh file.\n" << err);
   }
 
   /** Some user-feedback. */
   mesh = meshReader->GetOutput();
   unsigned long nrofpoints = mesh->GetNumberOfPoints();
-  elxout << "  Number of specified input points: " << nrofpoints << std::endl;
+  log::info(std::ostringstream{} << "  Number of specified input points: " << nrofpoints);
 
   return nrofpoints;
 } // end ReadMesh()
@@ -312,12 +307,6 @@ template <class TElastix>
 void
 MissingStructurePenalty<TElastix>::WriteResultMesh(const char * filename, MeshIdType meshId)
 {
-  /** Typedef's for writing the output mesh. */
-  using MeshWriterType = itk::MeshFileWriter<MeshType>;
-
-  /** Create writer. */
-  auto meshWriter = MeshWriterType::New();
-
   /** Setup the pipeline. */
 
   /** Set the points of the latest transformation. */
@@ -351,12 +340,9 @@ MissingStructurePenalty<TElastix>::WriteResultMesh(const char * filename, MeshId
   mappedMesh->Modified();
   mappedMesh->Update();
 
-  meshWriter->SetInput(mappedMesh);
-  meshWriter->SetFileName(filename);
-
   try
   {
-    meshWriter->Update();
+    itk::WriteMesh(mappedMesh, filename);
   }
   catch (itk::ExceptionObject & excp)
   {
@@ -367,7 +353,7 @@ MissingStructurePenalty<TElastix>::WriteResultMesh(const char * filename, MeshId
     excp.SetDescription(err_str);
 
     /** Pass the exception to an higher level. */
-    throw excp;
+    throw;
   }
 
   if (tempSetPointData)
@@ -411,43 +397,40 @@ the sequence of points to form a 2d connected polydata contour.
   using FixedImageIndexType = typename FixedImageType::IndexType;
   using FixedImageIndexValueType = typename FixedImageIndexType::IndexValueType;
   using MovingImageIndexType = typename MovingImageType::IndexType;
-  using FixedImageContinuousIndexType = itk::ContinuousIndex<double, FixedImageDimension>;
   using FixedImageDirectionType = typename FixedImageType::DirectionType;
 
   using DummyIPPPixelType = unsigned char;
   using MeshTraitsType =
     itk::DefaultStaticMeshTraits<DummyIPPPixelType, FixedImageDimension, FixedImageDimension, CoordRepType>;
   using PointSetType = itk::PointSet<DummyIPPPixelType, FixedImageDimension, MeshTraitsType>;
-  using IPPReaderType = itk::TransformixInputPointFileReader<PointSetType>;
   using DeformationVectorType = itk::Vector<float, FixedImageDimension>;
 
   /** Construct an ipp-file reader. */
-  auto ippReader = IPPReaderType::New();
+  auto ippReader = itk::TransformixInputPointFileReader<PointSetType>::New();
   ippReader->SetFileName(filename.c_str());
 
   /** Read the input points. */
-  elxout << "  Reading input point file: " << filename << std::endl;
+  log::info(std::ostringstream{} << "  Reading input point file: " << filename);
   try
   {
     ippReader->Update();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
-    xl::xout["error"] << "  Error while opening input point file." << std::endl;
-    xl::xout["error"] << err << std::endl;
+    log::error(std::ostringstream{} << "  Error while opening input point file.\n" << err);
   }
 
   /** Some user-feedback. */
   if (ippReader->GetPointsAreIndices())
   {
-    elxout << "  Input points are specified as image indices." << std::endl;
+    log::info("  Input points are specified as image indices.");
   }
   else
   {
-    elxout << "  Input points are specified in world coordinates." << std::endl;
+    log::info("  Input points are specified in world coordinates.");
   }
   const unsigned int nrofpoints = ippReader->GetNumberOfPoints();
-  elxout << "  Number of specified input points: " << nrofpoints << std::endl;
+  log::info(std::ostringstream{} << "  Number of specified input points: " << nrofpoints);
 
   /** Get the set of input points. */
   typename PointSetType::Pointer inputPointSet = ippReader->GetOutput();
@@ -462,25 +445,18 @@ the sequence of points to form a 2d connected polydata contour.
   std::vector<MovingImageIndexType>  outputindexmovingvec(nrofpoints);
   std::vector<DeformationVectorType> deformationvec(nrofpoints);
 
+  const auto & resampleImageFilter = *(this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType());
+
   /** Make a temporary image with the right region info,
    * which we can use to convert between points and indices.
    * By taking the image from the resampler output, the UseDirectionCosines
    * parameter is automatically taken into account. */
-  FixedImageRegionType    region;
-  FixedImageOriginType    origin = this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetOutputOrigin();
-  FixedImageSpacingType   spacing = this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetOutputSpacing();
-  FixedImageDirectionType direction = this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetOutputDirection();
-  region.SetIndex(this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetOutputStartIndex());
-  region.SetSize(this->m_Elastix->GetElxResamplerBase()->GetAsITKBaseType()->GetSize());
-
   auto dummyImage = FixedImageType::New();
-  dummyImage->SetRegions(region);
-  dummyImage->SetOrigin(origin);
-  dummyImage->SetSpacing(spacing);
-  dummyImage->SetDirection(direction);
-
-  /** Temp vars */
-  FixedImageContinuousIndexType fixedcindex;
+  dummyImage->SetRegions(
+    FixedImageRegionType(resampleImageFilter.GetOutputStartIndex(), resampleImageFilter.GetSize()));
+  dummyImage->SetOrigin(resampleImageFilter.GetOutputOrigin());
+  dummyImage->SetSpacing(resampleImageFilter.GetOutputSpacing());
+  dummyImage->SetDirection(resampleImageFilter.GetOutputDirection());
 
   /** Also output moving image indices if a moving image was supplied. */
   bool                              alsoMovingIndices = false;
@@ -491,31 +467,14 @@ the sequence of points to form a 2d connected polydata contour.
   }
 
   /** Read the input points, as index or as point. */
-  if (!(ippReader->GetPointsAreIndices()))
-  {
-    for (unsigned int j = 0; j < nrofpoints; ++j)
-    {
-      /** Compute index of nearest voxel in fixed image. */
-      InputPointType point;
-      point.Fill(0.0f);
-      inputPointSet->GetPoint(j, &point);
-      inputpointvec[j] = point;
-      dummyImage->TransformPhysicalPointToContinuousIndex(point, fixedcindex);
-      for (unsigned int i = 0; i < FixedImageDimension; ++i)
-      {
-        inputindexvec[j][i] = static_cast<FixedImageIndexValueType>(vnl_math::rnd(fixedcindex[i]));
-      }
-    }
-  }
-  else // so: inputasindex
+  if (ippReader->GetPointsAreIndices())
   {
     for (unsigned int j = 0; j < nrofpoints; ++j)
     {
       /** The read point from the inutPointSet is actually an index
        * Cast to the proper type.
        */
-      InputPointType point;
-      point.Fill(0.0f);
+      InputPointType point{};
       inputPointSet->GetPoint(j, &point);
       for (unsigned int i = 0; i < FixedImageDimension; ++i)
       {
@@ -523,6 +482,21 @@ the sequence of points to form a 2d connected polydata contour.
       }
       /** Compute the input point in physical coordinates. */
       dummyImage->TransformIndexToPhysicalPoint(inputindexvec[j], inputpointvec[j]);
+    }
+  }
+  else
+  {
+    for (unsigned int j = 0; j < nrofpoints; ++j)
+    {
+      /** Compute index of nearest voxel in fixed image. */
+      InputPointType point{};
+      inputPointSet->GetPoint(j, &point);
+      inputpointvec[j] = point;
+      const auto fixedcindex = dummyImage->template TransformPhysicalPointToContinuousIndex<double>(point);
+      for (unsigned int i = 0; i < FixedImageDimension; ++i)
+      {
+        inputindexvec[j][i] = static_cast<FixedImageIndexValueType>(vnl_math::rnd(fixedcindex[i]));
+      }
     }
   }
   /** FB: create a mesh containing the points**/

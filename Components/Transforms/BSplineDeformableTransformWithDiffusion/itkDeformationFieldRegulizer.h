@@ -41,6 +41,8 @@ template <class TAnyITKTransform>
 class ITK_TEMPLATE_EXPORT DeformationFieldRegulizer : public TAnyITKTransform
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(DeformationFieldRegulizer);
+
   /** Standard itk. */
   using Self = DeformationFieldRegulizer;
   using Superclass = TAnyITKTransform;
@@ -116,20 +118,14 @@ protected:
   ~DeformationFieldRegulizer() override = default;
 
 private:
-  /** The deleted copy constructor. */
-  DeformationFieldRegulizer(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
   /** Declaration of members. */
-  IntermediaryDFTransformPointer m_IntermediaryDeformationFieldTransform;
-  bool                           m_Initialized;
+  IntermediaryDFTransformPointer m_IntermediaryDeformationFieldTransform{};
+  bool                           m_Initialized{};
 
   /** Declarations of region things. */
-  RegionType  m_DeformationFieldRegion;
-  OriginType  m_DeformationFieldOrigin;
-  SpacingType m_DeformationFieldSpacing;
+  RegionType  m_DeformationFieldRegion{};
+  OriginType  m_DeformationFieldOrigin{};
+  SpacingType m_DeformationFieldSpacing{};
 };
 
 } // end namespace itk

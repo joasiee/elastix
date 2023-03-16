@@ -88,6 +88,8 @@ template <class TScalarType, unsigned int Dimension>
 class AffineDTITransform : public AffineDTIGroupTemplate<TScalarType, Dimension>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AffineDTITransform);
+
   /** Standard ITK-stuff. */
   using Self = AffineDTITransform;
   using Superclass = AffineDTIGroupTemplate<TScalarType, Dimension>;
@@ -130,11 +132,6 @@ public:
 protected:
   AffineDTITransform() = default;
   ~AffineDTITransform() override = default;
-
-private:
-  AffineDTITransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

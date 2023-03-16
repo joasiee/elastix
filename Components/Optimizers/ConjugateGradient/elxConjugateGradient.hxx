@@ -124,20 +124,19 @@ ConjugateGradient<TElastix>::LineSearch(const ParametersType searchDir,
   {
     this->Superclass1::LineSearch(searchDir, step, x, f, g);
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
     if (this->GetLineSearchOptimizer() == nullptr)
     {
-      throw err;
+      throw;
     }
     else if (this->GetStopCondition() != LineSearchError)
     {
-      throw err;
+      throw;
     }
     else
     {
-      xl::xout["error"] << err << std::endl;
-      xl::xout["error"] << "The error is ignored and convergence is assumed." << std::endl;
+      log::error(std::ostringstream{} << err << '\n' << "The error is ignored and convergence is assumed.");
       step = 0.0;
       x = this->GetScaledCurrentPosition();
       f = this->GetCurrentValue();
@@ -366,11 +365,11 @@ ConjugateGradient<TElastix>::AfterEachIteration()
         this->GetScaledValueAndDerivative(
           this->GetScaledCurrentPosition(), this->m_CurrentValue, this->m_CurrentGradient);
       }
-      catch (itk::ExceptionObject & err)
+      catch (const itk::ExceptionObject &)
       {
         this->m_StopCondition = MetricError;
         this->StopOptimization();
-        throw err;
+        throw;
       }
     } // end if new samples every iteration
   }   // end if not in line search
@@ -438,7 +437,7 @@ ConjugateGradient<TElastix>::AfterEachResolution()
   } // end else
 
   /** Print the stopping condition */
-  elxout << "Stopping condition: " << stopcondition << "." << std::endl;
+  log::info(std::ostringstream{} << "Stopping condition: " << stopcondition << ".");
 
 } // end AfterEachResolution
 
@@ -454,7 +453,7 @@ ConjugateGradient<TElastix>::AfterRegistration()
   /** Print the best metric value */
 
   double bestValue = this->GetCurrentValue();
-  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
+  log::info(std::ostringstream{} << '\n' << "Final metric value  = " << bestValue);
 
 } // end AfterRegistration
 

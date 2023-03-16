@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedTranslationTransform.txx,v $
-  Language:  C++
   Date:      $Date: 2007-11-14 20:17:26 $
   Version:   $Revision: 1.31 $
 
@@ -36,6 +35,8 @@
 
 #include "itkAdvancedTranslationTransform.h"
 
+#include <numeric> // For iota.
+
 namespace itk
 {
 
@@ -44,21 +45,8 @@ template <class TScalarType, unsigned int NDimensions>
 AdvancedTranslationTransform<TScalarType, NDimensions>::AdvancedTranslationTransform()
   : Superclass(ParametersDimension)
 {
-  // The Jacobian of this transform is constant.
-  // Therefore the m_Jacobian variable can be
-  // initialized here and be shared among all the threads.
-  this->m_LocalJacobian.Fill(0.0);
-
-  for (unsigned int i = 0; i < NDimensions; ++i)
-  {
-    this->m_LocalJacobian(i, i) = 1.0;
-  }
-
   /** Nonzero Jacobian indices, for GetJacobian */
-  for (unsigned int i = 0; i < ParametersDimension; ++i)
-  {
-    this->m_NonZeroJacobianIndices[i] = i;
-  }
+  std::iota(m_NonZeroJacobianIndices.begin(), m_NonZeroJacobianIndices.end(), 0u);
 
   /** m_SpatialHessian is automatically initialized with zeros */
   this->m_HasNonZeroSpatialHessian = false;

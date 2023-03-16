@@ -42,6 +42,8 @@ class ITK_TEMPLATE_EXPORT MovingShrinkingPyramid
   , public MovingImagePyramidBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MovingShrinkingPyramid);
+
   /** Standard ITK-stuff. */
   using Self = MovingShrinkingPyramid;
   using Superclass1 =
@@ -87,12 +89,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  MovingShrinkingPyramid(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

@@ -105,6 +105,8 @@ class ITK_TEMPLATE_EXPORT AdaptiveStochasticLBFGS
   , public OptimizerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdaptiveStochasticLBFGS);
+
   /** Standard ITK. */
   using Self = AdaptiveStochasticLBFGS;
   using Superclass1 = AdaptiveStochasticLBFGSOptimizer;
@@ -241,12 +243,8 @@ protected:
   using JacobianType = typename TransformType::JacobianType;
   using ComputeJacobianTermsType = itk::ComputeJacobianTerms<FixedImageType, TransformType>;
   using JacobianValueType = typename JacobianType::ValueType;
-  struct SettingsType
-  {
-    double a, A, alpha, fmax, fmin, omega;
-  };
-  using SettingsVectorType = typename std::vector<SettingsType>;
-
+  using typename Superclass2::SettingsType;
+  using typename Superclass2::SettingsVectorType;
   using ComputeDisplacementDistributionType = itk::ComputeDisplacementDistribution<FixedImageType, TransformType>;
 
   /** Samplers: */
@@ -270,10 +268,8 @@ protected:
   using ImageSampleContainerType = typename ImageGridSamplerType::ImageSampleContainerType;
   using ImageSampleContainerPointer = typename ImageSampleContainerType::Pointer;
 
-  /** Other protected typedefs */
+  /** Other protected typedef */
   using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
-  using ProgressCommandType = ProgressCommand;
-  using ProgressCommandPointer = typename ProgressCommand::Pointer;
 
   /** Typedefs for support of sparse Jacobians and AdvancedTransforms. */
   using TransformJacobianType = JacobianType;
@@ -308,10 +304,6 @@ protected:
   typename RandomGeneratorType::Pointer m_RandomGenerator;
 
   double m_SigmoidScaleFactor;
-
-  /** Print the contents of the settings vector to elxout. */
-  virtual void
-  PrintSettingsVector(const SettingsVectorType & settings) const;
 
   /** Select different method to estimate some reasonable values for the parameters
    * SP_a, SP_alpha (=1), SigmoidMin, SigmoidMax (=1), and
@@ -399,10 +391,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  AdaptiveStochasticLBFGS(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 
   // multi-threaded AdvanceOneStep:
   struct MultiThreaderParameterType

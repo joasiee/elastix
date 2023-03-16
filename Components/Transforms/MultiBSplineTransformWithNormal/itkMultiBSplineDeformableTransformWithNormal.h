@@ -43,6 +43,8 @@ class ITK_TEMPLATE_EXPORT MultiBSplineDeformableTransformWithNormal
   : public AdvancedTransform<TScalarType, NDimensions, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiBSplineDeformableTransformWithNormal);
+
   /** Standard class typedefs. */
   using Self = MultiBSplineDeformableTransformWithNormal;
   using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
@@ -380,14 +382,14 @@ public:
 
   /** Compute the Jacobian of the transformation. */
   void
-  GetJacobian(const InputPointType & ipp, JacobianType & j, NonZeroJacobianIndicesType &) const override;
+  GetJacobian(const InputPointType & inputPoint, JacobianType & j, NonZeroJacobianIndicesType &) const override;
 
   /** Compute the spatial Jacobian of the transformation. */
   void
-  GetSpatialJacobian(const InputPointType & ipp, SpatialJacobianType & sj) const override;
+  GetSpatialJacobian(const InputPointType & inputPoint, SpatialJacobianType & sj) const override;
 
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override;
 
@@ -399,10 +401,10 @@ public:
 
   /** Compute the spatial Hessian of the transformation. */
   void
-  GetSpatialHessian(const InputPointType & ipp, SpatialHessianType & sh) const override;
+  GetSpatialHessian(const InputPointType & inputPoint, SpatialHessianType & sh) const override;
 
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override
   {
@@ -473,7 +475,7 @@ protected:
   // bool m_SplineOrderOdd;
 
   /** Keep a pointer to the input parameters. */
-  const ParametersType * m_InputParametersPointer;
+  const ParametersType * m_InputParametersPointer{};
 
   /** Jacobian as SpaceDimension number of images. */
   /*
@@ -481,7 +483,7 @@ protected:
   using JacobianImageType = Image< JacobianPixelType,
     itkGetStaticConstMacro( SpaceDimension ) >;
 
-  typename JacobianImageType::Pointer m_JacobianImage[ NDimensions ];
+  typename JacobianImageType::Pointer m_JacobianImage[ NDimensions ]{};
   */
 
   /** Keep track of last support region used in computing the Jacobian
@@ -493,24 +495,20 @@ protected:
   // ImagePointer    m_WrappedImage[ NDimensions ];
 
   /** Internal parameters buffer. */
-  ParametersType m_InternalParametersBuffer;
+  ParametersType m_InternalParametersBuffer{};
 
   using TransformType = AdvancedBSplineDeformableTransform<TScalarType, Self::SpaceDimension, VSplineOrder>;
 
-  unsigned char                                m_NbLabels;
-  ImageLabelPointer                            m_Labels;
-  ImageLabelInterpolatorPointer                m_LabelsInterpolator;
-  ImageVectorPointer                           m_LabelsNormals;
-  std::vector<typename TransformType::Pointer> m_Trans;
-  std::vector<ParametersType>                  m_Para;
-  mutable int                                  m_LastJacobian;
-  ImageBasePointer                             m_LocalBases;
+  unsigned char                                m_NbLabels{};
+  ImageLabelPointer                            m_Labels{};
+  ImageLabelInterpolatorPointer                m_LabelsInterpolator{};
+  ImageVectorPointer                           m_LabelsNormals{};
+  std::vector<typename TransformType::Pointer> m_Trans{};
+  std::vector<ParametersType>                  m_Para{};
+  mutable int                                  m_LastJacobian{};
+  ImageBasePointer                             m_LocalBases{};
 
 private:
-  MultiBSplineDeformableTransformWithNormal(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   void
   DispatchParameters(const ParametersType & parameters);
 

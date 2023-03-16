@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkVolumeSplineKernelTransform2.h,v $
-  Language:  C++
   Date:      $Date: 2006/03/18 18:06:38 $
   Version:   $Revision: 1.8 $
 
@@ -52,6 +51,8 @@ template <class TScalarType, // Data type for scalars (float or double)
 class ITK_TEMPLATE_EXPORT VolumeSplineKernelTransform2 : public KernelTransform2<TScalarType, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(VolumeSplineKernelTransform2);
+
   /** Standard class typedefs. */
   using Self = VolumeSplineKernelTransform2;
   using Superclass = KernelTransform2<TScalarType, NDimensions>;
@@ -111,11 +112,6 @@ protected:
       to the global deformation of the space  */
   void
   ComputeDeformationContribution(const InputPointType & inputPoint, OutputPointType & result) const override;
-
-private:
-  VolumeSplineKernelTransform2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // namespace itk

@@ -63,6 +63,8 @@ class ITK_TEMPLATE_EXPORT ParabolicErodeDilateImageFilter : public ImageToImageF
 {
 
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ParabolicErodeDilateImageFilter);
+
   /** Standard class typedefs. */
   using Self = ParabolicErodeDilateImageFilter;
   using Superclass = ImageToImageFilter<TInputImage, TOutputImage>;
@@ -151,18 +153,14 @@ protected:
   void
   EnlargeOutputRequestedRegion(DataObject * output) override;
 
-  bool m_UseImageSpacing;
+  bool m_UseImageSpacing{};
 
 private:
-  ParabolicErodeDilateImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  RadiusType                      m_Scale{};
+  typename TInputImage::PixelType m_Extreme{};
 
-  RadiusType                      m_Scale;
-  typename TInputImage::PixelType m_Extreme;
-
-  int m_MagnitudeSign;
-  int m_CurrentDimension;
+  int m_MagnitudeSign{};
+  int m_CurrentDimension{};
 };
 
 } // end namespace itk

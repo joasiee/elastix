@@ -58,6 +58,8 @@ template <class TPixel>
 class ITK_TEMPLATE_EXPORT NDImageBase : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(NDImageBase);
+
   /** Standard class typedefs.*/
   using Self = NDImageBase;
   using Superclass = Object;
@@ -72,8 +74,7 @@ public:
   /** Run-time type information (and related methods). */
   itkTypeMacro(NDImageBase, Object);
 
-  using DataObjectType = DataObject;
-  using DataObjectPointer = DataObjectType::Pointer;
+  using DataObjectPointer = DataObject::Pointer;
 
   /** Type definitions like normal itkImages, independent of the dimension */
   using PixelType = typename Image<TPixel, 2>::PixelType;
@@ -248,11 +249,6 @@ protected:
   ~NDImageBase() override = default;
 
   // virtual void PrintSelf(std::ostream& os, Indent indent) const = 0;
-
-private:
-  NDImageBase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

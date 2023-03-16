@@ -91,7 +91,7 @@ public:
   itkGetConstObjectMacro(ImageSpatialMask, ImageSpatialMaskType);
 
 protected:
-  ComputeImageExtremaFilter();
+  ComputeImageExtremaFilter() = default;
   ~ComputeImageExtremaFilter() override = default;
 
   /** Initialize some accumulators before the threads run. */
@@ -112,11 +112,11 @@ protected:
   ThreadedGenerateDataImageMask(const RegionType &);
   virtual void
                                SameGeometry();
-  RegionType                   m_ImageRegion;
-  ImageMaskConstPointer        m_ImageMask;
-  ImageSpatialMaskConstPointer m_ImageSpatialMask;
-  bool                         m_UseMask;
-  bool                         m_SameGeometry;
+  RegionType                   m_ImageRegion{};
+  ImageMaskConstPointer        m_ImageMask{};
+  ImageSpatialMaskConstPointer m_ImageSpatialMask{};
+  bool                         m_UseMask{ false };
+  bool                         m_SameGeometry{ false };
 
 private:
   ComputeImageExtremaFilter(const Self &);
@@ -129,7 +129,7 @@ private:
   PixelType                      m_ThreadMin{ 1 };
   PixelType                      m_ThreadMax{ 1 };
 
-  std::mutex m_Mutex;
+  std::mutex m_Mutex{};
 }; // end of class
 } // end namespace itk
 

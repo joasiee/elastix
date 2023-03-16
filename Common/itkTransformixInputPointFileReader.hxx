@@ -25,32 +25,6 @@ namespace itk
 {
 
 /**
- * **************** Constructor ***************
- */
-
-template <class TOutputMesh>
-TransformixInputPointFileReader<TOutputMesh>::TransformixInputPointFileReader()
-{
-  this->m_NumberOfPoints = 0;
-  this->m_PointsAreIndices = false;
-} // end constructor
-
-
-/**
- * **************** Destructor ***************
- */
-
-template <class TOutputMesh>
-TransformixInputPointFileReader<TOutputMesh>::~TransformixInputPointFileReader()
-{
-  if (this->m_Reader.is_open())
-  {
-    this->m_Reader.close();
-  }
-} // end constructor
-
-
-/**
  * ***************GenerateOutputInformation ***********
  */
 
@@ -130,10 +104,9 @@ TransformixInputPointFileReader<TOutputMesh>::GenerateData()
         {
           std::ostringstream msg;
           msg << "The file is not large enough. \n"
-              << "Filename: " << this->m_FileName << std::endl;
+              << "Filename: " << this->m_FileName << '\n';
           MeshFileReaderException e(__FILE__, __LINE__, msg.str().c_str(), ITK_LOCATION);
           throw e;
-          return;
         }
       }
       points->push_back(point);
@@ -143,10 +116,9 @@ TransformixInputPointFileReader<TOutputMesh>::GenerateData()
   {
     std::ostringstream msg;
     msg << "The file has unexpectedly been closed. \n"
-        << "Filename: " << this->m_FileName << std::endl;
+        << "Filename: " << this->m_FileName << '\n';
     MeshFileReaderException e(__FILE__, __LINE__, msg.str().c_str(), ITK_LOCATION);
     throw e;
-    return;
   }
 
   /** set in output */

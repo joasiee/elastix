@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkTransformToDeterminantOfSpatialJacobianSource.h,v $
-  Language:  C++
   Date:      $Date: 2008-08-01 13:42:00 $
   Version:   $Revision: 1.3 $
 
@@ -75,6 +74,8 @@ template <class TOutputImage, class TTransformPrecisionType = double>
 class ITK_TEMPLATE_EXPORT TransformToDeterminantOfSpatialJacobianSource : public ImageSource<TOutputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(TransformToDeterminantOfSpatialJacobianSource);
+
   /** Standard class typedefs. */
   using Self = TransformToDeterminantOfSpatialJacobianSource;
   using Superclass = ImageSource<TOutputImage>;
@@ -211,10 +212,6 @@ protected:
   LinearGenerateData();
 
 private:
-  TransformToDeterminantOfSpatialJacobianSource(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Member variables. */
   RegionType           m_OutputRegion{}; // region of the output image
   TransformPointerType m_Transform{

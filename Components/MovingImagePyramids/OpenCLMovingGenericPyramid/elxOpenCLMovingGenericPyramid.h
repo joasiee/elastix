@@ -48,6 +48,8 @@ template <class TElastix>
 class ITK_TEMPLATE_EXPORT OpenCLMovingGenericPyramid : public MovingGenericPyramid<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(OpenCLMovingGenericPyramid);
+
   /** Standard ITK-stuff. */
   using Self = OpenCLMovingGenericPyramid;
   using Superclass = MovingGenericPyramid<TElastix>;
@@ -112,12 +114,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  OpenCLMovingGenericPyramid(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   /** Register/Unregister factories. */
   void

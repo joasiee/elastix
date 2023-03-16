@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedTranslationTransform.h,v $
-  Language:  C++
   Date:      $Date: 2007-07-15 16:38:25 $
   Version:   $Revision: 1.36 $
 
@@ -44,8 +43,8 @@ namespace itk
 
 /** \brief Translation transformation of a vector space (e.g. space coordinates)
  *
- * The same functionality could be obtained by using the Affine tranform,
- * but with a large difference in performace.
+ * The same functionality could be obtained by using the Affine transform,
+ * but with a large difference in performance.
  *
  * \ingroup Transforms
  */
@@ -55,6 +54,8 @@ template <class TScalarType = double, // Data type for scalars (float or double)
 class ITK_TEMPLATE_EXPORT AdvancedTranslationTransform : public AdvancedTransform<TScalarType, NDimensions, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedTranslationTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedTranslationTransform;
   using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
@@ -186,7 +187,7 @@ public:
    * spatial Hessian of the transformation.
    */
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               SpatialHessianType &           sh,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override;
@@ -250,13 +251,12 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
-  AdvancedTranslationTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   OutputVectorType m_Offset{}; // Offset of the transformation
 
-  JacobianType                        m_LocalJacobian{ JacobianType(NDimensions, NDimensions) };
+  // The Jacobian of this transform is constant. Therefore it can be shared among all the threads.
+  const JacobianType m_LocalJacobian{
+    Matrix<TScalarType, NDimensions, NDimensions>::GetIdentity().GetVnlMatrix().as_matrix()
+  };
   const SpatialJacobianType           m_SpatialJacobian{ SpatialJacobianType::GetIdentity() };
   const SpatialHessianType            m_SpatialHessian{};
   NonZeroJacobianIndicesType          m_NonZeroJacobianIndices{ NonZeroJacobianIndicesType(NDimensions) };

@@ -22,7 +22,7 @@
 
 #include "itkRecursiveBSplineInterpolationWeightFunction.h"
 #include "itkRecursiveBSplineTransformImplementation.h"
-#include "elxDefaultConstructibleSubclass.h"
+#include "elxDefaultConstruct.h"
 
 namespace itk
 {
@@ -40,6 +40,8 @@ class ITK_TEMPLATE_EXPORT RecursiveBSplineTransform
   : public AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(RecursiveBSplineTransform);
+
   /** Standard class typedefs. */
   using Self = RecursiveBSplineTransform;
   using Superclass = AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>;
@@ -121,7 +123,7 @@ public:
 
   /** Compute the Jacobian of the transformation. */
   void
-  GetJacobian(const InputPointType &       ipp,
+  GetJacobian(const InputPointType &       inputPoint,
               JacobianType &               j,
               NonZeroJacobianIndicesType & nonZeroJacobianIndices) const override;
 
@@ -129,22 +131,22 @@ public:
    * The Jacobian is (partially) constructed inside this function, but not returned.
    */
   void
-  EvaluateJacobianWithImageGradientProduct(const InputPointType &          ipp,
+  EvaluateJacobianWithImageGradientProduct(const InputPointType &          inputPoint,
                                            const MovingImageGradientType & movingImageGradient,
                                            DerivativeType &                imageJacobian,
                                            NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override;
 
   /** Compute the spatial Jacobian of the transformation. */
   void
-  GetSpatialJacobian(const InputPointType & ipp, SpatialJacobianType & sj) const override;
+  GetSpatialJacobian(const InputPointType & inputPoint, SpatialJacobianType & sj) const override;
 
   /** Compute the spatial Hessian of the transformation. */
   void
-  GetSpatialHessian(const InputPointType & ipp, SpatialHessianType & sh) const override;
+  GetSpatialHessian(const InputPointType & inputPoint, SpatialHessianType & sh) const override;
 
   /** Compute the Jacobian of the spatial Jacobian of the transformation. */
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override;
 
@@ -152,14 +154,14 @@ public:
    * spatial Jacobian of the transformation.
    */
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                SpatialJacobianType &           sj,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override;
 
   /** Compute the Jacobian of the spatial Hessian of the transformation. */
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override;
 
@@ -167,7 +169,7 @@ public:
    * spatial Hessian of the transformation.
    */
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               SpatialHessianType &           sh,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override;
@@ -185,17 +187,13 @@ protected:
                                 const RegionType &           supportRegion) const override;
 
 private:
-  RecursiveBSplineTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   using ImplementationType =
     RecursiveBSplineTransformImplementation<NDimensions, NDimensions, VSplineOrder, TScalarType>;
 
   using RecursiveBSplineWeightFunctionType =
     itk::RecursiveBSplineInterpolationWeightFunction<TScalarType, NDimensions, VSplineOrder>;
 
-  elastix::DefaultConstructibleSubclass<RecursiveBSplineWeightFunctionType> m_RecursiveBSplineWeightFunction;
+  elastix::DefaultConstruct<RecursiveBSplineWeightFunctionType> m_RecursiveBSplineWeightFunction{};
 };
 
 } // end namespace itk

@@ -59,6 +59,8 @@ template <class TFixedImage, class TMovingImage>
 class ITK_TEMPLATE_EXPORT CombinationImageToImageMetric : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(CombinationImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = CombinationImageToImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -477,26 +479,22 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Store the metrics and the corresponding weights. */
-  unsigned int                                 m_NumberOfMetrics;
-  std::vector<SingleValuedCostFunctionPointer> m_Metrics;
-  std::vector<double>                          m_MetricWeights;
-  std::vector<double>                          m_MetricRelativeWeights;
-  bool                                         m_UseRelativeWeights;
-  std::vector<bool>                            m_UseMetric;
-  mutable std::vector<MeasureType>             m_MetricValues;
-  mutable std::vector<DerivativeType>          m_MetricDerivatives;
-  mutable std::vector<double>                  m_MetricDerivativesMagnitude;
-  mutable std::vector<double>                  m_MetricComputationTime;
+  unsigned int                                 m_NumberOfMetrics{};
+  std::vector<SingleValuedCostFunctionPointer> m_Metrics{};
+  std::vector<double>                          m_MetricWeights{};
+  std::vector<double>                          m_MetricRelativeWeights{};
+  bool                                         m_UseRelativeWeights{};
+  std::vector<bool>                            m_UseMetric{};
+  mutable std::vector<MeasureType>             m_MetricValues{};
+  mutable std::vector<DerivativeType>          m_MetricDerivatives{};
+  mutable std::vector<double>                  m_MetricDerivativesMagnitude{};
+  mutable std::vector<double>                  m_MetricComputationTime{};
 
   /** Dummy image region and derivatives. */
-  FixedImageRegionType m_NullFixedImageRegion;
-  DerivativeType       m_NullDerivative;
+  FixedImageRegionType m_NullFixedImageRegion{};
+  DerivativeType       m_NullDerivative{};
 
 private:
-  CombinationImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Initialize some multi-threading related parameters.
    * Overrides function in AdvancedImageToImageMetric, because
    * here we use other parameters.

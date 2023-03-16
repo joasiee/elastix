@@ -93,6 +93,8 @@ class ITK_TEMPLATE_EXPORT ConjugateGradient
   , public OptimizerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ConjugateGradient);
+
   /** Standard ITK.*/
   using Self = ConjugateGradient;
   using Superclass1 = GenericConjugateGradientOptimizer;
@@ -186,10 +188,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  ConjugateGradient(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 
   void
   InvokeIterationEvent(const itk::EventObject & event);

@@ -78,6 +78,8 @@ namespace itk
 class ParameterFileParser : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ParameterFileParser);
+
   /** Standard ITK typedefs. */
   using Self = ParameterFileParser;
   using Superclass = Object;
@@ -116,49 +118,19 @@ public:
   static ParameterMapType
   ReadParameterMap(const std::string & fileName);
 
+  /** Converts the specified text string to the corresponding parameter map, assuming that the text is formatted
+   * according to the elastix parameter text file format. */
+  static ParameterMapType
+  ConvertToParameterMap(const std::string & text);
+
 protected:
   ParameterFileParser();
   ~ParameterFileParser() override;
 
 private:
-  ParameterFileParser(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  /** Performs the following checks:
-   * - Is a filename is given
-   * - Does the file exist
-   * - Is a text file, i.e. does it end with .txt
-   * If one of these conditions fail, an exception is thrown.
-   */
-  void
-  BasicFileChecking() const;
-
-  /** Checks a line.
-   * - Returns  true if it is a valid line: containing a parameter.
-   * - Returns false if it is a valid line: empty or comment.
-   * - Throws an exception if it is not a valid line.
-   */
-  bool
-  CheckLine(const std::string & line, std::string & lineOut) const;
-
-  /** Fills m_ParameterMap with valid entries. */
-  void
-  GetParameterFromLine(const std::string & fullLine, const std::string & line);
-
-  /** Splits a line in parameter name and values. */
-  void
-  SplitLine(const std::string & fullLine, const std::string & line, std::vector<std::string> & splittedLine) const;
-
-  /** Uniform way to throw exceptions when the parameter file appears to be
-   * invalid.
-   */
-  void
-  ThrowException(const std::string & line, const std::string & hint) const;
-
   /** Member variables. */
-  std::string      m_ParameterFileName;
-  ParameterMapType m_ParameterMap;
+  std::string      m_ParameterFileName{};
+  ParameterMapType m_ParameterMap{};
 };
 
 } // end of namespace itk

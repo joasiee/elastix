@@ -87,7 +87,7 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::Initialize()
     /** Compute expected value (mean) and variance. */
     float expectedValue = sum / static_cast<float>(numlast);
     sumvar += sumsq / static_cast<float>(numlast) - expectedValue * expectedValue;
-    num++;
+    ++num;
 
     it.NextLine();
   }
@@ -240,7 +240,7 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValue(
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Determine random last dimension positions if needed. */
     if (this->m_SampleLastDimensionRandomly)
@@ -249,8 +249,8 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValue(
     }
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     /** Loop over the slowest varying dimension. */
     float              sumValues = 0.0;
@@ -284,7 +284,7 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValue(
 
       if (sampleOk)
       {
-        numSamplesOk++;
+        ++numSamplesOk;
         sumValues += movingImageValue;
         sumValuesSquared += movingImageValue * movingImageValue;
       } // end if sampleOk
@@ -417,7 +417,7 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValueAndDeri
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Determine random last dimension positions if needed. */
     if (this->m_SampleLastDimensionRandomly)
@@ -429,8 +429,8 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValueAndDeri
     std::fill(MT.begin(), MT.end(), itk::NumericTraits<RealType>::ZeroValue());
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     /** Loop over the slowest varying dimension. */
     float        sumValues = 0.0;
@@ -465,7 +465,7 @@ VarianceOverLastDimensionImageMetric<TFixedImage, TMovingImage>::GetValueAndDeri
       if (sampleOk)
       {
         /** Update value terms **/
-        numSamplesOk++;
+        ++numSamplesOk;
         sumValues += movingImageValue;
         sumValuesSquared += movingImageValue * movingImageValue;
 

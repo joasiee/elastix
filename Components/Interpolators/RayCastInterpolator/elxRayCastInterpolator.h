@@ -47,6 +47,8 @@ class ITK_TEMPLATE_EXPORT RayCastInterpolator
   , public InterpolatorBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(RayCastInterpolator);
+
   /** Standard ITK-stuff. */
   using Self = RayCastInterpolator;
   using Superclass1 = itk::AdvancedRayCastInterpolateImageFunction<typename InterpolatorBase<TElastix>::InputImageType,
@@ -114,13 +116,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  RayCastInterpolator(const Self &) = delete;
-
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   EulerTransformPointer       m_PreTransform;
   TransformParametersType     m_PreParameters;

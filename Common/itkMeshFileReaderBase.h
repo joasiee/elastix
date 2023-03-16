@@ -37,6 +37,8 @@ template <class TOutputMesh>
 class ITK_TEMPLATE_EXPORT MeshFileReaderBase : public MeshSource<TOutputMesh>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MeshFileReaderBase);
+
   /** Standard class typedefs. */
   using Self = MeshFileReaderBase;
   using Superclass = MeshSource<TOutputMesh>;
@@ -73,7 +75,7 @@ public:
   EnlargeOutputRequestedRegion(DataObject * output) override;
 
 protected:
-  MeshFileReaderBase();
+  MeshFileReaderBase() = default;
   ~MeshFileReaderBase() override = default;
 
   /** Test whether the given filename exist and it is readable,
@@ -85,12 +87,7 @@ protected:
   virtual void
   TestFileExistanceAndReadability();
 
-  std::string m_FileName;
-
-private:
-  MeshFileReaderBase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  std::string m_FileName{};
 };
 
 } // end namespace itk

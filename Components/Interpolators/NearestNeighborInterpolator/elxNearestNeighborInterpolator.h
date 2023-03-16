@@ -45,6 +45,8 @@ class ITK_TEMPLATE_EXPORT NearestNeighborInterpolator
   , public InterpolatorBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(NearestNeighborInterpolator);
+
   /** Standard ITK-stuff. */
   using Self = NearestNeighborInterpolator;
   using Superclass1 = itk::NearestNeighborInterpolateImageFunction<typename InterpolatorBase<TElastix>::InputImageType,
@@ -88,12 +90,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  NearestNeighborInterpolator(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

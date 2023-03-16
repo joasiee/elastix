@@ -36,6 +36,8 @@ template <class TListSample>
 class ITK_TEMPLATE_EXPORT ANNStandardTreeSearch : public BinaryANNTreeSearchBase<TListSample>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ANNStandardTreeSearch);
+
   /** Standard itk. */
   using Self = ANNStandardTreeSearch;
   using Superclass = BinaryANNTreeSearchBase<TListSample>;
@@ -76,12 +78,7 @@ protected:
   ~ANNStandardTreeSearch() override = default;
 
   /** Member variables. */
-  double m_ErrorBound;
-
-private:
-  ANNStandardTreeSearch(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  double m_ErrorBound{};
 };
 
 } // end namespace itk

@@ -43,6 +43,8 @@ template <class TElastix>
 class ITK_TEMPLATE_EXPORT ResampleInterpolatorBase : public BaseComponentSE<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ResampleInterpolatorBase);
+
   /** Standard ITK stuff. */
   using Self = ResampleInterpolatorBase;
   using Superclass = BaseComponentSE<TElastix>;
@@ -95,7 +97,7 @@ public:
 
   /** Function to write transform-parameters to a file. */
   void
-  WriteToFile(xl::xoutsimple & transformationParameterInfo) const;
+  WriteToFile(std::ostream & transformationParameterInfo) const;
 
   /** Function to create transform-parameters map. */
   void
@@ -115,12 +117,6 @@ private:
   {
     return {};
   }
-
-  /** The deleted copy constructor. */
-  ResampleInterpolatorBase(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

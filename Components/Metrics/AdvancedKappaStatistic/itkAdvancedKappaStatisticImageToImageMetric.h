@@ -19,6 +19,7 @@
 #define itkAdvancedKappaStatisticImageToImageMetric_h
 
 #include "itkAdvancedImageToImageMetric.h"
+#include <vector>
 
 namespace itk
 {
@@ -57,6 +58,8 @@ class ITK_TEMPLATE_EXPORT AdvancedKappaStatisticImageToImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedKappaStatisticImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = AdvancedKappaStatisticImageToImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -168,7 +171,7 @@ public:
 
 protected:
   AdvancedKappaStatisticImageToImageMetric();
-  ~AdvancedKappaStatisticImageToImageMetric() override;
+  ~AdvancedKappaStatisticImageToImageMetric() override = default;
 
   /** PrintSelf. */
   void
@@ -210,11 +213,11 @@ protected:
   InitializeThreadingParameters() const override;
 
   /** Get value and derivatives for each thread. */
-  inline void
+  void
   ThreadedGetValueAndDerivative(ThreadIdType threadID) override;
 
   /** Gather the values and derivatives from all threads */
-  inline void
+  void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
 
   /** AccumulateDerivatives threader callback function */
@@ -222,14 +225,10 @@ protected:
   AccumulateDerivativesThreaderCallback(void * arg);
 
 private:
-  AdvancedKappaStatisticImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  bool     m_UseForegroundValue;
-  RealType m_ForegroundValue;
-  RealType m_Epsilon;
-  bool     m_Complement;
+  bool     m_UseForegroundValue{};
+  RealType m_ForegroundValue{};
+  RealType m_Epsilon{};
+  bool     m_Complement{};
 
   /** Threading related parameters. */
 
@@ -259,8 +258,8 @@ private:
   itkAlignedTypedef(ITK_CACHE_LINE_ALIGNMENT,
                     PaddedKappaGetValueAndDerivativePerThreadStruct,
                     AlignedKappaGetValueAndDerivativePerThreadStruct);
-  mutable AlignedKappaGetValueAndDerivativePerThreadStruct * m_KappaGetValueAndDerivativePerThreadVariables;
-  mutable ThreadIdType                                       m_KappaGetValueAndDerivativePerThreadVariablesSize;
+  mutable std::vector<AlignedKappaGetValueAndDerivativePerThreadStruct>
+    m_KappaGetValueAndDerivativePerThreadVariables{};
 };
 
 } // end namespace itk

@@ -59,6 +59,8 @@ class ITK_TEMPLATE_EXPORT FullSearch
   , public OptimizerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(FullSearch);
+
   /** Standard ITK.*/
   using Self = FullSearch;
   using Superclass1 = itk::FullSearchOptimizer;
@@ -148,10 +150,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  FullSearch(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

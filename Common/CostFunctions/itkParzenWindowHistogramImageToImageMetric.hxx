@@ -71,22 +71,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ParzenWindow
   /** Initialize the m_ParzenWindowHistogramThreaderParameters */
   this->m_ParzenWindowHistogramThreaderParameters.m_Metric = this;
 
-  // Multi-threading structs
-  this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables = nullptr;
-  this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariablesSize = 0;
-
 } // end Constructor
-
-
-/**
- * ******************* Destructor *******************
- */
-
-template <class TFixedImage, class TMovingImage>
-ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::~ParzenWindowHistogramImageToImageMetric()
-{
-  delete[] this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables;
-} // end Destructor
 
 
 /**
@@ -458,22 +443,15 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::InitializeTh
   const ThreadIdType numberOfThreads = Self::GetNumberOfWorkUnits();
 
   /** Only resize the array of structs when needed. */
-  if (this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariablesSize != numberOfThreads)
-  {
-    delete[] this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables;
-    this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables =
-      new AlignedParzenWindowHistogramGetValueAndDerivativePerThreadStruct[numberOfThreads];
-    this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariablesSize = numberOfThreads;
-  }
+  m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables.resize(numberOfThreads);
 
   /** Some initialization. */
-  for (ThreadIdType i = 0; i < numberOfThreads; ++i)
+  for (auto & perThreadVariable : m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables)
   {
-    this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables[i].st_NumberOfPixelsCounted =
-      NumericTraits<SizeValueType>::Zero;
+    perThreadVariable.st_NumberOfPixelsCounted = NumericTraits<SizeValueType>::Zero;
 
     // Initialize the joint pdf
-    JointPDFPointer & jointPDF = this->m_ParzenWindowHistogramGetValueAndDerivativePerThreadVariables[i].st_JointPDF;
+    JointPDFPointer & jointPDF = perThreadVariable.st_JointPDF;
     if (jointPDF.IsNull())
     {
       jointPDF = JointPDFType::New();
@@ -687,7 +665,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::UpdateJointP
 template <class TFixedImage, class TMovingImage>
 void
 ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::NormalizeJointPDF(JointPDFType * pdf,
-                                                                                      const double & factor) const
+                                                                                      const double   factor) const
 {
   using JointPDFIteratorType = ImageScanlineIterator<JointPDFType>;
   JointPDFIteratorType it(pdf, pdf->GetBufferedRegion());
@@ -713,7 +691,7 @@ template <class TFixedImage, class TMovingImage>
 void
 ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::NormalizeJointPDFDerivatives(
   JointPDFDerivativesType * pdf,
-  const double &            factor) const
+  const double              factor) const
 {
   using JointPDFDerivativesIteratorType = ImageScanlineIterator<JointPDFDerivativesType>;
   JointPDFDerivativesIteratorType it(pdf, pdf->GetBufferedRegion());
@@ -740,7 +718,7 @@ void
 ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ComputeMarginalPDF(
   const JointPDFType * itkNotUsed(jointPDF),
   MarginalPDFType &    marginalPDF,
-  const unsigned int & direction) const
+  const unsigned int   direction) const
 {
   using JointPDFLinearIterator = ImageLinearIteratorWithIndex<JointPDFType>;
   // \todo: bug? shouldn't this be over the function argument jointPDF ?
@@ -1034,7 +1012,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ComputePDFsS
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
     RealType                    movingImageValue;
 
     /** Transform point. */
@@ -1056,7 +1034,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ComputePDFsS
       this->m_NumberOfPixelsCounted++;
 
       /** Get the fixed image value. */
-      RealType fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      RealType fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
 
       /** Make sure the values fall within the histogram range. */
       fixedImageValue = this->GetFixedImageLimiter()->Evaluate(fixedImageValue);
@@ -1159,7 +1137,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ThreadedComp
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
     RealType                    movingImageValue;
 
     /** Transform point. */
@@ -1178,10 +1156,10 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ThreadedComp
 
     if (sampleOk)
     {
-      numberOfPixelsCounted++;
+      ++numberOfPixelsCounted;
 
       /** Get the fixed image value. */
-      RealType fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      RealType fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
 
       /** Make sure the values fall within the histogram range. */
       fixedImageValue = this->GetFixedImageLimiter()->Evaluate(fixedImageValue);
@@ -1350,7 +1328,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ComputePDFsA
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
     RealType                    movingImageValue;
     MovingImageDerivativeType   movingImageDerivative;
 
@@ -1374,7 +1352,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ComputePDFsA
       this->m_NumberOfPixelsCounted++;
 
       /** Get the fixed image value. */
-      RealType fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      RealType fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
 
       /** Make sure the values fall within the histogram range. */
       fixedImageValue = this->GetFixedImageLimiter()->Evaluate(fixedImageValue);
@@ -1464,7 +1442,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ComputePDFsA
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform point and check if it is inside the B-spline support region.
      * if not, skip this sample.
@@ -1473,7 +1451,7 @@ ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>::ComputePDFsA
 
     {
       /** Get the fixed image value and make sure the value falls within the histogram range. */
-      RealType fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      RealType fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
       fixedImageValue = this->GetFixedImageLimiter()->Evaluate(fixedImageValue);
 
       /** Check if the point is inside the moving mask. */

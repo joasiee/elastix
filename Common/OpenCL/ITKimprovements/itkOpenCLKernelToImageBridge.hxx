@@ -72,7 +72,6 @@ OpenCLKernelToImageBridge<TImage>::SetImageDataManager(OpenCLKernel &           
   {
     itkGenericExceptionMacro("OpenCLKernelToImageBridge::SetImageDataManager"
                              " supports only 1D/2D/3D images.");
-    return;
   }
 
   cl_int error;
@@ -117,7 +116,6 @@ OpenCLKernelToImageBridge<TImage>::SetImage(OpenCLKernel &                      
   {
     itkGenericExceptionMacro("OpenCLKernelToImageBridge::SetImage"
                              " supports only 1D/2D/3D images.");
-    return;
   }
 
   OpenCLKernelToImageBridge<TImage>::SetImageDataManager(kernel, argumentIndex, image->GetGPUDataManager(), updateCPU);
@@ -136,14 +134,12 @@ OpenCLKernelToImageBridge<TImage>::SetImageMetaData(OpenCLKernel &              
   {
     itkGenericExceptionMacro("OpenCLKernelToImageBridge::SetImageMetaData"
                              " supports only 1D/2D/3D images.");
-    return;
   }
 
   if (imageMetaDataManager.IsNull())
   {
     itkGenericExceptionMacro(<< "The data manager is NULL."
                                 "Unable to set ITK image meta data to the kernel.");
-    return;
   }
 
   // Set image base
@@ -223,7 +219,7 @@ OpenCLKernelToImageBridge<TImage>::SetImageMetaData(OpenCLKernel &              
             imageBase2D.Direction.s[index] = static_cast<float>(direction[i][j]);
             imageBase2D.IndexToPhysicalPoint.s[index] = static_cast<float>(i2pp[i][j]);
             imageBase2D.PhysicalPointToIndex.s[index] = static_cast<float>(pp2i[i][j]);
-            index++;
+            ++index;
           }
         }
       }
@@ -280,7 +276,7 @@ OpenCLKernelToImageBridge<TImage>::SetImageMetaData(OpenCLKernel &              
             imageBase3D.Direction.s[index] = static_cast<float>(direction[i][j]);
             imageBase3D.IndexToPhysicalPoint.s[index] = static_cast<float>(i2pp[i][j]);
             imageBase3D.PhysicalPointToIndex.s[index] = static_cast<float>(pp2i[i][j]);
-            index++;
+            ++index;
           }
         }
         for (unsigned int i = 9; i < 16; ++i)
@@ -335,7 +331,6 @@ OpenCLKernelToImageBridge<TImage>::SetDirection(OpenCLKernel &                  
   {
     itkGenericExceptionMacro("OpenCLKernelToImageBridge::SetDirection"
                              " supports only 1D/2D/3D images.");
-    return;
   }
   kernel.SetArg(argumentIndex, direction);
 }
@@ -352,7 +347,6 @@ OpenCLKernelToImageBridge<TImage>::SetSize(OpenCLKernel &                       
   {
     itkGenericExceptionMacro("OpenCLKernelToImageBridge::SetSize"
                              " supports only 1D/2D/3D images.");
-    return;
   }
   kernel.SetArg(argumentIndex, size);
 }
@@ -369,7 +363,6 @@ itk::OpenCLKernelToImageBridge<TImage>::SetOrigin(OpenCLKernel &                
   {
     itkGenericExceptionMacro("OpenCLKernelToImageBridge::SetOrigin"
                              " supports only 1D/2D/3D images.");
-    return;
   }
   kernel.SetArg(argumentIndex, origin);
 }

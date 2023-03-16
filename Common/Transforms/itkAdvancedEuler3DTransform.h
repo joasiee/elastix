@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedEuler3DTransform.h,v $
-  Language:  C++
   Date:      $Date: 2008-10-13 15:36:31 $
   Version:   $Revision: 1.14 $
 
@@ -65,6 +64,8 @@ template <class TScalarType = double>
 class ITK_TEMPLATE_EXPORT AdvancedEuler3DTransform : public AdvancedRigid3DTransform<TScalarType>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedEuler3DTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedEuler3DTransform;
   using Superclass = AdvancedRigid3DTransform<TScalarType>;
@@ -157,14 +158,10 @@ protected:
   PrecomputeJacobianOfSpatialJacobian();
 
 private:
-  AdvancedEuler3DTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  ScalarType m_AngleX;
-  ScalarType m_AngleY;
-  ScalarType m_AngleZ;
-  bool       m_ComputeZYX;
+  ScalarType m_AngleX{};
+  ScalarType m_AngleY{};
+  ScalarType m_AngleZ{};
+  bool       m_ComputeZYX{};
 };
 
 // class AdvancedEuler3DTransform

@@ -38,8 +38,9 @@
 #include "elxMacro.h"
 #include "elxElastixTemplate.h"
 #include "elxSupportedImageTypes.h"
+#include "elxComponentInstaller.h"
 
 /** Writing to screen and logfiles etc. */
-#include "xoutmain.h"
+#include "elxlog.h"
 
 #endif //#ifndef elxIncludes_h

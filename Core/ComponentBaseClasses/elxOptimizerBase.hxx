@@ -19,24 +19,13 @@
 #define elxOptimizerBase_hxx
 
 #include "elxOptimizerBase.h"
+#include "elxDeref.h"
 
 #include "itkSingleValuedNonLinearOptimizer.h"
 #include "itk_zlib.h"
 
 namespace elastix
 {
-
-/**
- * ****************** Constructor ***********************************
- */
-
-template <class TElastix>
-OptimizerBase<TElastix>::OptimizerBase()
-{
-  this->m_NewSamplesEveryIteration = false;
-
-} // end Constructor
-
 
 /**
  * ****************** SetCurrentPositionPublic ************************
@@ -46,10 +35,10 @@ template <class TElastix>
 void
 OptimizerBase<TElastix>::SetCurrentPositionPublic(const ParametersType & /** param */)
 {
-  xl::xout["error"] << "ERROR: This function should be overridden or just not used.\n";
-  xl::xout["error"] << "  Are you using BSplineTransformWithDiffusion in combination with another optimizer than the "
-                       "StandardGradientDescentOptimizer? Don't!"
-                    << std::endl;
+  log::error(std::ostringstream{}
+             << "ERROR: This function should be overridden or just not used.\n"
+             << "  Are you using BSplineTransformWithDiffusion in combination with another optimizer than the "
+                "StandardGradientDescentOptimizer? Don't!");
 
   /** Throw an exception if this function is not overridden. */
   itkExceptionMacro(<< "ERROR: The SetCurrentPositionPublic method is not implemented in your optimizer");
@@ -68,12 +57,11 @@ OptimizerBase<TElastix>::BeforeEachResolutionBase()
   /** Get the current resolution level. */
   unsigned int level = this->GetRegistration()->GetAsITKBaseType()->GetCurrentLevel();
 
-  bool partialEvaluations = false;
-  this->m_Configuration->ReadParameter(partialEvaluations, "PartialEvaluations", this->GetComponentLabel(), level, 0);
+  const Configuration & configuration = Deref(Superclass::GetConfiguration());
 
   /** Check if after every iteration a new sample set should be created. */
-  this->m_NewSamplesEveryIteration = !partialEvaluations;
-  this->GetConfiguration()->ReadParameter(
+  this->m_NewSamplesEveryIteration = false;
+  configuration.ReadParameter(
     this->m_NewSamplesEveryIteration, "NewSamplesEveryIteration", this->GetComponentLabel(), level, 0);
 } // end BeforeEachResolutionBase()
 
@@ -102,7 +90,7 @@ OptimizerBase<TElastix>::AfterRegistrationBase()
   uLong                 crc = crc32(0L, Z_NULL, 0);
   crc = crc32(crc, crcInputData, N * sizeof(ParametersValueType));
 
-  elxout << "\nRegistration result checksum: " << crc << std::endl;
+  log::info(std::ostringstream{} << "\nRegistration result checksum: " << crc);
 
 } // end AfterRegistrationBase()
 
@@ -138,6 +126,67 @@ OptimizerBase<TElastix>::GetNewSamplesEveryIteration() const
   return this->m_NewSamplesEveryIteration;
 
 } // end GetNewSamplesEveryIteration()
+
+
+/**
+ * **************** PrintSettingsVector **********************
+ */
+
+template <class TElastix>
+void
+OptimizerBase<TElastix>::PrintSettingsVector(const SettingsVectorType & settings)
+{
+  const unsigned long nrofres = settings.size();
+
+  std::ostringstream outputStringStream;
+  outputStringStream << std::showpoint << std::fixed;
+
+  /** Print to log file */
+  outputStringStream << "( SP_a ";
+  for (unsigned int i = 0; i < nrofres; ++i)
+  {
+    outputStringStream << settings[i].a << " ";
+  }
+  outputStringStream << ")\n"
+
+                     << "( SP_A ";
+  for (unsigned int i = 0; i < nrofres; ++i)
+  {
+    outputStringStream << settings[i].A << " ";
+  }
+  outputStringStream << ")\n"
+
+                     << "( SP_alpha ";
+  for (unsigned int i = 0; i < nrofres; ++i)
+  {
+    outputStringStream << settings[i].alpha << " ";
+  }
+  outputStringStream << ")\n"
+
+                     << "( SigmoidMax ";
+  for (unsigned int i = 0; i < nrofres; ++i)
+  {
+    outputStringStream << settings[i].fmax << " ";
+  }
+  outputStringStream << ")\n"
+
+                     << "( SigmoidMin ";
+  for (unsigned int i = 0; i < nrofres; ++i)
+  {
+    outputStringStream << settings[i].fmin << " ";
+  }
+  outputStringStream << ")\n"
+
+                     << "( SigmoidScale ";
+  for (unsigned int i = 0; i < nrofres; ++i)
+  {
+    outputStringStream << settings[i].omega << " ";
+  }
+  outputStringStream << ")\n";
+
+  log::info(outputStringStream.str());
+
+} // end PrintSettingsVector()
 
 
 /**

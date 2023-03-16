@@ -240,7 +240,7 @@ ConjugateGradientFRPR<TElastix>::AfterRegistration()
   /** Print the best metric value */
 
   double bestValue = this->GetValue();
-  elxout << '\n' << "Final metric value  = " << bestValue << std::endl;
+  log::info(std::ostringstream{} << '\n' << "Final metric value  = " << bestValue);
 
 } // end AfterRegistration
 
@@ -296,7 +296,7 @@ ConjugateGradientFRPR<TElastix>::GetValueAndDerivative(ParametersType p, double 
   }
 
   this->Superclass1::GetValueAndDerivative(p, val, xi);
-  this->m_CurrentDerivativeMagnitude = (*xi).magnitude();
+  this->m_CurrentDerivativeMagnitude = xi->magnitude();
 
 } // end GetValueAndDerivative
 

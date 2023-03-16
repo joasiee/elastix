@@ -44,6 +44,8 @@ template <unsigned int VSplineOrder = 3>
 class ITK_TEMPLATE_EXPORT BSplineSecondOrderDerivativeKernelFunction2 : public KernelFunctionBase<double>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(BSplineSecondOrderDerivativeKernelFunction2);
+
   /** Standard class typedefs. */
   using Self = BSplineSecondOrderDerivativeKernelFunction2;
   using Superclass = KernelFunctionBase<double>;
@@ -77,7 +79,7 @@ public:
 
 
   /** Evaluate the function. */
-  inline double
+  double
   Evaluate(const double & u) const override
   {
     return Self::FastEvaluate(u);
@@ -85,8 +87,8 @@ public:
 
 
   /** Evaluate the function. */
-  inline void
-  Evaluate(const double & u, double * weights) const
+  void
+  Evaluate(const double u, double * weights) const
   {
     Self::FastEvaluate(u, weights);
   }
@@ -105,10 +107,6 @@ protected:
 
 
 private:
-  BSplineSecondOrderDerivativeKernelFunction2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Structures to control overloaded versions of Evaluate */
   struct DispatchBase
   {};
@@ -123,8 +121,8 @@ private:
   // Second order derivative not defined.
 
   /** Second order spline. */
-  inline static double
-  Evaluate(const Dispatch<2> &, const double & u)
+  static double
+  Evaluate(const Dispatch<2> &, const double u)
   {
     double absValue = std::abs(u);
 
@@ -151,8 +149,8 @@ private:
   }
 
 
-  inline static void
-  Evaluate(const Dispatch<2> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<2> &, const double u, double * weights)
   {
     weights[0] = 1.0;
     weights[1] = -2.0;
@@ -161,8 +159,8 @@ private:
 
 
   /**  Third order spline. */
-  inline static double
-  Evaluate(const Dispatch<3> &, const double & u)
+  static double
+  Evaluate(const Dispatch<3> &, const double u)
   {
     const double absValue = std::abs(u);
 
@@ -181,8 +179,8 @@ private:
   }
 
 
-  inline static void
-  Evaluate(const Dispatch<3> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<3> &, const double u, double * weights)
   {
     weights[0] = -u + 2.0;
     weights[1] = 3.0 * u - 5.0;
@@ -192,15 +190,15 @@ private:
 
 
   /** Unimplemented spline order */
-  inline static double
-  Evaluate(const DispatchBase &, const double &)
+  static double
+  Evaluate(const DispatchBase &, const double)
   {
     itkGenericExceptionMacro("Evaluate not implemented for spline order " << SplineOrder);
   }
 
 
-  inline static void
-  Evaluate(const DispatchBase &, const double &, double *)
+  static void
+  Evaluate(const DispatchBase &, const double, double *)
   {
     itkGenericExceptionMacro("Evaluate not implemented for spline order " << SplineOrder);
   }

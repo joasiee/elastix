@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedTransform.txx,v $
-  Language:  C++
   Date:      $Date: 2007-11-20 20:08:16 $
   Version:   $Revision: 1.27 $
 
@@ -40,41 +39,13 @@ namespace itk
 {
 
 /**
- * ********************* Constructor ****************************
- */
-
-template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::AdvancedTransform()
-  : Superclass()
-{
-  this->m_HasNonZeroSpatialHessian = true;
-  this->m_HasNonZeroJacobianOfSpatialHessian = true;
-
-} // end Constructor
-
-
-/**
- * ********************* Constructor ****************************
- */
-
-template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
-AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::AdvancedTransform(
-  NumberOfParametersType numberOfParameters)
-  : Superclass(numberOfParameters)
-{
-  this->m_HasNonZeroSpatialHessian = true;
-  this->m_HasNonZeroJacobianOfSpatialHessian = true;
-} // end Constructor
-
-
-/**
  * ********************* EvaluateJacobianWithImageGradientProduct ****************************
  */
 
 template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
 void
 AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::EvaluateJacobianWithImageGradientProduct(
-  const InputPointType &          ipp,
+  const InputPointType &          inputPoint,
   const MovingImageGradientType & movingImageGradient,
   DerivativeType &                imageJacobian,
   NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const
@@ -82,7 +53,7 @@ AdvancedTransform<TScalarType, NInputDimensions, NOutputDimensions>::EvaluateJac
   /** Obtain the Jacobian. Using thread-local storage, so that both the allocation and the deallocation of the internal
    * data occurs only once per thread, as it has appeared as a major performance bottleneck. */
   thread_local JacobianType jacobian;
-  this->GetJacobian(ipp, jacobian, nonZeroJacobianIndices);
+  this->GetJacobian(inputPoint, jacobian, nonZeroJacobianIndices);
 
   /** Perform a full multiplication. */
   using JacobianIteratorType = typename JacobianType::const_iterator;

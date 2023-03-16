@@ -67,6 +67,8 @@ class OpenCLContext;
 class ITKOpenCL_EXPORT OpenCLKernelManager : public LightObject
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(OpenCLKernelManager);
+
   /** Standard class typedefs. */
   using Self = OpenCLKernelManager;
   using Superclass = LightObject;
@@ -159,11 +161,7 @@ protected:
   ResetArguments(const std::size_t kernelIdx);
 
 private:
-  OpenCLKernelManager(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  OpenCLContext * m_Context;
+  OpenCLContext * m_Context{};
 
   struct KernelArgumentList
   {
@@ -171,8 +169,8 @@ private:
     GPUDataManager::Pointer m_GPUDataManager;
   };
 
-  std::vector<OpenCLKernel>                    m_Kernels;
-  std::vector<std::vector<KernelArgumentList>> m_KernelArgumentReady;
+  std::vector<OpenCLKernel>                    m_Kernels{};
+  std::vector<std::vector<KernelArgumentList>> m_KernelArgumentReady{};
 };
 
 } // end namespace itk

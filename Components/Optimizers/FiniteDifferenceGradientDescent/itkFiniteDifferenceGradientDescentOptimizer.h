@@ -55,6 +55,8 @@ namespace itk
 class FiniteDifferenceGradientDescentOptimizer : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(FiniteDifferenceGradientDescentOptimizer);
+
   /** Standard class typedefs. */
   using Self = FiniteDifferenceGradientDescentOptimizer;
   using Superclass = ScaledSingleValuedNonLinearOptimizer;
@@ -144,7 +146,7 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   // made protected so subclass can access
-  DerivativeType m_Gradient;
+  DerivativeType m_Gradient{};
   double         m_LearningRate{ 0.0 };
   double         m_GradientMagnitude{ 0.0 };
 
@@ -163,10 +165,6 @@ protected:
   Compute_c(unsigned long k) const;
 
 private:
-  FiniteDifferenceGradientDescentOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Private member variables.*/
   bool              m_Stop{ false };
   double            m_Value{ 0.0 };

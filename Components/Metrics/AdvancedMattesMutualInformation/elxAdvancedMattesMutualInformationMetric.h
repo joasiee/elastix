@@ -103,6 +103,8 @@ class ITK_TEMPLATE_EXPORT AdvancedMattesMutualInformationMetric
   , public MetricBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedMattesMutualInformationMetric);
+
   /** Standard ITK-stuff. */
   using Self = AdvancedMattesMutualInformationMetric;
   using Superclass1 =
@@ -222,12 +224,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  AdvancedMattesMutualInformationMetric(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   double m_Param_c;
   double m_Param_gamma;

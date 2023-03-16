@@ -24,6 +24,7 @@
 #include "itkSize.h"
 #include "itkImageIORegion.h"
 #include "itkCastImageFilter.h"
+#include "elxDefaultConstruct.h"
 
 namespace itk
 {
@@ -40,6 +41,8 @@ template <class TInputImage>
 class ITK_TEMPLATE_EXPORT ImageFileCastWriter : public ImageFileWriter<TInputImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ImageFileCastWriter);
+
   /** Standard class typedefs. */
   using Self = ImageFileCastWriter;
   using Superclass = ImageFileWriter<TInputImage>;
@@ -66,19 +69,19 @@ public:
   itkSetStringMacro(OutputComponentType);
   itkGetStringMacro(OutputComponentType);
 
-  /** Determine the default outputcomponentType */
-  std::string
-  GetDefaultOutputComponentType() const;
-
 protected:
-  ImageFileCastWriter();
-  ~ImageFileCastWriter() override;
+  ImageFileCastWriter() = default;
+  ~ImageFileCastWriter() override = default;
 
   /** Does the real work. */
   void
   GenerateData() override;
 
 private:
+  /** Determine the default outputcomponentType */
+  static std::string
+  GetDefaultOutputComponentType();
+
   /** Templated function that casts the input image and returns a
    * a pointer to the PixelBuffer. Assumes scalar singlecomponent images
    * The buffer data is valid until this->m_Caster is destroyed or assigned
@@ -90,16 +93,14 @@ private:
     using DiskImageType = Image<OutputComponentType, InputImageDimension>;
     using InputImageComponentType = typename PixelTraits<InputImagePixelType>::ValueType;
     using ScalarInputImageType = Image<InputImageComponentType, InputImageDimension>;
-    using CasterType = CastImageFilter<ScalarInputImageType, DiskImageType>;
 
     /** Reconfigure the imageIO */
-    // this->GetImageIO()->SetPixelTypeInfo( typeid(OutputComponentType) );
     this->GetModifiableImageIO()->SetPixelTypeInfo(static_cast<const OutputComponentType *>(nullptr));
 
     /** cast the input image */
-    auto caster = CasterType::New();
+    const auto caster = CastImageFilter<ScalarInputImageType, DiskImageType>::New();
     this->m_Caster = caster;
-    auto localInputImage = ScalarInputImageType::New();
+    const auto localInputImage = ScalarInputImageType::New();
 
     localInputImage->Graft(static_cast<const ScalarInputImageType *>(inputImage));
 
@@ -107,20 +108,30 @@ private:
     caster->Update();
 
     /** return the pixel buffer of the casted image */
-    OutputComponentType * pixelBuffer = caster->GetOutput()->GetBufferPointer();
-    void *                convertedBuffer = static_cast<void *>(pixelBuffer);
-    return convertedBuffer;
+    return caster->GetOutput()->GetBufferPointer();
   }
 
 
-  ProcessObject::Pointer m_Caster;
+  ProcessObject::Pointer m_Caster{ nullptr };
 
-  ImageFileCastWriter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  std::string m_OutputComponentType;
+  std::string m_OutputComponentType{ Self::GetDefaultOutputComponentType() };
 };
+
+/** Convenience function for writing a casted image. */
+template <typename TImage>
+void
+WriteCastedImage(const TImage &      image,
+                 const std::string & filename,
+                 const std::string & outputComponentType,
+                 bool                compress)
+{
+  elx::DefaultConstruct<ImageFileCastWriter<TImage>> writer;
+  writer.SetInput(&image);
+  writer.SetFileName(filename);
+  writer.SetOutputComponentType(outputComponentType);
+  writer.SetUseCompression(compress);
+  writer.Update();
+}
 
 } // end namespace itk
 

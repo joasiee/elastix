@@ -334,9 +334,9 @@ RecursiveBSplineTransform<TElastix>::PreComputeGridInformation()
   }
   else
   {
-    xl::xout["error"] << "ERROR: Invalid GridSpacingSchedule! The number of entries behind the GridSpacingSchedule "
-                         "option should equal the numberOfResolutions, or the numberOfResolutions * ImageDimension."
-                      << std::endl;
+    log::error(std::ostringstream{}
+               << "ERROR: Invalid GridSpacingSchedule! The number of entries behind the GridSpacingSchedule "
+                  "option should equal the numberOfResolutions, or the numberOfResolutions * ImageDimension.");
     itkExceptionMacro(<< "ERROR: Invalid GridSpacingSchedule!");
   }
 
@@ -345,9 +345,8 @@ RecursiveBSplineTransform<TElastix>::PreComputeGridInformation()
    */
   if (this->m_Cyclic)
   {
-    xl::xout["warning"]
-      << "WARNING: The provided grid spacing may be adapted to fit the cyclic behavior of the CyclicBSplineTransform."
-      << std::endl;
+    log::warn(
+      "WARNING: The provided grid spacing may be adapted to fit the cyclic behavior of the CyclicBSplineTransform.");
   }
 
   /** Set the grid schedule and final grid spacing in the schedule computer. */
@@ -596,9 +595,9 @@ RecursiveBSplineTransform<TElastix>::SetOptimizerScales(const unsigned int edgeW
     insetgridsize[i] = static_cast<unsigned int>(std::max(0, static_cast<int>(gridsize[i] - 2 * edgeWidth)));
     if (insetgridsize[i] == 0)
     {
-      xl::xout["error"] << "ERROR: you specified a PassiveEdgeWidth of " << edgeWidth
-                        << ", while the total grid size in dimension " << i << " is only " << gridsize[i] << "."
-                        << std::endl;
+      log::error(std::ostringstream{} << "ERROR: you specified a PassiveEdgeWidth of " << edgeWidth
+                                      << ", while the total grid size in dimension " << i << " is only " << gridsize[i]
+                                      << ".");
       itkExceptionMacro(<< "ERROR: the PassiveEdgeWidth is too large!");
     }
     insetgridindex[i] = gridindex[i] + edgeWidth;

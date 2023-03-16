@@ -56,6 +56,8 @@ namespace itk
 class StandardStochasticVarianceReducedGradientOptimizer : public StochasticVarianceReducedGradientDescentOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(StandardStochasticVarianceReducedGradientOptimizer);
+
   /** Standard ITK.*/
   using Self = StandardStochasticVarianceReducedGradientOptimizer;
   using Superclass = StochasticVarianceReducedGradientDescentOptimizer;
@@ -149,16 +151,12 @@ protected:
   double m_CurrentTime{ 0.0 };
 
   /** Constant step size or others, different value of k. */
-  bool m_UseConstantStep;
+  bool m_UseConstantStep{};
 
 private:
-  StandardStochasticVarianceReducedGradientOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /**Parameters, as described by Spall.*/
   double m_Param_a{ 1.0 };
-  double m_Param_beta;
+  double m_Param_beta{};
   double m_Param_A{ 1.0 };
   double m_Param_alpha{ 0.602 };
 

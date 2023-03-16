@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedRigid3DTransform.h,v $
-  Language:  C++
   Date:      $Date: 2007-02-13 21:46:04 $
   Version:   $Revision: 1.38 $
 
@@ -67,6 +66,8 @@ template <class TScalarType = double>
 class ITK_TEMPLATE_EXPORT AdvancedRigid3DTransform : public AdvancedMatrixOffsetTransformBase<TScalarType, 3, 3>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedRigid3DTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedRigid3DTransform;
   using Superclass = AdvancedMatrixOffsetTransformBase<TScalarType, 3, 3>;
@@ -148,11 +149,6 @@ protected:
    **/
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
-
-private:
-  AdvancedRigid3DTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // namespace itk

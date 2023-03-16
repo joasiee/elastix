@@ -98,6 +98,8 @@ class ITK_TEMPLATE_EXPORT MultiMetricMultiResolutionRegistration
   , public RegistrationBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiMetricMultiResolutionRegistration);
+
   /** Standard ITK: Self */
   using Self = MultiMetricMultiResolutionRegistration;
 
@@ -232,12 +234,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  MultiMetricMultiResolutionRegistration(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

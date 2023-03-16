@@ -37,8 +37,8 @@ CorrespondingPointsEuclideanDistanceMetric<TElastix>::Initialize()
   timer.Start();
   this->Superclass1::Initialize();
   timer.Stop();
-  elxout << "Initialization of CorrespondingPointsEuclideanDistance metric took: "
-         << static_cast<long>(timer.GetMean() * 1000) << " ms." << std::endl;
+  log::info(std::ostringstream{} << "Initialization of CorrespondingPointsEuclideanDistance metric took: "
+                                 << static_cast<long>(timer.GetMean() * 1000) << " ms.");
 
 } // end Initialize()
 
@@ -61,7 +61,7 @@ CorrespondingPointsEuclideanDistanceMetric<TElastix>::BeforeAllBase()
     this->m_Configuration->ReadParameter(metricName, "Metric", i);
     if (metricName == "CorrespondingPointsEuclideanDistanceMetric")
     {
-      count++;
+      ++count;
     }
   }
   if (count == 0)
@@ -70,29 +70,29 @@ CorrespondingPointsEuclideanDistanceMetric<TElastix>::BeforeAllBase()
   }
 
   /** Check Command line options and print them to the log file. */
-  elxout << "Command line options from CorrespondingPointsEuclideanDistanceMetric:" << std::endl;
+  log::info("Command line options from CorrespondingPointsEuclideanDistanceMetric:");
   std::string check("");
 
   /** Check for appearance of "-fp". */
   check = this->m_Configuration->GetCommandLineArgument("-fp");
   if (check.empty())
   {
-    elxout << "-fp       unspecified" << std::endl;
+    log::info("-fp       unspecified");
   }
   else
   {
-    elxout << "-fp       " << check << std::endl;
+    log::info(std::ostringstream{} << "-fp       " << check);
   }
 
   /** Check for appearance of "-mp". */
   check = this->m_Configuration->GetCommandLineArgument("-mp");
   if (check.empty())
   {
-    elxout << "-mp       unspecified" << std::endl;
+    log::info("-mp       unspecified");
   }
   else
   {
-    elxout << "-mp       " << check << std::endl;
+    log::info(std::ostringstream{} << "-mp       " << check);
   }
 
   /** Return a value. */
@@ -148,22 +148,21 @@ CorrespondingPointsEuclideanDistanceMetric<TElastix>::ReadLandmarks(const std::s
   using IndexType = typename ImageType::IndexType;
   using IndexValueType = typename ImageType::IndexValueType;
   using PointType = typename ImageType::PointType;
-  using PointSetReaderType = itk::TransformixInputPointFileReader<PointSetType>;
 
-  elxout << "Loading landmarks for " << this->GetComponentLabel() << ":" << this->elxGetClassName() << "." << std::endl;
+  log::info(std::ostringstream{} << "Loading landmarks for " << this->GetComponentLabel() << ":"
+                                 << this->elxGetClassName() << ".");
 
   /** Read the landmarks. */
-  auto reader = PointSetReaderType::New();
+  auto reader = itk::TransformixInputPointFileReader<PointSetType>::New();
   reader->SetFileName(landmarkFileName.c_str());
-  elxout << "  Reading landmark file: " << landmarkFileName << std::endl;
+  log::info(std::ostringstream{} << "  Reading landmark file: " << landmarkFileName);
   try
   {
     reader->Update();
   }
-  catch (itk::ExceptionObject & err)
+  catch (const itk::ExceptionObject & err)
   {
-    xl::xout["error"] << "  Error while opening " << landmarkFileName << std::endl;
-    xl::xout["error"] << err << std::endl;
+    log::error(std::ostringstream{} << "  Error while opening " << landmarkFileName << '\n' << err);
     itkExceptionMacro(<< "ERROR: unable to configure " << this->GetComponentLabel());
   }
 
@@ -171,13 +170,13 @@ CorrespondingPointsEuclideanDistanceMetric<TElastix>::ReadLandmarks(const std::s
   const unsigned int nrofpoints = reader->GetNumberOfPoints();
   if (reader->GetPointsAreIndices())
   {
-    elxout << "  Landmarks are specified as image indices." << std::endl;
+    log::info("  Landmarks are specified as image indices.");
   }
   else
   {
-    elxout << "  Landmarks are specified in world coordinates." << std::endl;
+    log::info("  Landmarks are specified in world coordinates.");
   }
-  elxout << "  Number of specified points: " << nrofpoints << std::endl;
+  log::info(std::ostringstream{} << "  Number of specified points: " << nrofpoints);
 
   /** Get the pointset. */
   pointSet = reader->GetOutput();

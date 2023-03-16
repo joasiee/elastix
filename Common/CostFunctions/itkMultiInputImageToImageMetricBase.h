@@ -50,6 +50,8 @@ class ITK_TEMPLATE_EXPORT MultiInputImageToImageMetricBase
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MultiInputImageToImageMetricBase);
+
   /** Standard class typedefs. */
   using Self = MultiInputImageToImageMetricBase;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -346,7 +348,7 @@ public:
 
 protected:
   /** Constructor. */
-  MultiInputImageToImageMetricBase();
+  MultiInputImageToImageMetricBase() = default;
 
   /** Destructor. */
   ~MultiInputImageToImageMetricBase() override = default;
@@ -385,22 +387,18 @@ protected:
   IsInsideMovingMask(const MovingImagePointType & mappedPoint) const override;
 
   /** Protected member variables. */
-  FixedImageVectorType             m_FixedImageVector;
-  FixedImageMaskVectorType         m_FixedImageMaskVector;
-  FixedImageRegionVectorType       m_FixedImageRegionVector;
-  MovingImageVectorType            m_MovingImageVector;
-  MovingImageMaskVectorType        m_MovingImageMaskVector;
-  InterpolatorVectorType           m_InterpolatorVector;
-  FixedImageInterpolatorVectorType m_FixedImageInterpolatorVector;
+  FixedImageVectorType             m_FixedImageVector{};
+  FixedImageMaskVectorType         m_FixedImageMaskVector{};
+  FixedImageRegionVectorType       m_FixedImageRegionVector{};
+  MovingImageVectorType            m_MovingImageVector{};
+  MovingImageMaskVectorType        m_MovingImageMaskVector{};
+  InterpolatorVectorType           m_InterpolatorVector{};
+  FixedImageInterpolatorVectorType m_FixedImageInterpolatorVector{};
 
-  bool                          m_InterpolatorsAreBSpline;
-  BSplineInterpolatorVectorType m_BSplineInterpolatorVector;
+  bool                          m_InterpolatorsAreBSpline{ false };
+  BSplineInterpolatorVectorType m_BSplineInterpolatorVector{};
 
 private:
-  MultiInputImageToImageMetricBase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /// Avoids accidentally calling `this->FastEvaluateMovingImageValueAndDerivative(mappedPoint, ..., threadId)`, when
   /// `*this` is derived from `MultiInputImageToImageMetricBase`. (The non-virtual member function
   /// `AdvancedImageToImageMetric::FastEvaluateMovingImageValueAndDerivative` does not entirely replace the
@@ -409,15 +407,15 @@ private:
   FastEvaluateMovingImageValueAndDerivative(...) const = delete;
 
   /** Private member variables. */
-  FixedImageRegionType m_DummyFixedImageRegion;
+  FixedImageRegionType m_DummyFixedImageRegion{};
 
-  unsigned int m_NumberOfFixedImages;
-  unsigned int m_NumberOfFixedImageMasks;
-  unsigned int m_NumberOfFixedImageRegions;
-  unsigned int m_NumberOfMovingImages;
-  unsigned int m_NumberOfMovingImageMasks;
-  unsigned int m_NumberOfInterpolators;
-  unsigned int m_NumberOfFixedImageInterpolators;
+  unsigned int m_NumberOfFixedImages{ 0 };
+  unsigned int m_NumberOfFixedImageMasks{ 0 };
+  unsigned int m_NumberOfFixedImageRegions{ 0 };
+  unsigned int m_NumberOfMovingImages{ 0 };
+  unsigned int m_NumberOfMovingImageMasks{ 0 };
+  unsigned int m_NumberOfInterpolators{ 0 };
+  unsigned int m_NumberOfFixedImageInterpolators{ 0 };
 };
 
 } // end namespace itk

@@ -50,6 +50,8 @@ template <class TFixedImage, class TScalarType>
 class ITK_TEMPLATE_EXPORT TransformBendingEnergyPenaltyTerm : public TransformPenaltyTerm<TFixedImage, TScalarType>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(TransformBendingEnergyPenaltyTerm);
+
   /** Standard ITK stuff. */
   using Self = TransformBendingEnergyPenaltyTerm;
   using Superclass = TransformPenaltyTerm<TFixedImage, TScalarType>;
@@ -152,11 +154,11 @@ public:
                         DerivativeType &       derivative) const override;
 
   /** Get value and derivatives for each thread. */
-  inline void
+  void
   ThreadedGetValueAndDerivative(ThreadIdType threadID) override;
 
   /** Gather the values and derivatives from all threads */
-  inline void
+  void
   AfterThreadedGetValueAndDerivative(MeasureType & value, DerivativeType & derivative) const override;
 
   /** Experimental feature: compute SelfHessian */
@@ -187,13 +189,7 @@ protected:
   ~TransformBendingEnergyPenaltyTerm() override = default;
 
 private:
-  /** The deleted copy constructor. */
-  TransformBendingEnergyPenaltyTerm(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
-  unsigned int m_NumberOfSamplesForSelfHessian;
+  unsigned int m_NumberOfSamplesForSelfHessian{};
 };
 
 } // end namespace itk

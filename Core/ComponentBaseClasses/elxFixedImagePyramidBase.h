@@ -58,6 +58,8 @@ template <class TElastix>
 class ITK_TEMPLATE_EXPORT FixedImagePyramidBase : public BaseComponentSE<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(FixedImagePyramidBase);
+
   /** Standard ITK-stuff. */
   using Self = FixedImagePyramidBase;
   using Superclass = BaseComponentSE<TElastix>;
@@ -112,9 +114,9 @@ public:
   SetFixedSchedule();
 
   /** Method to write the pyramid image. */
-  virtual void
-  WritePyramidImage(const std::string &  filename,
-                    const unsigned int & level); // const;
+  void
+  WritePyramidImage(const std::string & filename,
+                    const unsigned int  level); // const;
 
 protected:
   /** The constructor. */
@@ -124,12 +126,6 @@ protected:
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
-
-  /** The deleted copy constructor. */
-  FixedImagePyramidBase(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

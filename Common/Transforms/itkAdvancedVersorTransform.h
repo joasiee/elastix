@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedVersorTransform.h,v $
-  Language:  C++
   Date:      $Date: 2006-08-09 04:35:32 $
   Version:   $Revision: 1.17 $
 
@@ -187,7 +186,7 @@ private:
   operator=(const Self &); // Not implemented
 
   /** Versor containing the rotation */
-  VersorType m_Versor;
+  VersorType m_Versor{};
 };
 
 // class AdvancedVersorTransform

@@ -76,6 +76,8 @@ class ITK_TEMPLATE_EXPORT ParzenWindowMutualInformationImageToImageMetric
   : public ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ParzenWindowMutualInformationImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = ParzenWindowMutualInformationImageToImageMetric;
   using Superclass = ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>;
@@ -234,14 +236,14 @@ protected:
   {
     Self * m_Metric;
   };
-  ParzenWindowMutualInformationMultiThreaderParameterType m_ParzenWindowMutualInformationThreaderParameters;
+  ParzenWindowMutualInformationMultiThreaderParameterType m_ParzenWindowMutualInformationThreaderParameters{};
 
   /** Multi-threaded versions of the ComputePDF function. */
-  inline void
+  void
   ThreadedComputeDerivativeLowMemory(ThreadIdType threadId);
 
   /** Single-threadedly accumulate results. */
-  inline void
+  void
   AfterThreadedComputeDerivativeLowMemory(DerivativeType & derivative) const;
 
   /** Helper function to launch the threads. */
@@ -253,19 +255,13 @@ protected:
   LaunchComputeDerivativeLowMemoryThreaderCallback() const;
 
 private:
-  /** The deleted copy constructor. */
-  ParzenWindowMutualInformationImageToImageMetric(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
   /** Helper array for storing the values of the JointPDF ratios. */
   using PRatioType = double;
   using PRatioArrayType = Array2D<PRatioType>;
-  mutable PRatioArrayType m_PRatioArray;
+  mutable PRatioArrayType m_PRatioArray{};
 
   /** Setting */
-  bool m_UseJacobianPreconditioning;
+  bool m_UseJacobianPreconditioning{};
 
   /** Helper function to compute the derivative for the low memory variant. */
   void

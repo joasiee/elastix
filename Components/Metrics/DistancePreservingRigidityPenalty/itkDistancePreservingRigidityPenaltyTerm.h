@@ -76,6 +76,8 @@ template <class TFixedImage, class TScalarType>
 class ITK_TEMPLATE_EXPORT DistancePreservingRigidityPenaltyTerm : public TransformPenaltyTerm<TFixedImage, TScalarType>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(DistancePreservingRigidityPenaltyTerm);
+
   /** Standard itk stuff. */
   using Self = DistancePreservingRigidityPenaltyTerm;
   using Superclass = TransformPenaltyTerm<TFixedImage, TScalarType>;
@@ -210,24 +212,17 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
-  /** The deleted copy constructor. */
-  DistancePreservingRigidityPenaltyTerm(const Self &) = delete;
-
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
-
   /** Member variables. */
-  BSplineTransformPointer m_BSplineTransform;
+  BSplineTransformPointer m_BSplineTransform{};
 
-  mutable MeasureType m_RigidityPenaltyTermValue;
+  mutable MeasureType m_RigidityPenaltyTermValue{};
 
-  BSplineKnotImagePointer m_BSplineKnotImage;
-  PenaltyGridImagePointer m_PenaltyGridImage;
-  SegmentedImagePointer   m_SegmentedImage;
-  SegmentedImagePointer   m_SampledSegmentedImage;
+  BSplineKnotImagePointer m_BSplineKnotImage{};
+  PenaltyGridImagePointer m_PenaltyGridImage{};
+  SegmentedImagePointer   m_SegmentedImage{};
+  SegmentedImagePointer   m_SampledSegmentedImage{};
 
-  unsigned int m_NumberOfRigidGrids;
+  unsigned int m_NumberOfRigidGrids{};
 };
 
 // end class DistancePreservingRigidityPenaltyTerm

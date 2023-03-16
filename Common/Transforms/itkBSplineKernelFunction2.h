@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkBSplineKernelFunction.h,v $
-  Language:  C++
   Date:      $Date: 2006-03-18 20:13:35 $
   Version:   $Revision: 1.7 $
 
@@ -59,6 +58,8 @@ template <unsigned int VSplineOrder = 3>
 class ITK_TEMPLATE_EXPORT BSplineKernelFunction2 : public KernelFunctionBase2<double>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(BSplineKernelFunction2);
+
   /** Standard class typedefs. */
   using Self = BSplineKernelFunction2;
   using Superclass = KernelFunctionBase2<double>;
@@ -96,7 +97,7 @@ public:
 
 
   /** Evaluate the function at one point. */
-  inline double
+  double
   Evaluate(const double & u) const override
   {
     return Self::FastEvaluate(u);
@@ -106,7 +107,7 @@ public:
   /** Evaluate the function at the entire support. This is slightly faster,
    * since no if's are needed.
    */
-  inline void
+  void
   Evaluate(const double & u, double * weights) const override
   {
     Self::FastEvaluate(u, weights);
@@ -126,10 +127,6 @@ protected:
 
 
 private:
-  BSplineKernelFunction2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Structures to control overloaded versions of Evaluate */
   template <unsigned int>
   struct ITK_TEMPLATE_EXPORT Dispatch
@@ -140,8 +137,8 @@ private:
    */
 
   /** Zeroth order spline. */
-  inline static double
-  Evaluate(const Dispatch<0> &, const double & u)
+  static double
+  Evaluate(const Dispatch<0> &, const double u)
   {
     const double absValue = std::abs(u);
 
@@ -161,8 +158,8 @@ private:
 
 
   /** First order spline */
-  inline static double
-  Evaluate(const Dispatch<1> &, const double & u)
+  static double
+  Evaluate(const Dispatch<1> &, const double u)
   {
     const double absValue = std::abs(u);
 
@@ -178,8 +175,8 @@ private:
 
 
   /** Second order spline. */
-  inline static double
-  Evaluate(const Dispatch<2> &, const double & u)
+  static double
+  Evaluate(const Dispatch<2> &, const double u)
   {
     const double absValue = std::abs(u);
 
@@ -199,8 +196,8 @@ private:
 
 
   /** Third order spline. */
-  inline static double
-  Evaluate(const Dispatch<3> &, const double & u)
+  static double
+  Evaluate(const Dispatch<3> &, const double u)
   {
     const double absValue = std::abs(u);
     const double sqrValue = u * u;
@@ -225,8 +222,8 @@ private:
    */
 
   /** Zeroth order spline. */
-  inline static void
-  Evaluate(const Dispatch<0> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<0> &, const double u, double * weights)
   {
     const double absValue = std::abs(u);
 
@@ -246,8 +243,8 @@ private:
 
 
   /** First order spline */
-  inline static void
-  Evaluate(const Dispatch<1> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<1> &, const double u, double * weights)
   {
     const double absValue = std::abs(u);
 
@@ -257,8 +254,8 @@ private:
 
 
   /** Second order spline. */
-  inline static void
-  Evaluate(const Dispatch<2> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<2> &, const double u, double * weights)
   {
     const double absValue = std::abs(u);
     const double sqrValue = u * u;
@@ -270,8 +267,8 @@ private:
 
 
   /**  Third order spline. */
-  inline static void
-  Evaluate(const Dispatch<3> &, const double & u, double * weights)
+  static void
+  Evaluate(const Dispatch<3> &, const double u, double * weights)
   {
     const double absValue = std::abs(u);
     const double sqrValue = u * u;

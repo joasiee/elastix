@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkAdvancedRigid2DTransform.h,v $
-  Language:  C++
   Date:      $Date: 2009-01-14 18:39:05 $
   Version:   $Revision: 1.22 $
 
@@ -77,6 +76,8 @@ class ITK_TEMPLATE_EXPORT AdvancedRigid2DTransform
   : public AdvancedMatrixOffsetTransformBase<TScalarType, 2, 2> // Dimensions of input and output spaces
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedRigid2DTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedRigid2DTransform;
   using Superclass = AdvancedMatrixOffsetTransformBase<TScalarType, 2, 2>;
@@ -224,11 +225,7 @@ protected:
   PrecomputeJacobianOfSpatialJacobian();
 
 private:
-  AdvancedRigid2DTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  TScalarType m_Angle;
+  TScalarType m_Angle{};
 };
 
 

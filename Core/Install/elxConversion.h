@@ -20,8 +20,6 @@
 
 #include "itkMatrix.h"
 
-#include <vnl/vnl_vector.h>
-
 #include <iterator>
 #include <map>
 #include <string>
@@ -49,24 +47,7 @@ public:
   /** Corresponds with typedefs from the elastix class itk::ParameterFileParser. */
   using ParameterValuesType = std::vector<std::string>;
   using ParameterMapType = std::map<std::string, ParameterValuesType>;
-
-  /** Overload set, similar to C++17 `std::size(const TContainer&)` (which can only be
-   * used within the implementation of elastix is upgraded to C++17 or higher).
-   */
-  template <typename TContainer, unsigned NDimension = TContainer::Dimension>
-  static std::size_t
-  GetNumberOfElements(const TContainer &)
-  {
-    return NDimension;
-  }
-
-  template <typename TValue>
-  static std::size_t
-  GetNumberOfElements(const vnl_vector<TValue> & vnlVector)
-  {
-    return vnlVector.size();
-  }
-
+  using Self = Conversion;
 
   /** Convenience function to convert seconds to day, hour, minute, second format. */
   static std::string
@@ -128,9 +109,7 @@ public:
   {
     std::vector<std::string> result;
 
-    // Note: Uses TContainer::Dimension instead of container.size(),
-    // because itk::FixedArray::size() is not yet included with ITK 5.1.1.
-    result.reserve(GetNumberOfElements(container));
+    result.reserve(container.size());
 
     for (const auto element : container)
     {
@@ -182,6 +161,65 @@ public:
    */
   static std::string
   ToNativePathNameSeparators(const std::string &);
+
+  /** A templated function to cast strings to a type T.
+   * Returns true when casting was successful and false otherwise.
+   * We make use of the casting functionality of string streams.
+   */
+  template <class T>
+  static bool
+  StringToValue(const std::string & str, T & value)
+  {
+    // Conversion to bool is supported by another StringToValue overload.
+    static_assert(!std::is_same<T, bool>::value, "This StringToValue<T> overload does not support bool!");
+
+    // 8-bits (signed/unsigned) char types are supported by other StringToValue
+    // overloads.
+    static_assert(sizeof(T) > 1, "This StringToValue<T> overload does not support (signed/unsigned) char!");
+
+    auto inputStream = [&str] {
+      const auto decimalPointPos = str.find_first_of('.');
+      const bool hasDecimalPointAndTrailingZeros =
+        (decimalPointPos != std::string::npos) &&
+        (std::count(str.cbegin() + decimalPointPos + 1, str.cend(), '0') == (str.size() - decimalPointPos - 1));
+      return std::istringstream(
+        hasDecimalPointAndTrailingZeros ? std::string(str.cbegin(), str.cbegin() + decimalPointPos) : str);
+    }();
+
+    // Note: `inputStream >> value` evaluates to false when the `badbit` or the `failbit` is set.
+    return (inputStream >> value) && inputStream.eof();
+
+  } // end StringToValue()
+
+
+  /** Provide a specialization for std::string, since the general StringToValue
+   * (especially outputStringStream >> value) will not work for strings containing spaces.
+   */
+  static bool
+  StringToValue(const std::string & str, std::string & value);
+
+  /**@{ Overloads for floating point types, to support NaN and infinity. */
+  static bool
+  StringToValue(const std::string & str, double & value);
+
+  static bool
+  StringToValue(const std::string & str, float & value);
+  /**@}*/
+
+  /**@{ Overloads for (signed/unsigned) char types, processing them as 8-bits integer types. */
+  static bool
+  StringToValue(const std::string & str, char & value);
+
+  static bool
+  StringToValue(const std::string & str, signed char & value);
+
+  static bool
+  StringToValue(const std::string & str, unsigned char & value);
+  /**@}*/
+
+  /** Overload to cast a string to a bool. Returns true when casting was successful and false otherwise. */
+  static bool
+  StringToValue(const std::string & str, bool & value);
 };
 
 } // end namespace elastix

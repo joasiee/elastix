@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkCenteredTransformInitializer2.h,v $
-  Language:  C++
   Date:      $Date: 2010-07-04 10:30:49 $
   Version:   $Revision: 1.11 $
 
@@ -92,6 +91,8 @@ template <class TTransform, class TFixedImage, class TMovingImage>
 class ITK_TEMPLATE_EXPORT CenteredTransformInitializer2 : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(CenteredTransformInitializer2);
+
   /** Standard class typedefs. */
   using Self = CenteredTransformInitializer2;
   using Superclass = Object;
@@ -209,28 +210,24 @@ protected:
   itkGetModifiableObjectMacro(Transform, TransformType);
 
   /** Settings for MomentsCalculator. */
-  SizeValueType  m_NumberOfSamplesForCenteredTransformInitialization;
-  InputPixelType m_LowerThresholdForCenterGravity;
-  bool           m_CenterOfGravityUsesLowerThreshold;
+  SizeValueType  m_NumberOfSamplesForCenteredTransformInitialization{};
+  InputPixelType m_LowerThresholdForCenterGravity{};
+  bool           m_CenterOfGravityUsesLowerThreshold{};
 
 private:
-  CenteredTransformInitializer2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  TransformPointer m_Transform{};
 
-  TransformPointer m_Transform;
+  FixedImagePointer      m_FixedImage{};
+  MovingImagePointer     m_MovingImage{};
+  FixedImageMaskPointer  m_FixedImageMask{};
+  MovingImageMaskPointer m_MovingImageMask{};
 
-  FixedImagePointer      m_FixedImage;
-  MovingImagePointer     m_MovingImage;
-  FixedImageMaskPointer  m_FixedImageMask;
-  MovingImageMaskPointer m_MovingImageMask;
+  bool m_UseMoments{};
+  bool m_UseOrigins{};
+  bool m_UseTop{};
 
-  bool m_UseMoments;
-  bool m_UseOrigins;
-  bool m_UseTop;
-
-  FixedImageCalculatorPointer  m_FixedCalculator;
-  MovingImageCalculatorPointer m_MovingCalculator;
+  FixedImageCalculatorPointer  m_FixedCalculator{};
+  MovingImageCalculatorPointer m_MovingCalculator{};
 };
 
 } // namespace itk

@@ -197,6 +197,8 @@ class ITK_TEMPLATE_EXPORT AdaptiveStochasticGradientDescent
   , public OptimizerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdaptiveStochasticGradientDescent);
+
   /** Standard ITK. */
   using Self = AdaptiveStochasticGradientDescent;
   using Superclass1 = AdaptiveStochasticGradientDescentOptimizer;
@@ -302,12 +304,8 @@ protected:
   using JacobianType = typename TransformType::JacobianType;
   using ComputeJacobianTermsType = itk::ComputeJacobianTerms<FixedImageType, TransformType>;
   using JacobianValueType = typename JacobianType::ValueType;
-  struct SettingsType
-  {
-    double a, A, alpha, fmax, fmin, omega;
-  };
-  using SettingsVectorType = typename std::vector<SettingsType>;
-
+  using typename Superclass2::SettingsType;
+  using typename Superclass2::SettingsVectorType;
   using ComputeDisplacementDistributionType = itk::ComputeDisplacementDistribution<FixedImageType, TransformType>;
 
   /** Samplers: */
@@ -325,8 +323,6 @@ protected:
   /** Other protected typedefs */
   using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
   using RandomGeneratorPointer = typename RandomGeneratorType::Pointer;
-  using ProgressCommandType = ProgressCommand;
-  using ProgressCommandPointer = typename ProgressCommand::Pointer;
 
   /** Typedefs for support of sparse Jacobians and AdvancedTransforms. */
   using TransformJacobianType = JacobianType;
@@ -356,10 +352,6 @@ protected:
   RandomGeneratorPointer m_RandomGenerator;
 
   double m_SigmoidScaleFactor;
-
-  /** Print the contents of the settings vector to elxout. */
-  virtual void
-  PrintSettingsVector(const SettingsVectorType & settings) const;
 
   /** Select different method to estimate some reasonable values for the parameters
    * SP_a, SP_alpha (=1), SigmoidMin, SigmoidMax (=1), and
@@ -413,10 +405,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  AdaptiveStochasticGradientDescent(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 
   bool   m_AutomaticParameterEstimation;
   double m_MaximumStepLength;

@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkSingleValuedPointSetToPointSetMetric.h,v $
-  Language:  C++
   Date:      $Date: 2009-01-26 21:45:56 $
   Version:   $Revision: 1.2 $
 
@@ -62,6 +61,8 @@ template <class TFixedPointSet, class TMovingPointSet>
 class ITK_TEMPLATE_EXPORT SingleValuedPointSetToPointSetMetric : public SingleValuedCostFunction
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(SingleValuedPointSetToPointSetMetric);
+
   /** Standard class typedefs. */
   using Self = SingleValuedPointSetToPointSetMetric;
   using Superclass = SingleValuedCostFunction;
@@ -171,7 +172,7 @@ public:
   itkBooleanMacro(UseMetricSingleThreaded);
 
 protected:
-  SingleValuedPointSetToPointSetMetric();
+  SingleValuedPointSetToPointSetMetric() = default;
   ~SingleValuedPointSetToPointSetMetric() override = default;
 
   /** PrintSelf. */
@@ -179,21 +180,16 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Member variables. */
-  FixedPointSetConstPointer   m_FixedPointSet;
-  MovingPointSetConstPointer  m_MovingPointSet;
-  FixedImageMaskConstPointer  m_FixedImageMask;
-  MovingImageMaskConstPointer m_MovingImageMask;
-  mutable TransformPointer    m_Transform;
+  FixedPointSetConstPointer   m_FixedPointSet{ nullptr };
+  MovingPointSetConstPointer  m_MovingPointSet{ nullptr };
+  FixedImageMaskConstPointer  m_FixedImageMask{ nullptr };
+  MovingImageMaskConstPointer m_MovingImageMask{ nullptr };
+  mutable TransformPointer    m_Transform{ nullptr };
 
-  mutable unsigned int m_NumberOfPointsCounted;
+  mutable unsigned int m_NumberOfPointsCounted{ 0 };
 
   /** Variables for multi-threading. */
-  bool m_UseMetricSingleThreaded;
-
-private:
-  SingleValuedPointSetToPointSetMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  bool m_UseMetricSingleThreaded{ true };
 };
 
 } // end namespace itk

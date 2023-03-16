@@ -49,28 +49,19 @@ TranslationTransformInitializer<TTransform, TFixedImage, TMovingImage>::Initiali
   if (!this->m_FixedImage)
   {
     itkExceptionMacro("Fixed Image has not been set");
-    return;
   }
   if (!this->m_MovingImage)
   {
     itkExceptionMacro("Moving Image has not been set");
-    return;
   }
   if (!this->m_Transform)
   {
     itkExceptionMacro("Transform has not been set");
-    return;
   }
 
   // If images come from filters, then update those filters.
-  if (this->m_FixedImage->GetSource())
-  {
-    this->m_FixedImage->GetSource()->Update();
-  }
-  if (this->m_MovingImage->GetSource())
-  {
-    this->m_MovingImage->GetSource()->Update();
-  }
+  this->m_FixedImage->UpdateSource();
+  this->m_MovingImage->UpdateSource();
 
   OutputVectorType translationVector;
 

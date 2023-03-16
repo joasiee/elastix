@@ -85,6 +85,8 @@ class ITK_TEMPLATE_EXPORT KNNGraphAlphaMutualInformationMetric
   , public MetricBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(KNNGraphAlphaMutualInformationMetric);
+
   /** Standard ITK-stuff. */
   using Self = KNNGraphAlphaMutualInformationMetric;
   using Superclass1 =
@@ -172,12 +174,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  KNNGraphAlphaMutualInformationMetric(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

@@ -20,7 +20,7 @@
 #define elxComponentLoader_h
 
 #include "elxComponentDatabase.h"
-#include "xoutmain.h"
+#include "elxlog.h"
 
 namespace elastix
 {
@@ -41,6 +41,8 @@ namespace elastix
 class ComponentLoader : public itk::Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ComponentLoader);
+
   /** Standard ITK typedef's. */
   using Self = ComponentLoader;
   using Superclass = itk::Object;
@@ -75,9 +77,6 @@ protected:
 
 private:
   /** Standard private (copy)constructor. */
-  ComponentLoader(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

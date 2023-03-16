@@ -56,6 +56,8 @@ template <typename TScalarType, unsigned int NDimensions = 3>
 class ITK_TEMPLATE_EXPORT AdvancedCombinationTransform : public AdvancedTransform<TScalarType, NDimensions, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedCombinationTransform);
+
   /** Standard itk. */
   using Self = AdvancedCombinationTransform;
   using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
@@ -252,28 +254,28 @@ public:
 
   /** Compute the (sparse) Jacobian of the transformation. */
   void
-  GetJacobian(const InputPointType &       ipp,
+  GetJacobian(const InputPointType &       inputPoint,
               JacobianType &               j,
               NonZeroJacobianIndicesType & nonZeroJacobianIndices) const override;
 
   /** Compute the inner product of the Jacobian with the moving image gradient. */
   void
-  EvaluateJacobianWithImageGradientProduct(const InputPointType &          ipp,
+  EvaluateJacobianWithImageGradientProduct(const InputPointType &          inputPoint,
                                            const MovingImageGradientType & movingImageGradient,
                                            DerivativeType &                imageJacobian,
                                            NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override;
 
   /** Compute the spatial Jacobian of the transformation. */
   void
-  GetSpatialJacobian(const InputPointType & ipp, SpatialJacobianType & sj) const override;
+  GetSpatialJacobian(const InputPointType & inputPoint, SpatialJacobianType & sj) const override;
 
   /** Compute the spatial Hessian of the transformation. */
   void
-  GetSpatialHessian(const InputPointType & ipp, SpatialHessianType & sh) const override;
+  GetSpatialHessian(const InputPointType & inputPoint, SpatialHessianType & sh) const override;
 
   /** Compute the Jacobian of the spatial Jacobian of the transformation. */
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override;
 
@@ -281,14 +283,14 @@ public:
    * spatial Jacobian of the transformation.
    */
   void
-  GetJacobianOfSpatialJacobian(const InputPointType &          ipp,
+  GetJacobianOfSpatialJacobian(const InputPointType &          inputPoint,
                                SpatialJacobianType &           sj,
                                JacobianOfSpatialJacobianType & jsj,
                                NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const override;
 
   /** Compute the Jacobian of the spatial Hessian of the transformation. */
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override;
 
@@ -296,7 +298,7 @@ public:
    * spatial Hessian of the transformation.
    */
   void
-  GetJacobianOfSpatialHessian(const InputPointType &         ipp,
+  GetJacobianOfSpatialHessian(const InputPointType &         inputPoint,
                               SpatialHessianType &           sh,
                               JacobianOfSpatialHessianType & jsh,
                               NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const override;
@@ -319,21 +321,21 @@ protected:
    */
 
   /** ADDITION: \f$T(x) = T_0(x) + T_1(x) - x\f$ */
-  inline OutputPointType
+  OutputPointType
   TransformPointUseAddition(const InputPointType & point) const;
 
   /** COMPOSITION: \f$T(x) = T_1( T_0(x) )\f$
    * \warning: assumes that input and output point type are the same.
    */
-  inline OutputPointType
+  OutputPointType
   TransformPointUseComposition(const InputPointType & point) const;
 
   /** CURRENT ONLY: \f$T(x) = T_1(x)\f$ */
-  inline OutputPointType
+  OutputPointType
   TransformPointNoInitialTransform(const InputPointType & point) const;
 
   /** NO CURRENT TRANSFORM SET: throw an exception. */
-  inline OutputPointType
+  OutputPointType
   TransformPointNoCurrentTransform(const InputPointType & point) const;
 
   /** ************************************************
@@ -341,21 +343,21 @@ protected:
    */
 
   /** ADDITION: \f$J(x) = J_1(x)\f$ */
-  inline void
+  void
   GetJacobianUseAddition(const InputPointType &, JacobianType &, NonZeroJacobianIndicesType &) const;
 
   /** COMPOSITION: \f$J(x) = J_1( T_0(x) )\f$
    * \warning: assumes that input and output point type are the same.
    */
-  inline void
+  void
   GetJacobianUseComposition(const InputPointType &, JacobianType &, NonZeroJacobianIndicesType &) const;
 
   /** CURRENT ONLY: \f$J(x) = J_1(x)\f$ */
-  inline void
+  void
   GetJacobianNoInitialTransform(const InputPointType &, JacobianType &, NonZeroJacobianIndicesType &) const;
 
   /** NO CURRENT TRANSFORM SET: throw an exception. */
-  inline void
+  void
   GetJacobianNoCurrentTransform(const InputPointType &, JacobianType &, NonZeroJacobianIndicesType &) const;
 
   /** ************************************************
@@ -363,7 +365,7 @@ protected:
    */
 
   /** ADDITION: \f$J(x) = J_1(x)\f$ */
-  inline void
+  void
   EvaluateJacobianWithImageGradientProductUseAddition(const InputPointType &,
                                                       const MovingImageGradientType &,
                                                       DerivativeType &,
@@ -372,21 +374,21 @@ protected:
   /** COMPOSITION: \f$J(x) = J_1( T_0(x) )\f$
    * \warning: assumes that input and output point type are the same.
    */
-  inline void
+  void
   EvaluateJacobianWithImageGradientProductUseComposition(const InputPointType &,
                                                          const MovingImageGradientType &,
                                                          DerivativeType &,
                                                          NonZeroJacobianIndicesType &) const;
 
   /** CURRENT ONLY: \f$J(x) = J_1(x)\f$ */
-  inline void
+  void
   EvaluateJacobianWithImageGradientProductNoInitialTransform(const InputPointType &,
                                                              const MovingImageGradientType &,
                                                              DerivativeType &,
                                                              NonZeroJacobianIndicesType &) const;
 
   /** NO CURRENT TRANSFORM SET: throw an exception. */
-  inline void
+  void
   EvaluateJacobianWithImageGradientProductNoCurrentTransform(const InputPointType &,
                                                              const MovingImageGradientType &,
                                                              DerivativeType &,
@@ -397,57 +399,57 @@ protected:
    */
 
   /** ADDITION: \f$J(x) = J_1(x)\f$ */
-  inline void
-  GetSpatialJacobianUseAddition(const InputPointType & ipp, SpatialJacobianType & sj) const;
+  void
+  GetSpatialJacobianUseAddition(const InputPointType & inputPoint, SpatialJacobianType & sj) const;
 
   /** COMPOSITION: \f$J(x) = J_1( T_0(x) )\f$
    * \warning: assumes that input and output point type are the same.
    */
-  inline void
-  GetSpatialJacobianUseComposition(const InputPointType & ipp, SpatialJacobianType & sj) const;
+  void
+  GetSpatialJacobianUseComposition(const InputPointType & inputPoint, SpatialJacobianType & sj) const;
 
   /** CURRENT ONLY: \f$J(x) = J_1(x)\f$ */
-  inline void
-  GetSpatialJacobianNoInitialTransform(const InputPointType & ipp, SpatialJacobianType & sj) const;
+  void
+  GetSpatialJacobianNoInitialTransform(const InputPointType & inputPoint, SpatialJacobianType & sj) const;
 
   /** NO CURRENT TRANSFORM SET: throw an exception. */
-  inline void
-  GetSpatialJacobianNoCurrentTransform(const InputPointType & ipp, SpatialJacobianType & sj) const;
+  void
+  GetSpatialJacobianNoCurrentTransform(const InputPointType & inputPoint, SpatialJacobianType & sj) const;
 
   /** ************************************************
    * Methods to compute the spatial Hessian.
    */
 
   /** ADDITION: \f$J(x) = J_1(x)\f$ */
-  inline void
-  GetSpatialHessianUseAddition(const InputPointType & ipp, SpatialHessianType & sh) const;
+  void
+  GetSpatialHessianUseAddition(const InputPointType & inputPoint, SpatialHessianType & sh) const;
 
   /** COMPOSITION: \f$J(x) = J_1( T_0(x) )\f$
    * \warning: assumes that input and output point type are the same.
    */
-  inline void
-  GetSpatialHessianUseComposition(const InputPointType & ipp, SpatialHessianType & sh) const;
+  void
+  GetSpatialHessianUseComposition(const InputPointType & inputPoint, SpatialHessianType & sh) const;
 
   /** CURRENT ONLY: \f$J(x) = J_1(x)\f$ */
-  inline void
-  GetSpatialHessianNoInitialTransform(const InputPointType & ipp, SpatialHessianType & sh) const;
+  void
+  GetSpatialHessianNoInitialTransform(const InputPointType & inputPoint, SpatialHessianType & sh) const;
 
   /** NO CURRENT TRANSFORM SET: throw an exception. */
-  inline void
-  GetSpatialHessianNoCurrentTransform(const InputPointType & ipp, SpatialHessianType & sh) const;
+  void
+  GetSpatialHessianNoCurrentTransform(const InputPointType & inputPoint, SpatialHessianType & sh) const;
 
   /** ************************************************
    * Methods to compute the Jacobian of the spatial Jacobian.
    */
 
   /** ADDITION: \f$J(x) = J_1(x)\f$ */
-  inline void
-  GetJacobianOfSpatialJacobianUseAddition(const InputPointType &          ipp,
+  void
+  GetJacobianOfSpatialJacobianUseAddition(const InputPointType &          inputPoint,
                                           JacobianOfSpatialJacobianType & jsj,
                                           NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
 
-  inline void
-  GetJacobianOfSpatialJacobianUseAddition(const InputPointType &          ipp,
+  void
+  GetJacobianOfSpatialJacobianUseAddition(const InputPointType &          inputPoint,
                                           SpatialJacobianType &           sj,
                                           JacobianOfSpatialJacobianType & jsj,
                                           NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
@@ -455,37 +457,37 @@ protected:
   /** COMPOSITION: \f$J(x) = J_1( T_0(x) )\f$
    * \warning: assumes that input and output point type are the same.
    */
-  inline void
-  GetJacobianOfSpatialJacobianUseComposition(const InputPointType &          ipp,
+  void
+  GetJacobianOfSpatialJacobianUseComposition(const InputPointType &          inputPoint,
                                              JacobianOfSpatialJacobianType & jsj,
                                              NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
 
-  inline void
-  GetJacobianOfSpatialJacobianUseComposition(const InputPointType &          ipp,
+  void
+  GetJacobianOfSpatialJacobianUseComposition(const InputPointType &          inputPoint,
                                              SpatialJacobianType &           sj,
                                              JacobianOfSpatialJacobianType & jsj,
                                              NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
 
   /** CURRENT ONLY: \f$J(x) = J_1(x)\f$ */
-  inline void
-  GetJacobianOfSpatialJacobianNoInitialTransform(const InputPointType &          ipp,
+  void
+  GetJacobianOfSpatialJacobianNoInitialTransform(const InputPointType &          inputPoint,
                                                  JacobianOfSpatialJacobianType & jsj,
                                                  NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
 
-  inline void
-  GetJacobianOfSpatialJacobianNoInitialTransform(const InputPointType &          ipp,
+  void
+  GetJacobianOfSpatialJacobianNoInitialTransform(const InputPointType &          inputPoint,
                                                  SpatialJacobianType &           sj,
                                                  JacobianOfSpatialJacobianType & jsj,
                                                  NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
 
   /** NO CURRENT TRANSFORM SET: throw an exception. */
-  inline void
-  GetJacobianOfSpatialJacobianNoCurrentTransform(const InputPointType &          ipp,
+  void
+  GetJacobianOfSpatialJacobianNoCurrentTransform(const InputPointType &          inputPoint,
                                                  JacobianOfSpatialJacobianType & jsj,
                                                  NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
 
-  inline void
-  GetJacobianOfSpatialJacobianNoCurrentTransform(const InputPointType &          ipp,
+  void
+  GetJacobianOfSpatialJacobianNoCurrentTransform(const InputPointType &          inputPoint,
                                                  SpatialJacobianType &           sj,
                                                  JacobianOfSpatialJacobianType & jsj,
                                                  NonZeroJacobianIndicesType &    nonZeroJacobianIndices) const;
@@ -495,13 +497,13 @@ protected:
    */
 
   /** ADDITION: \f$J(x) = J_1(x)\f$ */
-  inline void
-  GetJacobianOfSpatialHessianUseAddition(const InputPointType &         ipp,
+  void
+  GetJacobianOfSpatialHessianUseAddition(const InputPointType &         inputPoint,
                                          JacobianOfSpatialHessianType & jsh,
                                          NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const;
 
-  inline void
-  GetJacobianOfSpatialHessianUseAddition(const InputPointType &         ipp,
+  void
+  GetJacobianOfSpatialHessianUseAddition(const InputPointType &         inputPoint,
                                          SpatialHessianType &           sh,
                                          JacobianOfSpatialHessianType & jsh,
                                          NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const;
@@ -509,37 +511,37 @@ protected:
   /** COMPOSITION: \f$J(x) = J_1( T_0(x) )\f$
    * \warning: assumes that input and output point type are the same.
    */
-  inline void
-  GetJacobianOfSpatialHessianUseComposition(const InputPointType &         ipp,
+  void
+  GetJacobianOfSpatialHessianUseComposition(const InputPointType &         inputPoint,
                                             JacobianOfSpatialHessianType & jsh,
                                             NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const;
 
-  inline void
-  GetJacobianOfSpatialHessianUseComposition(const InputPointType &         ipp,
+  void
+  GetJacobianOfSpatialHessianUseComposition(const InputPointType &         inputPoint,
                                             SpatialHessianType &           sh,
                                             JacobianOfSpatialHessianType & jsh,
                                             NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const;
 
   /** CURRENT ONLY: \f$J(x) = J_1(x)\f$ */
-  inline void
-  GetJacobianOfSpatialHessianNoInitialTransform(const InputPointType &         ipp,
+  void
+  GetJacobianOfSpatialHessianNoInitialTransform(const InputPointType &         inputPoint,
                                                 JacobianOfSpatialHessianType & jsh,
                                                 NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const;
 
-  inline void
-  GetJacobianOfSpatialHessianNoInitialTransform(const InputPointType &         ipp,
+  void
+  GetJacobianOfSpatialHessianNoInitialTransform(const InputPointType &         inputPoint,
                                                 SpatialHessianType &           sh,
                                                 JacobianOfSpatialHessianType & jsh,
                                                 NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const;
 
   /** NO CURRENT TRANSFORM SET: throw an exception. */
-  inline void
-  GetJacobianOfSpatialHessianNoCurrentTransform(const InputPointType &         ipp,
+  void
+  GetJacobianOfSpatialHessianNoCurrentTransform(const InputPointType &         inputPoint,
                                                 JacobianOfSpatialHessianType & jsh,
                                                 NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const;
 
-  inline void
-  GetJacobianOfSpatialHessianNoCurrentTransform(const InputPointType &         ipp,
+  void
+  GetJacobianOfSpatialHessianNoCurrentTransform(const InputPointType &         inputPoint,
                                                 SpatialHessianType &           sh,
                                                 JacobianOfSpatialHessianType & jsh,
                                                 NonZeroJacobianIndicesType &   nonZeroJacobianIndices) const;
@@ -617,11 +619,6 @@ private:
   /** How to combine the transformations. Composition by default. */
   bool m_UseAddition{ false };
   bool m_UseComposition{ true };
-
-private:
-  AdvancedCombinationTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

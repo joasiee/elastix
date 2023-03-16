@@ -73,6 +73,8 @@ class ITK_TEMPLATE_EXPORT ParzenWindowNormalizedMutualInformationImageToImageMet
   : public ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ParzenWindowNormalizedMutualInformationImageToImageMetric);
+
   /** Standard class typedefs. */
   using Self = ParzenWindowNormalizedMutualInformationImageToImageMetric;
   using Superclass = ParzenWindowHistogramImageToImageMetric<TFixedImage, TMovingImage>;
@@ -193,13 +195,6 @@ protected:
    */
   virtual MeasureType
   ComputeNormalizedMutualInformation(MeasureType & jointEntropy) const;
-
-private:
-  /** The deleted copy constructor. */
-  ParzenWindowNormalizedMutualInformationImageToImageMetric(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

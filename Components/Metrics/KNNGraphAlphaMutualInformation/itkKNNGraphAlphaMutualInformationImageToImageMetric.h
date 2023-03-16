@@ -75,6 +75,8 @@ class ITK_TEMPLATE_EXPORT KNNGraphAlphaMutualInformationImageToImageMetric
   : public MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(KNNGraphAlphaMutualInformationImageToImageMetric);
+
   /** Standard itk. */
   using Self = KNNGraphAlphaMutualInformationImageToImageMetric;
   using Superclass = MultiInputImageToImageMetricBase<TFixedImage, TMovingImage>;
@@ -264,22 +266,18 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   /** Member variables. */
-  BinaryKNNTreePointer m_BinaryKNNTreeFixed;
-  BinaryKNNTreePointer m_BinaryKNNTreeMoving;
-  BinaryKNNTreePointer m_BinaryKNNTreeJoint;
+  BinaryKNNTreePointer m_BinaryKNNTreeFixed{};
+  BinaryKNNTreePointer m_BinaryKNNTreeMoving{};
+  BinaryKNNTreePointer m_BinaryKNNTreeJoint{};
 
-  BinaryKNNTreeSearchPointer m_BinaryKNNTreeSearcherFixed;
-  BinaryKNNTreeSearchPointer m_BinaryKNNTreeSearcherMoving;
-  BinaryKNNTreeSearchPointer m_BinaryKNNTreeSearcherJoint;
+  BinaryKNNTreeSearchPointer m_BinaryKNNTreeSearcherFixed{};
+  BinaryKNNTreeSearchPointer m_BinaryKNNTreeSearcherMoving{};
+  BinaryKNNTreeSearchPointer m_BinaryKNNTreeSearcherJoint{};
 
-  double m_Alpha;
-  double m_AvoidDivisionBy;
+  double m_Alpha{};
+  double m_AvoidDivisionBy{};
 
 private:
-  KNNGraphAlphaMutualInformationImageToImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Typedef's for the computation of the derivative. */
   using typename Superclass::FixedImagePointType;
   using typename Superclass::MovingImagePointType;
@@ -302,11 +300,11 @@ private:
    * - The sparse Jacobian of the transformation (dT/dmu).
    * - The spatial derivatives of the moving (feature) images (dm/dx).
    */
-  virtual void
+  void
   ComputeListSampleValuesAndDerivativePlusJacobian(const ListSamplePointer &               listSampleFixed,
                                                    const ListSamplePointer &               listSampleMoving,
                                                    const ListSamplePointer &               listSampleJoint,
-                                                   const bool &                            doDerivative,
+                                                   const bool                              doDerivative,
                                                    TransformJacobianContainerType &        jacobians,
                                                    TransformJacobianIndicesContainerType & jacobiansIndices,
                                                    SpatialDerivativeContainerType &        spatialDerivatives) const;

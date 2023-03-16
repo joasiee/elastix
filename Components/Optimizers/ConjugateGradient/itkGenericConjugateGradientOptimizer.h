@@ -40,6 +40,8 @@ namespace itk
 class GenericConjugateGradientOptimizer : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GenericConjugateGradientOptimizer);
+
   using Self = GenericConjugateGradientOptimizer;
   using Superclass = ScaledSingleValuedNonLinearOptimizer;
   using Pointer = SmartPointer<Self>;
@@ -142,7 +144,7 @@ protected:
   void
   PrintSelf(std::ostream & os, Indent indent) const override;
 
-  DerivativeType    m_CurrentGradient;
+  DerivativeType    m_CurrentGradient{};
   MeasureType       m_CurrentValue{ 0.0 };
   unsigned long     m_CurrentIteration{ 0 };
   StopConditionType m_StopCondition{ Unknown };
@@ -164,11 +166,11 @@ protected:
   bool m_PreviousGradientAndSearchDirValid{ false };
 
   /** The name of the BetaDefinition */
-  BetaDefinitionType m_BetaDefinition;
+  BetaDefinitionType m_BetaDefinition{};
 
   /** A mapping that links the names of the BetaDefinitions to functions that
    * compute \f$\beta\f$. */
-  BetaDefinitionMapType m_BetaDefinitionMap;
+  BetaDefinitionMapType m_BetaDefinitionMap{};
 
   /** Function to add a new beta definition. The first argument should be a name
    * via which a user can select this \f$\beta\f$ definition. The second argument is a
@@ -200,7 +202,7 @@ protected:
   virtual void
   LineSearch(const ParametersType searchDir, double & step, ParametersType & x, MeasureType & f, DerivativeType & g);
 
-  /** Check if convergence has occured;
+  /** Check if convergence has occurred;
    * The firstLineSearchDone bool allows the implementation of TestConvergence to
    * decide to skip a few convergence checks when no line search has performed yet
    * (so, before the actual optimisation begins)  */
@@ -252,10 +254,6 @@ protected:
                   const ParametersType & previousSearchDir);
 
 private:
-  GenericConjugateGradientOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   unsigned long m_MaximumNumberOfIterations{ 100 };
   double        m_ValueTolerance{ 1e-5 };
   double        m_GradientMagnitudeTolerance{ 1e-5 };

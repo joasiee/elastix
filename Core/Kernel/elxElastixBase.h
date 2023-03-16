@@ -31,8 +31,9 @@
 #include "elxBaseComponent.h"
 #include "elxComponentDatabase.h"
 #include "elxConfiguration.h"
+#include "elxIterationInfo.h"
 #include "elxMacro.h"
-#include "xoutmain.h"
+#include "elxlog.h"
 
 // ITK header files:
 #include <itkChangeInformationImageFilter.h>
@@ -52,15 +53,15 @@
  * These macros are undef'd at the end of this file
  */
 #define elxGetObjectMacro(_name, _type)                                                                                \
-  _type * Get##_name() const { return this->m_##_name.GetPointer(); }
+  _type * Get##_name() const { return m_##_name.GetPointer(); }
 // end elxGetObjectMacro
 
 #define elxSetObjectMacro(_name, _type)                                                                                \
   void Set##_name(_type * _arg)                                                                                        \
   {                                                                                                                    \
-    if (this->m_##_name != _arg)                                                                                       \
+    if (m_##_name != _arg)                                                                                             \
     {                                                                                                                  \
-      this->m_##_name = _arg;                                                                                          \
+      m_##_name = _arg;                                                                                                \
       this->itk::Object::Modified();                                                                                   \
     }                                                                                                                  \
   }
@@ -70,9 +71,9 @@
 #define elxGetNumberOfMacro(_name)                                                                                     \
   unsigned int GetNumberOf##_name##s() const                                                                           \
   {                                                                                                                    \
-    if (this->m_##_name##Container != nullptr)                                                                         \
+    if (m_##_name##Container != nullptr)                                                                               \
     {                                                                                                                  \
-      return this->m_##_name##Container->Size();                                                                       \
+      return m_##_name##Container->Size();                                                                             \
     }                                                                                                                  \
     return 0;                                                                                                          \
   }
@@ -93,10 +94,6 @@ namespace elastix
  * \parameter RandomSeed: Sets a global seed for the random generator.\n
  *   example: <tt>(RandomSeed 121212)</tt>\n
  *   It must be a positive integer number. Default: 121212.
- * \parameter DefaultOutputPrecision: Set the default precision of floating values in the output.
- *   Most importantly, it affects the output precision of the parameters in the transform parameter file.\n
- *   example: <tt>(DefaultOutputPrecision 6)</tt>\n
- *   Default value: 6.
  *
  * The command line arguments used by this class are:
  * \commandlinearg -f: mandatory argument for elastix with the file name of the fixed image. \n
@@ -145,6 +142,8 @@ class ElastixBase
   , public BaseComponent
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ElastixBase);
+
   /** Standard typedefs etc. */
   using Self = ElastixBase;
   using Superclass = BaseComponent;
@@ -152,8 +151,7 @@ public:
   /** Typedefs used in this class. */
   using ConfigurationPointer = Configuration::Pointer;
   using ObjectPointer = itk::Object::Pointer;
-  using DataObjectType = itk::DataObject; // for the images
-  using DataObjectPointer = DataObjectType::Pointer;
+  using DataObjectPointer = itk::DataObject::Pointer; // for the images
   using ObjectContainerType = itk::VectorContainer<unsigned int, ObjectPointer>;
   using ObjectContainerPointer = ObjectContainerType::Pointer;
   using DataObjectContainerType = itk::VectorContainer<unsigned int, DataObjectPointer>;
@@ -178,9 +176,6 @@ public:
   /** Typedef that is used in the elastix dll version. */
   using ParameterMapType = itk::ParameterMapInterface::ParameterMapType;
 
-  /** Typedef's for Timer class. */
-  using TimerType = itk::TimeProbe;
-
   /** Set/Get the Configuration Object. */
   elxGetObjectMacro(Configuration, Configuration);
   elxSetObjectMacro(Configuration, Configuration);
@@ -192,7 +187,7 @@ public:
   DBIndexType
   GetDBIndex()
   {
-    return this->m_DBIndex;
+    return m_DBIndex;
   }
 
   /** Get the component containers.
@@ -305,7 +300,7 @@ public:
 
   /** Empty ApplyTransform()-function to be overridden. */
   virtual int
-  ApplyTransform() = 0;
+  ApplyTransform(bool doReadTransform) = 0;
 
   /** Function that is called at the very beginning of ElastixTemplate::Run().
    * It checks the command line input arguments.
@@ -319,12 +314,6 @@ public:
   int
   BeforeAllTransformixBase();
 
-  /** Function called before registration.
-   * It installs the IterationInfo field.
-   */
-  void
-  BeforeRegistrationBase() override;
-
   ResultImageType *
   GetResultImage(const unsigned int idx = 0) const;
 
@@ -336,17 +325,6 @@ public:
 
   void
   SetResultDeformationField(DataObjectPointer result_deformationfield);
-
-
-  /** Get the default precision of xout.
-   * (The value assumed when no DefaultOutputPrecision is given in the
-   * parameter file.
-   */
-  int
-  GetDefaultOutputPrecision() const
-  {
-    return this->m_DefaultOutputPrecision;
-  }
 
 
   /** Get whether direction cosines should be taken into account (true)
@@ -373,19 +351,19 @@ public:
 
   /** Set configuration vector. Library only. */
   void
-  SetConfigurations(const std::vector<ConfigurationPointer> & configurations);
+  SetConfigurations(const std::vector<Configuration::ConstPointer> & configurations);
 
   /** Return configuration from vector of configurations. Library only. */
-  ConfigurationPointer
+  Configuration::ConstPointer
   GetConfiguration(const size_t index) const;
 
-  xl::xoutrow &
+  IterationInfo &
   GetIterationInfo()
   {
     return m_IterationInfo;
   }
 
-  xl::xoutbase &
+  std::ostream &
   GetIterationInfoAt(const char * const name)
   {
     return m_IterationInfo[name];
@@ -401,21 +379,17 @@ protected:
   ElastixBase();
   ~ElastixBase() override = default;
 
-  ConfigurationPointer m_Configuration;
-  DBIndexType          m_DBIndex;
+  DBIndexType m_DBIndex{ 0 };
 
   FlatDirectionCosinesType m_OriginalFixedImageDirection;
 
   /** Timers. */
-  TimerType m_Timer0{};
-  TimerType m_IterationTimer{};
-  TimerType m_ResolutionTimer{};
+  itk::TimeProbe m_Timer0{};
+  itk::TimeProbe m_IterationTimer{};
+  itk::TimeProbe m_ResolutionTimer{};
 
   /** Store the CurrentTransformParameterFileName. */
   std::string m_CurrentTransformParameterFileName;
-
-  /** A vector of configuration objects, needed when transformix is used as library. */
-  std::vector<ConfigurationPointer> m_Configurations;
 
   /** Count the number of iterations. */
   unsigned int m_IterationCounter{};
@@ -454,41 +428,36 @@ protected:
       /** Loop over all image filenames. */
       for (const auto & fileName : *fileNameContainer)
       {
-        /** Setup reader. */
-        const auto imageReader = itk::ImageFileReader<TImage>::New();
-        imageReader->SetFileName(fileName);
-        const auto    infoChanger = itk::ChangeInformationImageFilter<TImage>::New();
-        DirectionType direction;
-        direction.SetIdentity();
-        infoChanger->SetOutputDirection(direction);
+        const auto infoChanger = itk::ChangeInformationImageFilter<TImage>::New();
         infoChanger->SetChangeDirection(!useDirectionCosines);
-        infoChanger->SetInput(imageReader->GetOutput());
 
         /** Do the reading. */
         try
         {
+          const auto image = itk::ReadImage<TImage>(fileName);
+          infoChanger->SetInput(image);
           infoChanger->Update();
+
+          /** Store the original direction cosines */
+          if (originalDirectionCosines != nullptr)
+          {
+            *originalDirectionCosines = image->GetDirection();
+          }
         }
         catch (itk::ExceptionObject & excp)
         {
           /** Add information to the exception. */
           std::string err_str = excp.GetDescription();
           err_str += "\nError occurred while reading the image described as " + imageDescription + ", with file name " +
-                     imageReader->GetFileName() + "\n";
+                     fileName + "\n";
           excp.SetDescription(err_str);
           /** Pass the exception to the caller of this function. */
-          throw excp;
+          throw;
         }
 
         /** Store loaded image in the image container, as a DataObjectPointer. */
-        const auto image = infoChanger->GetOutput();
-        imageContainer->push_back(image);
+        imageContainer->push_back(infoChanger->GetOutput());
 
-        /** Store the original direction cosines */
-        if (originalDirectionCosines != nullptr)
-        {
-          *originalDirectionCosines = imageReader->GetOutput()->GetDirection();
-        }
 
       } // end for
 
@@ -506,52 +475,53 @@ protected:
   GenerateDataObjectContainer(DataObjectPointer dataObject);
 
 private:
-  ElastixBase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  ConfigurationPointer m_Configuration{ nullptr };
 
-  xl::xoutrow m_IterationInfo;
+  /** A vector of configuration objects, needed when transformix is used as library. */
+  std::vector<Configuration::ConstPointer> m_Configurations;
 
-  int m_DefaultOutputPrecision;
+  IterationInfo m_IterationInfo;
 
   /** The component containers. These containers contain
    * SmartPointer's to itk::Object.
    */
-  ObjectContainerPointer m_FixedImagePyramidContainer;
-  ObjectContainerPointer m_MovingImagePyramidContainer;
-  ObjectContainerPointer m_InterpolatorContainer;
-  ObjectContainerPointer m_ImageSamplerContainer;
-  ObjectContainerPointer m_MetricContainer;
-  ObjectContainerPointer m_OptimizerContainer;
-  ObjectContainerPointer m_RegistrationContainer;
-  ObjectContainerPointer m_ResamplerContainer;
-  ObjectContainerPointer m_ResampleInterpolatorContainer;
-  ObjectContainerPointer m_TransformContainer;
+  ObjectContainerPointer m_FixedImagePyramidContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_MovingImagePyramidContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_InterpolatorContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_ImageSamplerContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_MetricContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_OptimizerContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_RegistrationContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_ResamplerContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_ResampleInterpolatorContainer{ ObjectContainerType::New() };
+  ObjectContainerPointer m_TransformContainer{ ObjectContainerType::New() };
 
   /** The Image and Mask containers. These are stored as pointers to itk::DataObject. */
-  DataObjectContainerPointer m_FixedImageContainer;
-  DataObjectContainerPointer m_MovingImageContainer;
-  DataObjectContainerPointer m_FixedMaskContainer;
-  DataObjectContainerPointer m_MovingMaskContainer;
+  DataObjectContainerPointer m_FixedImageContainer{ DataObjectContainerType::New() };
+  DataObjectContainerPointer m_MovingImageContainer{ DataObjectContainerType::New() };
+  DataObjectContainerPointer m_FixedMaskContainer{ DataObjectContainerType::New() };
+  DataObjectContainerPointer m_MovingMaskContainer{ DataObjectContainerType::New() };
 
   /** The result image container. These are stored as pointers to itk::DataObject. */
-  DataObjectContainerPointer m_ResultImageContainer;
+  DataObjectContainerPointer m_ResultImageContainer{ DataObjectContainerType::New() };
 
   /** The result deformation field container. These are stored as pointers to itk::DataObject. */
   DataObjectContainerPointer m_ResultDeformationFieldContainer;
 
   /** The image and mask FileNameContainers. */
-  FileNameContainerPointer m_FixedImageFileNameContainer;
-  FileNameContainerPointer m_MovingImageFileNameContainer;
-  FileNameContainerPointer m_FixedMaskFileNameContainer;
-  FileNameContainerPointer m_MovingMaskFileNameContainer;
+  FileNameContainerPointer m_FixedImageFileNameContainer{ FileNameContainerType::New() };
+  FileNameContainerPointer m_MovingImageFileNameContainer{ FileNameContainerType::New() };
+  FileNameContainerPointer m_FixedMaskFileNameContainer{ FileNameContainerType::New() };
+  FileNameContainerPointer m_MovingMaskFileNameContainer{ FileNameContainerType::New() };
 
   /** The initial and final transform. */
-  ObjectPointer m_InitialTransform;
-  ObjectPointer m_FinalTransform;
+  ObjectPointer m_InitialTransform{ nullptr };
+  ObjectPointer m_FinalTransform{ nullptr };
 
-  /** Use or ignore direction cosines. */
-  bool m_UseDirectionCosines;
+  /** Use or ignore direction cosines.
+   * From Elastix 4.3 to 4.7: Ignore direction cosines by default, for
+   * backward compatability. From Elastix 4.8: set it to true by default. */
+  bool m_UseDirectionCosines{ true };
 };
 
 } // end namespace elastix

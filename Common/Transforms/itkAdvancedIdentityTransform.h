@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkIdentityTransform.h,v $
-  Language:  C++
   Date:      $Date: 2009-06-28 14:41:47 $
   Version:   $Revision: 1.19 $
 
@@ -44,6 +43,8 @@
 #include "itkAdvancedTransform.h"
 
 #include "itkObjectFactory.h"
+
+#include <numeric> // For iota.
 
 namespace itk
 {
@@ -71,6 +72,8 @@ template <class TScalarType, unsigned int NDimensions = 3>
 class ITK_TEMPLATE_EXPORT AdvancedIdentityTransform : public AdvancedTransform<TScalarType, NDimensions, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdvancedIdentityTransform);
+
   /** Standard class typedefs. */
   using Self = AdvancedIdentityTransform;
   using Superclass = AdvancedTransform<TScalarType, NDimensions, NDimensions>;
@@ -309,10 +312,7 @@ protected:
 
     /** Nonzero Jacobian indices, for GetJacobian. */
     this->m_NonZeroJacobianIndices.resize(ParametersDimension);
-    for (unsigned int i = 0; i < ParametersDimension; ++i)
-    {
-      this->m_NonZeroJacobianIndices[i] = i;
-    }
+    std::iota(m_NonZeroJacobianIndices.begin(), m_NonZeroJacobianIndices.end(), 0u);
 
     /** Set to correct size. The elements are automatically initialized to 0. */
     this->m_HasNonZeroSpatialHessian = false;
@@ -327,16 +327,12 @@ protected:
   ~AdvancedIdentityTransform() override = default;
 
 private:
-  AdvancedIdentityTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  JacobianType                  m_LocalJacobian;
-  SpatialJacobianType           m_SpatialJacobian;
-  SpatialHessianType            m_SpatialHessian;
-  NonZeroJacobianIndicesType    m_NonZeroJacobianIndices;
-  JacobianOfSpatialJacobianType m_JacobianOfSpatialJacobian;
-  JacobianOfSpatialHessianType  m_JacobianOfSpatialHessian;
+  JacobianType                  m_LocalJacobian{};
+  SpatialJacobianType           m_SpatialJacobian{};
+  SpatialHessianType            m_SpatialHessian{};
+  NonZeroJacobianIndicesType    m_NonZeroJacobianIndices{};
+  JacobianOfSpatialJacobianType m_JacobianOfSpatialJacobian{};
+  JacobianOfSpatialHessianType  m_JacobianOfSpatialHessian{};
 };
 
 } // end namespace itk

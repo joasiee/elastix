@@ -71,6 +71,8 @@ namespace itk
 class AdaptiveStepsizeOptimizer : public StandardGradientDescentOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdaptiveStepsizeOptimizer);
+
   /** Standard ITK.*/
   using Self = AdaptiveStepsizeOptimizer;
   using Superclass = StandardGradientDescentOptimizer;
@@ -130,15 +132,11 @@ protected:
   UpdateCurrentTime() override;
 
   /** The PreviousGradient, necessary for the CruzAcceleration */
-  DerivativeType m_PreviousSearchDirection;
-  ParametersType m_PreconditionVector;
-  std::string    m_StepSizeStrategy;
+  DerivativeType m_PreviousSearchDirection{};
+  ParametersType m_PreconditionVector{};
+  std::string    m_StepSizeStrategy{};
 
 private:
-  AdaptiveStepsizeOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Settings */
   bool   m_UseAdaptiveStepSizes{ true };
   double m_SigmoidMax{ 1.0 };

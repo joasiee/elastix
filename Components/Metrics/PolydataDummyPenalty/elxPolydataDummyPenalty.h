@@ -67,6 +67,8 @@ class ITK_TEMPLATE_EXPORT PolydataDummyPenalty
   , public MetricBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(PolydataDummyPenalty);
+
   /** Standard ITK-stuff. */
   using Self = PolydataDummyPenalty;
   using Superclass1 = itk::MeshPenalty<typename MetricBase<TElastix>::FixedPointSetType,
@@ -198,12 +200,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  PolydataDummyPenalty(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   unsigned int m_NumberOfMeshes;
 };

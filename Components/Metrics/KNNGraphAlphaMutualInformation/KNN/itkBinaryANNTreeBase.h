@@ -37,6 +37,8 @@ template <class TListSample>
 class ITK_TEMPLATE_EXPORT BinaryANNTreeBase : public BinaryTreeBase<TListSample>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(BinaryANNTreeBase);
+
   /** Standard itk. */
   using Self = BinaryANNTreeBase;
   using Superclass = BinaryTreeBase<TListSample>;
@@ -65,11 +67,6 @@ protected:
 
   /** Destructor. */
   ~BinaryANNTreeBase() override = default;
-
-private:
-  BinaryANNTreeBase(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace itk

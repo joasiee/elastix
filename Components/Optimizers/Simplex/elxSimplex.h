@@ -43,6 +43,8 @@ class ITK_TEMPLATE_EXPORT Simplex
   , public OptimizerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(Simplex);
+
   /** Standard ITK.*/
   using Self = Simplex;
   using Superclass1 = AmoebaOptimizer;
@@ -104,10 +106,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  Simplex(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

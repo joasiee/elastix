@@ -77,6 +77,8 @@ namespace itk
 class CommandLineArgumentParser : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(CommandLineArgumentParser);
+
   /** Standard class typedefs. */
   using Self = CommandLineArgumentParser;
   using Superclass = Object;
@@ -164,12 +166,9 @@ public:
       /** Check if the cast was successful. */
       if (!castSuccesful)
       {
-        std::stringstream ss;
-        ss << "ERROR: Casting entry number " << 0 << " for the parameter \"" << key << "\" failed!\n"
-           << "  You tried to cast \"" << this->m_Argv[keyIndex + 1] << "\" from std::string to "
-           << typeid(arg[0]).name() << std::endl;
-
-        itkExceptionMacro(<< ss.str());
+        itkExceptionMacro("ERROR: Casting entry number " << 0 << " for the parameter \"" << key << "\" failed!\n"
+                                                         << "  You tried to cast \"" << this->m_Argv[keyIndex + 1]
+                                                         << "\" from std::string to " << typeid(arg[0]).name() << '\n');
       }
 
       /** Fill the arg vector with the casted value. */
@@ -267,25 +266,20 @@ protected:
   StringCast(const std::string & parameterValue, std::string & casted) const;
 
   /** A vector of strings to store the command line arguments. */
-  std::vector<std::string> m_Argv;
+  std::vector<std::string> m_Argv{};
 
   /** A map to store the arguments and their indices. The arguments are stored
    * INCLUDING the leading dash. I.e. an example pair is ("-test", 2)
    */
-  ArgumentMapType m_ArgumentMap;
+  ArgumentMapType m_ArgumentMap{};
 
   /** The list of required arguments. They are stored with an accompanying help text string. */
-  std::vector<std::pair<std::string, std::string>> m_RequiredArguments;
+  std::vector<std::pair<std::string, std::string>> m_RequiredArguments{};
 
   /** A list of arguments with the condition that exactly one in each set must exist. */
-  std::vector<std::pair<std::vector<std::string>, std::string>> m_RequiredExactlyOneArguments;
+  std::vector<std::pair<std::vector<std::string>, std::string>> m_RequiredExactlyOneArguments{};
 
-  std::string m_ProgramHelpText;
-
-private:
-  CommandLineArgumentParser(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  std::string m_ProgramHelpText{};
 };
 
 // end class CommandLineArgumentParser

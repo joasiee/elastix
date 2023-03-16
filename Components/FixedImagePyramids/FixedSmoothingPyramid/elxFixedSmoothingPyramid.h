@@ -43,6 +43,8 @@ class ITK_TEMPLATE_EXPORT FixedSmoothingPyramid
   , public FixedImagePyramidBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(FixedSmoothingPyramid);
+
   /** Standard ITK-stuff. */
   using Self = FixedSmoothingPyramid;
   using Superclass1 =
@@ -88,12 +90,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  FixedSmoothingPyramid(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

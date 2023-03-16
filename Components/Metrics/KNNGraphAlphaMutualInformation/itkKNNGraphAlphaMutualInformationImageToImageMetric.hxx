@@ -734,7 +734,7 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::
   ComputeListSampleValuesAndDerivativePlusJacobian(const ListSamplePointer &               listSampleFixed,
                                                    const ListSamplePointer &               listSampleMoving,
                                                    const ListSamplePointer &               listSampleJoint,
-                                                   const bool &                            doDerivative,
+                                                   const bool                              doDerivative,
                                                    TransformJacobianContainerType &        jacobianContainer,
                                                    TransformJacobianIndicesContainerType & jacobianIndicesContainer,
                                                    SpatialDerivativeContainerType & spatialDerivativesContainer) const
@@ -786,7 +786,7 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates and initialize some variables. */
-    const FixedImagePointType & fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    const FixedImagePointType & fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform point. */
     const MovingImagePointType mappedPoint = this->TransformPoint(fixedPoint);
@@ -818,7 +818,7 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::
     if (sampleOk)
     {
       /** Get the fixed image value. */
-      const RealType & fixedImageValue = static_cast<RealType>((*fiter).Value().m_ImageValue);
+      const RealType & fixedImageValue = static_cast<RealType>(fiter->Value().m_ImageValue);
 
       /** Add the samples to the ListSampleCarrays. */
       listSampleFixed->SetMeasurement(this->m_NumberOfPixelsCounted, 0, fixedImageValue);
@@ -872,7 +872,7 @@ KNNGraphAlphaMutualInformationImageToImageMetric<TFixedImage, TMovingImage>::
       /** Update the NumberOfPixelsCounted. */
       this->m_NumberOfPixelsCounted++;
 
-      ii++;
+      ++ii;
 
     } // end if sampleOk
 

@@ -91,8 +91,8 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateData()
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {
       /** Make a reference to the current sample in the container. */
-      InputImagePointType &  samplePoint = (*iter).Value().m_ImageCoordinates;
-      ImageSampleValueType & sampleValue = (*iter).Value().m_ImageValue;
+      InputImagePointType &  samplePoint = iter->Value().m_ImageCoordinates;
+      ImageSampleValueType & sampleValue = iter->Value().m_ImageValue;
 
       /** Walk over the image until we find a valid point. */
       this->GenerateRandomCoordinate(smallestContIndex, largestContIndex, sampleContIndex);
@@ -108,10 +108,8 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateData()
   else
   {
     /** Update the mask. */
-    if (mask->GetSource())
-    {
-      mask->GetSource()->Update();
-    }
+    mask->UpdateSource();
+
     /** Set up some variable that are used to make sure we are not forever
      * walking around on this image, trying to look for valid samples. */
     unsigned long numberOfSamplesTried = 0;
@@ -121,8 +119,8 @@ ImageRandomCoordinateSampler<TInputImage>::GenerateData()
     for (iter = sampleContainer->Begin(); iter != end; ++iter)
     {
       /** Make a reference to the current sample in the container. */
-      InputImagePointType &  samplePoint = (*iter).Value().m_ImageCoordinates;
-      ImageSampleValueType & sampleValue = (*iter).Value().m_ImageValue;
+      InputImagePointType &  samplePoint = iter->Value().m_ImageCoordinates;
+      ImageSampleValueType & sampleValue = iter->Value().m_ImageValue;
 
       /** Walk over the image until we find a valid point */
       do
@@ -249,8 +247,8 @@ ImageRandomCoordinateSampler<TInputImage>::ThreadedGenerateData(const InputImage
     }
 
     /** Make a reference to the current sample in the container. */
-    InputImagePointType &  samplePoint = (*iter).Value().m_ImageCoordinates;
-    ImageSampleValueType & sampleValue = (*iter).Value().m_ImageValue;
+    InputImagePointType &  samplePoint = iter->Value().m_ImageCoordinates;
+    ImageSampleValueType & sampleValue = iter->Value().m_ImageValue;
 
     /** Convert to point */
     inputImage->TransformContinuousIndexToPhysicalPoint(sampleCIndex, samplePoint);

@@ -27,25 +27,6 @@
 
 namespace itk
 {
-/**
- * ************************* Constructor ************************
- */
-
-template <class TFixedImage, class TTransform>
-ComputeJacobianTerms<TFixedImage, TTransform>::ComputeJacobianTerms()
-{
-  this->m_FixedImage = nullptr;
-  this->m_FixedImageMask = nullptr;
-  this->m_Transform = nullptr;
-  this->m_FixedImageMask = nullptr;
-  this->m_UseScales = false;
-
-  this->m_MaxBandCovSize = 0;
-  this->m_NumberOfBandStructureSamples = 0;
-  this->m_NumberOfJacobianMeasurements = 0;
-
-} // end Constructor
-
 
 /**
  * ************************* Compute ************************
@@ -237,7 +218,7 @@ ComputeJacobianTerms<TFixedImage, TTransform>::Compute(double & TrC, double & Tr
     ++samplenr;
 
     /** Read fixed coordinates and get Jacobian J_j. */
-    const FixedImagePointType & point = (*iter).Value().m_ImageCoordinates;
+    const FixedImagePointType & point = iter->Value().m_ImageCoordinates;
     this->m_Transform->GetJacobian(point, jacj, jacind);
 
     /** Skip invalid Jacobians in the beginning, if any. */
@@ -410,7 +391,7 @@ ComputeJacobianTerms<TFixedImage, TTransform>::Compute(double & TrC, double & Tr
   for (iter = begin; iter != end; ++iter)
   {
     /** Read fixed coordinates and get Jacobian. */
-    const FixedImagePointType & point = (*iter).Value().m_ImageCoordinates;
+    const FixedImagePointType & point = iter->Value().m_ImageCoordinates;
     this->m_Transform->GetJacobian(point, jacj, jacind);
 
     /** Apply scales, if necessary. */
@@ -466,13 +447,13 @@ ComputeJacobianTerms<TFixedImage, TTransform>::Compute(double & TrC, double & Tr
         /** Loop over row p of the sparse cov matrix. */
         for (covrowpit = covrowp.begin(); covrowpit != covrowp.end(); ++covrowpit)
         {
-          const unsigned int q = (*covrowpit).first;
+          const unsigned int q = covrowpit->first;
           const unsigned int qi = jacindExpanded[q];
 
           if (qi < sizejacind)
           {
             /** If found, update the jacjC matrix. */
-            const CovarianceValueType covElement = (*covrowpit).second;
+            const CovarianceValueType covElement = covrowpit->second;
             for (unsigned int dx = 0; dx < outdim; ++dx)
             {
               jacjcov[dx][pi] += jacj[dx][qi] * covElement;

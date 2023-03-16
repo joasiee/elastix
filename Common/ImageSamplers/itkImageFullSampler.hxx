@@ -62,7 +62,7 @@ ImageFullSampler<TInputImage>::GenerateData()
     {
       sampleContainer->Reserve(this->GetCroppedInputImageRegion().GetNumberOfPixels());
     }
-    catch (std::exception & excp)
+    catch (const std::exception & excp)
     {
       std::string message = "std: ";
       message += excp.what();
@@ -96,10 +96,7 @@ ImageFullSampler<TInputImage>::GenerateData()
   }   // end if no mask
   else
   {
-    if (mask->GetSource())
-    {
-      mask->GetSource()->Update();
-    }
+    mask->UpdateSource();
 
     /** Loop over the image and check if the points falls within the mask. */
     ImageSampleType tempSample;
@@ -157,7 +154,7 @@ ImageFullSampler<TInputImage>::ThreadedGenerateData(const InputImageRegionType &
     {
       sampleContainerThisThread->Reserve(chunkSize);
     }
-    catch (std::exception & excp)
+    catch (const std::exception & excp)
     {
       std::string message = "std: ";
       message += excp.what();
@@ -191,10 +188,7 @@ ImageFullSampler<TInputImage>::ThreadedGenerateData(const InputImageRegionType &
   }   // end if no mask
   else
   {
-    if (mask->GetSource())
-    {
-      mask->GetSource()->Update();
-    }
+    mask->UpdateSource();
 
     /** Loop over the image and check if the points falls within the mask. */
     ImageSampleType tempSample;

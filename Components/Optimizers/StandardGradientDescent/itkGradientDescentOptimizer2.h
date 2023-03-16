@@ -54,6 +54,8 @@ namespace itk
 class GradientDescentOptimizer2 : public ScaledSingleValuedNonLinearOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GradientDescentOptimizer2);
+
   /** Standard class typedefs. */
   using Self = GradientDescentOptimizer2;
   using Superclass = ScaledSingleValuedNonLinearOptimizer;
@@ -146,22 +148,18 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
   // made protected so subclass can access
-  DerivativeType    m_Gradient;
-  DerivativeType    m_SearchDirection;
+  DerivativeType    m_Gradient{};
+  DerivativeType    m_SearchDirection{};
   StopConditionType m_StopCondition{ MaximumNumberOfIterations };
 
 private:
-  GradientDescentOptimizer2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  // double        m_Value{ 0.0 };
+  double        m_Value{ 0.0 };
   double        m_LearningRate{ 1.0 };
   bool          m_Stop{ false };
   unsigned long m_NumberOfIterations{ 100 };
   unsigned long m_CurrentIteration{ 0 };
 
-  bool m_UseOpenMP;
+  bool m_UseOpenMP{};
 };
 
 } // end namespace itk

@@ -1,12 +1,13 @@
 add_executable(CommonGTest
   elxConversionGTest.cxx
-  elxDefaultConstructibleSubclassGTest.cxx
+  elxDefaultConstructGTest.cxx
   elxElastixMainGTest.cxx
   elxGTestUtilities.h
   elxResampleInterpolatorGTest.cxx
   elxResamplerGTest.cxx
   elxTransformIOGTest.cxx
   itkComputeImageExtremaFilterGTest.cxx
+  itkImageGridSamplerGTest.cxx
   itkParameterMapInterfaceTest.cxx
   )
 target_link_libraries(CommonGTest

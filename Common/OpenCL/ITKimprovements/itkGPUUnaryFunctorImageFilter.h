@@ -64,6 +64,8 @@ class ITK_TEMPLATE_EXPORT ITKOpenCL_EXPORT GPUUnaryFunctorImageFilter
   : public GPUInPlaceImageFilter<TInputImage, TOutputImage, TParentImageFilter>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUUnaryFunctorImageFilter);
+
   /** Standard class typedefs. */
   using Self = GPUUnaryFunctorImageFilter;
   using CPUSuperclass = TParentImageFilter;
@@ -133,14 +135,10 @@ protected:
 
   /** GPU kernel handle is defined here instead of in the child class
    * because GPUGenerateData() in this base class is used. */
-  int m_UnaryFunctorImageFilterGPUKernelHandle;
+  int m_UnaryFunctorImageFilterGPUKernelHandle{};
 
 private:
-  GPUUnaryFunctorImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  FunctorType m_Functor;
+  FunctorType m_Functor{};
 };
 
 } // end of namespace itk

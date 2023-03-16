@@ -46,24 +46,9 @@ PCAMetric<TFixedImage, TMovingImage>::PCAMetric()
   this->SetUseFixedImageLimiter(false);
   this->SetUseMovingImageLimiter(false);
 
-  // Multi-threading structs
-  this->m_PCAMetricGetSamplesPerThreadVariables = nullptr;
-  this->m_PCAMetricGetSamplesPerThreadVariablesSize = 0;
-
   /** Initialize the m_ParzenWindowHistogramThreaderParameters. */
   this->m_PCAMetricThreaderParameters.m_Metric = this;
 } // end constructor
-
-
-/**
- * ******************* Destructor *******************
- */
-
-template <class TFixedImage, class TMovingImage>
-PCAMetric<TFixedImage, TMovingImage>::~PCAMetric()
-{
-  delete[] this->m_PCAMetricGetSamplesPerThreadVariables;
-} // end Destructor
 
 
 /**
@@ -120,18 +105,13 @@ PCAMetric<TFixedImage, TMovingImage>::InitializeThreadingParameters() const
    */
 
   /** Only resize the array of structs when needed. */
-  if (this->m_PCAMetricGetSamplesPerThreadVariablesSize != numberOfThreads)
-  {
-    delete[] this->m_PCAMetricGetSamplesPerThreadVariables;
-    this->m_PCAMetricGetSamplesPerThreadVariables = new AlignedPCAMetricGetSamplesPerThreadStruct[numberOfThreads];
-    this->m_PCAMetricGetSamplesPerThreadVariablesSize = numberOfThreads;
-  }
+  m_PCAMetricGetSamplesPerThreadVariables.resize(numberOfThreads);
 
   /** Some initialization. */
-  for (ThreadIdType i = 0; i < numberOfThreads; ++i)
+  for (auto & perThreadVariable : m_PCAMetricGetSamplesPerThreadVariables)
   {
-    this->m_PCAMetricGetSamplesPerThreadVariables[i].st_NumberOfPixelsCounted = NumericTraits<SizeValueType>::Zero;
-    this->m_PCAMetricGetSamplesPerThreadVariables[i].st_Derivative.SetSize(this->GetNumberOfParameters());
+    perThreadVariable.st_NumberOfPixelsCounted = NumericTraits<SizeValueType>::Zero;
+    perThreadVariable.st_Derivative.SetSize(this->GetNumberOfParameters());
   }
 
   this->m_PixelStartIndex.resize(numberOfThreads);
@@ -217,11 +197,11 @@ PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & p
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     unsigned int numSamplesOk = 0;
 
@@ -250,7 +230,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & p
 
       if (sampleOk)
       {
-        numSamplesOk++;
+        ++numSamplesOk;
         datablock(pixelIndex, d) = movingImageValue;
       }
 
@@ -258,7 +238,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValue(const TransformParametersType & p
 
     if (numSamplesOk == this->m_G)
     {
-      pixelIndex++;
+      ++pixelIndex;
       this->m_NumberOfPixelsCounted++;
     }
 
@@ -397,11 +377,11 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(const 
   for (fiter = fbegin; fiter != fend; ++fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = fiter->Value().m_ImageCoordinates;
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     unsigned int numSamplesOk = 0;
 
@@ -431,7 +411,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(const 
 
       if (sampleOk)
       {
-        numSamplesOk++;
+        ++numSamplesOk;
         datablock(pixelIndex, d) = movingImageValue;
       } // end if sampleOk
 
@@ -439,7 +419,7 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(const 
     if (numSamplesOk == this->m_G)
     {
       SamplesOK.push_back(fixedPoint);
-      pixelIndex++;
+      ++pixelIndex;
       this->m_NumberOfPixelsCounted++;
     }
 
@@ -535,8 +515,8 @@ PCAMetric<TFixedImage, TMovingImage>::GetValueAndDerivativeSingleThreaded(const 
     FixedImagePointType fixedPoint = SamplesOK[pixelIndex];
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     for (unsigned int d = 0; d < this->m_G; ++d)
     {
@@ -736,11 +716,11 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedGetSamples(ThreadIdType threadId)
   for (threader_fiter = threader_fbegin; threader_fiter != threader_fend; ++threader_fiter)
   {
     /** Read fixed coordinates. */
-    FixedImagePointType fixedPoint = (*threader_fiter).Value().m_ImageCoordinates;
+    FixedImagePointType fixedPoint = threader_fiter->Value().m_ImageCoordinates;
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     unsigned int numSamplesOk = 0;
 
@@ -770,7 +750,7 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedGetSamples(ThreadIdType threadId)
 
       if (sampleOk)
       {
-        numSamplesOk++;
+        ++numSamplesOk;
         datablock(pixelIndex, d) = movingImageValue;
       } // end if sampleOk
 
@@ -778,7 +758,7 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedGetSamples(ThreadIdType threadId)
     if (numSamplesOk == m_G)
     {
       SamplesOK.push_back(fixedPoint);
-      pixelIndex++;
+      ++pixelIndex;
     }
 
   } /** end first loop over image sample container */
@@ -964,8 +944,8 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedComputeDerivative(ThreadIdType thr
       this->m_PCAMetricGetSamplesPerThreadVariables[threadId].st_ApprovedSamples[dummyindex];
 
     /** Transform sampled point to voxel coordinates. */
-    FixedImageContinuousIndexType voxelCoord;
-    this->GetFixedImage()->TransformPhysicalPointToContinuousIndex(fixedPoint, voxelCoord);
+    auto voxelCoord =
+      this->GetFixedImage()->template TransformPhysicalPointToContinuousIndex<CoordinateRepresentationType>(fixedPoint);
 
     for (unsigned int d = 0; d < this->m_G; ++d)
     {
@@ -997,7 +977,7 @@ PCAMetric<TFixedImage, TMovingImage>::ThreadedComputeDerivative(ThreadIdType thr
       } // end loop over non-zero jacobian indices
 
     } // end loop over last dimension
-    dummyindex++;
+    ++dummyindex;
 
   } // end second for loop over sample container
 

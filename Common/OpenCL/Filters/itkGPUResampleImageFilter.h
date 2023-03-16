@@ -43,16 +43,23 @@ itkGPUKernelClassMacro(GPUResampleImageFilterKernel);
  *
  * \ingroup GPUCommon
  */
-template <typename TInputImage, typename TOutputImage, typename TInterpolatorPrecisionType = float>
+template <typename TInputImage,
+          typename TOutputImage,
+          typename TInterpolatorPrecisionType = float,
+          typename TTransformPrecisionType = TInterpolatorPrecisionType>
 class ITK_EXPORT GPUResampleImageFilter
-  : public GPUImageToImageFilter<TInputImage,
-                                 TOutputImage,
-                                 ResampleImageFilter<TInputImage, TOutputImage, TInterpolatorPrecisionType>>
+  : public GPUImageToImageFilter<
+      TInputImage,
+      TOutputImage,
+      ResampleImageFilter<TInputImage, TOutputImage, TInterpolatorPrecisionType, TTransformPrecisionType>>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUResampleImageFilter);
+
   /** Standard class typedefs. */
   using Self = GPUResampleImageFilter;
-  using CPUSuperclass = ResampleImageFilter<TInputImage, TOutputImage, TInterpolatorPrecisionType>;
+  using CPUSuperclass =
+    ResampleImageFilter<TInputImage, TOutputImage, TInterpolatorPrecisionType, TTransformPrecisionType>;
   using GPUSuperclass = GPUImageToImageFilter<TInputImage, TOutputImage, CPUSuperclass>;
   using Pointer = SmartPointer<Self>;
   using ConstPointer = SmartPointer<const Self>;
@@ -178,18 +185,14 @@ protected:
   GetGPUBSplineBaseTransform(const std::size_t transformIndex);
 
 private:
-  GPUResampleImageFilter(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  GPUInterpolatorBase * m_InterpolatorBase{};
+  GPUTransformBase *    m_TransformBase{};
 
-  GPUInterpolatorBase * m_InterpolatorBase;
-  GPUTransformBase *    m_TransformBase;
-
-  GPUDataManagerPointer m_InputGPUImageBase;
-  GPUDataManagerPointer m_OutputGPUImageBase;
-  GPUDataManagerPointer m_FilterParameters;
-  GPUDataManagerPointer m_DeformationFieldBuffer;
-  unsigned int          m_RequestedNumberOfSplits;
+  GPUDataManagerPointer m_InputGPUImageBase{};
+  GPUDataManagerPointer m_OutputGPUImageBase{};
+  GPUDataManagerPointer m_FilterParameters{};
+  GPUDataManagerPointer m_DeformationFieldBuffer{};
+  unsigned int          m_RequestedNumberOfSplits{};
 
   using TransformHandle = std::pair<int, bool>;
   using TransformsHandle = std::map<GPUTransformTypeEnum, TransformHandle>;
@@ -212,26 +215,26 @@ private:
 
   };
 
-  std::vector< TransformKernelHelper > m_SupportedTransformKernels;
+  std::vector< TransformKernelHelper > m_SupportedTransformKernels{};
 #endif
 
-  std::vector<std::string> m_Sources;
-  std::size_t              m_SourceIndex;
+  std::vector<std::string> m_Sources{};
+  std::size_t              m_SourceIndex{};
 
-  std::size_t m_InterpolatorSourceLoadedIndex;
-  std::size_t m_TransformSourceLoadedIndex;
+  std::size_t m_InterpolatorSourceLoadedIndex{};
+  std::size_t m_TransformSourceLoadedIndex{};
 
-  bool m_InterpolatorIsBSpline;
-  bool m_TransformIsCombo;
+  bool m_InterpolatorIsBSpline{};
+  bool m_TransformIsCombo{};
 
-  std::size_t      m_FilterPreGPUKernelHandle;
-  TransformsHandle m_FilterLoopGPUKernelHandle;
-  std::size_t      m_FilterPostGPUKernelHandle;
+  std::size_t      m_FilterPreGPUKernelHandle{};
+  TransformsHandle m_FilterLoopGPUKernelHandle{};
+  std::size_t      m_FilterPostGPUKernelHandle{};
 
   // GPU kernel managers
-  GPUKernelManagerPointer m_PreKernelManager;
-  GPUKernelManagerPointer m_LoopKernelManager;
-  GPUKernelManagerPointer m_PostKernelManager;
+  GPUKernelManagerPointer m_PreKernelManager{};
+  GPUKernelManagerPointer m_LoopKernelManager{};
+  GPUKernelManagerPointer m_PostKernelManager{};
 };
 
 } // end namespace itk

@@ -85,6 +85,8 @@ class ITK_TEMPLATE_EXPORT WeightedCombinationTransformElastix
   , public elx::TransformBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(WeightedCombinationTransformElastix);
+
   /** Standard ITK-stuff. */
   using Self = WeightedCombinationTransformElastix;
 
@@ -208,12 +210,6 @@ private:
   /** Creates a map of the parameters specific for this (derived) transform type. */
   ParameterMapType
   CreateDerivedTransformParametersMap() const override;
-
-  /** The deleted copy constructor. */
-  WeightedCombinationTransformElastix(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

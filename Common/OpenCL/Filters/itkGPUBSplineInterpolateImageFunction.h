@@ -48,6 +48,8 @@ class ITK_EXPORT GPUBSplineInterpolateImageFunction
                                        BSplineInterpolateImageFunction<TInputImage, TCoordRep, TCoefficientType>>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUBSplineInterpolateImageFunction);
+
   /** Standard class typedefs. */
   using Self = GPUBSplineInterpolateImageFunction;
   using GPUSuperclass =
@@ -99,14 +101,10 @@ protected:
   GetSourceCode(std::string & source) const override;
 
 private:
-  GPUBSplineInterpolateImageFunction(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  GPUCoefficientImagePointer m_GPUCoefficients{};
+  GPUDataManagerPointer      m_GPUCoefficientsImageBase{};
 
-  GPUCoefficientImagePointer m_GPUCoefficients;
-  GPUDataManagerPointer      m_GPUCoefficientsImageBase;
-
-  std::vector<std::string> m_Sources;
+  std::vector<std::string> m_Sources{};
 };
 
 } // end namespace itk

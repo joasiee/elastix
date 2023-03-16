@@ -72,6 +72,8 @@ template <class TElastix>
 class ITK_TEMPLATE_EXPORT MetricBase : public BaseComponentSE<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MetricBase);
+
   /** Standard ITK stuff. */
   using Self = MetricBase;
   using Superclass = BaseComponentSE<TElastix>;
@@ -205,7 +207,7 @@ protected:
   using ExactMetricSampleGridSpacingType = typename ExactMetricImageSamplerType::SampleGridSpacingType;
 
   /** The constructor. */
-  MetricBase();
+  MetricBase() = default;
   /** The destructor. */
   ~MetricBase() override = default;
 
@@ -223,23 +225,18 @@ protected:
 
   /** \todo the method GetExactDerivative could as well be added here. */
 
-  bool                             m_ShowExactMetricValue;
-  ExactMetricImageSamplerPointer   m_ExactMetricSampler;
-  MeasureType                      m_CurrentExactMetricValue;
-  ExactMetricSampleGridSpacingType m_ExactMetricSampleGridSpacing;
-  unsigned int                     m_ExactMetricEachXNumberOfIterations;
+  bool                             m_ShowExactMetricValue{ false };
+  ExactMetricImageSamplerPointer   m_ExactMetricSampler{ nullptr };
+  MeasureType                      m_CurrentExactMetricValue{ 0.0 };
+  ExactMetricSampleGridSpacingType m_ExactMetricSampleGridSpacing{ itk::MakeFilled<ExactMetricSampleGridSpacingType>(
+    1) };
+  unsigned int                     m_ExactMetricEachXNumberOfIterations{ 1 };
 
   bool        m_WriteSamplesEveryIteration{ false };
   std::string m_SamplesOutDir;
 
 private:
   elxDeclarePureVirtualGetSelfMacro(ITKBaseType);
-
-  /** The deleted copy constructor. */
-  MetricBase(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 
   void
   WriteSamplesOfIteration() const;

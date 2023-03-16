@@ -103,11 +103,11 @@ QuasiNewtonLBFGSOptimizer::ResumeOptimization()
   {
     this->GetScaledValueAndDerivative(this->GetScaledCurrentPosition(), this->m_CurrentValue, this->m_CurrentGradient);
   }
-  catch (ExceptionObject & err)
+  catch (const ExceptionObject &)
   {
     this->m_StopCondition = MetricError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
 
   /** Test if the gradient was not zero already by chance */
@@ -344,11 +344,11 @@ QuasiNewtonLBFGSOptimizer::LineSearch(const ParametersType searchDir,
   {
     LSO->StartOptimization();
   }
-  catch (ExceptionObject & err)
+  catch (const ExceptionObject &)
   {
     this->m_StopCondition = LineSearchError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
   this->SetInLineSearch(false);
 
@@ -359,11 +359,11 @@ QuasiNewtonLBFGSOptimizer::LineSearch(const ParametersType searchDir,
   {
     LSO->GetCurrentValueAndDerivative(f, g);
   }
-  catch (ExceptionObject & err)
+  catch (const ExceptionObject &)
   {
     this->m_StopCondition = MetricError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
 
 } // end LineSearch

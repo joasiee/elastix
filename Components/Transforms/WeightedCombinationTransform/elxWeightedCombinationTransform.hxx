@@ -149,7 +149,7 @@ WeightedCombinationTransformElastix<TElastix>::SetScales()
 
   if (automaticScalesEstimation)
   {
-    elxout << "Scales are estimated automatically." << std::endl;
+    log::info("Scales are estimated automatically.");
     this->AutomaticScalesEstimation(newscales);
   }
   else
@@ -177,7 +177,7 @@ WeightedCombinationTransformElastix<TElastix>::SetScales()
 
   } // end else: no automaticScalesEstimation
 
-  elxout << "Scales for transform parameters are: " << newscales << std::endl;
+  log::info(std::ostringstream{} << "Scales for transform parameters are: " << newscales);
 
   /** And set the scales into the optimizer. */
   this->m_Registration->GetAsITKBaseType()->GetModifiableOptimizer()->SetScales(newscales);
@@ -242,9 +242,9 @@ WeightedCombinationTransformElastix<TElastix>::LoadSubTransforms()
     configurationSubTransform->ReadParameter(subTransformName, "Transform", 0);
 
     /** Create a SubTransform. */
-    const PtrToCreator testcreator =
+    const PtrToCreator creator =
       ElastixMain::GetComponentDatabase().GetCreator(subTransformName, this->m_Elastix->GetDBIndex());
-    const itk::Object::Pointer subTransform = (testcreator == nullptr) ? nullptr : testcreator();
+    const itk::Object::Pointer subTransform = (creator == nullptr) ? nullptr : creator();
 
     /** Cast to TransformBase */
     Superclass2 * elx_subTransform = dynamic_cast<Superclass2 *>(subTransform.GetPointer());
@@ -261,10 +261,10 @@ WeightedCombinationTransformElastix<TElastix>::LoadSubTransforms()
       subTransforms[i] = testPointer;
     }
 
-    /** Check if no errors occured: */
+    /** Check if no errors occurred: */
     if (subTransforms[i].IsNull())
     {
-      xl::xout["error"] << "ERROR: Error while trying to load the SubTransform " << subTransformFileName << std::endl;
+      log::error(std::ostringstream{} << "ERROR: Error while trying to load the SubTransform " << subTransformFileName);
       itkExceptionMacro(<< "ERROR: Loading SubTransforms failed!");
     }
 

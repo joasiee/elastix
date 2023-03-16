@@ -56,6 +56,8 @@ class ITK_TEMPLATE_EXPORT RandomSamplerSparseMask
   , public elx::ImageSamplerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(RandomSamplerSparseMask);
+
   /** Standard ITK-stuff. */
   using Self = RandomSamplerSparseMask;
   using Superclass1 = itk::ImageRandomSamplerSparseMask<typename elx::ImageSamplerBase<TElastix>::InputImageType>;
@@ -112,12 +114,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  /** The deleted copy constructor. */
-  RandomSamplerSparseMask(const Self &) = delete;
-  /** The deleted assignment operator. */
-  void
-  operator=(const Self &) = delete;
 };
 
 } // end namespace elastix

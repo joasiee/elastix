@@ -70,6 +70,8 @@ namespace itk
 class AdaptiveStochasticVarianceReducedGradientOptimizer : public StandardStochasticVarianceReducedGradientOptimizer
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdaptiveStochasticVarianceReducedGradientOptimizer);
+
   /** Standard ITK.*/
   using Self = AdaptiveStochasticVarianceReducedGradientOptimizer;
   using Superclass = StandardStochasticVarianceReducedGradientOptimizer;
@@ -127,13 +129,9 @@ protected:
   UpdateCurrentTime() override;
 
   /** The PreviousGradient, necessary for the CruzAcceleration */
-  DerivativeType m_PreviousGradient;
+  DerivativeType m_PreviousGradient{};
 
 private:
-  AdaptiveStochasticVarianceReducedGradientOptimizer(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Settings */
   bool   m_UseAdaptiveStepSizes{ true };
   double m_SigmoidMax{ 1.0 };

@@ -45,6 +45,8 @@ class ITK_TEMPLATE_EXPORT CyclicBSplineDeformableTransform
   : public AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(CyclicBSplineDeformableTransform);
+
   /** Standard class typedefs. */
   using Self = CyclicBSplineDeformableTransform;
   using Superclass = AdvancedBSplineDeformableTransform<TScalarType, NDimensions, VSplineOrder>;
@@ -108,11 +110,11 @@ public:
 
   /** Compute the Jacobian of the transformation. */
   virtual void
-  GetJacobian(const InputPointType & ipp, WeightsType & weights, ParameterIndexArrayType & indices) const;
+  GetJacobian(const InputPointType & inputPoint, WeightsType & weights, ParameterIndexArrayType & indices) const;
 
   /** Compute the spatial Jacobian of the transformation. */
   void
-  GetSpatialJacobian(const InputPointType & ipp, SpatialJacobianType & sj) const override;
+  GetSpatialJacobian(const InputPointType & inputPoint, SpatialJacobianType & sj) const override;
 
 protected:
   CyclicBSplineDeformableTransform();
@@ -132,11 +134,6 @@ protected:
               const RegionType & inRegion,
               RegionType &       outRegion1,
               RegionType &       outRegion2) const;
-
-private:
-  CyclicBSplineDeformableTransform(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 } // namespace itk

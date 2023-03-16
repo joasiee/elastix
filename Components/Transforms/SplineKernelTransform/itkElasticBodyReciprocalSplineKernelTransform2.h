@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkElasticBodyReciprocalSplineKernelTransform2.h,v $
-  Language:  C++
   Date:      $Date: 2006/04/17 01:50:19 $
   Version:   $Revision: 1.8 $
 
@@ -58,6 +57,8 @@ class ITK_TEMPLATE_EXPORT ElasticBodyReciprocalSplineKernelTransform2
   : public KernelTransform2<TScalarType, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ElasticBodyReciprocalSplineKernelTransform2);
+
   /** Standard class typedefs. */
   using Self = ElasticBodyReciprocalSplineKernelTransform2;
   using Superclass = KernelTransform2<TScalarType, NDimensions>;
@@ -149,12 +150,7 @@ protected:
   ComputeG(const InputVectorType & x, GMatrixType & GMatrix) const override;
 
   /** alpha, Poisson's ratio */
-  TScalarType m_Alpha;
-
-private:
-  ElasticBodyReciprocalSplineKernelTransform2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  TScalarType m_Alpha{};
 };
 
 } // namespace itk

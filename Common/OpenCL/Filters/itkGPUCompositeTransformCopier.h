@@ -67,6 +67,8 @@ template <typename TTypeList,
 class ITK_TEMPLATE_EXPORT GPUCompositeTransformCopier : public Object
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(GPUCompositeTransformCopier);
+
   /** Standard class typedefs. */
   using Self = GPUCompositeTransformCopier;
   using Superclass = Object;
@@ -136,15 +138,11 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
-  GPUCompositeTransformCopier(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
-  CPUCompositeTransformConstPointer m_InputTransform;
-  GPUCompositeTransformPointer      m_Output;
-  ModifiedTimeType                  m_InternalTransformTime;
-  bool                              m_ExplicitMode;
-  GPUTransformCopierPointer         m_TransformCopier;
+  CPUCompositeTransformConstPointer m_InputTransform{};
+  GPUCompositeTransformPointer      m_Output{};
+  ModifiedTimeType                  m_InternalTransformTime{};
+  bool                              m_ExplicitMode{};
+  GPUTransformCopierPointer         m_TransformCopier{};
 };
 
 } // end namespace itk

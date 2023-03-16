@@ -192,6 +192,8 @@ class ITK_TEMPLATE_EXPORT AdaGrad
   , public OptimizerBase<TElastix>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(AdaGrad);
+
   /** Standard ITK. */
   using Self = AdaGrad;
   using Superclass1 = AdaptiveStepsizeOptimizer;
@@ -303,11 +305,8 @@ protected:
   using TransformType = typename itkRegistrationType::TransformType;
   using JacobianType = typename TransformType::JacobianType;
   using JacobianValueType = typename JacobianType::ValueType;
-  struct SettingsType
-  {
-    double a, A, alpha, fmax, fmin, omega;
-  };
-  using SettingsVectorType = typename std::vector<SettingsType>;
+  using typename Superclass2::SettingsType;
+  using typename Superclass2::SettingsVectorType;
   using OutputImageType = typename ElastixType::FixedImageType;
 
   using PreconditionerEstimationType =
@@ -334,8 +333,6 @@ protected:
   /** Other protected typedefs */
   using RandomGeneratorType = itk::Statistics::MersenneTwisterRandomVariateGenerator;
   using RandomGeneratorPointer = typename RandomGeneratorType::Pointer;
-  using ProgressCommandType = ProgressCommand;
-  using ProgressCommandPointer = typename ProgressCommand::Pointer;
 
   /** Typedefs for support of sparse Jacobians and AdvancedTransforms. */
   using TransformJacobianType = JacobianType;
@@ -374,10 +371,6 @@ protected:
   double m_RegularizationKappa;
   double m_ConditionNumber;
 
-  /** Print the contents of the settings vector to elxout. */
-  virtual void
-  PrintSettingsVector(const SettingsVectorType & settings) const;
-
   /** Select different method to estimate some reasonable values for the parameters
    * SP_a, SP_alpha (=1), SigmoidMin, SigmoidMax (=1), and
    * SigmoidScale.
@@ -409,10 +402,6 @@ protected:
 
 private:
   elxOverrideGetSelfMacro;
-
-  AdaGrad(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 
   bool   m_AutomaticParameterEstimation;
   double m_MaximumStepLength;

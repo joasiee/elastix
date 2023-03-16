@@ -31,6 +31,8 @@ namespace itk
 class ITK_EXPORT MevisDicomTiffImageIOFactory : public ObjectFactoryBase
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(MevisDicomTiffImageIOFactory);
+
   /** Standard class typedefs. */
   using Self = MevisDicomTiffImageIOFactory;
   using Superclass = ObjectFactoryBase;
@@ -62,11 +64,6 @@ public:
 protected:
   MevisDicomTiffImageIOFactory();
   ~MevisDicomTiffImageIOFactory();
-
-private:
-  MevisDicomTiffImageIOFactory(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
 };
 
 // end class MevisDicomTiffImageIOFactory

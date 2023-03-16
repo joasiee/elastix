@@ -41,13 +41,10 @@ main(int argc, char * argv[])
   const char * transformParametersFile = argv[2];
   const char * transformedImageFile = argv[3];
 
-  /** Other typedefs. */
+  /** Other typedef. */
   using ImageType = itk::Image<PixelType, Dimension>;
 
-  using ImageReaderType = itk::ImageFileReader<ImageType>;
-  auto imageReader = ImageReaderType::New();
-  imageReader->SetFileName(movingImageFile);
-  auto movingImage = imageReader->GetOutput();
+  auto movingImage = itk::ReadImage<ImageType>(movingImageFile);
 
   auto parameterObject = elastix::ParameterObject::New();
   parameterObject->ReadParameterFile(transformParametersFile);
@@ -60,11 +57,7 @@ main(int argc, char * argv[])
   transformix->SetLogToConsole(true);
   ImageType::Pointer resultImage = transformix->GetOutput();
 
-  using ImageWriterType = itk::ImageFileWriter<ImageType>;
-  auto imageWriter = ImageWriterType::New();
-  imageWriter->SetFileName(transformedImageFile);
-  imageWriter->SetInput(resultImage);
-  imageWriter->Update();
+  itk::WriteImage(resultImage, transformedImageFile);
 
   /** Return a value. */
   return 0;

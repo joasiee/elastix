@@ -252,7 +252,7 @@ MoreThuenteLineSearchOptimizer::GetInitialValueAndDerivative()
         this->GetCostFunction()->GetDerivative(this->GetInitialPosition(), this->m_g);
       }
     }
-    catch (ExceptionObject & err)
+    catch (const ExceptionObject &)
     {
       this->m_StopCondition = MetricError;
       // this->StopOptimization(); //not here since no start event has been generated yet
@@ -262,7 +262,7 @@ MoreThuenteLineSearchOptimizer::GetInitialValueAndDerivative()
       this->m_InitialDerivativeProvided = false;
       this->m_InitialValueProvided = false;
 
-      throw err;
+      throw;
     }
   } // end if no initial value or derivative provided.
 
@@ -388,11 +388,11 @@ MoreThuenteLineSearchOptimizer::ComputeCurrentValueAndDerivative()
   {
     this->GetCostFunction()->GetValueAndDerivative(this->GetCurrentPosition(), this->m_f, this->m_g);
   }
-  catch (ExceptionObject & err)
+  catch (const ExceptionObject &)
   {
     this->m_StopCondition = MetricError;
     this->StopOptimization();
-    throw err;
+    throw;
   }
 
 } // end ComputeCurrentValueAndDerivative()
@@ -575,18 +575,18 @@ MoreThuenteLineSearchOptimizer::ForceSufficientDecreaseInIntervalWidth()
  */
 
 int
-MoreThuenteLineSearchOptimizer::SafeGuardedStep(double &       stx,
-                                                double &       fx,
-                                                double &       dx,
-                                                double &       sty,
-                                                double &       fy,
-                                                double &       dy,
-                                                double &       stp,
-                                                const double & fp,
-                                                const double & dp,
-                                                bool &         brackt,
-                                                const double & stpmin,
-                                                const double & stpmax) const
+MoreThuenteLineSearchOptimizer::SafeGuardedStep(double &     stx,
+                                                double &     fx,
+                                                double &     dx,
+                                                double &     sty,
+                                                double &     fy,
+                                                double &     dy,
+                                                double &     stp,
+                                                const double fp,
+                                                const double dp,
+                                                bool &       brackt,
+                                                const double stpmin,
+                                                const double stpmax) const
 {
   /** This function is largely just a copy of the following function
    * taken from netlib/lbfgs.c */

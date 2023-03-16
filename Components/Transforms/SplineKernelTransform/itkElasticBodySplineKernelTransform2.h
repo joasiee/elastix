@@ -19,7 +19,6 @@
 
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkElasticBodySplineKernelTransform2.h,v $
-  Language:  C++
   Date:      $Date: 2003/09/10 14:29:06 $
   Version:   $Revision: 1.29 $
 
@@ -57,6 +56,8 @@ template <class TScalarType = double, // Data type for scalars (float or double)
 class ITK_TEMPLATE_EXPORT ElasticBodySplineKernelTransform2 : public KernelTransform2<TScalarType, NDimensions>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(ElasticBodySplineKernelTransform2);
+
   /** Standard class typedefs. */
   using Self = ElasticBodySplineKernelTransform2;
   using Superclass = KernelTransform2<TScalarType, NDimensions>;
@@ -150,12 +151,7 @@ protected:
   /** alpha,  Alpha is related to Poisson's Ratio \f$\nu\f$ as
    * \f$\alpha = 12 ( 1 - \nu ) - 1\f$
    */
-  TScalarType m_Alpha;
-
-private:
-  ElasticBodySplineKernelTransform2(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
+  TScalarType m_Alpha{};
 };
 
 } // namespace itk

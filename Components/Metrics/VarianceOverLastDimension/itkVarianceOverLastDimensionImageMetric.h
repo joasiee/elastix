@@ -53,6 +53,8 @@ class ITK_TEMPLATE_EXPORT VarianceOverLastDimensionImageMetric
   : public AdvancedImageToImageMetric<TFixedImage, TMovingImage>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(VarianceOverLastDimensionImageMetric);
+
   /** Standard class typedefs. */
   using Self = VarianceOverLastDimensionImageMetric;
   using Superclass = AdvancedImageToImageMetric<TFixedImage, TMovingImage>;
@@ -178,10 +180,6 @@ protected:
                                         DerivativeType &                  imageJacobian) const override;
 
 private:
-  VarianceOverLastDimensionImageMetric(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   /** Sample n random numbers from 0..m and add them to the vector. */
   void
   SampleRandom(const int n, const int m, std::vector<int> & numbers) const;
@@ -189,17 +187,17 @@ private:
   /** Variables to control random sampling in last dimension. */
   bool         m_SampleLastDimensionRandomly{ false };
   unsigned int m_NumSamplesLastDimension{ 10 };
-  unsigned int m_NumAdditionalSamplesFixed;
-  unsigned int m_ReducedDimensionIndex;
+  unsigned int m_NumAdditionalSamplesFixed{};
+  unsigned int m_ReducedDimensionIndex{};
 
   /** Bool to determine if we want to subtract the mean derivate from the derivative elements. */
   bool m_SubtractMean{ false };
 
   /** Initial variance in last dimension, used as normalization factor. */
-  float m_InitialVariance;
+  float m_InitialVariance{};
 
   /** GridSize of B-spline transform. */
-  FixedImageSizeType m_GridSize;
+  FixedImageSizeType m_GridSize{};
 
   /** Bool to indicate if the transform used is a stacktransform. Set by elx files. */
   bool m_TransformIsStackTransform{ false };

@@ -57,6 +57,8 @@ class ITK_TEMPLATE_EXPORT StatisticalShapePointPenalty
   : public SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>
 {
 public:
+  ITK_DISALLOW_COPY_AND_MOVE(StatisticalShapePointPenalty);
+
   /** Standard class typedefs. */
   using Self = StatisticalShapePointPenalty;
   using Superclass = SingleValuedPointSetToPointSetMetric<TFixedPointSet, TMovingPointSet>;
@@ -176,10 +178,6 @@ protected:
   PrintSelf(std::ostream & os, Indent indent) const override;
 
 private:
-  StatisticalShapePointPenalty(const Self &) = delete;
-  void
-  operator=(const Self &) = delete;
-
   void
   FillProposalVector(const OutputPointType & fixedPoint, const unsigned int vertexindex) const;
 
@@ -221,40 +219,40 @@ private:
   void
   CalculateCutOffDerivative(typename DerivativeType::element_type & derivativeElement, const MeasureType & value) const;
 
-  const VnlVectorType * m_MeanVector;
-  const VnlMatrixType * m_CovarianceMatrix;
-  const VnlMatrixType * m_EigenVectors;
-  const VnlVectorType * m_EigenValues;
+  const VnlVectorType * m_MeanVector{};
+  const VnlMatrixType * m_CovarianceMatrix{};
+  const VnlMatrixType * m_EigenVectors{};
+  const VnlVectorType * m_EigenValues{};
 
-  VnlMatrixType * m_InverseCovarianceMatrix;
+  VnlMatrixType * m_InverseCovarianceMatrix{};
 
-  double m_CentroidXVariance;
-  double m_CentroidXStd;
-  double m_CentroidYVariance;
-  double m_CentroidYStd;
-  double m_CentroidZVariance;
-  double m_CentroidZStd;
-  double m_SizeVariance;
-  double m_SizeStd;
+  double m_CentroidXVariance{};
+  double m_CentroidXStd{};
+  double m_CentroidYVariance{};
+  double m_CentroidYStd{};
+  double m_CentroidZVariance{};
+  double m_CentroidZStd{};
+  double m_SizeVariance{};
+  double m_SizeStd{};
 
-  bool m_ShrinkageIntensityNeedsUpdate;
-  bool m_BaseVarianceNeedsUpdate;
-  bool m_VariancesNeedsUpdate;
+  bool m_ShrinkageIntensityNeedsUpdate{};
+  bool m_BaseVarianceNeedsUpdate{};
+  bool m_VariancesNeedsUpdate{};
 
-  VnlVectorType * m_EigenValuesRegularized;
+  VnlVectorType * m_EigenValuesRegularized{};
 
-  mutable ProposalDerivativeType * m_ProposalDerivative;
-  unsigned int                     m_ProposalLength;
-  bool                             m_NormalizedShapeModel;
-  int                              m_ShapeModelCalculation;
-  double                           m_ShrinkageIntensity;
-  double                           m_BaseVariance;
-  double                           m_BaseStd;
-  mutable VnlVectorType            m_ProposalVector;
-  mutable VnlVectorType            m_MeanValues;
+  mutable ProposalDerivativeType * m_ProposalDerivative{};
+  unsigned int                     m_ProposalLength{};
+  bool                             m_NormalizedShapeModel{};
+  int                              m_ShapeModelCalculation{};
+  double                           m_ShrinkageIntensity{};
+  double                           m_BaseVariance{};
+  double                           m_BaseStd{};
+  mutable VnlVectorType            m_ProposalVector{};
+  mutable VnlVectorType            m_MeanValues{};
 
-  double m_CutOffValue;
-  double m_CutOffSharpness;
+  double m_CutOffValue{};
+  double m_CutOffSharpness{};
 };
 
 } // end namespace itk
