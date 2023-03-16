@@ -191,8 +191,8 @@ def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
 
     jac_det_slice = jac_det
     if len(jac_det.shape) == 3:
-        slice = jac_det.shape[1] // 2
-        jac_det_slice = jac_det[:, slice, :]
+        slice = jac_det.shape[0] // 2
+        jac_det_slice = jac_det[slice, :, :]
 
     if plot:
         if ax is None:
@@ -306,7 +306,7 @@ def plot_voxels(
 
     colors = np.array(list(map(lambda x: get_cmap_color(cmap, norm(x), alpha), sliced_data)))
 
-    ax.voxels(sliced_data, facecolors=colors, edgecolor=(0, 0, 0, 0.2))
+    ax.voxels(sliced_data, facecolors=colors, edgecolor=(0, 0, 0, 0.1))
     ax.set_xlim3d(0, data.shape[0] + 2)
     ax.set_ylim3d(5, data.shape[1])
     ax.set_xticklabels([])
@@ -326,20 +326,20 @@ def plot_voxels(
 def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=None):
     if len(data.shape[:-1]) > 2:
         if slice is None:
-            slice = data.shape[2] // 2
-        data = data[:, slice, :, :]
+            slice = data.shape[0] // 2
+        data = data[slice, :, :, :]
 
-    X, Y = np.meshgrid(np.arange(data.shape[0]), np.arange(data.shape[1]))
+    X, Y = np.meshgrid(np.arange(data.shape[1]), np.arange(data.shape[0]))
     if invert:
         X = X + data[..., 0]
-        Y = Y + data[..., 2]
+        Y = Y + data[..., 1]
         data = -data
 
     X = X + 0.5
     Y = Y + 0.5
 
     u = data[:, :, 0]
-    v = data[:, :, 2]
+    v = data[:, :, 1]
     c = np.sqrt(u**2 + v**2)
 
     if ax is None:
@@ -359,8 +359,8 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
         clim=(vmin, vmax),
     )
 
-    ax.set_xlim(0, data.shape[0])
-    ax.set_ylim(0, data.shape[1])
+    ax.set_xlim(0, data.shape[1])
+    ax.set_ylim(0, data.shape[0])
     ax.set_aspect("equal")
     ax.set_xticks([])
     ax.set_yticks([])
@@ -842,7 +842,7 @@ def validation_metrics(result: RunResult):
     return metrics
 
 
-def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None)):
+def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None), tre=True):
     figs = []  # aggregate all figures
     instance = result.instance
     collection = instance.collection
@@ -901,18 +901,19 @@ def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=
         figs.append(to_dict(wandb.Image(fig), "overview"))
         figs.append(to_dict(wandb.Image(plot_dvf_3d(result)), "dvf_3d"))
 
-    tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
-    figs.append(to_dict(wandb.Image(tre_fig), "tre_hist"))
+    if tre:
+        tre_fig = tre_hist(result.deformed_lms, instance.lms_moving, instance.spacing)
+        figs.append(to_dict(wandb.Image(tre_fig), "tre_hist"))
 
     return figs
 
 
 def get_vmin_vmax(result1: RunResult, result2: RunResult):
     result1_mag = np.sqrt(
-        result1.dvf[:, result1.dvf.shape[1] // 2, :, 0] ** 2 + result1.dvf[:, result1.dvf.shape[1] // 2, :, 2] ** 2
+        result1.dvf[result1.dvf.shape[0] // 2, :, :, 0] ** 2 + result1.dvf[result1.dvf.shape[0] // 2, :, :, 1] ** 2
     )
     result2_mag = np.sqrt(
-        result2.dvf[:, result2.dvf.shape[1] // 2, :, 0] ** 2 + result2.dvf[:, result2.dvf.shape[1] // 2, :, 2] ** 2
+        result2.dvf[result2.dvf.shape[0] // 2, :, :, 0] ** 2 + result2.dvf[result2.dvf.shape[0] // 2, :, :, 1] ** 2
     )
     vmin_dvf = np.min([np.min(result1_mag), np.min(result2_mag)])
     vmax_dvf = np.max([np.max(result1_mag), np.max(result2_mag)])
