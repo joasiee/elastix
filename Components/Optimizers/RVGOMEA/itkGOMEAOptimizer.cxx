@@ -37,7 +37,7 @@ GOMEAOptimizer::PrintSelf(std::ostream & os, Indent indent) const
 void
 GOMEAOptimizer::PrintSettings() const
 {
-  Indent indent = *itk::Indent::New();
+  Indent             indent = *itk::Indent::New();
   std::ostringstream oss;
   oss << indent << "Settings: \n";
   oss << indent.GetNextIndent() << "FOS setting: " << m_FosElementSize << "\n";
@@ -103,7 +103,7 @@ GOMEAOptimizer::StopOptimization()
   this->UpdatePosition();
 
   this->saveVariancesForNextResolution();
-  
+
   InvokeEvent(EndEvent());
 }
 
@@ -1991,6 +1991,7 @@ GOMEAOptimizer::UpdatePosition()
 void
 GOMEAOptimizer::saveVariancesForNextResolution()
 {
+  PROFILE_FUNCTION();
   estimateFullCovarianceMatrixML(0);
 
   variances_last_resolution = ParametersType(number_of_parameters);
@@ -2007,6 +2008,7 @@ GOMEAOptimizer::saveVariancesForNextResolution()
 void
 GOMEAOptimizer::ezilaitini(void)
 {
+  PROFILE_FUNCTION();
   this->ezilaitiniMemory();
 }
 
@@ -2102,8 +2104,6 @@ GOMEAOptimizer::runAllPopulations()
   {
     if (number_of_populations < m_MaxNumberOfPopulations)
       this->initializeNewPopulation();
-
-    PROFILE_END_SESSION();
 
     this->generationalStepAllPopulations();
   }

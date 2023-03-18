@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 import time
 from typing import Any, Dict, List
-from thesispy.definitions import Collection
+from thesispy.definitions import Collection, LinkageType
 from thesispy.elastix_wrapper import TimeoutException
 
 from thesispy.elastix_wrapper.parameters import Parameters
@@ -80,15 +80,16 @@ def run(
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=5, seed=1)
-        .asgd()
-        .stopping_criteria(iterations=10)
-        .instance(Collection.SYNTHETIC, 1)
+        Parameters.from_base(mesh_size=4, seed=1, use_mask=False)
+        .gomea()
+        .multi_resolution(1, r_sched=[5])
+        .stopping_criteria(iterations=2)
+        .instance(Collection.LEARN, 1)
     )
     run(
         [params_main],
         Path("output/" + str(params_main)),
         suppress_stdout=False,
-        visualize=True,
-        validate=True,
+        visualize=False,
+        validate=False,
     )
