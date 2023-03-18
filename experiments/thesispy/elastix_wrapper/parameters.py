@@ -369,9 +369,10 @@ class Parameters:
 
 if __name__ == "__main__":
     params = (
-        Parameters.from_base(mesh_size=5, seed=1)
-        .asgd()
-        .stopping_criteria(iterations=10)
-        .instance(Collection.SYNTHETIC, 1)
+        Parameters.from_base(mesh_size=4, seed=1, use_mask=True)
+        .gomea()
+        .multi_resolution(1, r_sched=[5])
+        .stopping_criteria(iterations=3)
+        .instance(Collection.LEARN, 1)
     )
     params.write(Path())

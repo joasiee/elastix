@@ -34,7 +34,9 @@ template <class TInputImage>
 ImageRandomSamplerBase<TInputImage>::ImageRandomSamplerBase()
 {
   this->m_NumberOfSamples = 1000;
-
+  
+  using RandomGeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
+  this->SetGeneratorSeed(RandomGeneratorType::GetNextSeed());
 } // end Constructor
 
 
@@ -84,6 +86,22 @@ ImageRandomSamplerBase<TInputImage>::PrintSelf(std::ostream & os, Indent indent)
   os << indent << "NumberOfSamples: " << this->m_NumberOfSamples << std::endl;
 
 } // end PrintSelf()
+
+/**
+ * ******************* SetGeneratorSeed *******************
+ */
+
+template <class TInputImage>
+void
+ImageRandomSamplerBase<TInputImage>::SetGeneratorSeed(uint_least64_t seed)
+{
+  if (seed != this->m_PreviousSeed)
+  {
+    this->m_PreviousSeed = seed;
+    this->m_RandomGenerator.seed(seed);
+    this->Modified();
+  }
+}
 
 
 } // end namespace itk

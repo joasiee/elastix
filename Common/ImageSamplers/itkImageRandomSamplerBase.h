@@ -19,6 +19,7 @@
 #define itkImageRandomSamplerBase_h
 
 #include "itkImageSamplerBase.h"
+#include "boost/random/sobol.hpp"
 #include <random>
 
 namespace itk
@@ -68,6 +69,9 @@ public:
   /** The input image dimension. */
   itkStaticConstMacro(InputImageDimension, unsigned int, Superclass::InputImageDimension);
 
+  virtual void
+  SetGeneratorSeed(uint_least64_t seed);
+
 protected:
   /** The constructor. */
   ImageRandomSamplerBase();
@@ -85,6 +89,9 @@ protected:
 
   /** Member variable used when threading. */
   std::vector<double> m_RandomNumberList{};
+  
+  int                  m_PreviousSeed;
+  boost::random::sobol m_RandomGenerator{ Self::InputImageDimension };
 };
 
 } // end namespace itk

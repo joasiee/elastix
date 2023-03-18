@@ -80,10 +80,10 @@ def run(
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=4, seed=1, use_mask=False)
+        Parameters.from_base(mesh_size=4, seed=1, use_mask=True)
         .gomea()
         .multi_resolution(1, r_sched=[5])
-        .stopping_criteria(iterations=2)
+        .stopping_criteria(iterations=3)
         .instance(Collection.LEARN, 1)
     )
     run(

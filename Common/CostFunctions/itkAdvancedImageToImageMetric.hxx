@@ -22,7 +22,6 @@
 
 #include "itkAdvancedRayCastInterpolateImageFunction.h"
 #include "itkComputeImageExtremaFilter.h"
-#include "itkMersenneTwisterRandomVariateGenerator.h"
 #include "itkImageFullSampler.h"
 
 #ifdef ELASTIX_USE_OPENMP
@@ -1118,6 +1117,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::InitSubfunctionSamplers(i
                                                ? ImageFullSamplerType::New()
                                                : this->m_ImageSampler->Clone();
 
+    subfunctionSampler->SetUseMultiThread(false);
     subfunctionSampler->SetInput(this->GetFixedImage());
     subfunctionSampler->SetUseMask(useMask);
     subfunctionSampler->SetInputImageRegion(region);

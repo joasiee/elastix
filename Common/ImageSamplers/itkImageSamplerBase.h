@@ -22,7 +22,6 @@
 #include "itkImageSample.h"
 #include "itkVectorDataContainer.h"
 #include "itkSpatialObject.h"
-#include "boost/random/sobol.hpp"
 
 namespace itk
 {
@@ -187,9 +186,6 @@ public:
     return true;
   }
 
-  virtual void
-  SetGeneratorSeed(uint_least64_t seed);
-
   /** Get a handle to the cropped InputImageregion. */
   itkGetConstReferenceMacro(CroppedInputImageRegion, InputImageRegionType);
 
@@ -211,7 +207,7 @@ public:
 
 protected:
   /** The constructor. */
-  ImageSamplerBase();
+  ImageSamplerBase() = default;
 
   /** The destructor. */
   ~ImageSamplerBase() override = default;
@@ -254,10 +250,8 @@ protected:
   std::vector<ImageSampleContainerPointer> m_ThreaderSampleContainer{};
 
   // tmp?
-  bool                 m_UseMultiThread;
-  bool                 m_UseMask{ true };
-  int                  m_PreviousSeed;
-  boost::random::sobol m_RandomGenerator{ Self::InputImageDimension };
+  bool m_UseMultiThread{ false };
+  bool m_UseMask{ true };
 
 private:
   /** Member variables. */

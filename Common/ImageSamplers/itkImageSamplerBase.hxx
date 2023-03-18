@@ -19,22 +19,9 @@
 #define itkImageSamplerBase_hxx
 
 #include "itkImageSamplerBase.h"
-#include "itkMersenneTwisterRandomVariateGenerator.h"
 
 namespace itk
 {
-
-/**
- * ******************* Constructor *******************
- */
-
-template <class TInputImage>
-ImageSamplerBase<TInputImage>::ImageSamplerBase()
-{
-  using RandomGeneratorType = Statistics::MersenneTwisterRandomVariateGenerator;
-  this->SetGeneratorSeed(RandomGeneratorType::GetNextSeed());
-} // end Constructor()
-
 
 /**
  * ******************* SetMask *******************
@@ -524,23 +511,6 @@ ImageSamplerBase<TInputImage>::WriteSamplesToFile(std::ofstream & outFile)
     outFile << "\n";
   }
 }
-
-/**
- * ******************* SetGeneratorSeed *******************
- */
-
-template <class TInputImage>
-void
-ImageSamplerBase<TInputImage>::SetGeneratorSeed(uint_least64_t seed)
-{
-  if (seed != this->m_PreviousSeed)
-  {
-    this->m_PreviousSeed = seed;
-    this->m_RandomGenerator.seed(seed);
-    this->Modified();
-  }
-}
-
 
 /**
  * ******************* PrintSelf *******************
