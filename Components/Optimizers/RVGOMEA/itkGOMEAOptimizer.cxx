@@ -167,7 +167,7 @@ GOMEAOptimizer::initialize(void)
   if (m_FosElementSize == Univariate)
     use_univariate_FOS = 1;
 
-  FOS_element_size = m_FosElementSize;
+  GOMEA::FOS_element_size = m_FosElementSize;
   GOMEA::grid_region_dimensions = std::move(m_BSplineGridRegionDimensions);
   GOMEA::static_linkage_type = static_cast<BSplineStaticLinkageType>(m_StaticLinkageType);
 
@@ -176,8 +176,9 @@ GOMEAOptimizer::initialize(void)
 
   // finish initialization
   this->checkOptions();
-  initializeRandomNumberGenerator();
+  GOMEA::initializeRandomNumberGenerator();
   this->initializeMemory();
+
   this->Modified();
 }
 
@@ -1667,7 +1668,8 @@ GOMEAOptimizer::generateNewSolutionFromFOSElement(int   population_index,
                               objective_values[population_index][individual_index],
                               constraint_values[population_index][individual_index],
                               m_UseConstraints);
-  if (improvement || randomRealUniform01() < 0.05)
+  double randu = randomRealUniform01(); // have to preload, in-branch can lead to indetermism.
+  if (improvement || randu < 0.05)
   {
     objective_values[population_index][individual_index] = obj_val;
     constraint_values[population_index][individual_index] = cons_val;
@@ -2071,12 +2073,12 @@ GOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_index
 
         this->makePopulation(population_index);
 
+        number_of_generations[population_index]++;
+
         if (this->m_SubSampling || number_of_generations[population_index] % NumberOfGenerationsPerReevaluation == 0)
           this->evaluatePopulation(population_index);
 
-        number_of_generations[population_index]++;
         this->UpdatePosition();
-
         m_CurrentIteration++;
         this->InvokeEvent(IterationEvent());
 

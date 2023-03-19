@@ -36,16 +36,15 @@
  */
 #pragma once
 
-#include <stdio.h>
 #include <iostream>
-#include <stdlib.h>
 #include <math.h>
-#include <time.h>
-#include <sys/time.h>
+#include <memory>
+#include <random>
+
 #include <eigen3/Eigen/Dense>
 #include <cblas.h>
 #include <lapacke.h>
-#include <random>
+
 #include "Instrumentor.hpp"
 
 using Eigen::MatrixXd;
@@ -57,7 +56,7 @@ using Eigen::VectorXd;
 
 namespace GOMEA
 {
-extern uint64_t           random_seed;
+extern uint64_t    random_seed;
 extern std::random_device random_device;
 extern std::mt19937       mersenne_generator;
 
@@ -94,17 +93,14 @@ int *
 getRanks(double * array, int array_size);
 int *
 getRanksFromSorted(int * sorted, int array_size);
-
 double
-randomRealUniform01(void);
+randomRealUniform01();
 int
 randomInt(int maximum);
 double
-random1DNormalUnit(void);
-double
-random1DNormalParameterized(double mean, double variance);
+random1DNormalUnit();
 void
-initializeRandomNumberGenerator(void);
+initializeRandomNumberGenerator();
 int *
 randomPermutation(int n);
 int **

@@ -19,22 +19,9 @@
 #ifndef itkGOMEAOptimizer_h
 #define itkGOMEAOptimizer_h
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <iostream>
-#include <numeric>
-#include <random>
-#include <fstream>
-#include <math.h>
-#include <stdio.h>
-#include <time.h>
-#include <sys/time.h>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/Cholesky>
 #include "itkSingleValuedNonLinearOptimizer.h"
-#include "./util/Tools.h"
-#include "./util/FOS.h"
 #include "Instrumentor.hpp"
 #include "itkArray.h"
 #include "itkArray2D.h"
@@ -43,6 +30,10 @@
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
+
+#include "./util/Tools.h"
+#include "./util/FOS.h"
+
 using namespace boost::accumulators;
 
 using Eigen::MatrixXd;
@@ -224,16 +215,16 @@ protected:
   GOMEAOptimizer();
   ~GOMEAOptimizer() override = default;
 
-  void
-  SetRandomSeed(long unsigned int seed)
-  {
-    GOMEA::random_seed = seed;
-  }
-
   virtual size_t
   GetNumberOfPixelEvaluations() const
   {
     return m_NumberOfEvaluations;
+  }
+
+  void
+  SetRandomSeed(long unsigned int seed)
+  {
+    GOMEA::random_seed = seed;
   }
 
   virtual void

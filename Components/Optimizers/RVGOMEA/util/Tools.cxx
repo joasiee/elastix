@@ -44,7 +44,6 @@ namespace GOMEA
 uint64_t     random_seed{ 0 };
 std::mt19937 mersenne_generator;
 
-
 /*-=-=-=-=-=-=-=-=-=-=-= Section Elementary Operations -=-=-=-=-=-=-=-=-=-=-*/
 /**
  * Allocates memory and exits the program in case of a memory allocation failure.
@@ -342,7 +341,7 @@ getRanksFromSorted(int * sorted, int array_size)
  * Returns a random double, distributed uniformly between 0 and 1.
  */
 double
-randomRealUniform01(void)
+randomRealUniform01()
 {
   static std::uniform_real_distribution<double> distribution(0.0, 1.0);
   return distribution(mersenne_generator);
@@ -354,28 +353,16 @@ randomRealUniform01(void)
 int
 randomInt(int maximum)
 {
-  int result;
-  result = (int)(((double)maximum) * randomRealUniform01());
-  return (result);
+  return (int)(((double)maximum) * randomRealUniform01());
 }
 
 /**
  * Returns a random double, distributed normally with mean 0 and variance 1.
  */
 double
-random1DNormalUnit(void)
+random1DNormalUnit()
 {
   static std::normal_distribution<double> distribution(0.0, 1.0);
-  return distribution(mersenne_generator);
-}
-
-/**
- * Returns a random double, distributed normally with given mean and variance.
- */
-double
-random1DNormalParameterized(double mean, double variance)
-{
-  std::normal_distribution<double> distribution(mean, sqrt(variance));
   return distribution(mersenne_generator);
 }
 
@@ -401,6 +388,7 @@ int *
 randomPermutation(int n)
 {
   PROFILE_FUNCTION();
+
   int i, j, dummy, *result;
 
   result = (int *)Malloc(n * sizeof(int));
