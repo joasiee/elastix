@@ -37,6 +37,7 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-= Section Includes -=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 #include "./Tools.h"
+#include "Tools.h"
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 namespace GOMEA
@@ -343,8 +344,19 @@ getRanksFromSorted(int * sorted, int array_size)
 double
 randomRealUniform01()
 {
-  static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+  std::uniform_real_distribution<double> distribution(0.0, 1.0);
   return distribution(mersenne_generator);
+}
+
+void
+randomRealTest()
+{
+  std::thread::id this_id = std::this_thread::get_id();
+  std::cout << "randomRealTest: " << this_id << std::endl;
+  for (int i = 0; i < 5; i++)
+  {
+    std::cout << "randomRealUniform01: " << randomRealUniform01() << std::endl;
+  }
 }
 
 /**
@@ -362,7 +374,7 @@ randomInt(int maximum)
 double
 random1DNormalUnit()
 {
-  static std::normal_distribution<double> distribution(0.0, 1.0);
+  std::normal_distribution<double> distribution(0.0, 1.0);
   return distribution(mersenne_generator);
 }
 

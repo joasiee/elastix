@@ -57,8 +57,6 @@ using Eigen::VectorXd;
 namespace GOMEA
 {
 extern uint64_t    random_seed;
-extern std::random_device random_device;
-extern std::mt19937       mersenne_generator;
 
 void *
 Malloc(long size);
@@ -95,6 +93,8 @@ int *
 getRanksFromSorted(int * sorted, int array_size);
 double
 randomRealUniform01();
+void
+randomRealTest();
 int
 randomInt(int maximum);
 double
