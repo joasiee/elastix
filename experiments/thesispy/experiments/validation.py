@@ -368,13 +368,13 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
     return ax.get_figure()
 
 
-def plot_cpoints(run_result: RunResult, slice_index=None, slice_pos=1, ax=None, colors=None, alpha=0.3):
+def plot_cpoints(run_result: RunResult, slice_index=None, slice_pos=1, ax=None, colors=None, alpha=0.3, marker_size=20):
     points = run_result.control_points
     points_slice = points
 
     grid_spacing = np.array(run_result.grid_spacing)
     grid_origin = np.array(run_result.grid_origin)
-    grid_direction = run_result.instance.direction.reshape(3, 3)
+    grid_direction = run_result.instance.direction.reshape(len(grid_origin), len(grid_origin))
     grid_origin = grid_direction @ grid_origin
 
     slice_tuple = [slice(None), slice(None), slice(None)]
@@ -408,14 +408,14 @@ def plot_cpoints(run_result: RunResult, slice_index=None, slice_pos=1, ax=None, 
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
 
-    ax.scatter(X, Y, marker="+", c=colors, cmap=cmap, alpha=alpha, s=20)
+    ax.scatter(X, Y, marker="+", c=colors, cmap=cmap, alpha=alpha, s=marker_size)
 
     ax.grid(False)
     ax.scatter(
         points_slice[..., indices_xy[0]],
         points_slice[..., indices_xy[1]],
         marker="s",
-        s=15,
+        s=marker_size,
         c=colors,
         cmap=cmap,
         alpha=0.8,
@@ -772,7 +772,7 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
         displacements = fn(indices)
         colors = np.sqrt(displacements[:, i_x] ** 2 + displacements[:, i_y] ** 2)
         color_lists.append(colors)
-        ax.plot(line[:, i_x], line[:, i_y], color="white", linewidth=0.5, linestyle="dotted")
+        ax.plot(line[:, i_x], line[:, i_y], color="white", linewidth=0.5, linestyle="dotted", alpha=0.5)
 
     if vmin is None or vmax is None:
         vmin = np.min([np.min(color_list) for color_list in color_lists])
@@ -781,7 +781,7 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
     norm = plt.Normalize(vmin, vmax)
 
     for i, line in enumerate(deformed_lines):
-        colorline(line[:, i_x], line[:, i_y], z=color_lists[i], norm=norm, ax=ax, cmap="jet", linewidth=0.75)
+        colorline(line[:, i_x], line[:, i_y], z=color_lists[i], norm=norm, ax=ax, cmap="jet", linewidth=1, alpha=1)
 
     ax.axis("off")
 

@@ -32,9 +32,10 @@ def colorline(x, y, z=None, cmap=plt.get_cmap('copper'), norm=plt.Normalize(0.0,
         z = np.array([z])
         
     z = np.asarray(z)
-    
     segments = make_segments(x, y)
-    lc = LineCollection(segments, array=z, cmap=cmap, norm=norm, linewidth=linewidth, alpha=alpha)
+    linewidths = np.ones(len(segments))*linewidth
+
+    lc = LineCollection(segments, array=z, cmap=cmap, norm=norm, linewidths=linewidths, alpha=alpha)
 
     if ax is None:    
         ax = plt.gca()

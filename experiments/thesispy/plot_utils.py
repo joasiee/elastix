@@ -1,5 +1,7 @@
 import matplotlib
-matplotlib.use("module://mplcairo.qt")
+# matplotlib.use("module://mplcairo.qt")
+from matplotlib.backends.backend_pgf import FigureCanvasPgf
+matplotlib.backend_bases.register_backend('pdf', FigureCanvasPgf)
 
 import matplotlib.pyplot as plt
 from thesispy.definitions import ROOT_DIR

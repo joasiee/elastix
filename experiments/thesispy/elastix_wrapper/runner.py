@@ -80,16 +80,17 @@ def run(
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=4, seed=1, use_mask=True)
-        .gomea()
-        .multi_resolution(1, r_sched=[5])
-        .stopping_criteria(iterations=3)
+        Parameters.from_base(mesh_size=8, metric="AdvancedNormalizedCorrelation")
+        .asgd()
+        .multi_resolution(3)
+        .regularize(0.01)
+        .stopping_criteria(iterations=[200, 200, 1000])
         .instance(Collection.LEARN, 1)
     )
     run(
         [params_main],
         Path("output/" + str(params_main)),
         suppress_stdout=False,
-        visualize=False,
-        validate=False,
+        visualize=True,
+        validate=True,
     )
