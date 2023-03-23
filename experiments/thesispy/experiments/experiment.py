@@ -13,6 +13,12 @@ WANDB_ENTITY = "joasiee"
 
 
 class Experiment:
+    """Helper class to store experiments in a queue.
+    
+    Args:
+        params (Parameters): Parameters to be used for the experiment.
+        project (str, optional): Name of the WandB project. Defaults to None.
+    """
     def __init__(self, params: Parameters, project: str = None) -> None:
         params.prune()
         self.project = project
@@ -20,6 +26,7 @@ class Experiment:
 
     @classmethod
     def from_json(cls, jsondump):
+        """Create an Experiment using JSON serialization of Parameters object."""
         pyjson = json.loads(jsondump)
         params = Parameters(pyjson["params"]).set_paths()
         return cls(params, pyjson["project"])
@@ -32,6 +39,7 @@ class Experiment:
 
 
 class ExperimentQueue:
+    """Redis queue for experiments."""
     queue_id = "queue:experiments"
 
     def __init__(self) -> None:
@@ -74,12 +82,8 @@ class ExperimentQueue:
 
 
 def run_experiment(experiment: Experiment):
+    """Run an experiment and save the results to WandB."""
     run_dir = Path("output") / experiment.project / str(experiment.params)
     batch_size = 25 if experiment.params["Optimizer"] == "AdaptiveStochasticGradientDescent" else 1
     sv_strat = SaveStrategyWandb(experiment, run_dir, batch_size)
     return wrapper.run(experiment.params, run_dir, sv_strat) is not None
-
-
-if __name__ == "__main__":
-    expq = ExperimentQueue()
-    print(expq.size())

@@ -6,7 +6,7 @@ from typing import List
 
 import pandas as pd
 
-from thesispy.elastix_wrapper import  time_limit
+from thesispy.elastix_wrapper import time_limit
 from thesispy.elastix_wrapper.parameters import Parameters
 from thesispy.experiments.instance import (
     get_instance,
@@ -21,7 +21,6 @@ from thesispy.definitions import *
 ELASTIX = os.environ.get("ELASTIX_EXECUTABLE")
 TRANSFORMIX = os.environ.get("TRANSFORMIX_EXECUTABLE")
 logger = logging.getLogger("Wrapper")
-
 
 
 def execute_elastix(param_files: List[Path], out_dir: Path, params: Parameters, suppress_stdout: bool = True):
@@ -56,6 +55,10 @@ def execute_elastix(param_files: List[Path], out_dir: Path, params: Parameters, 
 def generate_transformed_points(
     params_file: Path, out_dir: Path, points_file: Path = None, moving_img_path: Path = None
 ):
+    """Use transformix to generate transformed landmarks given a transform definition.
+
+    If no landmarks are provided, all voxels are transformed and a deformation field is generated.
+    """
     args = [
         TRANSFORMIX,
         "-tp",
@@ -74,6 +77,7 @@ def generate_transformed_points(
 
 
 def transformix_image(params_file: Path, out_dir: Path, moving_img_path: Path, interpolator: str = None):
+    """Use transformix to transform an image given a transform definition."""
     curr_interp = read_key_from_transform_params(params_file, "ResampleInterpolator")
     if interpolator is not None:
         change_key_in_transform_params(params_file, "ResampleInterpolator", interpolator)
@@ -116,6 +120,7 @@ def change_key_in_transform_params(transform_params: Path, key: str, value: str)
 
 
 def execute_visualize(out_dir: Path):
+    """Visualize registration result using the first available visualizer from [vv, mitk, slicer]."""
     visualizers = ["vv", "mitk", "Slicer"]
     visualizer = None
     for vis in visualizers:
@@ -128,6 +133,11 @@ def execute_visualize(out_dir: Path):
 
 
 def get_run_result(collection: Collection, instance_id: int, transform_params: Path):
+    """Given a collection, instance and transform parameters, return the run result.
+
+    Using the transform, the landmarks are deformed, the moving image is transformed, 
+    and all other required data for validation is stored in a RunResult object.
+    """
     out_dir = transform_params.parent.resolve()
     out_dir_transform = out_dir / "transform"
     out_dir_transform.mkdir(parents=True, exist_ok=True)

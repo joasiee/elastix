@@ -509,6 +509,7 @@ computeDistanceMatrixBSplineGrid(int n)
 {
   PROFILE_FUNCTION();
   MatrixXd distances{ n, n };
+  distances.fill(0);
 
   std::vector<int> divisions(grid_region_dimensions.size(), 1);
   for (int i = 1; i < grid_region_dimensions.size(); ++i)
@@ -532,8 +533,8 @@ computeDistanceMatrixBSplineGrid(int n)
         {
           distances(dim * nGridPoints + i, dim2 * nGridPoints + j) = distance;
           distances(dim2 * nGridPoints + j, dim * nGridPoints + i) = distance;
-          distances(dim2 * nGridPoints + i, dim * nGridPoints + j) = distance;
           distances(dim * nGridPoints + j, dim2 * nGridPoints + i) = distance;
+          distances(dim2 * nGridPoints + i, dim * nGridPoints + j) = distance;
         }
       }
     }

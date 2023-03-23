@@ -240,9 +240,6 @@ RegistrationBase<TElastix>::FinalBendingEnergyEvaluation()
 
   auto nrVoxels = metricBE->GetImageSampler()->GetOutput()->Size();
   bool useMask = metricBE->GetImageSampler()->GetUseMask() && metricBE->GetImageSampler()->GetMask();
-  std::cout << "Final bending energy calculation:" << std::endl;
-  std::cout << "  nrVoxels: " << nrVoxels << std::endl;
-  std::cout << "  useMask: " << useMask << std::endl;
   
   const ParametersType & parameters = this->GetElastix()->GetElxOptimizerBase()->GetAsITKBaseType()->GetCurrentPosition();
   return metricBE->GetValue(parameters) * nrVoxels;

@@ -100,6 +100,15 @@ def bending_energy_point(dvf, p):
 
 
 def bending_energy(dvf, downscaling_f: int = 1, mask=None, use_tqdm: bool = True, sum: bool = True):
+    """Computes the bending energy of a given DVF.
+    
+    Args:
+        dvf (np.ndarray): The DVF to compute the bending energy for.
+        downscaling_f (int, optional): The factor by which the DVF is downsampled. Defaults to 1.
+        mask (np.ndarray, optional): Only calculate the bending energy for voxels within this mask. Defaults to None.
+        use_tqdm (bool, optional): Whether to use tqdm to display the progress. Defaults to True.
+        sum (bool, optional): Whether to return the sum of the bending energy or a map with for each voxel the bending energy. Defaults to True.
+    """
     if mask is not None:
         mask = mask[::downscaling_f, ::downscaling_f, ::downscaling_f]
 
@@ -118,6 +127,7 @@ def bending_energy(dvf, downscaling_f: int = 1, mask=None, use_tqdm: bool = True
 
 
 def dice_similarity(moving_deformed, fixed, levels):
+    """Computes the Dice Similarity Coefficient using Otsu multi-level thresholding."""
     thresholds_moving = threshold_multiotsu(moving_deformed, classes=levels)
     thresholds_fixed = threshold_multiotsu(fixed, classes=levels)
     regions_moving_deformed = np.digitize(moving_deformed, bins=thresholds_moving)
@@ -138,6 +148,7 @@ def dice_similarity_(region_a, region_b, value):
 
 
 def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
+    """Computes the Hausdorff Distance between two sets of points."""
     distances = []
     for i in range(len(surface_points)):
         max_distance1 = np.max(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing
@@ -148,12 +159,14 @@ def hausdorff_distance(surface_points, surface_points_deformed, spacing=1):
 
 
 def dvf_rmse(dvf1, dvf2, spacing=1):
+    """Computes the RMSE between two DVF's."""
     rmse = np.linalg.norm((dvf1 - dvf2) * spacing, axis=3).mean()
     logger.info(f"DVF RMSE: {rmse}")
     return rmse
 
 
 def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
+    """Computes the Mean Surface Distance between two sets of points."""
     distances = []
     for i in range(len(surface_points)):
         mean_distance1 = np.mean(distance.cdist(surface_points[i], surface_points_deformed[i]).min(axis=1)) * spacing
@@ -164,12 +177,14 @@ def mean_surface_distance(surface_points, surface_points_deformed, spacing=1):
 
 
 def tre(result: RunResult):
+    """Computes the TRE between the deformed landmarks and the ground truth landmarks."""
     tre = np.linalg.norm((result.deformed_lms - result.instance.lms_moving) * result.instance.spacing, axis=1).mean()
     logger.info(f"TRE: {tre}")
     return tre
 
 
 def tre_hist(lms1, lms2, spacing=1, ax=None, bins=40):
+    """Plots a histogram of the TRE between two sets of landmarks."""
     if ax is None:
         fig, ax = plt.subplots(figsize=(5, 5))
     tres = np.linalg.norm((lms1 - lms2) * spacing, axis=1)
@@ -185,6 +200,15 @@ def tre_hist_wandb(result: RunResult, bins=40):
 
 
 def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
+    """Calculates the Jacobian determinant of a DVF and plots it as a heatmap.
+    
+    Args:
+        dvf: The DVF.
+        ax: The axis to plot on.
+        vmin: The minimum value for the colorbar.
+        vmax: The maximum value for the colorbar.
+        plot: Whether to plot the heatmap.
+    """
     dvf_img = sitk.GetImageFromArray(dvf, isVector=True)
     jac_det_contracting_field = sitk.DisplacementFieldJacobianDeterminant(dvf_img)
     jac_det = sitk.GetArrayFromImage(jac_det_contracting_field)
@@ -215,6 +239,13 @@ def jacobian_determinant(dvf, ax=None, vmin=None, vmax=None, plot=True):
 
 
 def jacobian_determinant_masked(run_result: RunResult, slice_tuple, ax=None):
+    """Plots the voxels of the fixed image within the mask with the Jacobian determinant as color.
+    
+    Args:
+        run_result: A run result.
+        slice_tuple: The slice to plot.
+        ax: The axis to plot on.
+    """
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
     dvf_img = sitk.GetImageFromArray(run_result.dvf, isVector=True)
@@ -285,6 +316,17 @@ def plot_voxels(
     alpha=1.0,
     ax=None,
 ):
+    """Plots a 3D volume as voxels.
+    
+    Args:
+        data: The data to plot.
+        lms: The landmarks to plot (untested).
+        y_slice_depth: The depth of the slice to plot.
+        orientation: The orientation of the plot.
+        cmap_name: The colormap to use.
+        alpha: The alpha value of the voxels.
+        ax: The axis to plot on.
+    """
     if len(data.shape) == 2:
         if ax is None:
             _, ax = plt.subplots(figsize=(5, 5))
@@ -324,6 +366,17 @@ def plot_voxels(
 
 
 def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=None):
+    """Plots a 2D or 3D DVF as a quiver plot.
+    
+    Args:
+        data: The DVF to plot.
+        scale: The scale of the arrows.
+        invert: Whether to invert the DVF.
+        slice: The slice to plot.
+        ax: The axis to plot on.
+        vmin: The minimum value of the colormap.
+        vmax: The maximum value of the colormap.
+    """
     if len(data.shape[:-1]) > 2:
         if slice is None:
             slice = data.shape[0] // 2
@@ -369,6 +422,7 @@ def plot_dvf(data, scale=1, invert=False, slice=None, ax=None, vmin=None, vmax=N
 
 
 def plot_cpoints(run_result: RunResult, slice_index=None, slice_pos=1, ax=None, colors=None, alpha=0.3, marker_size=20):
+    """Plots the control points of a run result."""
     points = run_result.control_points
     points_slice = points
 
@@ -423,6 +477,7 @@ def plot_cpoints(run_result: RunResult, slice_index=None, slice_pos=1, ax=None, 
 
 
 def cpoint_cloud(points):
+    """Converts a control point grid to a point cloud to store in WandB."""
     max_level = points.shape[0] - 1
     point_cloud = []
 
@@ -437,6 +492,7 @@ def cpoint_cloud(points):
 
 
 def plot_color_diff(result: RunResult, slice_tuple, ax=None):
+    """Plots the difference between the fixed and deformed image as a color image."""
     if ax is None:
         fig, ax = plt.subplots(figsize=(6, 6))
 
@@ -493,6 +549,7 @@ def plot_color_diff(result: RunResult, slice_tuple, ax=None):
 
 
 def plot_image(image: np.ndarray, extent=None, inverts=(False, False), ylims=None, ax=None, cmap="gray"):
+    """Plots an image with the correct orientation and extent."""
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 8))
 
@@ -513,6 +570,7 @@ def plot_image(image: np.ndarray, extent=None, inverts=(False, False), ylims=Non
 
 
 def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=5):
+    """Plots the DVF with as background the fixed image."""
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 8))
 
@@ -587,6 +645,7 @@ def plot_dvf_masked(run_result, slice_tuple, ax=None, zoom_f=5):
 
 
 def plot_dvf_3d(run_result, zoom_f=6, ax=None):
+    """Plots the DVF in 3D."""
     if ax is None:
         ax = plt.figure(figsize=(5, 5)).add_subplot(projection="3d")
     dvf = np.copy(run_result.dvf)
@@ -715,6 +774,7 @@ def read_deformed_line(filename: Path):
 
 
 def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_points=1000, ax=None, fix_axes=False, vmin=None, vmax=None):
+    """Plots the deformed mesh in the given slice overlaid on the fixed image."""
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
 
@@ -789,6 +849,7 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
 
 
 def calc_validation(result: RunResult):
+    """Perform all validation calculations and visualizations."""
     logger.info(f"Calculating validation metrics for {result.instance.collection}:")
     start = time.perf_counter()
 
@@ -802,6 +863,7 @@ def calc_validation(result: RunResult):
 
 
 def validation_metrics(result: RunResult):
+    """Calculate all validation metrics."""
     metrics = []
 
     metrics.append({"validation/tre": tre(result)})
@@ -843,6 +905,7 @@ def validation_metrics(result: RunResult):
 
 
 def validation_visualization(result: RunResult, clim_dvf=(None, None), clim_jac=(None, None), tre=True):
+    """Calculate all validation visualizations."""
     figs = []  # aggregate all figures
     instance = result.instance
     collection = instance.collection

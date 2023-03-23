@@ -10,6 +10,7 @@ import numpy as np
 
 
 class SaveStrategy:
+    """Interface for saving strategy."""
     def save(self, headers, row, resolution) -> None:
         pass
 
@@ -21,11 +22,15 @@ class SaveStrategy:
 
 
 class SaveStrategyPrint(SaveStrategy):
+    """Saving strategy that prints the results to stdout."""
+    
     def save(self, headers, row, resolution) -> None:
         print(f"R{resolution}: {headers} --- {row}")
 
 
 class SaveStrategyWandb(SaveStrategy):
+    """Saving strategy that logs the results to a wandb project."""
+    
     def __init__(self, experiment, run_dir: Path, batch_size: int = 1) -> None:
         wandb.init(project=experiment.project, name=str(experiment.params), reinit=True)
         wandb.config.update(experiment.params.params)
@@ -79,6 +84,8 @@ class SaveStrategyWandb(SaveStrategy):
 
 # Pretty bad performance-wise, but at the time was easiest way to get live data output from c++ -> python -> wandb
 class Watchdog(threading.Thread):
+    """Thread that watches the output directory for new data and forwards it to a SaveStrategy."""
+    
     def __init__(
         self,
         out_dir,

@@ -519,7 +519,6 @@ void
 AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOriginal()
 {
   itk::TimeProbe timer2{}, timer3{};
-  std::cout.setstate(std::ios_base::failbit);
 
   /** Get the user input. */
   const double delta = this->GetMaximumStepLength();
@@ -564,13 +563,16 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOrigina
     computeJacobianTerms->SetUseScales(false);
   }
 
-  /** Compute the Jacobian terms. */
-  log::info("  Computing JacobianTerms ...");
-  timer2.Start();
-  computeJacobianTerms->Compute(TrC, TrCC, maxJJ, maxJCJ);
-  timer2.Stop();
-  log::info(std::ostringstream{} << "  Computing the Jacobian terms took "
-                                 << Conversion::SecondsToDHMS(timer2.GetMean(), 6));
+  if (!m_HybridMode)
+  {
+    /** Compute the Jacobian terms. */
+    log::info("  Computing JacobianTerms ...");
+    timer2.Start();
+    computeJacobianTerms->Compute(TrC, TrCC, maxJJ, maxJCJ);
+    timer2.Stop();
+    log::info(std::ostringstream{} << "  Computing the Jacobian terms took "
+                                   << Conversion::SecondsToDHMS(timer2.GetMean(), 6));
+  }
 
   /** Determine number of gradient measurements such that
    * E + 2\sqrt(Var) < K E
@@ -595,7 +597,8 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOrigina
     }
     this->m_NumberOfGradientMeasurements =
       std::max(static_cast<SizeValueType>(2), this->m_NumberOfGradientMeasurements);
-    log::info(std::ostringstream{} << "  NumberOfGradientMeasurements to estimate sigma_i: "
+    if (!m_HybridMode)
+      log::info(std::ostringstream{} << "  NumberOfGradientMeasurements to estimate sigma_i: "
                                    << this->m_NumberOfGradientMeasurements);
   }
 
@@ -610,7 +613,8 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOrigina
   }
   this->SampleGradients(this->GetScaledCurrentPosition(), sigma4, gg, ee);
   timer3.Stop();
-  log::info(std::ostringstream{} << "  Sampling the gradients took " << Conversion::SecondsToDHMS(timer3.GetMean(), 6));
+  if (!m_HybridMode)
+    log::info(std::ostringstream{} << "  Sampling the gradients took " << Conversion::SecondsToDHMS(timer3.GetMean(), 6));
 
   /** Determine parameter settings. */
   double sigma1 = 0.0;
@@ -653,8 +657,6 @@ AdaptiveStochasticGradientDescent<TElastix>::AutomaticParameterEstimationOrigina
     this->SetSigmoidMin(fmin);
     this->SetSigmoidScale(omega);
   }
-
-  std::cout.clear();
 } // end AutomaticParameterEstimationOriginal()
 
 
@@ -872,7 +874,8 @@ AdaptiveStochasticGradientDescent<TElastix>::SampleGradients(const ParametersTyp
   const auto progressObserver = showProgressPercentage
                                   ? ProgressCommand::CreateAndSetUpdateFrequency(this->m_NumberOfGradientMeasurements)
                                   : nullptr;
-  log::info("  Sampling gradients ...");
+  if (!m_HybridMode)
+    log::info("  Sampling gradients ...");
 
   /** Initialize some variables for storing gradients and their magnitudes. */
   const unsigned int numberOfParameters =

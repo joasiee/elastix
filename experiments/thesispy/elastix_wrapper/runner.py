@@ -21,6 +21,16 @@ def run(
     visualize: bool = False,
     validate: bool = True,
 ) -> Dict[str, Any]:
+    """Run elastix with the given list of parameters.
+    
+    Args:
+        params_list: List of parameters to run elastix in consecutive fashion with.
+        run_dir: Directory to run elastix in.
+        save_strategy: Strategy for saving the results of the run.
+        suppress_stdout: Whether to suppress the output of elastix.
+        visualize: Whether to visualize the results of the run after it is done using any of the supported visualizers.
+        validate: Whether to calculate the validation metrics and plot visualizations.
+    """
     time_start = time.perf_counter()
 
     if type(params_list) is not list:

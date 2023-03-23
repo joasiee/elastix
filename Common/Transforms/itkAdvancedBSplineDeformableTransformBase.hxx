@@ -514,7 +514,8 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::RepairFolds()
     bool foldsInGrid = true;
     int  maxNrPasses = 10;
     int  nrPasses = 0;
-    elastix::log::info(std::ostringstream{} << "Number of folds in grid: " << this->ComputeNumberOfFolds() << std::endl);
+    elastix::log::info(std::ostringstream{} << "\nRepairing folds in grid...");
+    elastix::log::info(std::ostringstream{} << "  Number of folds in grid: " << this->ComputeNumberOfFolds());
     while (foldsInGrid && nrPasses < maxNrPasses)
     {
       foldsInGrid = false;
@@ -524,9 +525,10 @@ AdvancedBSplineDeformableTransformBase<TScalarType, NDimensions>::RepairFolds()
       }
       nrPasses += foldsInGrid;
     }
-    elastix::log::info(std::ostringstream{} << "Number of passes to repair folds: " << nrPasses << std::endl);
+    elastix::log::info(std::ostringstream{} << "  Number of passes to repair folds: " << nrPasses);
     if (nrPasses > 0)
-      elastix::log::info(std::ostringstream{} << "Number of folds: " << this->ComputeNumberOfFolds() << std::endl);
+      elastix::log::info(std::ostringstream{} << "  Number of folds after " << nrPasses << "passes: " << this->ComputeNumberOfFolds());
+    elastix::log::info(std::ostringstream{}); // empty line
   }
 }
 

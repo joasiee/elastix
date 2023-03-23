@@ -14,6 +14,16 @@ if not DATASETS_PATH.exists():
 
 
 class FinishedRun:
+    """A finished elastix run.
+    
+    Args:
+        name: Name of the run.
+        id: Unique id of the run.
+        config: Dictionary of the configuration of the run.
+        resolutions: List of dataframes containing the iteration output of the run for each resolution.
+        summary: Series containing the final iteration output values.
+    """
+
     def __init__(self, name: str, id: str, config: Dict[str, Any], metrics: pd.DataFrame) -> None:
         self.name = name
         self.id = id
@@ -40,12 +50,22 @@ class FinishedRun:
                 self.summary = pd.concat([self.summary, metrics_v.loc[val_indices].iloc[-1]])
             
         
-
     def query(self, query: str):
+        """Query the run using dictquery.
+        
+        Can be used to filter runs based on their configuration.
+        """
         return dq.match(self.config, query)
 
 
 class Dataset:
+    """A dataset containing elastix runs.
+    
+    Args:
+        project: Name of the project.
+        runs: List of finished runs.
+    """
+
     def __init__(self, project: str, runs: List[FinishedRun]) -> None:
         self.runs: List[FinishedRun] = runs
         self.project = project
@@ -54,9 +74,11 @@ class Dataset:
         self.runs.append(run)
 
     def filter(self, query: str):
+        """Filter the dataset using dictquery."""
         return Dataset(self.project, [run for run in self.runs if run.query(query)])
 
     def groupby(self, attrs: List[str]):
+        """Group the runs by the given attributes."""
         if len(attrs) == 0:
             yield (), self.runs
         else:
@@ -95,6 +117,14 @@ class Dataset:
         resolution: int = 0,
         val: bool = True,
     ):
+        """Aggregate the runs by the given attributes.
+        
+        Args:
+            attrs: List of attributes to group by.
+            metrics: List of metrics to aggregate.
+            resolution: Resolution to aggregate.
+            val: Whether to aggregate the summaries or the iteration output. Defaults to summaries.
+        """
         df = pd.DataFrame(columns=metrics)
         for group, runs in self.groupby(attrs):
             df_add = pd.DataFrame(columns=metrics)
@@ -111,6 +141,7 @@ class Dataset:
         return df
 
     def aggregate_for_plot(self, attrs: List[str] = [], metric: str = "metric", resolution: int = 0):
+        """Specialized aggregation function for convergence plots."""
         res = {}
         for group, runs in self.groupby(attrs):
             if len(runs) == 0:
@@ -131,12 +162,14 @@ class Dataset:
         return res
 
     def save(self):
+        """Save the dataset to disk."""
         path = DATASETS_PATH / f"{self.project}.pkl"
         with path.open("wb") as file:
             pickle.dump(self, file)
 
     @staticmethod
     def load(project: str):
+        """Load a dataset from disk."""
         path = DATASETS_PATH / f"{project}.pkl"
         if path.exists():
             with path.open("rb") as file:

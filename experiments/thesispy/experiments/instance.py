@@ -7,6 +7,10 @@ from dataclasses import dataclass
 
 @dataclass
 class Instance:
+    """An instance of a collection.
+    
+    All relevant data is stored in an instantation of this class.
+    """
     collection: Collection
     instance: int
     moving: np.ndarray
@@ -28,6 +32,7 @@ class Instance:
 
 @dataclass
 class RunResult:
+    """The result of a registration run."""
     instance: Instance
     deformed: np.ndarray = None
     deformed_mask: np.ndarray = None

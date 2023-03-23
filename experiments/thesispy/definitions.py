@@ -18,6 +18,7 @@ with INSTANCE_CONFIG_PATH.open() as f:
 
 
 class Collection(str, Enum):
+    """Registration collection type."""
     EMPIRE = "EMPIRE"
     LEARN = "LEARN"
     EXAMPLES = "EXAMPLES"
@@ -25,16 +26,19 @@ class Collection(str, Enum):
 
 
 class LinkageType(Enum):
+    """GOMEA linkage type."""
     FULL = -1
     UNIVARIATE = 1
     CP_MARGINAL = -6
     STATIC_EUCLIDEAN = -3
 
 class RedistributionMethod(Enum):
+    """GOMEA-LS redistribution method."""
     Random = 0
     BestN = 1
 
 class IterationSchedule(Enum):
+    """GOMEA-LS iteration schedule."""
     Static = 0
     Logarithmic = 1
 
