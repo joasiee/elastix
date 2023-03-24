@@ -64,6 +64,6 @@ cmake -DCMAKE_BUILD_TYPE:STRING={BUILD_TYPE} ../
 cmake --build . 
  ```
 
-We use a superbuild to build all the dependencies not included in the requirements. The superbuild requires a build type (e.g. Debug, Release) to be set during configuration, which can be specified with `-DCMAKE_BUILD_TYPE:STRING={BUILD_TYPE}`. It is not necessary but advisable to use the Ninja generator for CMake. If installed, it can be specified during the configure step with `-G Ninja`.
+We use a superbuild to build all the dependencies not included in the requirements. The superbuild requires a build type (e.g. Debug, Release) to be set during configuration, which can be specified with `-DCMAKE_BUILD_TYPE:STRING={BUILD_TYPE}`. It is not necessary but advisable to use the [Ninja](https://ninja-build.org/) generator for CMake. If installed, it can be specified during the configure step with `-G Ninja`.
 
  Due to a harcoding of the build directory in `CMake/SuperBuild.cmake`, the build directory has to be in the root of the project and named "build". If a different build directory is desired, you would have to change the hardcoded path in this file. Subdirectories can be used, e.g., build/Release or build/Debug.
