@@ -527,6 +527,7 @@ computeDistanceMatrixBSplineGrid(int n)
       VectorXd u_v = gridPoint_i - gridPoint_j;
       double   distance = sqrt(u_v.dot(u_v));
 
+      // for each parameter of control point i, set distance to all other parameters of control point j, and vice versa.
       for (int dim = 0; dim < grid_region_dimensions.size(); ++dim)
       {
         for (int dim2 = 0; dim2 < grid_region_dimensions.size(); ++dim2)

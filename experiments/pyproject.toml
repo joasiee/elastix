@@ -22,10 +22,6 @@ seaborn = "^0.12.0"
 matplotlib = "^3.5.1"
 scikit-image = "^0.19.3"
 pymoo = "^0.6.0.1"
-mplcairo = "^0.5"
-pycairo = "^1.23.0"
-pyqt5 = "^5.15.9"
-pyqt6 = "^6.4.2"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "^2.17.0"
@@ -43,6 +39,10 @@ yapf = "^0.32.0"
 pylint = "^2.15.3"
 tabulate = "^0.9.0"
 ipympl = "^0.9.2"
+mplcairo = "^0.5"
+pycairo = "^1.23.0"
+pyqt5 = "^5.15.9"
+pyqt6 = "^6.4.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

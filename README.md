@@ -32,3 +32,38 @@ More information, including an extensive manual and model zoo, can be found on t
 Interactive tutorials are available in [Jupyter notebooks](https://mybinder.org/v2/gh/InsightSoftwareConsortium/ITKElastix/main?urlpath=lab/tree/examples%2FITK_Example01_SimpleRegistration.ipynb).
 
 You can also subscribe to the [mailing list](https://groups.google.com/forum/#!forum/elastix-imageregistration) for questions. Information on contributing to `elastix` can be found [here](CONTRIBUTING.md).
+
+&nbsp;
+***
+&nbsp;
+
+# Master's thesis #
+
+This is a fork of [elastix](https://github.com/SuperElastix/elastix) in which we explore the application of hybrid evolutionary algorithms to deformable image registration for a Master's thesis at the TU Delft. We implement RV-GOMEA in elastix with support for partial evaluations. Additionally, we implement a hybrid local search operator and add specific constraints for the B-spline transformation model. An analytic version of the bending energy when using B-splines is also integrated.
+
+## Building ##
+ 
+ ### Requirements ###
+ - [CMake](https://cmake.org/) >=3.16.3
+ - CBLAS (e.g. [OpenBLAS](https://github.com/xianyi/OpenBLAS))
+ - LAPACK (e.g. [OpenBLAS](https://github.com/xianyi/OpenBLAS))
+ - [Boost](https://www.boost.org/)
+ - [Git](https://git-scm.com/)
+
+ Make sure that these dependencies are installed and can be found by CMake, see [this guide](https://cmake.org/cmake/help/book/mastering-cmake/chapter/Finding%20Packages.html) for more information.
+
+ Then the project can be configured and built as follows:
+ ```
+# Create build directory.
+mkdir build && cd build
+
+# Configure the build.
+cmake -DCMAKE_BUILD_TYPE:STRING={BUILD_TYPE} ../
+
+# Build the project.
+cmake --build . 
+ ```
+
+We use a superbuild to build all the dependencies not included in the requirements. The superbuild requires a build type (e.g. Debug, Release) to be set during configuration, which can be specified with `-DCMAKE_BUILD_TYPE:STRING={BUILD_TYPE}`. It is not necessary but advisable to use the Ninja generator for CMake. If installed, it can be specified during the configure step with `-G Ninja`.
+
+ Due to a harcoding of the build directory in `CMake/SuperBuild.cmake`, the build directory has to be in the root of the project and named "build". If a different build directory is desired, you would have to change the hardcoded path in this file. Subdirectories can be used, e.g., build/Release or build/Debug.
