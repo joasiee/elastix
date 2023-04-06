@@ -95,11 +95,6 @@ MultiMetricMultiResolutionRegistration<TElastix>::BeforeRegistration()
     makestring2 << "4:||Gradient" << std::setfill('0') << std::setw(width) << i << "||";
     this->AddTargetCellToIterationInfo(makestring2.str().c_str());
     this->GetIterationInfoAt(makestring2.str().c_str()) << std::showpoint << std::fixed;
-
-    std::ostringstream makestring3;
-    makestring3 << "Time" << std::setfill('0') << std::setw(width) << i << "[ms]";
-    this->AddTargetCellToIterationInfo(makestring3.str().c_str());
-    this->GetIterationInfoAt(makestring3.str().c_str()) << std::showpoint << std::fixed << std::setprecision(1);
   }
 
   /** Temporary? Use the multi-threaded version or not. */
@@ -144,10 +139,6 @@ MultiMetricMultiResolutionRegistration<TElastix>::AfterEachIteration()
     makestring2 << "4:||Gradient" << std::setfill('0') << std::setw(width) << i << "||";
     this->GetIterationInfoAt(makestring2.str().c_str())
       << this->GetCombinationMetric()->GetMetricDerivativeMagnitude(i);
-
-    std::ostringstream makestring3;
-    makestring3 << "Time" << std::setfill('0') << std::setw(width) << i << "[ms]";
-    this->GetIterationInfoAt(makestring3.str().c_str()) << this->GetCombinationMetric()->GetMetricComputationTime(i);
   }
 
   if (this->m_ShowExactMetricValue)

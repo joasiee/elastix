@@ -921,6 +921,7 @@ compute2DHyperVolume(individual ** pareto_front, int population_size)
   n = population_size;
   max_0 = worst_objective_values_in_elitist_archive[0] * REFERENCE_MULTIPLIER;
   max_1 = worst_objective_values_in_elitist_archive[1] * REFERENCE_MULTIPLIER;
+
   obj_0 = (double *)Malloc(n * sizeof(double));
   for (i = 0; i < n; i++)
     obj_0[i] = pareto_front[i]->objective_values[0];

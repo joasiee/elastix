@@ -29,7 +29,7 @@ MOGOMEA<TElastix>::BeforeRegistration(void)
   this->AddTargetCellToIterationInfo("3b:Hypervolume");
   this->AddTargetCellToIterationInfo("3c:DistMult");
 
-  this->GetIterationInfoAt("3a:|El.Archive|") << std::setw(16);
+  this->GetIterationInfoAt("3a:|El.Archive|") << std::left << std::setw(12) << std::setfill(' ');
   this->GetIterationInfoAt("3b:Hypervolume") << std::showpoint << std::fixed;
   this->GetIterationInfoAt("3c:DistMult") << std::showpoint << std::fixed;
 }
@@ -158,11 +158,12 @@ template <class TElastix>
 void
 MOGOMEA<TElastix>::AfterEachIteration(void)
 {
-  this->GetIterationInfoAt("3a:|El.Archive|") << MOGOMEA_UTIL::elitist_archive;
+  this->GetIterationInfoAt("3a:|El.Archive|")
+    << std::left << std::setw(12) << std::setfill(' ') << MOGOMEA_UTIL::elitist_archive_size;
   this->GetIterationInfoAt("3b:Hypervolume") << MOGOMEA_UTIL::last_hyper_volume;
   this->GetIterationInfoAt("3c:DistMult") << this->ComputeAverageDistributionMultiplier();
 
-    if (this->GetNewSamplesEveryIteration())
+  if (this->GetNewSamplesEveryIteration())
   {
     this->SelectNewSamples();
   }
@@ -177,6 +178,11 @@ MOGOMEA<TElastix>::UpdateMetricIterationOutput()
   {
     combinationMetric->SetMetricValue(MOGOMEA_UTIL::best_objective_values_in_elitist_archive[i], i);
   }
+
+  MOGOMEA_UTIL::computeApproximationSet();
+  MOGOMEA_UTIL::last_hyper_volume =
+    MOGOMEA_UTIL::compute2DHyperVolume(MOGOMEA_UTIL::approximation_set, MOGOMEA_UTIL::approximation_set_size);
+  MOGOMEA_UTIL::freeApproximationSet();
 }
 
 template <class TElastix>
