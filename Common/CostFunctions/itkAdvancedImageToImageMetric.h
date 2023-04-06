@@ -454,11 +454,11 @@ protected:
   double                            m_SamplingPercentage{ 0.05 };
   double                            m_MissedPixelPenalty{ MissedPixelPenalty };
   double                            m_MissedPixelConstraintThreshold{ 1.0 };
-  itkFOS                               m_FOS{ 0 };
+  itkFOS                            m_FOS{ 0 };
   mutable IntermediateResults       m_PartialEvaluationHelper;
   std::vector<bool>                 m_ParametersOutsideOfMask;
   mutable size_t                    m_NumberOfPixelEvaluations{ 0UL };
-  mutable double                    m_PctMissedPixels;
+  mutable double                    m_PctMissedPixels{ 0.0 };
 
   /** Variables for image derivative computation. */
   bool                              m_InterpolatorIsLinear{ false };

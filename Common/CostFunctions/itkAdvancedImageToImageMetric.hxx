@@ -1076,7 +1076,8 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::PreloadPartialEvaluation(
   const TransformParametersType & parameters,
   int                             fosIndex) const
 {
-  m_PartialEvaluationHelper = this->GetValuePartial(parameters, fosIndex);
+  if (m_PartialEvaluations)
+    m_PartialEvaluationHelper = this->GetValuePartial(parameters, fosIndex);
 }
 
 template <class TFixedImage, class TMovingImage>
