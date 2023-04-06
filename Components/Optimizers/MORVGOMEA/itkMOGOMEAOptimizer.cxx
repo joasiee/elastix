@@ -96,7 +96,7 @@ MOGOMEAOptimizer::initialize(void)
       base_number_of_mixing_components == 0 ? 1 + number_of_objectives : base_number_of_mixing_components;
     base_population_size = base_population_size == 0 ? 10 * base_number_of_mixing_components : base_population_size;
   }
-  
+
   maximum_no_improvement_stretch =
     maximum_no_improvement_stretch == 0
       ? (int)(2.0 + ((double)(25 + number_of_parameters)) / ((double)base_number_of_mixing_components))
@@ -149,6 +149,7 @@ MOGOMEAOptimizer::initialize(void)
 
   checkOptions();
   initializeMemory();
+  is_initialized = true;
 }
 
 void
@@ -219,6 +220,7 @@ MOGOMEAOptimizer::initializeMemory()
   objective_discretization = (double *)Malloc(number_of_objectives * sizeof(double));
   elitist_archive = (individual **)Malloc(elitist_archive_capacity * sizeof(individual *));
   best_objective_values_in_elitist_archive = (double *)Malloc(number_of_objectives * sizeof(double));
+  worst_objective_values_in_elitist_archive = (double *)Malloc(number_of_objectives * sizeof(double));
   elitist_archive_indices_inactive = (short *)Malloc(elitist_archive_capacity * sizeof(short));
 
   for (i = 0; i < elitist_archive_capacity; i++)
@@ -230,6 +232,7 @@ MOGOMEAOptimizer::initializeMemory()
   for (i = 0; i < number_of_objectives; i++)
   {
     best_objective_values_in_elitist_archive[i] = 1e+308;
+    worst_objective_values_in_elitist_archive[i] = -1e+308;
   }
 
   for (i = 0; i < maximum_number_of_populations; i++)
@@ -2661,6 +2664,7 @@ MOGOMEAOptimizer::ezilaitini(void)
   }
 
   ezilaitiniMemory();
+  is_initialized = false;
 }
 
 void
@@ -2704,6 +2708,7 @@ MOGOMEAOptimizer::ezilaitiniMemory(void)
 
   free(number_of_elitist_solutions_copied);
   free(best_objective_values_in_elitist_archive);
+  free(worst_objective_values_in_elitist_archive);
   free(elitist_archive_indices_inactive);
   free(objective_discretization);
 
@@ -2988,6 +2993,33 @@ MOGOMEAOptimizer::PrintSettings() const
   oss << "###################################################\n";
 
   elastix::log::info(oss.str());
+}
+
+MOGOMEAOptimizer::~MOGOMEAOptimizer()
+{
+  if (is_initialized)
+  {
+    ezilaitini();
+  }
+}
+
+double
+MOGOMEAOptimizer::ComputeAverageDistributionMultiplier() const
+{
+  double sum_multiplier = 0.0;
+  uint count = 0;
+  for (int i = 0; i < number_of_populations; i++)
+  {
+    for (int j = 0; j < number_of_mixing_components[i]; j++)
+    {
+      for (int k = 0; k < linkage_model[i][j]->length; k++)
+      {
+        sum_multiplier += distribution_multipliers[i][j][k];
+        count++;
+      }
+    }
+  }
+  return sum_multiplier / (double) count;
 }
 
 /**

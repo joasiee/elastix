@@ -270,7 +270,7 @@ updateElitistArchive(individual * ind)
   is_extreme_compared_to_archive = 0;
   all_to_be_removed = 1;
   insert_index = elitist_archive_size;
-  if (ind->constraint_value == 0)
+  if (ind->constraint_value * use_constraints == 0)
   {
     if (elitist_archive_size == 0)
     {
@@ -433,10 +433,14 @@ addToElitistArchive(individual * ind, int insert_index)
     elitist_archive_size++;
   elitist_archive_indices_inactive[insert_index] = 0;
 
-  if (ind->constraint_value == 0)
+  if (ind->constraint_value * use_constraints == 0)
     for (j = 0; j < number_of_objectives; j++)
+    {
       if (ind->objective_values[j] < best_objective_values_in_elitist_archive[j])
         best_objective_values_in_elitist_archive[j] = ind->objective_values[j];
+      if(ind->objective_values[j] > worst_objective_values_in_elitist_archive[j])
+        worst_objective_values_in_elitist_archive[j] = ind->objective_values[j];
+    }
 }
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
@@ -503,7 +507,8 @@ writeGenerationalStatisticsForOnePopulationWithoutDPFSMetric(int population_inde
 
   if (enable_hyper_volume)
   {
-    sprintf(string, " %11.3e", compute2DHyperVolume(approximation_set, approximation_set_size));
+    last_hyper_volume = compute2DHyperVolume(approximation_set, approximation_set_size);
+    sprintf(string, " %11.3e", last_hyper_volume);
     fputs(string, file);
   }
 
@@ -615,7 +620,10 @@ fclose( file );*/
     if (final)
       sprintf(string, (output_folder + "population_%03d_generation_final.dat").c_str(), population_index);
     else
-      sprintf(string, (output_folder + "population_%03d_generation_%05d.dat").c_str(), population_index, total_number_of_generations);
+      sprintf(string,
+              (output_folder + "population_%03d_generation_%05d.dat").c_str(),
+              population_index,
+              total_number_of_generations);
     file = fopen(string, "w");
 
     for (i = 0; i < population_sizes[population_index]; i++)
@@ -906,13 +914,13 @@ freeApproximationSet(void)
 double
 compute2DHyperVolume(individual ** pareto_front, int population_size)
 {
-  int    i, n, *sorted;
-  double max_0, max_1, *obj_0, area;
+  int           i, n, *sorted;
+  double        max_0, max_1, *obj_0, area;
   static double REFERENCE_MULTIPLIER = 1.1;
 
   n = population_size;
-  max_0 = 1.0;  // TODO: make this a parameter
-  max_1 = 50.0; // TODO: make this a parameter
+  max_0 = worst_objective_values_in_elitist_archive[0] * REFERENCE_MULTIPLIER;
+  max_1 = worst_objective_values_in_elitist_archive[1] * REFERENCE_MULTIPLIER;
   obj_0 = (double *)Malloc(n * sizeof(double));
   for (i = 0; i < n; i++)
     obj_0[i] = pareto_front[i]->objective_values[0];

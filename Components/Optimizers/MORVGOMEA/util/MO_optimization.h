@@ -107,8 +107,12 @@ inline short objective_discretization_in_effect, /* Whether the objective space 
 inline int elitist_archive_size,                 /* Number of solutions in the elitist archive. */
   elitist_archive_size_target,                   /* The lower bound of the targeted size of the elitist archive. */
   elitist_archive_capacity;                      /* Current memory allocation to elitist archive. */
-inline double *
-  best_objective_values_in_elitist_archive, /* The best objective values in the archive in the individual objectives. */
+inline double last_hyper_volume,                 /* The last hyper volume computed. */
+  *best_objective_values_in_elitist_archive, /* The best objective values in the archive in the individual objectives.
+                                              */
+  *worst_objective_values_in_elitist_archive,  /* The worst objective value in the archive in the
+                                              * first objective.
+                                              */
   *objective_discretization, /* The length of the objective discretization in each dimension (for the elitist archive).
                               */
   **ranks;                   /* Ranks of all solutions in all populations. */

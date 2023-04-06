@@ -66,7 +66,7 @@ public:
 
 protected:
   MOGOMEAOptimizer() = default;
-  ~MOGOMEAOptimizer() override = default;
+  ~MOGOMEAOptimizer() override;
 
   virtual MeasureType
   GetValueForMetric(int metric_index) const
@@ -79,6 +79,9 @@ protected:
   {
     itkExceptionMacro("UpdateMetricIterationOutput() not implemented");
   }
+
+  double
+  ComputeAverageDistributionMultiplier() const;
 
   StopConditionType m_StopCondition{ Unknown };
   std::vector<int>  m_BSplineGridRegionDimensions;
@@ -106,7 +109,7 @@ protected:
   short use_forced_improvement; /* Use forced improvement. */
 
   // Defined in ./util/*.h:
-  // random_seed, write_generational_statistics, write_generational_solutions, 
+  // random_seed, write_generational_statistics, write_generational_solutions,
   // number_of_populations, use_constraints, number_of_parameters;
 
 
@@ -255,8 +258,9 @@ private:
     ****full_covariance_matrix;
   clock_t               start, end;
   MOGOMEA_UTIL::FOS *** linkage_model;
+
+  bool is_initialized{ false };
   /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
-  short copying_solutions_from_archive = 0;
 };
 
 

@@ -8,6 +8,12 @@ template <class TElastix>
 void
 MOGOMEA<TElastix>::BeforeRegistration(void)
 {
+  const CombinationMetricType * combinationMetric = this->GetCostFunctionAsCombinationMetric();
+  if (combinationMetric)
+    MOGOMEA_UTIL::number_of_objectives = combinationMetric->GetNumberOfMetrics();
+  else
+    itkExceptionMacro("Need to use the CombinationImageToImageMetric for MOGOMEA.");
+
   const Configuration & configuration = Deref(Superclass2::GetConfiguration());
 
   int64_t randomSeed = 0;
@@ -19,11 +25,13 @@ MOGOMEA<TElastix>::BeforeRegistration(void)
 
   this->m_ImageDimension = this->GetElastix()->GetFixedImage()->GetImageDimension();
 
-  const CombinationMetricType * combinationMetric = this->GetCostFunctionAsCombinationMetric();
-  if (combinationMetric)
-    MOGOMEA_UTIL::number_of_objectives = combinationMetric->GetNumberOfMetrics();
-  else
-    itkExceptionMacro("Need to use the CombinationImageToImageMetric for MOGOMEA.");
+  this->AddTargetCellToIterationInfo("3a:|El.Archive|");
+  this->AddTargetCellToIterationInfo("3b:Hypervolume");
+  this->AddTargetCellToIterationInfo("3c:DistMult");
+
+  this->GetIterationInfoAt("3a:|El.Archive|") << std::setw(16);
+  this->GetIterationInfoAt("3b:Hypervolume") << std::showpoint << std::fixed;
+  this->GetIterationInfoAt("3c:DistMult") << std::showpoint << std::fixed;
 }
 
 template <class TElastix>
@@ -150,7 +158,11 @@ template <class TElastix>
 void
 MOGOMEA<TElastix>::AfterEachIteration(void)
 {
-  if (this->GetNewSamplesEveryIteration())
+  this->GetIterationInfoAt("3a:|El.Archive|") << MOGOMEA_UTIL::elitist_archive;
+  this->GetIterationInfoAt("3b:Hypervolume") << MOGOMEA_UTIL::last_hyper_volume;
+  this->GetIterationInfoAt("3c:DistMult") << this->ComputeAverageDistributionMultiplier();
+
+    if (this->GetNewSamplesEveryIteration())
   {
     this->SelectNewSamples();
   }
