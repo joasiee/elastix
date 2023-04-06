@@ -1944,6 +1944,7 @@ MOGOMEAOptimizer::evaluateIndividual(int population_index, int individual_index,
   }
   ind->constraint_value = constraint_value;
 
+  number_of_full_evaluations += FOS_index == -1 ? 1 : 0;
   number_of_evaluations++;
 }
 

@@ -1063,12 +1063,6 @@ getMilliSecondsRunning()
 }
 
 long
-getMilliSecondsRunningAfterInit()
-{
-  return (getMilliSecondsRunningSinceTimeStamp(timestamp_start_after_init));
-}
-
-long
 getMilliSecondsRunningSinceTimeStamp(long timestamp)
 {
   long timestamp_now, difference;

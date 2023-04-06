@@ -122,8 +122,6 @@ allPermutationsSubroutine(int from, int length, int * numberOfPermutations);
 long
 getMilliSecondsRunning();
 long
-getMilliSecondsRunningAfterInit();
-long
 getMilliSecondsRunningSinceTimeStamp(long timestamp);
 long
 getCurrentTimeStampInMilliSeconds();
@@ -154,8 +152,7 @@ matrixVectorPartialMultiplication(double ** matrix,
 
 inline int64_t random_seed, random_seed_changing; /* Internally used variable for randomly setting a random seed. */
 
-inline long timestamp_start,  /* The time stamp in milliseconds for when the program was started. */
-  timestamp_start_after_init; /* The time stamp in milliseconds for when the algorithm was started */
+inline long timestamp_start;  /* The time stamp in milliseconds for when the program was started. */
 
 inline double haveNextNextGaussian, /* Internally used variable for sampling the normal distribution. */
   nextNextGaussian;                 /* Internally used variable for sampling the normal distribution. */
