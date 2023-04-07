@@ -110,11 +110,7 @@ MOGOMEAOptimizer::initialize(void)
   distribution_multiplier_increase = 1.0 / distribution_multiplier_decrease;
   objective_discretization_in_effect = 0;
   delta_AMS = 2.0;
-  use_forced_improvement = 0;
-
   statistics_file_existed = 0;
-  write_generational_statistics = 0;
-  write_generational_solutions = 0;
 
   bspline_marginal_tree = 0;
   static_linkage_tree = 0;
@@ -145,10 +141,12 @@ MOGOMEAOptimizer::initialize(void)
   if (FOS_element_size == FOSType::Univariate)
     use_univariate_FOS = 1;
 
-  previous_params = ParametersType{ number_of_parameters };
+  param_helper = ParametersType{ number_of_parameters };
 
   checkOptions();
   initializeMemory();
+  this->InitializeRegistration();
+
   is_initialized = true;
 }
 
@@ -188,7 +186,7 @@ MOGOMEAOptimizer::initializeMemory()
   populations = (individual ***)Malloc(maximum_number_of_populations * sizeof(individual **));
   selection = (individual ***)Malloc(maximum_number_of_populations * sizeof(individual **));
   population_sizes = (int *)Malloc(maximum_number_of_populations * sizeof(int));
-  populations_terminated = (short *)Malloc(maximum_number_of_populations * sizeof(short));
+  populations_terminated = (bool *)Malloc(maximum_number_of_populations * sizeof(bool));
   selection_sizes = (int *)Malloc(maximum_number_of_populations * sizeof(int));
   cluster_sizes = (int *)Malloc(maximum_number_of_populations * sizeof(int));
   cluster_index_for_population = (int **)Malloc(maximum_number_of_populations * sizeof(int *));
@@ -221,7 +219,7 @@ MOGOMEAOptimizer::initializeMemory()
   elitist_archive = (individual **)Malloc(elitist_archive_capacity * sizeof(individual *));
   best_objective_values_in_elitist_archive = (double *)Malloc(number_of_objectives * sizeof(double));
   worst_objective_values_in_elitist_archive = (double *)Malloc(number_of_objectives * sizeof(double));
-  elitist_archive_indices_inactive = (short *)Malloc(elitist_archive_capacity * sizeof(short));
+  elitist_archive_indices_inactive = (bool *)Malloc(elitist_archive_capacity * sizeof(bool));
 
   for (i = 0; i < elitist_archive_capacity; i++)
   {
@@ -395,9 +393,15 @@ MOGOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
   for (i = 0; i < population_sizes[population_index]; i++)
   {
     const double scaleFactor = randomRealUniform01() * 0.25;
+    const int    mixing_index = i % number_of_mixing_components[population_index];
+
+    const ParametersType & base_parameters =
+      m_CurrentResolution == 0 ? this->GetCurrentPosition() : this->GetPositionForMixingComponent(mixing_index);
     for (j = 0; j < number_of_parameters; j++)
+    {
       populations[population_index][i]->parameters[j] =
-        this->m_CurrentPosition[j] + (i > 0) * scaleFactor * random1DNormalUnit();
+        base_parameters[j] + (i > 0) * scaleFactor * random1DNormalUnit();
+    }
 
     evaluateIndividual(population_index, i, -1);
     updateElitistArchive(populations[population_index][i]);
@@ -413,8 +417,8 @@ MOGOMEAOptimizer::initializePopulationAndFitnessValues(int population_index)
 void
 MOGOMEAOptimizer::computeRanks(int population_index)
 {
-  short **domination_matrix, is_illegal;
-  int     i, j, k, *being_dominated_count, rank, number_of_solutions_ranked, *indices_in_this_rank;
+  bool **domination_matrix, is_illegal;
+  int    i, j, k, *being_dominated_count, rank, number_of_solutions_ranked, *indices_in_this_rank;
 
   for (i = 0; i < population_sizes[population_index]; i++)
   {
@@ -440,9 +444,9 @@ MOGOMEAOptimizer::computeRanks(int population_index)
 
   /* The domination matrix stores for each solution i
    * whether it dominates solution j, i.e. domination[i][j] = 1. */
-  domination_matrix = (short **)Malloc(population_sizes[population_index] * sizeof(short *));
+  domination_matrix = (bool **)Malloc(population_sizes[population_index] * sizeof(bool *));
   for (i = 0; i < population_sizes[population_index]; i++)
-    domination_matrix[i] = (short *)Malloc(population_sizes[population_index] * sizeof(short));
+    domination_matrix[i] = (bool *)Malloc(population_sizes[population_index] * sizeof(bool));
 
   being_dominated_count = (int *)Malloc(population_sizes[population_index] * sizeof(int));
 
@@ -548,7 +552,7 @@ MOGOMEAOptimizer::computeObjectiveRanges(int population_index)
 /**
  * Returns 1 if termination should be enforced, 0 otherwise.
  */
-short
+bool
 MOGOMEAOptimizer::checkTerminationConditionAllPopulations(void)
 {
   int i;
@@ -572,7 +576,7 @@ MOGOMEAOptimizer::checkTerminationConditionAllPopulations(void)
   return (0);
 }
 
-short
+bool
 MOGOMEAOptimizer::checkTerminationConditionOnePopulation(int population_index)
 {
   if (number_of_populations == 0)
@@ -597,7 +601,7 @@ MOGOMEAOptimizer::checkTerminationConditionOnePopulation(int population_index)
  * Returns 1 if the maximum number of evaluations
  * has been reached, 0 otherwise.
  */
-short
+bool
 MOGOMEAOptimizer::checkNumberOfEvaluationsTerminationCondition(void)
 {
   if (number_of_evaluations >= maximum_number_of_evaluations && maximum_number_of_evaluations > 0)
@@ -613,7 +617,7 @@ MOGOMEAOptimizer::checkNumberOfEvaluationsTerminationCondition(void)
  * Checks whether the distribution multiplier for any mixture component
  * has become too small (0.5).
  */
-short
+bool
 MOGOMEAOptimizer::checkDistributionMultiplierTerminationCondition(int population_index)
 {
   int i, j;
@@ -630,7 +634,7 @@ MOGOMEAOptimizer::checkDistributionMultiplierTerminationCondition(int population
   return (1);
 }
 
-short
+bool
 MOGOMEAOptimizer::checkTimeLimitTerminationCondition(void)
 {
   if (maximum_number_of_seconds > 0 && getTimer() > maximum_number_of_seconds)
@@ -784,7 +788,7 @@ MOGOMEAOptimizer::completeSelectionBasedOnDiversityInLastSelectedRank(int   popu
   return (selected_indices);
 }
 
-short
+bool
 MOGOMEAOptimizer::checkNumberOfGenerationsTerminationCondition(void)
 {
   if ((total_number_of_generations >= maximum_number_of_generations) && (maximum_number_of_generations > 0))
@@ -932,8 +936,8 @@ MOGOMEAOptimizer::makePopulation(int population_index)
 void
 MOGOMEAOptimizer::estimateParameters(int population_index)
 {
-  short *clusters_now_already_registered, *clusters_previous_already_registered;
-  int    i, j, k, m, q, i_min, j_min, *selection_indices_of_leaders, number_of_dimensions, number_to_select,
+  bool *clusters_now_already_registered, *clusters_previous_already_registered;
+  int   i, j, k, m, q, i_min, j_min, *selection_indices_of_leaders, number_of_dimensions, number_to_select,
     **selection_indices_of_cluster_members_before_registration, *k_means_cluster_sizes,
     **selection_indices_of_cluster_members_k_means, *nearest_neighbour_choice_best, number_of_clusters_left_to_register,
     *sorted, *r_nearest_neighbours_now, *r_nearest_neighbours_previous, number_of_clusters_to_register_by_permutation,
@@ -1377,9 +1381,8 @@ MOGOMEAOptimizer::estimateParameters(int population_index)
     */
     ////// END DISTANCE COMPUTATION
 
-    clusters_now_already_registered = (short *)Malloc(number_of_mixing_components[population_index] * sizeof(short));
-    clusters_previous_already_registered =
-      (short *)Malloc(number_of_mixing_components[population_index] * sizeof(short));
+    clusters_now_already_registered = (bool *)Malloc(number_of_mixing_components[population_index] * sizeof(bool));
+    clusters_previous_already_registered = (bool *)Malloc(number_of_mixing_components[population_index] * sizeof(bool));
     for (i = 0; i < number_of_mixing_components[population_index]; i++)
     {
       clusters_now_already_registered[i] = 0;
@@ -1782,6 +1785,9 @@ MOGOMEAOptimizer::copyBestSolutionsToPopulation(int population_index, double ** 
           continue;
         copyIndividual(elitist_archive[elitist_archive_indices_per_cluster[i][j]],
                        populations[population_index][index]);
+        evaluateIndividual(population_index, index, -1);
+        this->SavePartialEvaluation(index);
+        
         populations[population_index][index]->NIS = 0;
         skipped++;
       }
@@ -1814,6 +1820,8 @@ MOGOMEAOptimizer::copyBestSolutionsToPopulation(int population_index, double ** 
           continue;
         copyIndividual(elitist_archive[elitist_archive_indices_per_cluster[i][diverse_indices[j]]],
                        populations[population_index][index]);
+        evaluateIndividual(population_index, index, -1);
+        this->SavePartialEvaluation(index);
         populations[population_index][index]->NIS = 0;
         skipped++;
       }
@@ -1927,16 +1935,15 @@ void
 MOGOMEAOptimizer::evaluateIndividual(int population_index, int individual_index, int FOS_index)
 {
   int                   i;
-  static ParametersType parameters{ number_of_parameters };
 
   individual * ind = populations[population_index][individual_index];
-  parameters.MoveDataPointer(ind->parameters);
+  param_helper.MoveDataPointer(ind->parameters);
   MeasureType constraint_value = NumericTraits<MeasureType>::Zero;
 
   if (m_PartialEvaluations)
-    this->GetValue(parameters, FOS_index, individual_index, constraint_value);
+    this->GetValue(param_helper, FOS_index, individual_index, constraint_value);
   else
-    this->GetValue(parameters, constraint_value);
+    this->GetValue(param_helper, constraint_value);
 
   for (i = 0; i < number_of_objectives; i++)
   {
@@ -1946,6 +1953,32 @@ MOGOMEAOptimizer::evaluateIndividual(int population_index, int individual_index,
 
   number_of_full_evaluations += FOS_index == -1 ? 1 : 0;
   number_of_evaluations++;
+
+  // Enable this to check if the partial evaluations are done correctly
+  // this->getValueSanityCheck(ind);
+}
+
+void
+MOGOMEAOptimizer::getValueSanityCheck(individual * ind)
+{
+  MeasureType constraint_value = NumericTraits<MeasureType>::Zero;
+  this->GetValue(param_helper, -1, 0, constraint_value);
+
+  for (int i = 0; i < number_of_objectives; i++)
+  {
+    if (abs(ind->objective_values[i] - this->GetValueForMetric(i)) > 1e-6)
+    {
+      itkWarningMacro("getValueSanityCheck: objective value mismatch for objective "
+                      << i << ". Partial: " << ind->objective_values[i] << " Full: " << this->GetValueForMetric(i)
+                      << ".");
+    }
+  }
+
+  if (abs(ind->constraint_value - constraint_value) > 1e-6)
+  {
+    itkWarningMacro("getValueSanityCheck: constraint value mismatch. Partial: " << ind->constraint_value << " Full: "
+                                                                                << constraint_value << ".");
+  }
 }
 
 void
@@ -2030,8 +2063,8 @@ MOGOMEAOptimizer::applyDistributionMultipliers(int population_index)
 void
 MOGOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulationAndUpdateElitistArchive(int population_index)
 {
-  short cluster_failure, all_multipliers_leq_one, *generational_improvement, any_improvement, *is_improved_by_AMS;
-  int   i, j, k, m, oj, c, *order;
+  bool cluster_failure, all_multipliers_leq_one, *generational_improvement, any_improvement, *is_improved_by_AMS;
+  int  i, j, k, m, oj, c, *order;
 
   if (m_PartialEvaluations && (number_of_generations[population_index] + 1) % 50 == 0)
     evaluateCompletePopulation(population_index);
@@ -2039,7 +2072,7 @@ MOGOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulationAndUpdateElitis
   for (i = 0; i < number_of_mixing_components[population_index]; i++)
     computeParametersForSampling(population_index, i);
 
-  generational_improvement = (short *)Malloc(population_sizes[population_index] * sizeof(short));
+  generational_improvement = (bool *)Malloc(population_sizes[population_index] * sizeof(bool));
 
   for (i = 0; i < population_sizes[population_index]; i++)
     generational_improvement[i] = 0;
@@ -2071,7 +2104,7 @@ MOGOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulationAndUpdateElitis
     c = 0;
     if (number_of_generations[population_index] > 0)
     {
-      is_improved_by_AMS = (short *)Malloc(population_sizes[population_index] * sizeof(short));
+      is_improved_by_AMS = (bool *)Malloc(population_sizes[population_index] * sizeof(bool));
       for (i = 0; i < population_sizes[population_index]; i++)
         is_improved_by_AMS[i] = 0;
       for (i = 0; i < population_sizes[population_index]; i++)
@@ -2160,10 +2193,10 @@ MOGOMEAOptimizer::generateAndEvaluateNewSolutionsToFillPopulationAndUpdateElitis
   free(generational_improvement);
 }
 
-short
+bool
 MOGOMEAOptimizer::applyAMS(int population_index, int individual_index, int cluster_index)
 {
-  short  improvement;
+  bool   improvement;
   double delta_AMS, *solution_backup;
   int    m;
 
@@ -2205,7 +2238,7 @@ MOGOMEAOptimizer::applyAMS(int population_index, int individual_index, int clust
 }
 
 void
-MOGOMEAOptimizer::applyForcedImprovements(int population_index, int individual_index, short * improved)
+MOGOMEAOptimizer::applyForcedImprovements(int population_index, int individual_index, bool * improved)
 {
   int          i, j, k, m, cluster_index, donor_index, objective_index, *order, num_indices, *indices;
   double       distance, distance_smallest, *objective_values_scaled, alpha, *FI_backup;
@@ -2250,8 +2283,8 @@ MOGOMEAOptimizer::applyForcedImprovements(int population_index, int individual_i
 
       copyIndividualWithoutParameters(populations[population_index][i], ind_backup);
 
-      previous_params.MoveDataPointer(populations[population_index][i]->parameters);
-      this->PreloadPartialEvaluation(previous_params, order[m]);
+      param_helper.MoveDataPointer(populations[population_index][i]->parameters);
+      this->PreloadPartialEvaluation(param_helper, order[m]);
 
       for (j = 0; j < num_indices; j++)
       {
@@ -2261,7 +2294,7 @@ MOGOMEAOptimizer::applyForcedImprovements(int population_index, int individual_i
           (1.0 - alpha) * elitist_archive[donor_index]->parameters[indices[j]];
       }
 
-      evaluateIndividual(population_index, individual_index, order[m]);
+      evaluateIndividual(population_index, i, order[m]);
 
       if (single_objective_clusters[population_index][cluster_index] != -1)
       {
@@ -2298,11 +2331,9 @@ MOGOMEAOptimizer::applyForcedImprovements(int population_index, int individual_i
   if (!(*improved))
   {
     copyIndividual(elitist_archive[donor_index], populations[population_index][i]);
+    evaluateIndividual(population_index, i, -1);
   }
-  else
-  {
-    this->SavePartialEvaluation(individual_index);
-  }
+  this->SavePartialEvaluation(i);
   updateElitistArchive(populations[population_index][i]);
   ezilaitiniIndividual(ind_backup);
 
@@ -2375,7 +2406,7 @@ MOGOMEAOptimizer::generateNewPartialSolutionFromFOSElement(int population_index,
  * Generates and returns a single new solution by drawing
  * a single sample from a specified model.
  */
-short
+bool
 MOGOMEAOptimizer::generateNewSolutionFromFOSElement(int population_index,
                                                     int cluster_index,
                                                     int FOS_index,
@@ -2383,7 +2414,7 @@ MOGOMEAOptimizer::generateNewSolutionFromFOSElement(int population_index,
 {
   int          j, m, *indices, num_indices, *touched_indices, num_touched_indices;
   double *     result, *solution_AMS, *individual_backup;
-  short        improvement;
+  bool         improvement;
   individual * ind_backup;
   ind_backup = initializeIndividual();
 
@@ -2396,6 +2427,9 @@ MOGOMEAOptimizer::generateNewSolutionFromFOSElement(int population_index,
   solution_AMS = (double *)Malloc(num_indices * sizeof(double));
   individual_backup = (double *)Malloc(num_touched_indices * sizeof(double));
 
+  param_helper.MoveDataPointer(populations[population_index][individual_index]->parameters);
+  this->PreloadPartialEvaluation(param_helper, FOS_index);
+
   result = generateNewPartialSolutionFromFOSElement(population_index, cluster_index, FOS_index);
 
   for (j = 0; j < num_touched_indices; j++)
@@ -2404,9 +2438,6 @@ MOGOMEAOptimizer::generateNewSolutionFromFOSElement(int population_index,
     populations[population_index][individual_index]->parameters[indices[j]] = result[j];
 
   copyIndividualWithoutParameters(populations[population_index][individual_index], ind_backup);
-
-  previous_params.MoveDataPointer(populations[population_index][individual_index]->parameters);
-  this->PreloadPartialEvaluation(previous_params, FOS_index);
 
   if ((number_of_generations[population_index] > 0) &&
       (samples_current_cluster <= 0.5 * tau * num_individuals_in_cluster[population_index][cluster_index]))
@@ -2460,7 +2491,7 @@ MOGOMEAOptimizer::generateNewSolutionFromFOSElement(int population_index,
 void
 MOGOMEAOptimizer::adaptDistributionMultipliers(int population_index, int cluster_index, int FOS_index)
 {
-  short  improvementForFOSElement;
+  bool   improvementForFOSElement;
   double st_dev_ratio;
 
   improvementForFOSElement =
@@ -2496,7 +2527,7 @@ MOGOMEAOptimizer::adaptDistributionMultipliers(int population_index, int cluster
  * The standard-deviation ratio required by the SDR-AVS
  * mechanism is computed and returned in the pointer variable.
  */
-short
+bool
 MOGOMEAOptimizer::generationalImprovementForOneClusterForFOSElement(int      population_index,
                                                                     int      cluster_index,
                                                                     int      FOS_index,
@@ -2583,14 +2614,14 @@ MOGOMEAOptimizer::getStDevRatioForOneClusterForFOSElement(int      population_in
  * Returns whether a solution has the
  * hallmark of an improvement (1 for yes, 0 for no).
  */
-short
+bool
 MOGOMEAOptimizer::solutionWasImprovedByFOSElement(int population_index,
                                                   int cluster_index,
                                                   int FOS_index,
                                                   int individual_index)
 {
-  short result;
-  int   i, j;
+  bool result;
+  int  i, j;
 
   result = 0;
 
@@ -2953,9 +2984,12 @@ MOGOMEAOptimizer::ResumeOptimization()
 void
 MOGOMEAOptimizer::StopOptimization()
 {
-  // Update position for next resolution
-  ParametersType mean_position{ mean_vectors[0][0], number_of_parameters }; // TODO:Set pos for each mixing component
-  this->SetCurrentPosition(mean_position);
+  // set positions for each mixing component for initialization of population in next resolution.
+  for (int i = 0; i < number_of_mixing_components[0]; i++)
+  {
+    param_helper.MoveDataPointer(mean_vectors[0][i]);
+    this->SetPositionForMixingComponent(i, param_helper);
+  }
 
   InvokeEvent(EndEvent());
 }
@@ -3008,7 +3042,7 @@ double
 MOGOMEAOptimizer::ComputeAverageDistributionMultiplier() const
 {
   double sum_multiplier = 0.0;
-  uint count = 0;
+  uint   count = 0;
   for (int i = 0; i < number_of_populations; i++)
   {
     for (int j = 0; j < number_of_mixing_components[i]; j++)
@@ -3020,7 +3054,7 @@ MOGOMEAOptimizer::ComputeAverageDistributionMultiplier() const
       }
     }
   }
-  return sum_multiplier / (double) count;
+  return sum_multiplier / (double)count;
 }
 
 /**

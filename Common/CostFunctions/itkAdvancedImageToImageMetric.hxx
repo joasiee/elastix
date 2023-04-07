@@ -1065,7 +1065,7 @@ AdvancedImageToImageMetric<TFixedImage, TMovingImage>::GetValuePartial(const Par
 {
   IntermediateResults result{ 1 };
   (void)fosIndex;
-  itkDebugMacro(<< Self::GetNameOfClass() << ": Missing partial evaluations implementation.");
+  itkWarningMacro(<< Self::GetNameOfClass() << ": Missing partial evaluations implementation.");
   result[0] = this->GetValue(parameters);
   return result;
 }

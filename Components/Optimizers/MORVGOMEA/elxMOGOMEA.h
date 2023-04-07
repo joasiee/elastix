@@ -33,6 +33,8 @@ public:
   using MovingImageType = typename ElastixType::MovingImageType;
   using MovingPointType = typename MovingImageType::PointType;
   using MovingPointValueType = typename MovingPointType::ValueType;
+  
+  using Superclass1::ParametersType;
   using Superclass1::MeasureType;
 
   using AdvancedMetricType = itk::AdvancedImageToImageMetric<FixedImageType, MovingImageType>;
@@ -59,6 +61,15 @@ protected:
 
   void
   UpdateMetricIterationOutput() override;
+
+  void
+  InitializeRegistration() override;
+
+  void
+  SetPositionForMixingComponent(int component_index, const ParametersType & parameters);
+
+  const ParametersType &
+  GetPositionForMixingComponent(int component_index) const override;
 
   MeasureType
   GetValueForMetric(int metric_index) const override;

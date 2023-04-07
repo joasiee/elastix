@@ -15,6 +15,7 @@
 
 namespace itk
 {
+using namespace MOGOMEA_UTIL;
 class ITKOptimizers_EXPORT MOGOMEAOptimizer : public SingleValuedNonLinearOptimizer
 {
 public:
@@ -80,12 +81,30 @@ protected:
     itkExceptionMacro("UpdateMetricIterationOutput() not implemented");
   }
 
+  virtual void
+  InitializeRegistration()
+  {
+    itkExceptionMacro("InitializeRegistration() not implemented");
+  }
+
+  virtual void
+  SetPositionForMixingComponent(int component_index, const ParametersType & parameters)
+  {
+    itkExceptionMacro("SetPositionForMixingComponent() not implemented");
+  }
+
+  virtual const ParametersType &
+  GetPositionForMixingComponent(int component_index) const
+  {
+    itkExceptionMacro("GetPositionForMixingComponent() not implemented");
+  }
+
   double
   ComputeAverageDistributionMultiplier() const;
 
   StopConditionType m_StopCondition{ Unknown };
   std::vector<int>  m_BSplineGridRegionDimensions;
-  unsigned int      m_ImageDimension;
+  unsigned int      m_ImageDimension, m_CurrentResolution;
   bool              m_PartialEvaluations;
 
   // Parameters
@@ -106,7 +125,7 @@ protected:
     maximum_number_of_seconds;          /* The maximum number of seconds. */
 
   // Options
-  short use_forced_improvement; /* Use forced improvement. */
+  bool use_forced_improvement; /* Use forced improvement. */
 
   // Defined in ./util/*.h:
   // random_seed, write_generational_statistics, write_generational_solutions,
@@ -136,17 +155,17 @@ private:
   computeRanks(int population_index);
   void
   computeObjectiveRanges(int population_index);
-  short
+  bool
   checkTerminationConditionAllPopulations(void);
-  short
+  bool
   checkTerminationConditionOnePopulation(int population_index);
-  short
+  bool
   checkNumberOfEvaluationsTerminationCondition(void);
-  short
+  bool
   checkNumberOfGenerationsTerminationCondition(void);
-  short
+  bool
   checkDistributionMultiplierTerminationCondition(int population_index);
-  short
+  bool
   checkTimeLimitTerminationCondition(void);
   void
   makeSelection(int population_index);
@@ -168,12 +187,14 @@ private:
   estimateFullCovarianceMatrixML(int population_index, int cluster_index);
   void
   initializeFOS(int population_index, int cluster_index);
-  MOGOMEA_UTIL::FOS *
+  FOS *
   learnLinkageTreeRVGOMEA(int population_index, int cluster_index);
   void
-  inheritDistributionMultipliers(MOGOMEA_UTIL::FOS * new_FOS, MOGOMEA_UTIL::FOS * prev_FOS, double * multipliers);
+  inheritDistributionMultipliers(FOS * new_FOS, FOS * prev_FOS, double * multipliers);
   void
   evaluateIndividual(int population_index, int individual_index, int FOS_index);
+  void
+  getValueSanityCheck(individual * ind);
   void
   evaluateCompletePopulation(int population_index);
   void
@@ -182,13 +203,13 @@ private:
   applyDistributionMultipliers(int population_index);
   void
   generateAndEvaluateNewSolutionsToFillPopulationAndUpdateElitistArchive(int population_index);
-  short
+  bool
   applyAMS(int population_index, int individual_index, int cluster_index);
   void
-  applyForcedImprovements(int population_index, int individual_index, short * improved);
+  applyForcedImprovements(int population_index, int individual_index, bool * improved);
   void
   computeParametersForSampling(int population_index, int cluster_index);
-  short
+  bool
   generateNewSolutionFromFOSElement(int population_index, int cluster_index, int FOS_index, int individual_index);
   double *
   generateNewPartialSolutionFromFOSElement(int population_index, int cluster_index, int FOS_index);
@@ -200,14 +221,14 @@ private:
   generationalStepAllPopulations();
   void
   generationalStepAllPopulationsRecursiveFold(int population_index_smallest, int population_index_biggest);
-  short
+  bool
   generationalImprovementForOneClusterForFOSElement(int      population_index,
                                                     int      cluster_index,
                                                     int      FOS_index,
                                                     double * st_dev_ratio);
   double
   getStDevRatioForOneClusterForFOSElement(int population_index, int cluster_index, int FOS_index, double * parameters);
-  short
+  bool
   solutionWasImprovedByFOSElement(int population_index, int cluster_index, int FOS_index, int individual_index);
   void
   ezilaitini(void);
@@ -222,7 +243,7 @@ private:
   void
   ezilaitiniParametersForSampling(int population_index);
 
-  ParametersType previous_params;
+  ParametersType param_helper;
 
   int **cluster_index_for_population, *selection_sizes, /* The size of the selection. */
     *cluster_sizes,                                     /* The size of the clusters. */
@@ -257,7 +278,7 @@ private:
                                                         for every FOS element. */
     ****full_covariance_matrix;
   clock_t               start, end;
-  MOGOMEA_UTIL::FOS *** linkage_model;
+  FOS *** linkage_model;
 
   bool is_initialized{ false };
   /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/

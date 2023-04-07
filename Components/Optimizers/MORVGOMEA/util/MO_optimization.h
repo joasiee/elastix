@@ -56,12 +56,12 @@ typedef struct individual
 } individual;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-= Section Header Functions -=-=-=-=-=-=-=-=-=-=-=-=*/
-short
+bool
 constraintParetoDominates(double * objective_values_x,
                           double   constraint_value_x,
                           double * objective_values_y,
                           double   constraint_value_y);
-short
+bool
 paretoDominates(double * objective_values_x, double * objective_values_y);
 void
 updateElitistArchive(individual * ind);
@@ -71,14 +71,14 @@ void
 addToElitistArchive(individual * ind, int insert_index);
 void
 adaptObjectiveDiscretization(void);
-short
+bool
 sameObjectiveBox(double * objective_values_a, double * objective_values_b);
 void
 writeGenerationalStatisticsForOnePopulation(int population_index);
 void
 writeGenerationalStatisticsForOnePopulationWithoutDPFSMetric(int population_index);
 void
-writeGenerationalSolutions(short final);
+writeGenerationalSolutions(bool final);
 void
 computeApproximationSet(void);
 void
@@ -100,8 +100,8 @@ inline int number_of_objectives, current_population_index,
   approximation_set_size; /* Number of solutions in the final answer (the approximation set). */
 inline bool  use_constraints;
 inline long  number_of_full_evaluations;
-inline short statistics_file_existed;
-inline short objective_discretization_in_effect, /* Whether the objective space is currently being discretized for the
+inline bool statistics_file_existed;
+inline bool objective_discretization_in_effect, /* Whether the objective space is currently being discretized for the
                                              elitist archive. */
   *elitist_archive_indices_inactive;             /* Elitist archive solutions flagged for removal. */
 inline int elitist_archive_size,                 /* Number of solutions in the elitist archive. */

@@ -44,7 +44,7 @@ namespace MOGOMEA_UTIL
 {
 
 /*-=-=-=-=-=-=-=-=-=-=-=- Section Global Variables -=-=-=-=-=-=-=-=-=-=-=-=-*/
-inline short *populations_terminated, /* Which populations have been terminated. */
+inline bool *populations_terminated, /* Which populations have been terminated. */
   evaluations_for_statistics_hit,     /* Can be used to write statistics after a certain number of evaluations. */
   write_generational_statistics,      /* Whether to compute and write statistics every generation (0 = no). */
   write_generational_solutions;
@@ -53,6 +53,6 @@ inline int number_of_populations, /* The number of parallel populations that ini
   *number_of_generations, /* The current generation count of a subgeneration in the interleaved multi-start scheme. */
   total_number_of_generations,       /* The overarching generation count in the interleaved multi-start scheme. */
   *population_sizes;                 /* The size of the population. */
-inline double number_of_evaluations; /* The current number of times a function evaluation was performed. */
+inline size_t number_of_evaluations; /* The current number of times a function evaluation was performed. */
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 } // namespace MOGOMEA_UTIL

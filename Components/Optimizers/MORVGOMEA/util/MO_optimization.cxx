@@ -48,13 +48,13 @@ namespace MOGOMEA_UTIL
  * - x is feasible and y is not, or
  * - x and y are both feasible and x Pareto dominates y
  */
-short
+bool
 constraintParetoDominates(double * objective_values_x,
                           double   constraint_value_x,
                           double * objective_values_y,
                           double   constraint_value_y)
 {
-  short result;
+  bool result;
 
   result = 0;
 
@@ -85,10 +85,10 @@ constraintParetoDominates(double * objective_values_x,
 /**
  * Returns 1 if x Pareto-dominates y, 0 otherwise.
  */
-short
+bool
 paretoDominates(double * objective_values_x, double * objective_values_y)
 {
-  short strict;
+  bool strict;
   int   i, result;
 
   result = 1;
@@ -220,7 +220,7 @@ adaptObjectiveDiscretization(void)
 /**
  * Returns 1 if two solutions share the same objective box, 0 otherwise.
  */
-short
+bool
 sameObjectiveBox(double * objective_values_a, double * objective_values_b)
 {
   int i;
@@ -264,7 +264,7 @@ sameObjectiveBox(double * objective_values_a, double * objective_values_b)
 void
 updateElitistArchive(individual * ind)
 {
-  short is_dominated_itself, is_extreme_compared_to_archive, all_to_be_removed;
+  bool is_dominated_itself, is_extreme_compared_to_archive, all_to_be_removed;
   int   i, j, *indices_dominated, number_of_solutions_dominated, insert_index;
 
   is_extreme_compared_to_archive = 0;
@@ -394,7 +394,7 @@ void
 addToElitistArchive(individual * ind, int insert_index)
 {
   int           i, j, elitist_archive_capacity_new, elitist_archive_size_new;
-  short *       elitist_archive_indices_inactive_new;
+  bool *       elitist_archive_indices_inactive_new;
   individual ** elitist_archive_new;
 
   if (insert_index >= elitist_archive_capacity)
@@ -402,7 +402,7 @@ addToElitistArchive(individual * ind, int insert_index)
     elitist_archive_size_new = 0;
     elitist_archive_capacity_new = elitist_archive_capacity * 2 + 1;
     elitist_archive_new = (individual **)Malloc(elitist_archive_capacity_new * sizeof(individual *));
-    elitist_archive_indices_inactive_new = (short *)Malloc(elitist_archive_capacity_new * sizeof(short));
+    elitist_archive_indices_inactive_new = (bool *)Malloc(elitist_archive_capacity_new * sizeof(bool));
     for (i = 0; i < elitist_archive_capacity_new; i++)
     {
       elitist_archive_new[i] = initializeIndividual();
@@ -467,7 +467,7 @@ writeGenerationalStatisticsForOnePopulationWithoutDPFSMetric(int population_inde
 {
   int    i;
   char   string[1000];
-  short  enable_hyper_volume;
+  bool  enable_hyper_volume;
   FILE * file;
 
   enable_hyper_volume = 1;
@@ -496,7 +496,7 @@ writeGenerationalStatisticsForOnePopulationWithoutDPFSMetric(int population_inde
   else
     file = fopen((output_folder + "statistics.dat").c_str(), "a");
 
-  sprintf(string, "  %10d %11d %11.3f", total_number_of_generations, (int)number_of_evaluations, getTimer());
+  sprintf(string, "  %10d %11d %11.3f", total_number_of_generations, number_of_evaluations, getTimer());
   fputs(string, file);
 
   for (i = 0; i < number_of_objectives; i++)
@@ -536,7 +536,7 @@ writeGenerationalStatisticsForOnePopulationWithoutDPFSMetric(int population_inde
  * cluster_xxxxx_generation_xxxxx.dat    : the individual clusters
  */
 void
-writeGenerationalSolutions(short final)
+writeGenerationalSolutions(bool final)
 {
   int    i, j, population_index;
   char   string[1000];
@@ -734,7 +734,7 @@ if( total_number_of_generations > 0 && !final )
 void
 computeApproximationSet(void)
 {
-  short dominated, same_objectives;
+  bool dominated, same_objectives;
   int   i, j, k, *indices_of_rank0, *population_indices_of_rank0, rank0_size, non_dominated_size,
     population_rank0_and_elitist_archive_size, *rank0_contribution, tot_rank0_size;
   double **population_rank0_and_elitist_archive, **population_rank0_and_elitist_archive_objective_values,

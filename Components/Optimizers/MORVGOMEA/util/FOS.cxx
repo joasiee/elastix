@@ -589,7 +589,7 @@ int *
 hungarianAlgorithm(int ** similarity_matrix, int dim)
 {
   int    i, j, x, y, root, *q, wr, rd, cx, cy, ty, max_match, *lx, *ly, *xy, *yx, *slack, *slackx, *prev, delta;
-  short *S, *T, terminated;
+  bool *S, *T, terminated;
 
   lx = (int *)Malloc(dim * sizeof(int));
   ly = (int *)Malloc(dim * sizeof(int));
@@ -598,8 +598,8 @@ hungarianAlgorithm(int ** similarity_matrix, int dim)
   slack = (int *)Malloc(dim * sizeof(int));
   slackx = (int *)Malloc(dim * sizeof(int));
   prev = (int *)Malloc(dim * sizeof(int));
-  S = (short *)Malloc(dim * sizeof(short));
-  T = (short *)Malloc(dim * sizeof(short));
+  S = (bool *)Malloc(dim * sizeof(bool));
+  T = (bool *)Malloc(dim * sizeof(bool));
 
   root = -1;
   max_match = 0;
@@ -741,7 +741,7 @@ hungarianAlgorithm(int ** similarity_matrix, int dim)
 void
 hungarianAlgorithmAddToTree(int     x,
                             int     prevx,
-                            short * S,
+                            bool * S,
                             int *   prev,
                             int *   slack,
                             int *   slackx,

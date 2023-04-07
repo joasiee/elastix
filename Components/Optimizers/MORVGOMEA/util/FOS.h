@@ -83,7 +83,7 @@ hungarianAlgorithm(int ** similarity_matrix, int dim);
 void
 hungarianAlgorithmAddToTree(int     x,
                             int     prevx,
-                            short * S,
+                            bool * S,
                             int *   prev,
                             int *   slack,
                             int *   slackx,

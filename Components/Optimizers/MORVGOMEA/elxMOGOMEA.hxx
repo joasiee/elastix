@@ -38,7 +38,8 @@ template <class TElastix>
 void
 MOGOMEA<TElastix>::BeforeEachResolution(void)
 {
-  unsigned int          level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
+  unsigned int level = static_cast<unsigned int>(this->m_Registration->GetAsITKBaseType()->GetCurrentLevel());
+  this->m_CurrentResolution = level;
   const Configuration & configuration = Deref(Superclass2::GetConfiguration());
 
   MOGOMEA_UTIL::write_generational_statistics = 0;
@@ -183,6 +184,27 @@ MOGOMEA<TElastix>::UpdateMetricIterationOutput()
   MOGOMEA_UTIL::last_hyper_volume =
     MOGOMEA_UTIL::compute2DHyperVolume(MOGOMEA_UTIL::approximation_set, MOGOMEA_UTIL::approximation_set_size);
   MOGOMEA_UTIL::freeApproximationSet();
+}
+
+template <class TElastix>
+void
+MOGOMEA<TElastix>::InitializeRegistration()
+{
+  this->m_Registration->GetAsITKBaseType()->InitializeForMOGOMEA(this->base_number_of_mixing_components);
+}
+
+template <class TElastix>
+void
+MOGOMEA<TElastix>::SetPositionForMixingComponent(int component_index, const ParametersType & parameters)
+{
+  this->m_Registration->GetAsITKBaseType()->SetPositionForMixingComponent(component_index, parameters);
+}
+
+template <class TElastix>
+auto
+MOGOMEA<TElastix>::GetPositionForMixingComponent(int component_index) const -> const ParametersType &
+{
+  return this->m_Registration->GetAsITKBaseType()->GetPositionForMixingComponentOfNextLevel(component_index);
 }
 
 template <class TElastix>
