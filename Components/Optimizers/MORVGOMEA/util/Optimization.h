@@ -46,7 +46,6 @@ namespace MOGOMEA_UTIL
 /*-=-=-=-=-=-=-=-=-=-=-=- Section Global Variables -=-=-=-=-=-=-=-=-=-=-=-=-*/
 inline bool *populations_terminated, /* Which populations have been terminated. */
   evaluations_for_statistics_hit,     /* Can be used to write statistics after a certain number of evaluations. */
-  write_generational_statistics,      /* Whether to compute and write statistics every generation (0 = no). */
   write_generational_solutions;
 inline unsigned int number_of_parameters; /* The number of parameters to be optimized. */
 inline int number_of_populations, /* The number of parallel populations that initially partition the search space. */

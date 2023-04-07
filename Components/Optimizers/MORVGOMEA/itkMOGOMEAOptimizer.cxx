@@ -218,7 +218,6 @@ MOGOMEAOptimizer::initializeMemory()
   objective_discretization = (double *)Malloc(number_of_objectives * sizeof(double));
   elitist_archive = (individual **)Malloc(elitist_archive_capacity * sizeof(individual *));
   best_objective_values_in_elitist_archive = (double *)Malloc(number_of_objectives * sizeof(double));
-  worst_objective_values_in_elitist_archive = (double *)Malloc(number_of_objectives * sizeof(double));
   elitist_archive_indices_inactive = (bool *)Malloc(elitist_archive_capacity * sizeof(bool));
 
   for (i = 0; i < elitist_archive_capacity; i++)
@@ -230,7 +229,6 @@ MOGOMEAOptimizer::initializeMemory()
   for (i = 0; i < number_of_objectives; i++)
   {
     best_objective_values_in_elitist_archive[i] = 1e+308;
-    worst_objective_values_in_elitist_archive[i] = -1e+308;
   }
 
   for (i = 0; i < maximum_number_of_populations; i++)
@@ -563,6 +561,9 @@ MOGOMEAOptimizer::checkTerminationConditionAllPopulations(void)
   if (checkNumberOfEvaluationsTerminationCondition())
     return (1);
 
+  if (checkNumberOfPixelEvaluationTerminationCondition())
+    return (1);
+
   if (checkNumberOfGenerationsTerminationCondition())
     return (1);
 
@@ -570,8 +571,10 @@ MOGOMEAOptimizer::checkTerminationConditionAllPopulations(void)
     return (1);
 
   for (i = 0; i < number_of_populations; i++)
+  {
     if (checkDistributionMultiplierTerminationCondition(i))
       populations_terminated[i] = 1;
+  }
 
   return (0);
 }
@@ -583,6 +586,9 @@ MOGOMEAOptimizer::checkTerminationConditionOnePopulation(int population_index)
     return (0);
 
   if (checkNumberOfEvaluationsTerminationCondition())
+    return (1);
+
+  if (checkNumberOfPixelEvaluationTerminationCondition())
     return (1);
 
   if (checkNumberOfGenerationsTerminationCondition())
@@ -613,6 +619,19 @@ MOGOMEAOptimizer::checkNumberOfEvaluationsTerminationCondition(void)
   return (0);
 }
 
+bool
+MOGOMEAOptimizer::checkNumberOfPixelEvaluationTerminationCondition(void)
+{
+  if (maximum_number_of_pixel_evaluations > 0 &&
+      this->GetNumberOfPixelEvaluations() > maximum_number_of_pixel_evaluations)
+  {
+    this->m_StopCondition = StopConditionType::MaximumNumberOfPixelEvaluationsTermination;
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * Checks whether the distribution multiplier for any mixture component
  * has become too small (0.5).
@@ -625,8 +644,10 @@ MOGOMEAOptimizer::checkDistributionMultiplierTerminationCondition(int population
   for (i = 0; i < number_of_mixing_components[population_index]; i++)
   {
     for (j = 0; j < linkage_model[population_index][i]->length; j++)
+    {
       if (distribution_multipliers[population_index][i][j] > 5e-1)
         return (0);
+    }
   }
 
   m_StopCondition = StopConditionType::DistributionMultiplierTermination;
@@ -1423,11 +1444,13 @@ MOGOMEAOptimizer::estimateParameters(int population_index)
       if (i_min == -1)
       {
         for (i = 0; i < number_of_mixing_components[population_index]; i++)
+        {
           if (clusters_now_already_registered[i] == 0)
           {
             i_min = i;
             break;
           }
+        }
       }
 
       /* Find the r nearest clusters of one of the two far-apart clusters that haven't been registered yet */
@@ -1687,6 +1710,7 @@ MOGOMEAOptimizer::estimateParameters(int population_index)
           cov = 0.0;
 
           for (m = 0; m < cluster_sizes[population_index]; m++)
+          {
             cov +=
               (selection[population_index][selection_indices_of_cluster_members[population_index][cluster_index][m]]
                  ->parameters[vara] -
@@ -1694,6 +1718,7 @@ MOGOMEAOptimizer::estimateParameters(int population_index)
               (selection[population_index][selection_indices_of_cluster_members[population_index][cluster_index][m]]
                  ->parameters[varb] -
                mean_vectors[population_index][cluster_index][varb]);
+          }
 
           cov /= (double)cluster_sizes[population_index];
           decomposed_covariance_matrices[population_index][cluster_index][i][j][k] = cov;
@@ -1787,7 +1812,7 @@ MOGOMEAOptimizer::copyBestSolutionsToPopulation(int population_index, double ** 
                        populations[population_index][index]);
         evaluateIndividual(population_index, index, -1);
         this->SavePartialEvaluation(index);
-        
+
         populations[population_index][index]->NIS = 0;
         skipped++;
       }
@@ -1934,7 +1959,7 @@ MOGOMEAOptimizer::learnLinkageTreeRVGOMEA(int population_index, int cluster_inde
 void
 MOGOMEAOptimizer::evaluateIndividual(int population_index, int individual_index, int FOS_index)
 {
-  int                   i;
+  int i;
 
   individual * ind = populations[population_index][individual_index];
   param_helper.MoveDataPointer(ind->parameters);
@@ -2018,11 +2043,13 @@ MOGOMEAOptimizer::estimateFullCovarianceMatrixML(int population_index, int clust
     {
       cov = 0.0;
       for (k = 0; k < cluster_sizes[population_index]; k++)
+      {
         cov +=
           (selection[population_index][selection_indices_of_cluster_members[population_index][i][k]]->parameters[j] -
            mean_vectors[population_index][i][j]) *
           (selection[population_index][selection_indices_of_cluster_members[population_index][i][k]]->parameters[q] -
            mean_vectors[population_index][i][q]);
+      }
       cov /= (double)cluster_sizes[population_index];
 
       full_covariance_matrix[population_index][i][j][q] = cov;
@@ -2036,8 +2063,10 @@ MOGOMEAOptimizer::evaluateCompletePopulation(int population_index)
 {
   int i;
   for (i = 0; i < population_sizes[population_index]; i++)
+  {
     evaluateIndividual(population_index, i, -1);
-  this->SavePartialEvaluation(i);
+    this->SavePartialEvaluation(i);
+  }
 }
 
 /**
@@ -2740,7 +2769,6 @@ MOGOMEAOptimizer::ezilaitiniMemory(void)
 
   free(number_of_elitist_solutions_copied);
   free(best_objective_values_in_elitist_archive);
-  free(worst_objective_values_in_elitist_archive);
   free(elitist_archive_indices_inactive);
   free(objective_discretization);
 
@@ -2920,6 +2948,7 @@ MOGOMEAOptimizer::generationalStepAllPopulationsRecursiveFold(int population_ind
         makePopulation(population_index);
 
         (number_of_generations[population_index])++;
+        total_number_of_generations++;
 
         this->UpdateMetricIterationOutput();
         this->InvokeEvent(IterationEvent());
@@ -2948,19 +2977,14 @@ MOGOMEAOptimizer::runAllPopulations(void)
       initializeNewPopulation();
     }
 
-    computeApproximationSet();
-
-    if (write_generational_statistics)
-      writeGenerationalStatisticsForOnePopulation(number_of_populations - 1);
-
     if (write_generational_solutions)
+    {
+      computeApproximationSet();
       writeGenerationalSolutions(0);
-
-    freeApproximationSet();
+      freeApproximationSet();
+    }
 
     generationalStepAllPopulations();
-
-    total_number_of_generations++;
   }
 }
 
@@ -2991,6 +3015,8 @@ MOGOMEAOptimizer::StopOptimization()
     this->SetPositionForMixingComponent(i, param_helper);
   }
 
+  ezilaitini();
+
   InvokeEvent(EndEvent());
 }
 
@@ -3006,7 +3032,6 @@ MOGOMEAOptimizer::PrintSettings() const
   std::ostringstream oss;
   oss << "### Settings ######################################\n";
   oss << "#\n";
-  oss << "# Statistics writing every generation: " << (write_generational_statistics ? "enabled" : "disabled") << "\n";
   oss << "# Population file writing            : " << (write_generational_solutions ? "enabled" : "disabled") << "\n";
   oss << "#\n";
   oss << "###################################################\n";
@@ -3057,12 +3082,50 @@ MOGOMEAOptimizer::ComputeAverageDistributionMultiplier() const
   return sum_multiplier / (double)count;
 }
 
+void
+MOGOMEAOptimizer::WriteApproximationResults()
+{
+  // write to file in output_folder + "approximation/results.csv"
+  std::string   filename = output_folder + "approximation/results.csv";
+  std::ofstream file(filename.c_str(), std::ios::out | std::ios::app);
+
+  file << "id,";
+  for (int i = 0; i < number_of_objectives; i++)
+  {
+    file << "obj_" << i << ",";
+  }
+  file << "constraint\n";
+
+  for (int i = 0; i < approximation_set_size; i++)
+  {
+    file << i << ",";
+    for (int j = 0; j < number_of_objectives; j++)
+    {
+      file << approximation_set[i]->objective_values[j] << ",";
+    }
+    file << approximation_set[i]->constraint_value << "\n";
+  }
+
+  file.close();
+
+  ParametersType parameters{ number_of_parameters };
+
+  for (int i = 0; i < approximation_set_size; ++i)
+  {
+    parameters.MoveDataPointer(approximation_set[i]->parameters);
+    this->SetCurrentPosition(parameters);
+    this->WriteTransformParam(i);
+  }
+}
+
 /**
  * Runs the MIDEA.
  */
 void
 MOGOMEAOptimizer::run(void)
 {
+  // mcheck(NULL);
+
   initializeRandomNumberGenerator();
 
   initialize();
@@ -3073,11 +3136,11 @@ MOGOMEAOptimizer::run(void)
 
   computeApproximationSet();
 
-  writeGenerationalStatisticsForOnePopulation(number_of_populations - 1);
+  // writeGenerationalSolutions(1);
+  WriteApproximationResults();
 
-  writeGenerationalSolutions(1);
   freeApproximationSet();
 
-  ezilaitini();
+  this->StopOptimization();
 }
 } // namespace itk

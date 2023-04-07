@@ -36,6 +36,7 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-= Section Includes -=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 #include "./MO_optimization.h"
+#include "MO_optimization.h"
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 namespace MOGOMEA_UTIL
@@ -438,90 +439,12 @@ addToElitistArchive(individual * ind, int insert_index)
     {
       if (ind->objective_values[j] < best_objective_values_in_elitist_archive[j])
         best_objective_values_in_elitist_archive[j] = ind->objective_values[j];
-      if(ind->objective_values[j] > worst_objective_values_in_elitist_archive[j])
-        worst_objective_values_in_elitist_archive[j] = ind->objective_values[j];
     }
 }
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=- Section Output =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
-
-/**
- * Writes (appends) statistics about the current generation to a
- * file named "statistics.dat".
- */
-void
-writeGenerationalStatisticsForOnePopulation(int population_index)
-{
-  writeGenerationalStatisticsForOnePopulationWithoutDPFSMetric(population_index);
-}
-
-/**
- * Writes (appends) statistics about the current generation
- * in case of multiple objectives when the D_{Pf->S} metric
- * cannot be computed for the selected objective functions.
- */
-void
-writeGenerationalStatisticsForOnePopulationWithoutDPFSMetric(int population_index)
-{
-  int    i;
-  char   string[1000];
-  bool  enable_hyper_volume;
-  FILE * file;
-
-  enable_hyper_volume = 1;
-  file = NULL;
-  // if( total_number_of_generations == 0 && statistics_file_existed == 0 )
-  if (statistics_file_existed == 0)
-  {
-    file = fopen((output_folder + "statistics.dat").c_str(), "w");
-
-    sprintf(string, "# Generation  Evaluations  Time (s)");
-    fputs(string, file);
-    for (i = 0; i < number_of_objectives; i++)
-    {
-      sprintf(string, "  Best_obj[%d]", i);
-      fputs(string, file);
-    }
-    if (enable_hyper_volume)
-    {
-      sprintf(string, "  Hypervolume(approx. set)");
-      fputs(string, file);
-    }
-    sprintf(string, "  [ Pop.index  Subgen.  Pop.size  ]  #Real.Evals\n");
-    fputs(string, file);
-    statistics_file_existed = 1;
-  }
-  else
-    file = fopen((output_folder + "statistics.dat").c_str(), "a");
-
-  sprintf(string, "  %10d %11d %11.3f", total_number_of_generations, number_of_evaluations, getTimer());
-  fputs(string, file);
-
-  for (i = 0; i < number_of_objectives; i++)
-  {
-    sprintf(string, " %11.3e", best_objective_values_in_elitist_archive[i]);
-    fputs(string, file);
-  }
-
-  if (enable_hyper_volume)
-  {
-    last_hyper_volume = compute2DHyperVolume(approximation_set, approximation_set_size);
-    sprintf(string, " %11.3e", last_hyper_volume);
-    fputs(string, file);
-  }
-
-  sprintf(string,
-          "  [ %4d %6d %10d ]  %11ld\n",
-          population_index,
-          number_of_generations[population_index],
-          population_sizes[population_index],
-          number_of_full_evaluations);
-  fputs(string, file);
-
-  fclose(file);
-}
 
 /**
  * Writes the solutions to various files. The filenames
@@ -544,9 +467,9 @@ writeGenerationalSolutions(bool final)
 
   // Approximation set
   if (final)
-    sprintf(string, (output_folder + "approximation_set_generation_final.dat").c_str());
+    sprintf(string, (output_folder + "solutions/approximation_set_generation_final.dat").c_str());
   else
-    sprintf(string, (output_folder + "approximation_set_generation_%05d.dat").c_str(), total_number_of_generations);
+    sprintf(string, (output_folder + "solutions/approximation_set_generation_%05d.dat").c_str(), total_number_of_generations);
   file = fopen(string, "w");
 
   for (i = 0; i < approximation_set_size; i++)
@@ -618,10 +541,10 @@ fclose( file );*/
   for (population_index = 0; population_index < number_of_populations; population_index++)
   {
     if (final)
-      sprintf(string, (output_folder + "population_%03d_generation_final.dat").c_str(), population_index);
+      sprintf(string, (output_folder + "solutions/population_%03d_generation_final.dat").c_str(), population_index);
     else
       sprintf(string,
-              (output_folder + "population_%03d_generation_%05d.dat").c_str(),
+              (output_folder + "solutions/population_%03d_generation_%05d.dat").c_str(),
               population_index,
               total_number_of_generations);
     file = fopen(string, "w");
@@ -895,6 +818,24 @@ computeApproximationSet(void)
   free(population_rank0_and_elitist_archive_constraint_values);
 }
 
+double *
+computeWorstObjectiveValuesInSet(individual ** set)
+{
+  double * worst_objective_values;
+  int      i, j;
+
+  worst_objective_values = (double *)Malloc(number_of_objectives * sizeof(double));
+  for (i = 0; i < number_of_objectives; i++)
+    worst_objective_values[i] = set[0]->objective_values[i];
+  for (i = 1; i < approximation_set_size; i++)
+    for (j = 0; j < number_of_objectives; j++)
+      if (set[i]->objective_values[j] > worst_objective_values[j])
+        worst_objective_values[j] = set[i]->objective_values[j];
+
+  return worst_objective_values;
+}
+
+
 /**
  * Frees the memory allocated for the approximation set.
  * The memory is only needed for reporting the current
@@ -915,12 +856,13 @@ double
 compute2DHyperVolume(individual ** pareto_front, int population_size)
 {
   int           i, n, *sorted;
-  double        max_0, max_1, *obj_0, area;
+  double        max_0, max_1, *obj_0, area, *worst_objective_values;
   static double REFERENCE_MULTIPLIER = 1.1;
 
   n = population_size;
-  max_0 = worst_objective_values_in_elitist_archive[0] * REFERENCE_MULTIPLIER;
-  max_1 = worst_objective_values_in_elitist_archive[1] * REFERENCE_MULTIPLIER;
+  worst_objective_values = computeWorstObjectiveValuesInSet(pareto_front);
+  max_0 = worst_objective_values[0] * REFERENCE_MULTIPLIER;
+  max_1 = worst_objective_values[1] * REFERENCE_MULTIPLIER;
 
   obj_0 = (double *)Malloc(n * sizeof(double));
   for (i = 0; i < n; i++)
@@ -935,6 +877,7 @@ compute2DHyperVolume(individual ** pareto_front, int population_size)
 
   free(obj_0);
   free(sorted);
+  free(worst_objective_values);
 
   return area;
 }

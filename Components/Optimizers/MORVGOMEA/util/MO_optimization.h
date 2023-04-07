@@ -74,13 +74,11 @@ adaptObjectiveDiscretization(void);
 bool
 sameObjectiveBox(double * objective_values_a, double * objective_values_b);
 void
-writeGenerationalStatisticsForOnePopulation(int population_index);
-void
-writeGenerationalStatisticsForOnePopulationWithoutDPFSMetric(int population_index);
-void
 writeGenerationalSolutions(bool final);
 void
 computeApproximationSet(void);
+double *
+computeWorstObjectiveValuesInSet(individual ** set);
 void
 freeApproximationSet(void);
 double
@@ -98,20 +96,17 @@ copyIndividualWithoutParameters(individual * source, individual * destination);
 /*-=-=-=-=-=-=-=-=-=-=-=- Section Global Variables -=-=-=-=-=-=-=-=-=-=-=-=-*/
 inline int number_of_objectives, current_population_index,
   approximation_set_size; /* Number of solutions in the final answer (the approximation set). */
-inline bool  use_constraints;
-inline long  number_of_full_evaluations;
+inline bool use_constraints;
+inline long number_of_full_evaluations;
 inline bool statistics_file_existed;
 inline bool objective_discretization_in_effect, /* Whether the objective space is currently being discretized for the
                                              elitist archive. */
-  *elitist_archive_indices_inactive;             /* Elitist archive solutions flagged for removal. */
-inline int elitist_archive_size,                 /* Number of solutions in the elitist archive. */
-  elitist_archive_size_target,                   /* The lower bound of the targeted size of the elitist archive. */
-  elitist_archive_capacity;                      /* Current memory allocation to elitist archive. */
-inline double last_hyper_volume,                 /* The last hyper volume computed. */
+  *elitist_archive_indices_inactive;            /* Elitist archive solutions flagged for removal. */
+inline int elitist_archive_size,                /* Number of solutions in the elitist archive. */
+  elitist_archive_size_target,                  /* The lower bound of the targeted size of the elitist archive. */
+  elitist_archive_capacity;                     /* Current memory allocation to elitist archive. */
+inline double last_hyper_volume,                /* The last hyper volume computed. */
   *best_objective_values_in_elitist_archive, /* The best objective values in the archive in the individual objectives.
-                                              */
-  *worst_objective_values_in_elitist_archive,  /* The worst objective value in the archive in the
-                                              * first objective.
                                               */
   *objective_discretization, /* The length of the objective discretization in each dimension (for the elitist archive).
                               */

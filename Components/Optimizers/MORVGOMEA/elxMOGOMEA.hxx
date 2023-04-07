@@ -20,8 +20,9 @@ MOGOMEA<TElastix>::BeforeRegistration(void)
   configuration.ReadParameter(randomSeed, "RandomSeed", 0, false);
   MOGOMEA_UTIL::random_seed_changing = static_cast<int64_t>(randomSeed);
 
-  MOGOMEA_UTIL::output_folder = configuration.GetCommandLineArgument("-out") + "generational/";
-  std::filesystem::create_directories(MOGOMEA_UTIL::output_folder);
+  MOGOMEA_UTIL::output_folder = configuration.GetCommandLineArgument("-out");
+  std::filesystem::create_directories(MOGOMEA_UTIL::output_folder + "solutions/");
+  std::filesystem::create_directories(MOGOMEA_UTIL::output_folder + "approximation/");
 
   this->m_ImageDimension = this->GetElastix()->GetFixedImage()->GetImageDimension();
 
@@ -42,15 +43,11 @@ MOGOMEA<TElastix>::BeforeEachResolution(void)
   this->m_CurrentResolution = level;
   const Configuration & configuration = Deref(Superclass2::GetConfiguration());
 
-  MOGOMEA_UTIL::write_generational_statistics = 0;
-  configuration.ReadParameter(
-    MOGOMEA_UTIL::write_generational_statistics, "WriteGenerationalStatistics", this->GetComponentLabel(), level, 0);
-
   MOGOMEA_UTIL::write_generational_solutions = 0;
   configuration.ReadParameter(
     MOGOMEA_UTIL::write_generational_solutions, "WriteGenerationalSolutions", this->GetComponentLabel(), level, 0);
 
-  MOGOMEA_UTIL::elitist_archive_size_target = 0;
+  MOGOMEA_UTIL::elitist_archive_size_target = 500;
   configuration.ReadParameter(
     MOGOMEA_UTIL::elitist_archive_size_target, "ElitistArchiveSizeTarget", this->GetComponentLabel(), level, 0);
 
@@ -99,7 +96,11 @@ MOGOMEA<TElastix>::BeforeEachResolution(void)
 
   this->maximum_number_of_generations = 0;
   configuration.ReadParameter(
-    this->maximum_number_of_generations, "MaximumNumberOfGenerations", this->GetComponentLabel(), level, 0);
+    this->maximum_number_of_generations, "MaximumNumberOfIterations", this->GetComponentLabel(), level, 0);
+
+  this->maximum_number_of_pixel_evaluations = 0;
+  configuration.ReadParameter(
+    this->maximum_number_of_pixel_evaluations, "MaximumNumberOfPixelEvaluations", this->GetComponentLabel(), level, 0);
 
   this->number_of_subgenerations_per_population_factor = 8;
   configuration.ReadParameter(this->number_of_subgenerations_per_population_factor,
@@ -213,5 +214,12 @@ MOGOMEA<TElastix>::GetValueForMetric(int metric_index) const -> MeasureType
 {
   const CombinationMetricType * combinationMetric = this->GetCostFunctionAsCombinationMetric();
   return combinationMetric->GetMetricValue(metric_index);
+}
+template <class TElastix>
+void
+MOGOMEA<TElastix>::WriteTransformParam(int index) const
+{
+  std::string filename = MOGOMEA_UTIL::output_folder + "approximation/" + std::to_string(index) + "_TransformParameters.txt";
+  this->GetElastix()->CreateTransformParameterFile(filename, false);
 }
 } // namespace elastix

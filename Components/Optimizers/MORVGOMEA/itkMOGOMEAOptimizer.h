@@ -6,6 +6,8 @@
 #include <time.h>
 #include <sys/time.h>
 
+// #include <mcheck.h>
+
 #include "elxIncludes.h"
 #include "itkSingleValuedNonLinearOptimizer.h"
 
@@ -99,8 +101,23 @@ protected:
     itkExceptionMacro("GetPositionForMixingComponent() not implemented");
   }
 
+  virtual void
+  WriteTransformParam(int index) const
+  {
+    itkExceptionMacro("WriteRegistrationResult() not implemented");
+  }
+
+  virtual size_t
+  GetNumberOfPixelEvaluations() const
+  {
+    itkExceptionMacro("GetNumberOfPixelEvaluations() not implemented");
+  }
+
   double
   ComputeAverageDistributionMultiplier() const;
+
+  void
+  WriteApproximationResults();
 
   StopConditionType m_StopCondition{ Unknown };
   std::vector<int>  m_BSplineGridRegionDimensions;
@@ -120,15 +137,16 @@ protected:
     maximum_number_of_populations,      /* The maximum number of populations. */
     number_of_subgenerations_per_population_factor; /* The number of subgenerations per population factor. */
 
-  size_t maximum_number_of_evaluations, /* The maximum number of evaluations. */
-    maximum_number_of_generations,      /* The maximum number of generations. */
-    maximum_number_of_seconds;          /* The maximum number of seconds. */
+  size_t maximum_number_of_evaluations,  /* The maximum number of evaluations. */
+    maximum_number_of_pixel_evaluations, /* The maximum number of pixel evaluations. */
+    maximum_number_of_generations,       /* The maximum number of generations. */
+    maximum_number_of_seconds;           /* The maximum number of seconds. */
 
   // Options
   bool use_forced_improvement; /* Use forced improvement. */
 
   // Defined in ./util/*.h:
-  // random_seed, write_generational_statistics, write_generational_solutions,
+  // random_seed, write_generational_solutions,
   // number_of_populations, use_constraints, number_of_parameters;
 
 
@@ -161,6 +179,8 @@ private:
   checkTerminationConditionOnePopulation(int population_index);
   bool
   checkNumberOfEvaluationsTerminationCondition(void);
+  bool
+  checkNumberOfPixelEvaluationTerminationCondition(void);
   bool
   checkNumberOfGenerationsTerminationCondition(void);
   bool
@@ -277,7 +297,7 @@ private:
     *****decomposed_cholesky_factors_lower_triangle, /* The unique lower triangular matrix of the Cholesky factorization
                                                         for every FOS element. */
     ****full_covariance_matrix;
-  clock_t               start, end;
+  clock_t start, end;
   FOS *** linkage_model;
 
   bool is_initialized{ false };

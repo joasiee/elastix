@@ -74,6 +74,17 @@ protected:
   MeasureType
   GetValueForMetric(int metric_index) const override;
 
+  void
+  WriteTransformParam(int index) const override;
+
+  size_t
+  GetNumberOfPixelEvaluations() const override
+  {
+    using MetricType = typename ElastixType::MetricBaseType::AdvancedMetricType;
+    MetricType * testPtr = dynamic_cast<MetricType *>(this->GetElastix()->GetElxMetricBase()->GetAsITKBaseType());
+    return testPtr ? testPtr->GetNumberOfPixelEvaluations() : 0;
+  }
+
 private:
   elxOverrideGetSelfMacro;
 

@@ -15,7 +15,5 @@ ADD_ELXCOMPONENT(MOGOMEA
 )
 
 # target_link_libraries(MOGOMEA
-#   BLAS::BLAS
-#   LAPACK::LAPACK
-#   Boost::boost
+#   mcheck
 # )

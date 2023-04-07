@@ -6,7 +6,6 @@ from typing import List
 
 import pandas as pd
 
-from thesispy.elastix_wrapper import time_limit
 from thesispy.elastix_wrapper.parameters import Parameters
 from thesispy.experiments.instance import (
     get_instance,
@@ -27,29 +26,28 @@ def execute_elastix(param_files: List[Path], out_dir: Path, params: Parameters, 
     param_files_args = [["-p", str(param_file)] for param_file in param_files]
     param_files_args = [item for sublist in param_files_args for item in sublist]
 
-    with time_limit(params["MaxTimeSeconds"]):
-        args = [
-            ELASTIX,
-            *param_files_args,
-            "-f",
-            str(params.fixed_path),
-            "-m",
-            str(params.moving_path),
-            "-out",
-            str(out_dir),
-            "-threads",
-            os.environ["OMP_NUM_THREADS"],
-        ]
-        if params.fixedmask_path and params["UseMask"]:
-            args += ["-fMask", str(params.fixedmask_path)]
+    args = [
+        ELASTIX,
+        *param_files_args,
+        "-f",
+        str(params.fixed_path),
+        "-m",
+        str(params.moving_path),
+        "-out",
+        str(out_dir),
+        "-threads",
+        os.environ["OMP_NUM_THREADS"],
+    ]
+    if params.fixedmask_path and params["UseMask"]:
+        args += ["-fMask", str(params.fixedmask_path)]
 
-        output = subprocess.DEVNULL if suppress_stdout else None
-        env = None
-        if params["Optimizer"] == "AdaptiveStochasticGradientDescent":
-            env = os.environ.copy()
-            env["OMP_WAIT_POLICY"] = "PASSIVE"
+    output = subprocess.DEVNULL if suppress_stdout else None
+    env = None
+    if params["Optimizer"] == "AdaptiveStochasticGradientDescent":
+        env = os.environ.copy()
+        env["OMP_WAIT_POLICY"] = "PASSIVE"
 
-        subprocess.run(args, check=True, stdout=output, env=env)
+    subprocess.run(args, check=True, stdout=output, env=env)
 
 
 def generate_transformed_points(
