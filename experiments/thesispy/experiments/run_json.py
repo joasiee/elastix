@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+path_root = Path(__file__).parents[2]
+sys.path.append(str(path_root))
+
 from thesispy.elastix_wrapper.parameters import Parameters
 from thesispy.elastix_wrapper.runner import run
 from thesispy.definitions import ROOT_DIR
