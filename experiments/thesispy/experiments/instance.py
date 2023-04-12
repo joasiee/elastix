@@ -45,6 +45,16 @@ class RunResult:
     bending_energy: float = None
     transform_params: Path = None
 
+@dataclass
+class MORunResult:
+    """The result of a registration run with MO-RV-GOMEA."""
+    instance: Instance
+    approximation_set: List[RunResult] = None
+    objective_values: np.ndarray = None
+    constraint_values: np.ndarray = None
+    number_of_objectives: int = None
+    
+
 
 def get_np_array(img_path: Path):
     img = sitk.ReadImage(str(img_path.resolve()))

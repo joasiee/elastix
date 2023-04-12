@@ -7,3 +7,4 @@ wandb
 .venv
 tinydb
 notebooks/img
+json_queue/*.json

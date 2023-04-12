@@ -500,4 +500,7 @@ class Parameters:
 
 if __name__ == "__main__":
     params = Parameters.from_base(mesh_size=4, seed=1).gomea().regularize(0.01).instance(Collection.SYNTHETIC, 1)
-    params.write(Path())
+    # params.write(Path())
+    # dump to json file
+    with open("params.json", "w") as f:
+        json.dump(params.params, f, indent=4)

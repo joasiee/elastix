@@ -3,6 +3,7 @@ import os
 import subprocess
 import logging
 from typing import List
+import numpy as np
 
 import pandas as pd
 
@@ -12,6 +13,7 @@ from thesispy.experiments.instance import (
     get_np_array,
     read_deformed_lms,
     RunResult,
+    MORunResult,
     read_controlpoints,
     read_transform_params,
 )
@@ -130,7 +132,7 @@ def execute_visualize(out_dir: Path):
         subprocess.run([visualizer, str((out_dir / "result.0.mhd").resolve())], cwd=str(out_dir.resolve()))
 
 
-def get_run_result(collection: Collection, instance_id: int, transform_params: Path):
+def get_run_result(collection: Collection, instance_id: int, transform_params: Path) -> RunResult:
     """Given a collection, instance and transform parameters, return the run result.
 
     Using the transform, the landmarks are deformed, the moving image is transformed, 
@@ -174,5 +176,27 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
         run_result.bending_energy = final_evals.loc["bending_energy"].values[0]
 
     run_result.transform_params = transform_params.absolute().resolve()
+
+    return run_result
+
+
+def get_run_result_mo(collection: Collection, instance_id: int, output_folder: Path) -> MORunResult:
+    approx_folder = output_folder / "approximation"
+    instance = get_instance(collection, instance_id)
+    results_csv = np.loadtxt(approx_folder / "results.csv", delimiter=",", skiprows=1)
+
+    run_result = MORunResult(instance)
+    run_result.approximation_set = []
+    run_result.objective_values = results_csv[:, 1:-1]
+    run_result.constraint_values = results_csv[:, -1]
+    run_result.number_of_objectives = run_result.objective_values.shape[1]
+
+
+
+    for file in sorted(approx_folder.iterdir(), key=lambda x: int(x.name.split("_")[0]) if x.name != "results.csv" else 0):
+        if file.name != "results.csv":
+            run_result_ = RunResult(instance)
+            run_result_.transform_params = file.absolute().resolve()
+            run_result.approximation_set.append(run_result_)
 
     return run_result

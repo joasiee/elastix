@@ -88,8 +88,8 @@ def run(
 if __name__ == "__main__":
     params_main = (
         Parameters.from_base(mesh_size=4, seed=1)
-        .mogomea(mixing_components=10, pop_size=200)
-        .stopping_criteria(100)
+        .mogomea(mixing_components=10, pop_size=500, elitist_archive_size_target=300)
+        .stopping_criteria(300)
         .instance(Collection.SYNTHETIC, 1)
     )
     run(
