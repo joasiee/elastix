@@ -139,6 +139,10 @@ MOGOMEA<TElastix>::AfterEachResolution(void)
       stopcondition = "Maximum number of pixel evaluations has been reached";
       break;
 
+    case StopConditionType::MaximumNumberOfSecondsTermination:
+      stopcondition = "Maximum number of seconds has been reached";
+      break;
+
     case StopConditionType::MaximumNumberOfGenerationsTermination:
       stopcondition = "Maximum number of generations has been reached";
       break;
