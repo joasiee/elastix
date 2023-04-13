@@ -55,7 +55,6 @@ class MORunResult:
     number_of_objectives: int = None
     
 
-
 def get_np_array(img_path: Path):
     img = sitk.ReadImage(str(img_path.resolve()))
     data = sitk.GetArrayFromImage(img)

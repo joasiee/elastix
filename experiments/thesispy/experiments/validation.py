@@ -2,6 +2,7 @@ from pathlib import Path
 import logging
 import time
 import re
+from tempfile import TemporaryDirectory
 
 from joblib import Parallel, delayed
 from tqdm import tqdm
@@ -784,17 +785,17 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
     direction = result.instance.direction
     transform_params = result.transform_params
 
-    out_dir = transform_params.parent / "deformed_mesh"
-    out_dir.mkdir(exist_ok=True)
+    with TemporaryDirectory() as tmp_dir:
+        out_dir = Path(tmp_dir)
 
-    lines = generate_mesh_lines_points(
-        origin, spacing, size, direction, step_size, slice_tuple, nr_line_points, mask=result.instance.mask
-    )
-    deformed_lines = []
-    for _, line in enumerate(lines):
-        write_line_as_points(line, out_dir / f"line.txt")
-        generate_transformed_points(transform_params, out_dir, out_dir / f"line.txt")
-        deformed_lines.append(read_deformed_line(out_dir / f"outputpoints.txt"))
+        lines = generate_mesh_lines_points(
+            origin, spacing, size, direction, step_size, slice_tuple, nr_line_points, mask=result.instance.mask
+        )
+        deformed_lines = []
+        for _, line in enumerate(lines):
+            write_line_as_points(line, out_dir / f"line.txt")
+            generate_transformed_points(transform_params, out_dir, out_dir / f"line.txt")
+            deformed_lines.append(read_deformed_line(out_dir / f"outputpoints.txt"))
 
     fixed_image = result.instance.fixed
     fixed_image_slice = fixed_image[slice_tuple]

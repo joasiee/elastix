@@ -3,8 +3,8 @@ import os
 import subprocess
 import logging
 from typing import List
-import numpy as np
 
+import numpy as np
 import pandas as pd
 
 from thesispy.elastix_wrapper.parameters import Parameters
@@ -129,7 +129,10 @@ def execute_visualize(out_dir: Path):
             break
 
     if visualizer:
-        subprocess.run([visualizer, str((out_dir / "result.0.mhd").resolve())], cwd=str(out_dir.resolve()))
+        file_path = out_dir / "result.0.mhd" if (out_dir / "result.0.mhd").exists() else out_dir / "result.mhd"
+        if file_path.exists():
+            # subprocess.run([visualizer, str(file_path.resolve())], cwd=str(out_dir.resolve()))
+            subprocess.Popen([visualizer, str(file_path.resolve())], cwd=str(out_dir.resolve()))
 
 
 def get_run_result(collection: Collection, instance_id: int, transform_params: Path) -> RunResult:
@@ -139,11 +142,18 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
     and all other required data for validation is stored in a RunResult object.
     """
     out_dir = transform_params.parent.resolve()
-    out_dir_transform = out_dir / "transform"
-    out_dir_transform.mkdir(parents=True, exist_ok=True)
 
     instance = get_instance(collection, instance_id)
     run_result = RunResult(instance)
+
+    return populate_run_result(run_result, out_dir)
+    
+def populate_run_result(run_result: RunResult, out_dir: Path):
+    instance = run_result.instance
+    transform_params = run_result.transform_params
+    out_dir_transform = out_dir / "transform"
+    out_dir_transform.mkdir(parents=True, exist_ok=True)
+
     if instance.lms_fixed is not None:
         generate_transformed_points(transform_params, out_dir, instance.lms_fixed_path)
         run_result.deformed_lms = read_deformed_lms(out_dir / "outputpoints.txt")
@@ -161,7 +171,7 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
             transform_params, out_dir_transform, instance.moving_mask_path, "FinalNearestNeighborInterpolator"
         )
         run_result.deformed_mask = get_np_array(out_dir_transform / "result.mhd")
-        if collection == Collection.LEARN:
+        if instance.collection == Collection.LEARN:
             run_result.deformed_mask[run_result.instance.fixed == -1024] = 0
 
     run_result.dvf = get_np_array(out_dir / "deformationField.mhd")
@@ -190,8 +200,6 @@ def get_run_result_mo(collection: Collection, instance_id: int, output_folder: P
     run_result.objective_values = results_csv[:, 1:-1]
     run_result.constraint_values = results_csv[:, -1]
     run_result.number_of_objectives = run_result.objective_values.shape[1]
-
-
 
     for file in sorted(approx_folder.iterdir(), key=lambda x: int(x.name.split("_")[0]) if x.name != "results.csv" else 0):
         if file.name != "results.csv":
