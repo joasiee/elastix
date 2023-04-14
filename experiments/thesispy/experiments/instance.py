@@ -16,6 +16,7 @@ class Instance:
     moving: np.ndarray
     moving_path: Path
     fixed: np.ndarray
+    fixed_path: Path
     spacing: np.ndarray
     origin: np.ndarray
     direction: np.ndarray
@@ -72,7 +73,7 @@ def load_imgs(collection: Collection, instance: int):
     origin = img.GetOrigin()
     direction = np.array(img.GetDirection()).reshape((len(spacing), len(spacing)))
     size = np.array(img.GetSize())
-    return moving, path_moving, fixed, spacing, origin, direction, size
+    return moving, path_moving, fixed, path_fixed, spacing, origin, direction, size
 
 
 def get_instance(collection: Collection, instance_id: int):

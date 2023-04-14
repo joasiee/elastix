@@ -774,7 +774,7 @@ def read_deformed_line(filename: Path):
     return points
 
 
-def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_points=1000, ax=None, fix_axes=False, vmin=None, vmax=None):
+def plot_deformed_mesh(result: RunResult, slice_tuple, nr_lines=12, nr_line_points=1000, ax=None, fix_axes=False, vmin=None, vmax=None):
     """Plots the deformed mesh in the given slice overlaid on the fixed image."""
     if ax is None:
         _, ax = plt.subplots(figsize=(7, 7))
@@ -784,6 +784,7 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
     size = result.instance.size
     direction = result.instance.direction
     transform_params = result.transform_params
+    step_size = max(size) // nr_lines
 
     with TemporaryDirectory() as tmp_dir:
         out_dir = Path(tmp_dir)
@@ -814,7 +815,7 @@ def plot_deformed_mesh(result: RunResult, slice_tuple, step_size=8, nr_line_poin
         ax.invert_yaxis()
         if slice_tuple[1] != slice(None, None, None) or slice_tuple[0] != slice(None, None, None):
             ax.invert_xaxis()
-        if slice_tuple[2] != slice(None, None, None) or slice_tuple[1] != slice(None, None, None):
+        if result.instance.instance == 1 and slice_tuple[2] != slice(None, None, None) or slice_tuple[1] != slice(None, None, None):
             ax.set_ylim(80, 300)
 
     voxel_to_physical = (spacing * np.identity(3)) @ direction

@@ -61,18 +61,25 @@ class MORunResultVisualization:
     def plot_run_result(self, index: int):
         with TemporaryDirectory() as out_dir:
             out_dir = Path(out_dir)
+            fixed_path = self.moresult.instance.fixed_path
             run_result = self.moresult.approximation_set[index]
             populate_run_result(run_result, out_dir)
-            execute_visualize(out_dir)
-            slice_tuple = (slice(None), slice(None), run_result.instance.size[2] // 2)
-            max_size = max(run_result.instance.size)
-            fig, _ = plot_deformed_mesh(run_result, slice_tuple, max_size / 12)
+            execute_visualize(out_dir, fixed_path)
+            if self.moresult.instance.collection == Collection.SYNTHETIC:
+                fig, _ = plot_deformed_mesh(run_result, (slice(None), slice(None), run_result.instance.size[2] // 2))
+            else:
+                fig, _ = plot_deformed_mesh(run_result, (slice(None), slice(None), 150), 20, fix_axes=True)
             fig.show()
 
 
 if __name__ == "__main__":
-    mo_out_dir = Path("/home/joasiee/Documents/projects/elastix/experiments/output/1681408250_synthetic_1_mogomea_982275/out")
-    run_result = get_run_result_mo(Collection.SYNTHETIC, 1, mo_out_dir)
+    # mo_out_dir = Path("/home/joasiee/Documents/projects/elastix/experiments/output/1680916228_synthetic_1_mogomea_645377/out")    
+    # run_result = get_run_result_mo(Collection.SYNTHETIC, 1, mo_out_dir)
+    # mo_result = MORunResultVisualization(run_result)
+    # mo_result.plot()
 
+    mo_learn_out_dir = Path("/home/joasiee/Documents/projects/elastix/experiments/output/1681262837_learn_2_mogomea_21446/out")
+    run_result = get_run_result_mo(Collection.LEARN, 2, mo_learn_out_dir)
     mo_result = MORunResultVisualization(run_result)
     mo_result.plot()
+

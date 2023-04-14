@@ -119,7 +119,7 @@ def change_key_in_transform_params(transform_params: Path, key: str, value: str)
         f.writelines(lines)
 
 
-def execute_visualize(out_dir: Path):
+def execute_visualize(out_dir: Path, fixed_path: Path):
     """Visualize registration result using the first available visualizer from [vv, mitk, slicer]."""
     visualizers = ["vv", "mitk", "Slicer"]
     visualizer = None
@@ -131,14 +131,14 @@ def execute_visualize(out_dir: Path):
     if visualizer:
         file_path = out_dir / "result.0.mhd" if (out_dir / "result.0.mhd").exists() else out_dir / "result.mhd"
         if file_path.exists():
-            # subprocess.run([visualizer, str(file_path.resolve())], cwd=str(out_dir.resolve()))
-            subprocess.Popen([visualizer, str(file_path.resolve())], cwd=str(out_dir.resolve()))
+            args = [visualizer, str(fixed_path.resolve()), "--overlay", str(file_path.resolve())]
+            subprocess.Popen(args, cwd=str(out_dir.resolve()))
 
 
 def get_run_result(collection: Collection, instance_id: int, transform_params: Path) -> RunResult:
     """Given a collection, instance and transform parameters, return the run result.
 
-    Using the transform, the landmarks are deformed, the moving image is transformed, 
+    Using the transform, the landmarks are deformed, the moving image is transformed,
     and all other required data for validation is stored in a RunResult object.
     """
     out_dir = transform_params.parent.resolve()
@@ -147,7 +147,8 @@ def get_run_result(collection: Collection, instance_id: int, transform_params: P
     run_result = RunResult(instance)
 
     return populate_run_result(run_result, out_dir)
-    
+
+
 def populate_run_result(run_result: RunResult, out_dir: Path):
     instance = run_result.instance
     transform_params = run_result.transform_params
@@ -201,7 +202,9 @@ def get_run_result_mo(collection: Collection, instance_id: int, output_folder: P
     run_result.constraint_values = results_csv[:, -1]
     run_result.number_of_objectives = run_result.objective_values.shape[1]
 
-    for file in sorted(approx_folder.iterdir(), key=lambda x: int(x.name.split("_")[0]) if x.name != "results.csv" else 0):
+    for file in sorted(
+        approx_folder.iterdir(), key=lambda x: int(x.name.split("_")[0]) if x.name != "results.csv" else 0
+    ):
         if file.name != "results.csv":
             run_result_ = RunResult(instance)
             run_result_.transform_params = file.absolute().resolve()
