@@ -225,6 +225,7 @@ public:
    * the optimizer.
    */
   itkGetConstReferenceMacro(LastTransformParameters, ParametersType);
+  itkGetConstReferenceMacro(LastTransformParametersVec, std::vector<ParametersType>);
 
   /** Returns the transform resulting from the registration process. */
   const TransformOutputType *
@@ -241,6 +242,18 @@ public:
    */
   ModifiedTimeType
   GetMTime() const override;
+
+  void
+  InitializeForMOGOMEA(unsigned int numberMixingComponents);
+
+  void
+  SetPositionForMixingComponent(unsigned int mixingIndex, const ParametersType & parameters);
+
+  void
+  SetPositionForMixingComponentOfNextLevel(unsigned int mixingIndex, const ParametersType & parameters);
+
+  const ParametersType &
+  GetPositionForMixingComponentOfNextLevel(unsigned int mixingIndex);
 
 protected:
   /** Constructor. */
@@ -278,6 +291,7 @@ protected:
    * are made protected, so they can be accessed by children classes.
    */
   ParametersType m_LastTransformParameters{};
+  std::vector<ParametersType> m_LastTransformParametersVec{};
   bool           m_Stop{};
 
 private:
@@ -289,6 +303,7 @@ private:
 
   ParametersType m_InitialTransformParameters{};
   ParametersType m_InitialTransformParametersOfNextLevel{};
+  std::vector<ParametersType> m_InitialTransformParametersOfNextLevelVec{};
 
   MovingImageConstPointer   m_MovingImage{};
   FixedImageConstPointer    m_FixedImage{};

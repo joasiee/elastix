@@ -446,6 +446,41 @@ MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GetMTime() c
 
 } // end GetMTime()
 
+template <typename TFixedImage, typename TMovingImage>
+void
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::InitializeForMOGOMEA(
+  unsigned int numberMixingComponents)
+{
+  this->m_LastTransformParametersVec.resize(numberMixingComponents);
+  this->m_InitialTransformParametersOfNextLevelVec.resize(numberMixingComponents);
+}
+
+template <typename TFixedImage, typename TMovingImage>
+void
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::SetPositionForMixingComponent(
+  unsigned int           mixingIndex,
+  const ParametersType & parameters)
+{
+  this->m_LastTransformParametersVec[mixingIndex] = parameters;
+}
+
+template <typename TFixedImage, typename TMovingImage>
+void
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::SetPositionForMixingComponentOfNextLevel(
+  unsigned int           mixingIndex,
+  const ParametersType & parameters)
+{
+  this->m_InitialTransformParametersOfNextLevelVec[mixingIndex] = parameters;
+}
+
+template <typename TFixedImage, typename TMovingImage>
+auto
+MultiResolutionImageRegistrationMethod2<TFixedImage, TMovingImage>::GetPositionForMixingComponentOfNextLevel(
+  unsigned int mixingIndex) -> const ParametersType &
+{
+  return this->m_InitialTransformParametersOfNextLevelVec[mixingIndex];
+}
+
 
 /*
  *  Get Output

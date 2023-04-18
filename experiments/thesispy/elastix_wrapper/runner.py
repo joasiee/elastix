@@ -2,8 +2,7 @@ import logging
 from pathlib import Path
 import time
 from typing import Any, Dict, List
-from thesispy.definitions import Collection, LinkageType
-from thesispy.elastix_wrapper import TimeoutException
+from thesispy.definitions import Collection
 
 from thesispy.elastix_wrapper.parameters import Parameters
 from thesispy.elastix_wrapper.watchdog import SaveStrategy, Watchdog
@@ -54,8 +53,6 @@ def run(
     try:
         execute_elastix(param_files, out_dir, main_params, suppress_stdout)
         finished = True
-    except TimeoutException:
-        logger.warning(f"Exceeded time limit of {main_params['MaxTimeSeconds']} seconds.")
     except KeyboardInterrupt:
         logger.warning(f"Run ended prematurely by user.")
     except Exception as e:
@@ -90,17 +87,15 @@ def run(
 
 if __name__ == "__main__":
     params_main = (
-        Parameters.from_base(mesh_size=8, metric="AdvancedNormalizedCorrelation")
-        .asgd()
-        .multi_resolution(3)
-        .regularize(0.01)
-        .stopping_criteria(iterations=[200, 200, 1000])
-        .instance(Collection.LEARN, 1)
+        Parameters.from_base(mesh_size=4, seed=1)
+        .mogomea(mixing_components=5, pop_size=100, elitist_archive_size_target=200)
+        .stopping_criteria(max_time_s=600)
+        .instance(Collection.SYNTHETIC, 1)
     )
     run(
         [params_main],
         Path("output/" + str(params_main)),
         suppress_stdout=False,
-        visualize=True,
-        validate=True,
+        visualize=False,
+        validate=False,
     )

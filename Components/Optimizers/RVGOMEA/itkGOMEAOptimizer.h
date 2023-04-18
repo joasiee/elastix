@@ -73,7 +73,6 @@ public:
   {
     Univariate = 1,
     MarginalControlPoints = -6,
-    MarginalRegions = -7,
     Full = -1,
     LinkageTree = -2,
     StaticLinkageTree = -3,

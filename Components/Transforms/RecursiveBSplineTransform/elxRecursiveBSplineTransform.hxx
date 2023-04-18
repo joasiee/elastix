@@ -169,7 +169,7 @@ template <class TElastix>
 void
 RecursiveBSplineTransform<TElastix>::AfterEachResolution()
 {
-  unsigned int level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
+  unsigned int       level = this->m_Registration->GetAsITKBaseType()->GetCurrentLevel();
   std::ostringstream filepath("");
   filepath << this->m_Configuration->GetCommandLineArgument("-out") << "controlpoints.R" << level << ".dat";
   this->WriteControlPoints(filepath.str());
@@ -444,6 +444,20 @@ RecursiveBSplineTransform<TElastix>::IncreaseScale()
   /** Set the parameters in the BsplineTransform. */
   this->m_BSplineTransform->SetParameters(
     this->m_Registration->GetAsITKBaseType()->GetInitialTransformParametersOfNextLevel());
+
+
+  /** Upsample each position of each mixing component from MOGOMEA. */
+  const std::vector<ParametersType> & lastTransformParamsPerMixingComponent =
+    this->m_Registration->GetAsITKBaseType()->GetLastTransformParametersVec();
+
+  int mixingIndex = 0;
+  for (const auto & latestParameters_ : lastTransformParamsPerMixingComponent)
+  {
+    ParametersType upsampledParameters_;
+    this->m_GridUpsampler->UpsampleParameters(latestParameters_, upsampledParameters_);
+    this->m_Registration->GetAsITKBaseType()->SetPositionForMixingComponentOfNextLevel(mixingIndex, upsampledParameters_);
+    ++mixingIndex;
+  }
 
 } // end IncreaseScale()
 

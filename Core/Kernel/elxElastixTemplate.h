@@ -254,6 +254,10 @@ public:
   bool
   GetOriginalFixedImageDirection(FixedImageDirectionType & direction) const;
 
+  /** CreateTransformParameterFile. Made public for MOGOMEA (hack). */
+  void
+  CreateTransformParameterFile(const std::string & FileName, const bool ToLog);
+
 private:
   ElastixTemplate() = default;
   ~ElastixTemplate() override = default;
@@ -262,10 +266,6 @@ private:
   BeforeEachResolutionCommandPointer m_BeforeEachResolutionCommand{};
   AfterEachIterationCommandPointer   m_AfterEachIterationCommand{};
   AfterEachResolutionCommandPointer  m_AfterEachResolutionCommand{};
-
-  /** CreateTransformParameterFile. */
-  void
-  CreateTransformParameterFile(const std::string & FileName, const bool ToLog);
 
   /** CreateTransformParametersMap. */
   void

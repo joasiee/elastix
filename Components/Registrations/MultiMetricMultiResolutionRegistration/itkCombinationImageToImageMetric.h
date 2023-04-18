@@ -223,6 +223,9 @@ public:
   MeasureType
   GetMetricValue(unsigned int pos) const;
 
+  void
+  SetMetricValue(MeasureType value, unsigned int pos);
+
   /** Get the last computed derivative for metric i. */
   const DerivativeType &
   GetMetricDerivative(unsigned int pos) const;

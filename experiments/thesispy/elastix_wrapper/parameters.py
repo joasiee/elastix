@@ -84,20 +84,33 @@ class Parameters:
         if weight == 0:
             return self.args({"Metric0Weight": 1.0, "Metric1Weight": weight})
 
+        regularize_metric = "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
+        metrics = [self["Metric"], regularize_metric]
+        weights = [1.0, weight]
+
+        return self.multi_metric(metrics, weights)
+
+    def multi_metric(self, metrics: List[str], weights: List[float] = None) -> Parameters:
+        """Use multiple metrics.
+
+        Args:
+            metrics (List[str]): List of metrics to use.
+            weights (List[float]): List of weights for metrics.
+        """
+        if weights is None:
+            weights = [1.0] * len(metrics)
+
         self.n_param("FixedImagePyramid", 2)
         self.n_param("MovingImagePyramid", 2)
         self.n_param("Interpolator", 2)
         self.n_param("ImageSampler", 2)
-        regularize_metric = "TransformBendingEnergyPenaltyAnalytic" if analytic else "TransformBendingEnergyPenalty"
 
-        return self.args(
-            {
-                "Registration": "MultiMetricMultiResolutionRegistration",
-                "Metric": [self["Metric"], regularize_metric],
-                "Metric0Weight": 1.0,
-                "Metric1Weight": weight,
-            }
-        )
+        args_dict = {"Registration": "MultiMetricMultiResolutionRegistration", "Metric": metrics}
+
+        for i, weight in enumerate(weights):
+            args_dict[f"Metric{i}Weight"] = weight
+
+        return self.args(args_dict)
 
     def multi_resolution(
         self,
@@ -135,7 +148,6 @@ class Parameters:
         evals: List[int] | int = None,
         pixel_evals: List[int] | int = None,
         max_time_s: int = 0,
-        fitness_var: float = None,
     ):
         """Set stopping criteria for registration.
 
@@ -144,15 +156,13 @@ class Parameters:
             evals (List[int] | int, optional): Maximum number of objective function evaluations. Defaults to None.
             pixel_evals (List[int] | int, optional): Maximum number of pixel evaluations. Defaults to None.
             max_time_s (int, optional): Maximum time in seconds. Defaults to 0 (i.e. no time constraint).
-            fitness_var (float, optional): Fitness variance tolerance. Defaults to None.
         """
         return self.args(
             {
                 "MaximumNumberOfIterations": iterations,
                 "MaxNumberOfEvaluations": evals,
                 "MaxNumberOfPixelEvaluations": pixel_evals,
-                "MaxTimeSeconds": max_time_s,
-                "FitnessVarianceTolerance": fitness_var,
+                "MaximumNumberOfSeconds": max_time_s,
             }
         )
 
@@ -177,7 +187,7 @@ class Parameters:
         redis_method: RedistributionMethod = None,
         it_schedule: IterationSchedule = None,
     ) -> Parameters:
-        """Use the GOMEA optimizer for the registration.
+        """Use the GOMEA optimizer for the registration. Defaults are set in elastix.
 
         Args:
             fos (LinkageType, optional): Linkage type. Defaults to LinkageType.CP_MARGINAL.
@@ -230,6 +240,38 @@ class Parameters:
             }
         )
 
+    def mogomea(
+        self,
+        objectives: List[str] = ["AdvancedMeanSquares", "TransformBendingEnergyPenaltyAnalytic"],
+        fos: LinkageType = LinkageType.CP_MARGINAL,
+        pop_size: List[int] | int = None,
+        mixing_components: List[int] | int = None,
+        use_forced_improvement: List[bool] | bool = None,
+        elitist_archive_size_target: List[int] | int = None,
+    ):
+        """Use the MOGOMEA optimizer for the registration. Defaults are set in elastix.
+
+        Args:
+            fos (LinkageType, optional): Linkage type. Defaults to LinkageType.CP_MARGINAL.
+            pop_size (List[int] | int, optional): Population size. Defaults to heuristic.
+            mixing_components (List[int] | int, optional): Base number of mixing components. Defaults to 20.
+            use_forced_improvement (List[bool] | bool, optional): Use forced improvement. Defaults to false.
+            elitist_archive_size_target (List[int] | int, optional): Elitist archive size target. Defaults to 500.
+        """
+        pevals = False if fos == LinkageType.FULL else True
+        return self.multi_metric(objectives).args(
+            {
+                "Optimizer": "MOGOMEA",
+                "OptimizerName": "MO-RV-GOMEA",
+                "FosElementSize": fos.value,
+                "BasePopulationSize": pop_size,
+                "PartialEvaluations": pevals,
+                "BaseNumberOfMixingComponents": mixing_components,
+                "UseForcedImprovement": use_forced_improvement,
+                "ElitistArchiveSizeTarget": elitist_archive_size_target,
+            }
+        )
+
     def asgd(self, params: Dict[str, Any] = None):
         """Use the ASGD optimizer for the registration."""
         return self.args(
@@ -264,6 +306,7 @@ class Parameters:
                 "WriteSamplesEveryIteration": True,
                 "WriteControlPointsEveryIteration": True,
                 "WriteExtraOutput": True,
+                "WriteGenerationalSolutions": True,
             }
         )
 
@@ -456,11 +499,8 @@ class Parameters:
 
 
 if __name__ == "__main__":
-    params = (
-        Parameters.from_base(mesh_size=4, seed=1, use_mask=True)
-        .gomea()
-        .multi_resolution(1, r_sched=[5])
-        .stopping_criteria(iterations=3)
-        .instance(Collection.LEARN, 1)
-    )
-    params.write(Path())
+    params = Parameters.from_base(mesh_size=4, seed=1).gomea().regularize(0.01).instance(Collection.SYNTHETIC, 1)
+    # params.write(Path())
+    # dump to json file
+    with open("params.json", "w") as f:
+        json.dump(params.params, f, indent=4)

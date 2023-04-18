@@ -474,6 +474,24 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetMetricValue(unsigne
 
 
 /**
+ * ********************* SetMetricValue ****************************
+ */
+template <class TFixedImage, class TMovingImage>
+void
+CombinationImageToImageMetric<TFixedImage, TMovingImage>::SetMetricValue(MeasureType value, unsigned int pos)
+{
+  if (pos >= this->GetNumberOfMetrics())
+  {
+    itkWarningMacro("SetMetricValue: pos " << pos << " is out of range.");
+  }
+  else
+  {
+    this->m_MetricValues[pos] = value;
+  }
+} // end SetMetricValue()
+
+
+/**
  * ********************* GetMetricDerivative ****************************
  */
 
@@ -769,14 +787,8 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
-    /** Time the computation per metric. */
-    itk::TimeProbe timer;
-    timer.Start();
-
     /** Compute ... */
     this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters);
-    timer.Stop();
-    this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
 
     /** and combine. */
     measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
@@ -805,19 +817,13 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
-    /** Time the computation per metric. */
-    itk::TimeProbe timer;
-    timer.Start();
-
     /** Compute ... */
     MeasureType tempConstraintValue{ 0.0 };
     this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, tempConstraintValue);
-    timer.Stop();
-    this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
 
     /** and combine. */
     measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
-    constraintValue += (i==0) * tempConstraintValue;
+    constraintValue += (i == 0) * tempConstraintValue;
   }
 
   /** Return a value. */
@@ -844,14 +850,9 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetValue(const Paramet
   /** Compute, store and combine all metric values. */
   for (unsigned int i = 0; i < this->m_NumberOfMetrics; ++i)
   {
-    itk::TimeProbe timer;
-    timer.Start();
-
     /** Compute ... */
-    MeasureType tempConstraintValue{ i * -1.0};
+    MeasureType tempConstraintValue{ i * -1.0 };
     this->m_MetricValues[i] = this->m_Metrics[i]->GetValue(parameters, fosIndex, individualIndex, tempConstraintValue);
-    timer.Stop();
-    this->m_MetricComputationTime[i] = timer.GetMean() * 1000.0;
 
     /** and combine. */
     measure += this->m_MetricWeights[i] * this->m_MetricValues[i];
@@ -896,7 +897,7 @@ CombinationImageToImageMetric<TFixedImage, TMovingImage>::CopyPartialEvaluation(
 }
 
 template <class TFixedImage, class TMovingImage>
-const size_t&
+const size_t &
 CombinationImageToImageMetric<TFixedImage, TMovingImage>::GetNumberOfPixelEvaluations() const
 {
   this->m_NumberOfPixelEvaluations = 0;
